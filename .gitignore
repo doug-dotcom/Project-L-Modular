@@ -42,3 +42,9 @@ configs/openai_key.txt
 **/*secret*
 **/*token*
 **/*credential*
+
+OpenAI Key.txt
+
+.env
+
+.env.local
