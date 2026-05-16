@@ -38,7 +38,7 @@ from core.memory_engine import (
 )
 
 try:
-    from openai 
+    from openai import OpenAI
 except:
     OpenAI = None
 
@@ -188,7 +188,6 @@ def routes():
             "/docs"
         ]
     }
-
 
 
 
