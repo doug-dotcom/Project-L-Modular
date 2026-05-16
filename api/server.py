@@ -19,8 +19,6 @@ from utils.logger import (
 )
 
 # Runtime API
-app.include_router(runtime_router)
-
 
 try:
     from dotenv import load_dotenv
@@ -62,12 +60,19 @@ log_info("PROJECT L SERVER STARTING")
 
 runtime_stack = build_runtime_stack()
 
-app.state.runtime_stack = runtime_stack
 
 app = FastAPI(
     title="Project L",
     version="1.0.0"
 )
+
+# Runtime stack binding
+app.state.runtime_stack = runtime_stack
+
+
+app.include_router(runtime_router)
+
+
 
 app.add_middleware(
     CORSMiddleware,
