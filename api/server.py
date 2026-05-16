@@ -313,6 +313,8 @@ def chat(req: ChatRequest):
 memory_context = format_memory_context(relevant_memories)
 
 system_prompt = f"""
+
+
 You are L.
 
 You are grounded, calm, practical and supportive.
@@ -323,40 +325,40 @@ MEMORY:
 {memory_context}
 """
 
-    # -------------------------------------------------
-    # OPENAI CHECK
-    # -------------------------------------------------
+    # =====================================================
+# OPENAI CHECK
+# =====================================================
 
-    if not client:
+if not client:
 
-        reply = "L is online but OpenAI is not connected."
+    reply = "L is online but OpenAI is not connected."
 
-    else:
+else:
 
-        try:
+    try:
 
-            response = client.chat.completions.create(
-                model=MODEL,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": system_prompt
-                    },
-                    {
-                        "role": "user",
-                        "content": user_message
-                    }
-                ],
-                temperature=0.7
-            )
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": system_prompt
+                },
+                {
+                    "role": "user",
+                    "content": user_message
+                }
+            ],
+            temperature=0.7
+        )
 
-            reply = response.choices[0].message.content
+        reply = response.choices[0].message.content
 
-        except Exception as e:
+    except Exception as e:
 
-            log_exception(f"CHAT FAILURE: {e}")
+        log_exception(f"CHAT FAILURE: {e}")
 
-            reply = f"AI ERROR: {str(e)}"
+        reply = f"AI ERROR: {str()}"
 
     # -------------------------------------------------
     # SAVE ASSISTANT MEMORY
