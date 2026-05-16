@@ -21,3 +21,14 @@ def build_context(*args, **kwargs):
         "args": args,
         "kwargs": kwargs
     }
+# ============================================================
+# SAFE RUNTIME STATUS FALLBACK
+# ============================================================
+
+def runtime_status():
+
+    return {
+        "status": "online",
+        "memory_runtime": "fallback_active"
+    }
+
