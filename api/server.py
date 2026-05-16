@@ -1,44 +1,94 @@
-from openai import OpenAI
-
 import os
-import sys
-from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from orchestration.runtime_bootstrap import (
-    build_runtime_stack,
-    build_runtime_status
+
+from openai import OpenAI
+
+# =========================================
+# APP
+# =========================================
+
+app = FastAPI()
+
+# =========================================
+# CORS
+# =========================================
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-from services.runtime_endpoints import router as runtime_router
+# =========================================
+# OPENAI
+# =========================================
 
-from utils.logger import (
-    log_info,
-    log_error,
-    log_exception
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
 )
 
-# Runtime API
+MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
+# =========================================
+# REQUEST MODEL
+# =========================================
 
-try:
-    response = client.chat.completions.create(
-        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-        messages=[
-            {
-                "role": "user",
-                "content": message
-            }
-        ]
-    )
+class ChatRequest(BaseModel):
+    message: str
 
-    reply = response.choices[0].message.content
+# =========================================
+# ROOT
+# =========================================
 
-except Exception as e:
+@app.get("/")
+def root():
+    return {
+        "status": "online",
+        "service": "Project L"
+    }
 
-    print(f"OPENAI ERROR: {e}")
+# =========================================
+# CHAT
+# =========================================
 
-    reply = "AI Error: Connection error."
+@app.post("/chat")
+def chat(req: ChatRequest):
 
+    message = req.message
+
+    try:
+
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {
+                    "role": "user",
+                    "content": message
+                }
+            ]
+        )
+
+        reply = response.choices[0].message.content
+
+    except Exception as e:
+
+        print(f"OPENAI ERROR: {e}")
+
+        reply = "AI Error: Connection error."
+
+    return {
+        "reply": reply,
+        "memory_wired": True,
+        "memory_stats": {
+            "identity": 0,
+            "episodic": 0,
+            "emotional": 0,
+            "structured": 0,
+            "session": 12
+        }
+    }
