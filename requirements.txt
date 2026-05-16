@@ -16,7 +16,6 @@ cffi==2.0.0
 charset-normalizer==3.4.4
 click==8.3.0
 colorama==0.4.6
-comtypes==1.4.15
 cryptography==46.0.4
 deprecation==2.1.0
 distro==1.9.0
@@ -77,14 +76,11 @@ pyiceberg==0.11.1
 PyJWT==2.11.0
 PyMuPDF==1.27.2.3
 pyparsing==3.3.2
-pypiwin32==223
 pyroaring==1.1.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
 python-jose==3.5.0
 python-multipart==0.0.22
-pyttsx3==2.99
-pywin32==311
 PyYAML==6.0.3
 realtime==2.29.0
 regex==2026.4.4
