@@ -79,7 +79,7 @@ def chat(req: ChatRequest):
 
         print(f"OPENAI ERROR: {e}")
 
-        reply = f"AI ERROR: {str(e)}"
+        reply = "AI Error: Connection error."
 
     return {
         "reply": reply,
@@ -92,4 +92,3 @@ def chat(req: ChatRequest):
             "session": 12
         }
     }
-
