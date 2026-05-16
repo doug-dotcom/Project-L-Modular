@@ -1,5 +1,3 @@
-from openai import OpenAI
-
 import os
 import sys
 from pathlib import Path
@@ -40,6 +38,7 @@ from core.memory_engine import (
 )
 
 try:
+    from openai 
 except:
     OpenAI = None
 
