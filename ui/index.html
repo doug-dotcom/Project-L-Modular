@@ -103,106 +103,92 @@ Waiting...
 
 <script>
 
-const API = "http://127.0.0.1:8000";
+const API_URL = "https://project-l-modular-production.up.railway.app/chat";
 
-const chat = document.getElementById("chat");
-
-const statusEl = document.getElementById("status");
-
-function addMessage(role, text){
-
-    const div = document.createElement("div");
-
-    div.className = message ;
-
-    div.innerHTML = <strong>:</strong><br>;
-
-    chat.appendChild(div);
-
-    chat.scrollTop = chat.scrollHeight;
-}
-
-async function sendMessage(){
+async function sendMessage() {
 
     const input = document.getElementById("message");
 
+    const chat = document.getElementById("chat");
+
     const message = input.value.trim();
 
-    if(!message){
-        return;
-    }
+    if (!message) return;
 
-    addMessage("user", message);
+    // -------------------------------------
+    // USER MESSAGE
+    // -------------------------------------
+
+    chat.innerHTML += `
+        <div class="msg user">
+            ${message}
+        </div>
+    `;
 
     input.value = "";
 
-    statusEl.innerText = "Talking to L...";
+    // -------------------------------------
+    // LOADING
+    // -------------------------------------
 
-    try{
+    const thinkingId = "thinking-" + Date.now();
 
-        const response = await fetch(${API}/chat,{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
+    chat.innerHTML += `
+        <div class="msg assistant" id="${thinkingId}">
+            L is thinking...
+        </div>
+    `;
+
+    chat.scrollTop = chat.scrollHeight;
+
+    try {
+
+        const response = await fetch(API_URL, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
             },
-            body:JSON.stringify({
-                message:message
+
+            body: JSON.stringify({
+                message: message
             })
         });
 
         const data = await response.json();
 
-        addMessage(
-            "assistant",
-            data.reply || "No response"
-        );
+        // ---------------------------------
+        // REMOVE THINKING
+        // ---------------------------------
 
-        statusEl.innerText =
-            "Connected ✓";
+        document.getElementById(thinkingId).remove();
 
-        console.log(data);
+        // ---------------------------------
+        // ASSISTANT RESPONSE
+        // ---------------------------------
 
+        chat.innerHTML += `
+            <div class="msg assistant">
+                ${data.reply}
+            </div>
+        `;
+
+    } catch (err) {
+
+        document.getElementById(thinkingId).remove();
+
+        chat.innerHTML += `
+            <div class="msg assistant error">
+                Connection error.
+            </div>
+        `;
     }
-    catch(err){
 
-        console.error(err);
-
-        statusEl.innerText =
-            "Connection failed";
-
-        addMessage(
-            "assistant",
-            "UI could not reach backend."
-        );
-    }
+    chat.scrollTop = chat.scrollHeight;
 }
-
-async function bootCheck(){
-
-    try{
-
-        const response =
-            await fetch(${API}/health);
-
-        const data = await response.json();
-
-        console.log(data);
-
-        statusEl.innerText =
-            "Backend online ✓";
-
-    }
-    catch{
-
-        statusEl.innerText =
-            "Backend offline";
-    }
-}
-
-bootCheck();
 
 </script>
-
 </body>
 </html>
 
