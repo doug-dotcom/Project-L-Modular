@@ -312,7 +312,7 @@ def chat(req: ChatRequest):
 
 memory_context = format_memory_context(relevant_memories)
 
-    system_prompt = f"""
+system_prompt = f"""
 You are L.
 
 You are grounded, calm, practical and supportive.
