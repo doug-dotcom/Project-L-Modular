@@ -17,37 +17,49 @@
             box-sizing: border-box;
         }
 
+        html,
         body {
 
             margin: 0;
             padding: 0;
 
-            background: #0f172a;
+            width: 100%;
+            height: 100%;
 
-            color: white;
+            overflow: hidden;
+
+            background: linear-gradient(
+                180deg,
+                #0f172a,
+                #172554
+            );
 
             font-family: Arial, sans-serif;
 
+            color: white;
+        }
+
+        body {
+
             display: flex;
-
             flex-direction: column;
-
-            height: 100vh;
         }
 
         header {
 
-            background: #111827;
+            padding: 18px;
 
-            padding: 20px;
-
-            border-bottom: 1px solid #1f2937;
-
-            font-size: 28px;
+            font-size: 30px;
 
             font-weight: bold;
 
             color: #22c55e;
+
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+
+            background: rgba(0,0,0,0.15);
+
+            backdrop-filter: blur(6px);
         }
 
         #chat {
@@ -62,32 +74,40 @@
 
             flex-direction: column;
 
-            gap: 12px;
+            gap: 14px;
+
+            scroll-behavior: smooth;
         }
 
         .msg {
 
-            padding: 14px;
+            padding: 14px 18px;
 
-            border-radius: 12px;
+            border-radius: 14px;
 
-            max-width: 80%;
+            max-width: 90%;
+
+            width: fit-content;
 
             line-height: 1.5;
+
+            font-size: 15px;
+
+            word-wrap: break-word;
+
+            align-self: flex-start;
         }
 
         .user {
 
             background: #2563eb;
-
-            align-self: flex-end;
         }
 
         .assistant {
 
-            background: #1e293b;
+            background: rgba(255,255,255,0.10);
 
-            align-self: flex-start;
+            border: 1px solid rgba(255,255,255,0.08);
         }
 
         .error {
@@ -99,11 +119,19 @@
 
             display: flex;
 
-            padding: 16px;
+            gap: 12px;
 
-            background: #111827;
+            padding: 14px;
 
-            border-top: 1px solid #1f2937;
+            background: rgba(0,0,0,0.20);
+
+            border-top: 1px solid rgba(255,255,255,0.08);
+
+            backdrop-filter: blur(8px);
+
+            position: sticky;
+
+            bottom: 0;
         }
 
         #message {
@@ -112,38 +140,41 @@
 
             padding: 14px;
 
-            border-radius: 10px;
+            border-radius: 14px;
 
             border: none;
 
             outline: none;
 
-            font-size: 16px;
-
-            background: #1e293b;
-
-            color: white;
-
             resize: none;
 
             min-height: 60px;
 
-            max-height: 200px;
+            max-height: 180px;
 
             overflow-y: auto;
+
+            font-size: 16px;
+
+            background: rgba(255,255,255,0.08);
+
+            color: white;
 
             font-family: Arial, sans-serif;
         }
 
+        #message::placeholder {
+
+            color: rgba(255,255,255,0.5);
+        }
+
         button {
 
-            margin-left: 12px;
-
-            padding: 14px 20px;
+            min-width: 90px;
 
             border: none;
 
-            border-radius: 10px;
+            border-radius: 14px;
 
             background: #22c55e;
 
@@ -151,12 +182,53 @@
 
             font-weight: bold;
 
+            font-size: 15px;
+
             cursor: pointer;
+
+            transition: 0.2s;
         }
 
         button:hover {
 
             background: #16a34a;
+        }
+
+        @media (max-width: 768px) {
+
+            header {
+
+                font-size: 24px;
+
+                padding: 14px;
+            }
+
+            #chat {
+
+                padding: 14px;
+            }
+
+            .msg {
+
+                max-width: 96%;
+
+                font-size: 14px;
+            }
+
+            #inputBar {
+
+                padding-bottom: 22px;
+            }
+
+            #message {
+
+                min-height: 70px;
+            }
+
+            button {
+
+                min-width: 75px;
+            }
         }
 
     </style>
@@ -182,7 +254,7 @@
         <textarea
             id="message"
             placeholder="Talk to L..."
-></textarea>
+        ></textarea>
 
         <button onclick="sendMessage()">
             Send
