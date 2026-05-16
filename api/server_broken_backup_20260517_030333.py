@@ -50,6 +50,7 @@ if str(ROOT) not in sys.path:
 # =====================================================
 
 from core.memory_engine import (
+    build_memory_context,
     save_memory,
     memory_stats
 )
@@ -74,9 +75,14 @@ try:
 
         log_info("OPENAI CLIENT INITIALIZED")
 
+    else:
+
+        log_error("OPENAI_API_KEY MISSING")
+
 except Exception as e:
 
     log_exception(f"OPENAI INIT FAILED: {e}")
+
 
 # =====================================================
 # SUPABASE
@@ -98,9 +104,14 @@ try:
 
         log_info("SUPABASE CONNECTED")
 
+    else:
+
+        log_error("SUPABASE VARIABLES MISSING")
+
 except Exception as e:
 
     log_exception(f"SUPABASE FAILED: {e}")
+
 
 # =====================================================
 # MEMORY RETRIEVAL
@@ -113,6 +124,10 @@ def fetch_relevant_memories(user_message, limit=5):
 
     try:
 
+        # ---------------------------------------------
+        # DIRECT CONTENT SEARCH
+        # ---------------------------------------------
+
         result = (
             supabase
             .table("memories")
@@ -124,6 +139,10 @@ def fetch_relevant_memories(user_message, limit=5):
 
         if result.data:
             return result.data
+
+        # ---------------------------------------------
+        # CATEGORY SEARCH
+        # ---------------------------------------------
 
         words = user_message.lower().split()
 
@@ -163,6 +182,7 @@ def format_memory_context(memories):
     for mem in memories:
 
         content = mem.get("content", "")
+
         category = mem.get("category", "general")
 
         lines.append(
@@ -178,7 +198,7 @@ def format_memory_context(memories):
 log_info("PROJECT L SERVER STARTING")
 
 # =====================================================
-# RUNTIME STACK
+# TEGAN RUNTIME STACK
 # =====================================================
 
 runtime_stack = build_runtime_stack()
@@ -192,6 +212,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# =====================================================
+# APP STATE
+# =====================================================
+
 app.state.runtime_stack = runtime_stack
 
 # =====================================================
@@ -201,16 +225,17 @@ app.state.runtime_stack = runtime_stack
 app.include_router(runtime_router)
 
 # =====================================================
-# UI
+# CORS
+# =====================================================
+
+
+# =====================================================
+# UI STATIC
 # =====================================================
 
 UI_PATH = ROOT / "ui"
 
 app.mount("/ui", StaticFiles(directory=UI_PATH), name="ui")
-
-# =====================================================
-# CORS
-# =====================================================
 
 app.add_middleware(
     CORSMiddleware,
@@ -234,7 +259,11 @@ class ChatRequest(BaseModel):
 @app.get("/")
 def root():
 
-    return FileResponse(UI_PATH / "index.html")
+    return {
+        "status": "online",
+        "service": "Project L",
+        "docs": "/docs"
+    }
 
 # =====================================================
 # HEALTH
@@ -243,9 +272,12 @@ def root():
 @app.get("/health")
 def health():
 
+    log_info("Health check requested")
+
     return {
         "status": "ok",
         "openai_ready": bool(client),
+        "model": MODEL,
         "memory_stats": memory_stats()
     }
 
@@ -260,6 +292,10 @@ def chat(req: ChatRequest):
 
     log_info(f"CHAT REQUEST: {user_message[:80]}")
 
+    # -------------------------------------------------
+    # SAVE USER MEMORY
+    # -------------------------------------------------
+
     save_memory(
         "session",
         {
@@ -268,13 +304,17 @@ def chat(req: ChatRequest):
         }
     )
 
+    # -------------------------------------------------
+    # MEMORY CONTEXT
+    # -------------------------------------------------
+
     relevant_memories = fetch_relevant_memories(user_message)
 
-    memory_context = format_memory_context(
-        relevant_memories
-    )
+memory_context = format_memory_context(relevant_memories)
 
-    system_prompt = f"""
+system_prompt = f"""
+
+
 You are L.
 
 You are grounded, calm, practical and supportive.
@@ -285,36 +325,44 @@ MEMORY:
 {memory_context}
 """
 
-    if not client:
+    # =====================================================
+# OPENAI CHECK
+# =====================================================
 
-        reply = "L is online but OpenAI is not connected."
+if not client:
 
-    else:
+    reply = "L is online but OpenAI is not connected."
 
-        try:
+else:
 
-            response = client.chat.completions.create(
-                model=MODEL,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": system_prompt
-                    },
-                    {
-                        "role": "user",
-                        "content": user_message
-                    }
-                ],
-                temperature=0.7
-            )
+    try:
 
-            reply = response.choices[0].message.content
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": system_prompt
+                },
+                {
+                    "role": "user",
+                    "content": user_message
+                }
+            ],
+            temperature=0.7
+        )
 
-        except Exception as e:
+        reply = response.choices[0].message.content
 
-            log_exception(f"CHAT FAILURE: {e}")
+    except Exception as e:
 
-            reply = f"AI ERROR: {str(e)}"
+        log_exception(f"CHAT FAILURE: {e}")
+
+        reply = f"AI ERROR: {str()}"
+
+    # -------------------------------------------------
+    # SAVE ASSISTANT MEMORY
+    # -------------------------------------------------
 
     save_memory(
         "session",
@@ -324,12 +372,34 @@ MEMORY:
         }
     )
 
+    # -------------------------------------------------
+    # RESPONSE
+    # -------------------------------------------------
+
     return {
         "reply": reply,
         "memory_wired": True,
-        "retrieved_memories": relevant_memories,
         "memory_stats": memory_stats()
     }
+
+# =====================================================
+# ROUTES
+# =====================================================
+
+@app.get("/routes")
+def routes():
+
+    return {
+        "routes": [
+            "/",
+            "/health",
+            "/chat",
+            "/routes",
+            "/docs"
+        ]
+    }
+
+
 
 # =====================================================
 # MEMORY TEST
@@ -366,3 +436,5 @@ def memory_test():
             "connected": False,
             "error": str(e)
         }
+
+
