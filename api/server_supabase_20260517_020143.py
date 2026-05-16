@@ -9,7 +9,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from supabase import create_client
 
 from orchestration.runtime_bootstrap import (
     build_runtime_stack,
@@ -82,35 +81,6 @@ try:
 except Exception as e:
 
     log_exception(f"OPENAI INIT FAILED: {e}")
-
-
-# =====================================================
-# SUPABASE
-# =====================================================
-
-SUPABASE_URL = os.getenv("SUPABASE_URL", "")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
-
-supabase = None
-
-try:
-
-    if SUPABASE_URL and SUPABASE_KEY:
-
-        supabase = create_client(
-            SUPABASE_URL,
-            SUPABASE_KEY
-        )
-
-        log_info("SUPABASE CONNECTED")
-
-    else:
-
-        log_error("SUPABASE VARIABLES MISSING")
-
-except Exception as e:
-
-    log_exception(f"SUPABASE FAILED: {e}")
 
 # =====================================================
 # SERVER START
@@ -315,42 +285,4 @@ def routes():
             "/docs"
         ]
     }
-
-
-
-# =====================================================
-# MEMORY TEST
-# =====================================================
-
-@app.get("/memory/test")
-def memory_test():
-
-    if not supabase:
-
-        return {
-            "connected": False
-        }
-
-    try:
-
-        result = (
-            supabase
-            .table("public.memories")
-            .select("*")
-            .limit(3)
-            .execute()
-        )
-
-        return {
-            "connected": True,
-            "rows": len(result.data),
-            "sample": result.data
-        }
-
-    except Exception as e:
-
-        return {
-            "connected": False,
-            "error": str(e)
-        }
 
