@@ -335,7 +335,7 @@ def memory_test():
 
         result = (
             supabase
-            .table("public.memories")
+            .table("memories")
             .select("*")
             .limit(3)
             .execute()
