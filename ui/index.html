@@ -1,194 +1,272 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Project L</title>
+    <meta charset="UTF-8">
 
-<style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-body{
-    background:#0f172a;
-    color:#e2e8f0;
-    font-family:Arial;
-    margin:0;
-    padding:30px;
-}
+    <title>Project L</title>
 
-.container{
-    max-width:900px;
-    margin:auto;
-}
+    <link rel="icon" type="image/png" href="/ui/icon.png">
 
-h1{
-    color:#38bdf8;
-}
+    <style>
 
-#chat{
-    height:500px;
-    overflow-y:auto;
-    background:#111827;
-    padding:20px;
-    border-radius:12px;
-    margin-bottom:20px;
-}
+        * {
+            box-sizing: border-box;
+        }
 
-.message{
-    margin-bottom:18px;
-    padding:12px;
-    border-radius:10px;
-}
+        body {
 
-.user{
-    background:#1e293b;
-}
+            margin: 0;
+            padding: 0;
 
-.assistant{
-    background:#0f766e;
-}
+            background: #0f172a;
 
-textarea{
-    width:100%;
-    height:100px;
-    background:#111827;
-    color:white;
-    border:none;
-    padding:15px;
-    border-radius:10px;
-    font-size:16px;
-}
+            color: white;
 
-button{
-    margin-top:15px;
-    background:#0284c7;
-    color:white;
-    border:none;
-    padding:14px 20px;
-    border-radius:10px;
-    cursor:pointer;
-    font-size:16px;
-}
+            font-family: Arial, sans-serif;
 
-button:hover{
-    background:#0369a1;
-}
+            display: flex;
 
-.status{
-    margin-top:15px;
-    color:#94a3b8;
-}
+            flex-direction: column;
 
-</style>
-<link rel="icon" type="image/png" href="/ui/icon.png">
+            height: 100vh;
+        }
+
+        header {
+
+            background: #111827;
+
+            padding: 20px;
+
+            border-bottom: 1px solid #1f2937;
+
+            font-size: 28px;
+
+            font-weight: bold;
+
+            color: #22c55e;
+        }
+
+        #chat {
+
+            flex: 1;
+
+            overflow-y: auto;
+
+            padding: 20px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 12px;
+        }
+
+        .msg {
+
+            padding: 14px;
+
+            border-radius: 12px;
+
+            max-width: 80%;
+
+            line-height: 1.5;
+        }
+
+        .user {
+
+            background: #2563eb;
+
+            align-self: flex-end;
+        }
+
+        .assistant {
+
+            background: #1e293b;
+
+            align-self: flex-start;
+        }
+
+        .error {
+
+            background: #7f1d1d;
+        }
+
+        #inputBar {
+
+            display: flex;
+
+            padding: 16px;
+
+            background: #111827;
+
+            border-top: 1px solid #1f2937;
+        }
+
+        #message {
+
+            flex: 1;
+
+            padding: 14px;
+
+            border-radius: 10px;
+
+            border: none;
+
+            outline: none;
+
+            font-size: 16px;
+
+            background: #1e293b;
+
+            color: white;
+        }
+
+        button {
+
+            margin-left: 12px;
+
+            padding: 14px 20px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background: #22c55e;
+
+            color: black;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        button:hover {
+
+            background: #16a34a;
+        }
+
+    </style>
+
 </head>
 
 <body>
 
-<div class="container">
+    <header>
+        Project L
+    </header>
 
-<h1>Project L</h1>
+    <div id="chat">
 
-<div id="chat"></div>
-
-<textarea id="message" placeholder="Talk to L..."></textarea>
-
-<button onclick="sendMessage()">Send</button>
-
-<div class="status" id="status">
-Waiting...
-</div>
-
-</div>
-
-<script>
-
-const API_URL = "https://project-l-modular-production.up.railway.app/chat";
-
-async function sendMessage() {
-
-    const input = document.getElementById("message");
-
-    const chat = document.getElementById("chat");
-
-    const message = input.value.trim();
-
-    if (!message) return;
-
-    // -------------------------------------
-    // USER MESSAGE
-    // -------------------------------------
-
-    chat.innerHTML += `
-        <div class="msg user">
-            ${message}
+        <div class="msg assistant">
+            L online 👊
         </div>
-    `;
 
-    input.value = "";
+    </div>
 
-    // -------------------------------------
-    // LOADING
-    // -------------------------------------
+    <div id="inputBar">
 
-    const thinkingId = "thinking-" + Date.now();
+        <input
+            id="message"
+            type="text"
+            placeholder="Talk to L..."
+            onkeypress="if(event.key==='Enter') sendMessage()"
+        >
 
-    chat.innerHTML += `
-        <div class="msg assistant" id="${thinkingId}">
-            L is thinking...
-        </div>
-    `;
+        <button onclick="sendMessage()">
+            Send
+        </button>
 
-    chat.scrollTop = chat.scrollHeight;
+    </div>
 
-    try {
+    <script>
 
-        const response = await fetch(API_URL, {
+        const API_URL = "/chat";
 
-            method: "POST",
+        async function sendMessage() {
 
-            headers: {
-                "Content-Type": "application/json"
-            },
+            const input = document.getElementById("message");
 
-            body: JSON.stringify({
-                message: message
-            })
-        });
+            const chat = document.getElementById("chat");
 
-        const data = await response.json();
+            const message = input.value.trim();
 
-        // ---------------------------------
-        // REMOVE THINKING
-        // ---------------------------------
+            if (!message) return;
 
-        document.getElementById(thinkingId).remove();
+            // ---------------------------------
+            // USER MESSAGE
+            // ---------------------------------
 
-        // ---------------------------------
-        // ASSISTANT RESPONSE
-        // ---------------------------------
+            chat.innerHTML += `
+                <div class="msg user">
+                    ${message}
+                </div>
+            `;
 
-        chat.innerHTML += `
-            <div class="msg assistant">
-                ${data.reply}
-            </div>
-        `;
+            input.value = "";
 
-    } catch (err) {
+            // ---------------------------------
+            // THINKING
+            // ---------------------------------
 
-        document.getElementById(thinkingId).remove();
+            const thinkingId = "thinking-" + Date.now();
 
-        chat.innerHTML += `
-            <div class="msg assistant error">
-                Connection error.
-            </div>
-        `;
-    }
+            chat.innerHTML += `
+                <div class="msg assistant" id="${thinkingId}">
+                    L is thinking...
+                </div>
+            `;
 
-    chat.scrollTop = chat.scrollHeight;
-}
+            chat.scrollTop = chat.scrollHeight;
 
-</script>
+            try {
+
+                const response = await fetch(API_URL, {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        message: message
+                    })
+                });
+
+                const data = await response.json();
+
+                // REMOVE THINKING
+
+                document.getElementById(thinkingId).remove();
+
+                // ASSISTANT RESPONSE
+
+                chat.innerHTML += `
+                    <div class="msg assistant">
+                        ${data.reply}
+                    </div>
+                `;
+
+            } catch (err) {
+
+                document.getElementById(thinkingId).remove();
+
+                chat.innerHTML += `
+                    <div class="msg assistant error">
+                        Connection error.
+                    </div>
+                `;
+            }
+
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+    </script>
+
 </body>
-</html>
 
+</html>
