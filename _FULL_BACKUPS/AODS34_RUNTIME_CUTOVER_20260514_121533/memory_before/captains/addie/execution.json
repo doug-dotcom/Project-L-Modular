@@ -1,0 +1,10 @@
+{
+  "captain": "",
+  "rank": "Captain",
+  "domain": "",
+  "entries": [],
+  "source": "local_json",
+  "supabase_sync": true,
+  "created_by": "AODS09",
+  "notes": "Template only. No live memory migration has occurred."
+}

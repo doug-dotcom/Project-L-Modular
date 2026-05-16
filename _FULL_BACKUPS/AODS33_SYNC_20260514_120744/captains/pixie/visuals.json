@@ -1,0 +1,12 @@
+{
+  "captain": "Pixie",
+  "rank": "Captain",
+  "domain": "pixie_visuals",
+  "source": "supabase_export_classified",
+  "runtime_active": false,
+  "supabase_sync": true,
+  "populated_by": "AODS32",
+  "populated_at": "2026-05-14T12:05:38.474180",
+  "entry_count": 0,
+  "entries": []
+}

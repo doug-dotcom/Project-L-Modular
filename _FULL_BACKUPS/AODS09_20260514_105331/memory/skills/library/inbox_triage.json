@@ -1,0 +1,11 @@
+{
+  "name": "Inbox Triage",
+  "category": "executive",
+  "status": "active",
+  "maturity": "developing",
+  "version": "1.0",
+  "description": "Sort and summarize email into actionable, review, and low-signal lanes.",
+  "activation_cues": ["email", "emails", "gmail", "inbox", "emily"],
+  "suppression_cues": ["what do you think of emily", "thoughts on emily"],
+  "prompt_layer": "Only activate for genuine email operations. Do not let email context dominate unrelated conversation."
+}

@@ -1,0 +1,20 @@
+{
+  "operation": "AODS 31 Captain Memory Classification",
+  "created_at": "2026-05-14T12:05:13.594555",
+  "source_file": "C:\\Shine_L\\memory\\exports\\supabase_memories_20260514_105452\\supabase_memories_raw.json",
+  "expected_count": 608,
+  "actual_count": 608,
+  "count_verified": true,
+  "runtime_cutover": false,
+  "supabase_modified": false,
+  "classification_only": true,
+  "domains": {
+    "callie_calendar": 16,
+    "emily_communications": 7,
+    "emme_emotional": 76,
+    "fiona_finance": 4,
+    "gracie_legacy": 29,
+    "noelie_research": 406,
+    "richie_reflections": 70
+  }
+}

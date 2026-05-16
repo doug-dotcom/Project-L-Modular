@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Project L</title>
+
+<style>
+
+body{
+    background:#0f172a;
+    color:#e2e8f0;
+    font-family:Arial;
+    margin:0;
+    padding:30px;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+}
+
+h1{
+    color:#38bdf8;
+}
+
+#chat{
+    height:500px;
+    overflow-y:auto;
+    background:#111827;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:20px;
+}
+
+.message{
+    margin-bottom:18px;
+    padding:12px;
+    border-radius:10px;
+}
+
+.user{
+    background:#1e293b;
+}
+
+.assistant{
+    background:#0f766e;
+}
+
+textarea{
+    width:100%;
+    height:100px;
+    background:#111827;
+    color:white;
+    border:none;
+    padding:15px;
+    border-radius:10px;
+    font-size:16px;
+}
+
+button{
+    margin-top:15px;
+    background:#0284c7;
+    color:white;
+    border:none;
+    padding:14px 20px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+button:hover{
+    background:#0369a1;
+}
+
+.status{
+    margin-top:15px;
+    color:#94a3b8;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Project L</h1>
+
+<div id="chat"></div>
+
+<textarea id="message" placeholder="Talk to L..."></textarea>
+
+<button onclick="sendMessage()">Send</button>
+
+<div class="status" id="status">
+Waiting...
+</div>
+
+</div>
+
+<script>
+
+const API = "http://127.0.0.1:8000";
+
+const chat = document.getElementById("chat");
+
+const statusEl = document.getElementById("status");
+
+function addMessage(role, text){
+
+    const div = document.createElement("div");
+
+    div.className = message ;
+
+    div.innerHTML = <strong>:</strong><br>;
+
+    chat.appendChild(div);
+
+    chat.scrollTop = chat.scrollHeight;
+}
+
+async function sendMessage(){
+
+    const input = document.getElementById("message");
+
+    const message = input.value.trim();
+
+    if(!message){
+        return;
+    }
+
+    addMessage("user", message);
+
+    input.value = "";
+
+    statusEl.innerText = "Talking to L...";
+
+    try{
+
+        const response = await fetch(${API}/chat,{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                message:message
+            })
+        });
+
+        const data = await response.json();
+
+        addMessage(
+            "assistant",
+            data.reply || "No response"
+        );
+
+        statusEl.innerText =
+            "Connected ✓";
+
+        console.log(data);
+
+    }
+    catch(err){
+
+        console.error(err);
+
+        statusEl.innerText =
+            "Connection failed";
+
+        addMessage(
+            "assistant",
+            "UI could not reach backend."
+        );
+    }
+}
+
+async function bootCheck(){
+
+    try{
+
+        const response =
+            await fetch(${API}/health);
+
+        const data = await response.json();
+
+        console.log(data);
+
+        statusEl.innerText =
+            "Backend online ✓";
+
+    }
+    catch{
+
+        statusEl.innerText =
+            "Backend offline";
+    }
+}
+
+bootCheck();
+
+</script>
+
+</body>
+</html>

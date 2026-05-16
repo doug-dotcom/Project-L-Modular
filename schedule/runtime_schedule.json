@@ -1,0 +1,16 @@
+[
+  {
+    "schedule_id": "b6f25350-d563-45b8-9ca9-2a777a10b00b",
+    "timestamp": "2026-05-15T19:27:03.819006",
+    "captain": "Captain Builder",
+    "task_type": "build",
+    "payload": {
+      "message": "scheduled validation task"
+    },
+    "priority": "high",
+    "thread_id": "aods66",
+    "run_at": "2026-05-15T19:27:02.818573",
+    "recurrence": "once",
+    "status": "completed"
+  }
+]

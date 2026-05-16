@@ -1,0 +1,112 @@
+{
+  "backup_directory_count": 21,
+  "total_backup_size_mb": 839.65,
+  "backup_directories": [
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS",
+      "FileCount": 4668,
+      "SizeMB": 784.25
+    },
+    {
+      "Path": "C:\\Shine_L\\backups",
+      "FileCount": 1227,
+      "SizeMB": 9.19
+    },
+    {
+      "Path": "C:\\Shine_L\\api\\Backups",
+      "FileCount": 125,
+      "SizeMB": 3.53
+    },
+    {
+      "Path": "C:\\Shine_L\\backups\\chat_fix_20260514_233401\\Shine_L\\backups",
+      "FileCount": 0,
+      "SizeMB": 0.0
+    },
+    {
+      "Path": "C:\\Shine_L\\backups\\chat_fix_20260514_233401\\Shine_L\\api\\Backups",
+      "FileCount": 125,
+      "SizeMB": 3.53
+    },
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS\\backups",
+      "FileCount": 78,
+      "SizeMB": 3.85
+    },
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS\\AODS09_20260514_105331\\memory\\backups",
+      "FileCount": 0,
+      "SizeMB": 0.0
+    },
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS\\AODS34_RUNTIME_CUTOVER_20260514_121533\\memory_before\\backups",
+      "FileCount": 0,
+      "SizeMB": 0.0
+    },
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS\\AODS34_RUNTIME_CUTOVER_20260514_121957\\memory_before\\backups",
+      "FileCount": 0,
+      "SizeMB": 0.0
+    },
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS\\AODS35_FINAL_SHIM_20260514_122044\\api_before\\Backups",
+      "FileCount": 125,
+      "SizeMB": 3.53
+    },
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS\\AODS35_FINAL_SHIM_20260514_122044\\memory_before\\backups",
+      "FileCount": 0,
+      "SizeMB": 0.0
+    },
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS\\AODS47_20260514_161724\\api_before\\Backups",
+      "FileCount": 125,
+      "SizeMB": 3.53
+    },
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS\\AODS50_20260514_162546\\api_before\\Backups",
+      "FileCount": 125,
+      "SizeMB": 3.53
+    },
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS\\AODS53_20260514_163533\\api_before\\Backups",
+      "FileCount": 125,
+      "SizeMB": 3.53
+    },
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS\\AODS53_20260514_163814\\api_before\\Backups",
+      "FileCount": 125,
+      "SizeMB": 3.53
+    },
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS\\AODS55_20260514_163938\\api_before\\Backups",
+      "FileCount": 125,
+      "SizeMB": 3.53
+    },
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS\\AODS55_20260514_164132\\api_before\\Backups",
+      "FileCount": 125,
+      "SizeMB": 3.53
+    },
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS\\AODS56_20260514_164157\\api_before\\Backups",
+      "FileCount": 125,
+      "SizeMB": 3.53
+    },
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS\\AODS56_20260514_164259\\api_before\\Backups",
+      "FileCount": 125,
+      "SizeMB": 3.53
+    },
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS\\PHASE1_STABLE_MODULAR_COGNITION_20260513_023451\\api\\Backups",
+      "FileCount": 125,
+      "SizeMB": 3.53
+    },
+    {
+      "Path": "C:\\Shine_L\\_LOCKED_RELEASE\\memory\\backups",
+      "FileCount": 0,
+      "SizeMB": 0.0
+    }
+  ],
+  "generated_at": "2026-05-15T16:51:25"
+}

@@ -1,0 +1,15 @@
+{
+  "version": "AODS82",
+
+  "lock_status": {
+    "runtime_locked": false,
+    "reason": "",
+    "timestamp": null
+  },
+
+  "lock_rules": {
+    "critical_drift_threshold": 75,
+    "minimum_alignment_threshold": 35,
+    "high_overload_locks_runtime": true
+  }
+}

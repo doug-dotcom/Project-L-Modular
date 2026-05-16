@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Shine L Runtime</title>
+
+<style>
+
+body{
+    background:#0f172a;
+    color:white;
+    font-family:Arial;
+    margin:0;
+    padding:0;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    padding:40px;
+}
+
+.title{
+    font-size:38px;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    opacity:0.7;
+    margin-bottom:30px;
+}
+
+.chatbox{
+    background:#111827;
+    border-radius:12px;
+    padding:20px;
+    min-height:400px;
+    margin-bottom:20px;
+    overflow-y:auto;
+}
+
+.message{
+    margin-bottom:20px;
+    padding:14px;
+    border-radius:10px;
+}
+
+.user{
+    background:#1e293b;
+}
+
+.l{
+    background:#172554;
+}
+
+textarea{
+    width:100%;
+    height:90px;
+    border:none;
+    border-radius:10px;
+    padding:15px;
+    font-size:16px;
+    background:#111827;
+    color:white;
+    resize:none;
+}
+
+button{
+    margin-top:15px;
+    padding:14px 24px;
+    border:none;
+    border-radius:10px;
+    background:#2563eb;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.status{
+    margin-top:20px;
+    opacity:0.7;
+    font-size:14px;
+}
+
+
+.mission-control{
+    background:#111827;
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:25px;
+}
+
+.mission-header{
+    font-size:22px;
+    margin-bottom:18px;
+}
+
+.mission-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+}
+
+.mission-card{
+    background:#172554;
+    border-radius:10px;
+    padding:16px;
+}
+
+.mission-title{
+    opacity:0.7;
+    font-size:13px;
+    margin-bottom:8px;
+}
+
+.mission-value{
+    font-size:18px;
+    font-weight:bold;
+    word-break:break-word;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="title">L Runtime</div>
+
+    
+    <div class="telemetry-panel">
+
+        <div class="telemetry-card">
+            <div class="telemetry-title">Runtime</div>
+            <div class="telemetry-value" id="runtimeStatus">...</div>
+        </div>
+
+        <div class="telemetry-card">
+            <div class="telemetry-title">Cognition</div>
+            <div class="telemetry-value" id="cognitionStatus">...</div>
+        </div>
+
+        <div class="telemetry-card">
+            <div class="telemetry-title">Captains</div>
+            <div class="telemetry-value" id="captainCount">...</div>
+        </div>
+
+        <div class="telemetry-card">
+            <div class="telemetry-title">Memory</div>
+            <div class="telemetry-value" id="memoryStatus">...</div>
+        </div>
+
+    </div>
+
+<div class="subtitle">
+        Tegan Runtime • OpenAI Cognition • Live Orchestration
+    </div>
+
+    <div id="chatbox" class="chatbox"></div>
+
+    <textarea id="message" placeholder="Talk to L..."></textarea>
+
+    <button onclick="sendMessage()">
+        Send To Runtime
+    </button>
+
+    <div class="status" id="status">
+        Runtime standby...
+    </div>
+
+</div>
+
+<script>
+
+async function sendMessage(){
+
+    const input = document.getElementById("message");
+    const chatbox = document.getElementById("chatbox");
+    const status = document.getElementById("status");
+
+    const text = input.value.trim();
+
+    if(!text){
+        return;
+    }
+
+    chatbox.innerHTML += `
+        <div class="message user">
+            <b>You:</b><br>${text}
+        </div>
+    `;
+
+    input.value = "";
+
+    status.innerText = "Sending to Tegan runtime...";
+
+    try{
+
+        const response = await fetch("http://127.0.0.1:8000/chat", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                message:text
+            })
+        });
+
+        const data = await response.json();
+
+        chatbox.innerHTML += `
+            <div class="message l">
+                <b>L:</b><br>${data.reply}
+                <br><br>
+                <small>
+                    Runtime: ${data.runtime || "unknown"} |
+                    Status: ${data.status || "unknown"} |
+                    Cognition: ${data.cognition || "unknown"}
+                </small>
+            </div>
+        `;
+
+        status.innerText = "Runtime online.";
+
+        chatbox.scrollTop = chatbox.scrollHeight;
+
+        updateResponseTelemetry(data);
+
+    }
+    catch(err){
+
+        chatbox.innerHTML += `
+            <div class="message l">
+                <b>Runtime Error:</b><br>${err}
+            </div>
+        `;
+
+        status.innerText = "Runtime degraded.";
+    }
+}
+
+
+async function loadTelemetry(){
+
+    try{
+
+        const response = await fetch("http://127.0.0.1:8000/runtime/status");
+
+        const data = await response.json();
+
+        document.getElementById("runtimeStatus").innerText =
+            data.runtime?.status || "online";
+
+        document.getElementById("cognitionStatus").innerText =
+            "OpenAI";
+
+        document.getElementById("captainCount").innerText =
+            data.captains?.count || "0";
+
+        document.getElementById("memoryStatus").innerText =
+            data.memory?.status || "online";
+
+    }
+    catch(err){
+
+        document.getElementById("runtimeStatus").innerText = "offline";
+        document.getElementById("cognitionStatus").innerText = "offline";
+        document.getElementById("captainCount").innerText = "-";
+        document.getElementById("memoryStatus").innerText = "offline";
+    }
+}
+
+loadTelemetry();
+
+setInterval(loadTelemetry, 5000);
+
+
+async function updateMissionControl(){
+
+    try{
+
+        const response = await fetch(
+            "http://127.0.0.1:8000/runtime/status"
+        );
+
+        const data = await response.json();
+
+        document.getElementById("runtimeLayer").innerText =
+            "Tegan";
+
+        document.getElementById("checkpointState").innerText =
+            data.runtime?.status || "stable";
+
+    }
+    catch(err){
+
+        document.getElementById("checkpointState").innerText =
+            "degraded";
+    }
+}
+
+function updateResponseTelemetry(data){
+
+    if(data.session_id){
+
+        document.getElementById("sessionId").innerText =
+            data.session_id;
+    }
+
+    if(data.reflection){
+
+        document.getElementById("memoryCount").innerText =
+            data.reflection.memory_entries || 0;
+    }
+}
+
+updateMissionControl();
+
+setInterval(updateMissionControl, 5000);
+
+</script>
+
+</body>
+</html>
+
+

@@ -1,0 +1,99 @@
+[
+  {
+    "type": "mined_story_snapshot",
+    "created_at": "2026-04-29T14:47:43.980171",
+    "source": "structured.json",
+    "note": "Auto-mined from structured memory. Raw structured memory remains untouched.",
+    "chapters": {
+      "early_life": [
+        "User has 4 children named Iyla, Ashton, Luella, and Mehlia",
+        "User has children who are the most important thing in their life.",
+        "User was born in Sunshine, Victoria on March 13, 1978 at 7pm.",
+        "User's parents are Robert James Struthers and Irene Joyce Struthers (maiden name Nimmo).",
+        "User has three siblings: David, a half brother 17 years older; Ken, a full brother 7 years older; and Allison, a sister 4 years older.",
+        "User was born with eczema",
+        "User was diagnosed with asthma as a baby",
+        "User had chronic asthma until age 7",
+        "User frequently hospitalized as a baby, spending 1 week out of every 4 in hospital",
+        "User experienced near-death experiences during hospital stays",
+        "User was born or has a significant story event in Sunshine, Victoria on 1978-03-13.",
+        "User had eczema.",
+        "User was frequently hospitalized as a baby due to chronic asthma, with hospitalizations occurring 1 week out of every 4 weeks.",
+        "User's chronic asthma condition lasted until age 7.",
+        "User experienced near-death experiences during hospital stays as a baby.",
+        "User was born or located in Sunshine, Victoria.",
+        "User has had eczema.",
+        "User had chronic asthma diagnosed as a baby.",
+        "User was frequently hospitalized due to chronic asthma until age 7.",
+        "User had near-death experiences during hospital stays as a baby due to asthma."
+      ],
+      "family": [
+        "User has equipped the assistant with a memory feature to maintain a life story JSON file.",
+        "User wants to maintain and add to a personal life story called 'Story'.",
+        "User refers to the life story as 'my Story' and prefers it saved in JSON format for future reference."
+      ],
+      "identity": [
+        "The user had a pet rat named Poncho",
+        "User has spent 12 months building an AI using 5800 Ados (atomic One drop script) with help from an agent named G.",
+        "User values gentle questions and prefers to explain their thoughts and situation slowly.",
+        "The user's name is Douglas Struthers",
+        "User prefers to be called Doug",
+        "Assistant's name is L",
+        "User built a real assistant named L that reads emails, uses the correct time, and helps manage their life load.",
+        "User is proud of having built assistant L.",
+        "User built a real assistant that reads emails and helps manage their life load.",
+        "User created an assistant named L and is proud of this achievement.",
+        "User intends to write a book one day in the far future based on their life story.",
+        "The user has a story they want to remember or recall from their memory."
+      ],
+      "health": [
+        "User is medically retired due to mental health"
+      ],
+      "sport": [
+        "User plays hockey",
+        "User plays field hockey",
+        "The user plays fullback in a sport that involves tackling near a circle.",
+        "User does not play ice hockey",
+        "User does not play rugby",
+        "The user plays division 7 hockey on Sundays.",
+        "The user plays Masters 3 hockey on Tuesday nights.",
+        "The user plays for Kedron Wavell Wolves hockey team.",
+        "The user plays in Brisbane Masters hockey for age group 44-49.",
+        "The user plays hockey for Queensland.",
+        "User regularly plays PlayStation Fortnite, basketball, and watches movies with their kids.",
+        "User plays hockey in the Brisbane masters 44-54 age bracket and has been trying to make the Queensland team for the past 3 years.",
+        "The user plays hockey"
+      ],
+      "other": [
+        "Poncho the pet rat died recently",
+        "He was a pet rat who used to crawl on the user's shoulder",
+        "User has an appointment with Will.",
+        "User is interested in emails from Zurich related to TPD (Total and Permanent Disability) cover",
+        "User has TPD insurance",
+        "User is expecting emails from Zurich related to TPD insurance",
+        "Iyla is 17 years old and in Grade 12",
+        "Ashton is 15 years old and in Grade 10",
+        "Luella is 13 years old and will be graduating Grade 8 in June",
+        "Mehlia is 11 years old and in Grade 6",
+        "User is 48 years old",
+        "The user is single.",
+        "The user was married to Tamara for 16 years and left her 6 years ago.",
+        "The user was engaged to Leah for 2 years but ended the relationship.",
+        "The user has booked flights.",
+        "The user uses Webjet for flight bookings.",
+        "User is interested in email content from Webjet",
+        "User has a confirmed flight with Qantas Airways from Cairns (CNS) to Brisbane (BNE) on May 5, 2026.",
+        "The user has a flight booking with Jetstar Airways, flight number JQ 930",
+        "The user is traveling from Brisbane (BNE) to Cairns (CNS)",
+        "The flight departs at 8:45 AM on Friday, 01 May and arrives at 11:15 AM the same day",
+        "The user lives in Albany Creek, Queensland, a suburb of Brisbane.",
+        "User wants reminders set 12 hours prior to flights",
+        "The user wants L to learn more about them to provide better help."
+      ]
+    }
+  },
+  {
+    "text": "No but thank you for your research please save this to my story the dates I was at woodlawn and that there was abuse there.",
+    "timestamp": "Wednesday, 29 April 2026 06:44 PM"
+  }
+]

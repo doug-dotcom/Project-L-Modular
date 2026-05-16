@@ -1,0 +1,244 @@
+{
+  "orchestration_directory": "C:\\Shine_L\\orchestration",
+  "total_python_files": 39,
+  "critical_files": 0,
+  "high_complexity_files": 1,
+  "medium_complexity_files": 0,
+  "file_inventory": [
+    {
+      "File": "C:\\Shine_L\\orchestration\\__init__.py",
+      "LineCount": 0,
+      "SizeKB": 0.0,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\active_registry.py",
+      "LineCount": 90,
+      "SizeKB": 1.76,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\agent_registry.py",
+      "LineCount": 169,
+      "SizeKB": 3.45,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\invisible_orchestra.py",
+      "LineCount": 131,
+      "SizeKB": 2.48,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\meta_suppression.py",
+      "LineCount": 41,
+      "SizeKB": 0.67,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\runtime_bootstrap.py",
+      "LineCount": 983,
+      "SizeKB": 18.98,
+      "Complexity": "HIGH"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\runtime_dispatch.py",
+      "LineCount": 85,
+      "SizeKB": 1.69,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\runtime_engine.py",
+      "LineCount": 193,
+      "SizeKB": 4.17,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\specialist_state.py",
+      "LineCount": 112,
+      "SizeKB": 1.85,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\tegan_runtime.py",
+      "LineCount": 167,
+      "SizeKB": 3.31,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\tegan_triage.py",
+      "LineCount": 141,
+      "SizeKB": 2.99,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\weighted_scoring.py",
+      "LineCount": 257,
+      "SizeKB": 3.77,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\__init__.py",
+      "LineCount": 0,
+      "SizeKB": 0.0,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\base_captain.py",
+      "LineCount": 70,
+      "SizeKB": 1.6,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\communications_command.py",
+      "LineCount": 175,
+      "SizeKB": 3.53,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\execution_command.py",
+      "LineCount": 142,
+      "SizeKB": 2.88,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\intelligence_command.py",
+      "LineCount": 173,
+      "SizeKB": 3.52,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\research_finance_command.py",
+      "LineCount": 173,
+      "SizeKB": 3.52,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\visual_command.py",
+      "LineCount": 84,
+      "SizeKB": 1.7,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\communications\\captain_callie.py",
+      "LineCount": 37,
+      "SizeKB": 0.6,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\communications\\captain_emily.py",
+      "LineCount": 37,
+      "SizeKB": 0.6,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\communications\\captain_winnie.py",
+      "LineCount": 37,
+      "SizeKB": 0.6,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\execution_visual\\captain_addie.py",
+      "LineCount": 37,
+      "SizeKB": 0.6,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\execution_visual\\captain_pixie.py",
+      "LineCount": 37,
+      "SizeKB": 0.61,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\execution_visual\\captain_tania.py",
+      "LineCount": 37,
+      "SizeKB": 0.59,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\intelligence\\captain_gracie.py",
+      "LineCount": 37,
+      "SizeKB": 0.6,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\intelligence\\captain_millie.py",
+      "LineCount": 37,
+      "SizeKB": 0.6,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\intelligence\\captain_richie.py",
+      "LineCount": 37,
+      "SizeKB": 0.6,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\research_finance\\captain_brittany.py",
+      "LineCount": 37,
+      "SizeKB": 0.61,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\research_finance\\captain_fiona.py",
+      "LineCount": 37,
+      "SizeKB": 0.6,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\captains\\research_finance\\captain_noelie.py",
+      "LineCount": 37,
+      "SizeKB": 0.6,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\lieutenants\\__init__.py",
+      "LineCount": 0,
+      "SizeKB": 0.0,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\lieutenants\\confidence_lieutenant.py",
+      "LineCount": 158,
+      "SizeKB": 3.93,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\lieutenants\\continuity_lieutenant.py",
+      "LineCount": 210,
+      "SizeKB": 4.06,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\lieutenants\\observability_lieutenant.py",
+      "LineCount": 180,
+      "SizeKB": 3.61,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\lieutenants\\retrieval_lieutenant.py",
+      "LineCount": 137,
+      "SizeKB": 3.03,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\lieutenants\\routing_lieutenant.py",
+      "LineCount": 120,
+      "SizeKB": 2.57,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\lieutenants\\suppression_lieutenant.py",
+      "LineCount": 137,
+      "SizeKB": 2.76,
+      "Complexity": "NORMAL"
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\resources\\__init__.py",
+      "LineCount": 0,
+      "SizeKB": 0.0,
+      "Complexity": "NORMAL"
+    }
+  ],
+  "generated_at": "2026-05-15T18:17:17"
+}

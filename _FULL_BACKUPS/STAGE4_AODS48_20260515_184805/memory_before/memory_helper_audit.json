@@ -1,0 +1,105 @@
+{
+  "runtime_file": "C:\\Shine_L\\orchestration\\runtime_bootstrap.py",
+  "helper_count": 8,
+  "memory_file_count": 14,
+  "memory_helpers": [
+    {
+      "Type": "sync",
+      "Function": "save_memory",
+      "Line": 193
+    },
+    {
+      "Type": "sync",
+      "Function": "generate_session_title",
+      "Line": 297
+    },
+    {
+      "Type": "sync",
+      "Function": "save_session_memory",
+      "Line": 308
+    },
+    {
+      "Type": "sync",
+      "Function": "load_captains",
+      "Line": 347
+    },
+    {
+      "Type": "sync",
+      "Function": "search_memories",
+      "Line": 412
+    },
+    {
+      "Type": "sync",
+      "Function": "build_memory_summary",
+      "Line": 565
+    },
+    {
+      "Type": "sync",
+      "Function": "get_latest_summary",
+      "Line": 622
+    },
+    {
+      "Type": "sync",
+      "Function": "safe_json_load",
+      "Line": 647
+    }
+  ],
+  "memory_files": [
+    {
+      "File": "C:\\Shine_L\\memory\\captains.json",
+      "SizeKB": 0.42
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\conversations.json",
+      "SizeKB": 0.17
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "SizeKB": 4951.03
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\import_audit.json",
+      "SizeKB": 362.61
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\route_registration_audit.json",
+      "SizeKB": 1.98
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\runtime_bootstrap_import_audit.json",
+      "SizeKB": 1.07
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\runtime_bootstrap_section_map.json",
+      "SizeKB": 2.04
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\runtime_events.json",
+      "SizeKB": 0.22
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\startup_order_audit.json",
+      "SizeKB": 0.54
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\continuity\\continuity_state.json",
+      "SizeKB": 0.22
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\indexes\\mnemosyne_status.json",
+      "SizeKB": 0.13
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\observability\\runtime_events.json",
+      "SizeKB": 0.2
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\patterns\\memory_outcomes.json",
+      "SizeKB": 0.77
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\patterns\\memory_patterns.json",
+      "SizeKB": 0.87
+    }
+  ]
+}

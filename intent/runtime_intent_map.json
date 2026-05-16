@@ -1,0 +1,59 @@
+{
+  "version": "AODS79",
+
+  "intent_patterns": {
+
+    "build": [
+      "aods",
+      "build",
+      "runtime",
+      "deploy",
+      "patch",
+      "server",
+      "architecture",
+      "fix"
+    ],
+
+    "memory": [
+      "remember",
+      "recall",
+      "memory",
+      "save",
+      "context"
+    ],
+
+    "care": [
+      "overwhelmed",
+      "tired",
+      "sad",
+      "anxious",
+      "drift",
+      "panic",
+      "stress"
+    ],
+
+    "calendar": [
+      "meeting",
+      "schedule",
+      "calendar",
+      "appointment",
+      "time"
+    ],
+
+    "email": [
+      "email",
+      "reply",
+      "draft",
+      "send",
+      "message"
+    ],
+
+    "strategy": [
+      "plan",
+      "goal",
+      "direction",
+      "priority",
+      "mission"
+    ]
+  }
+}

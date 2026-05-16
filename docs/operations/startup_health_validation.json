@@ -1,0 +1,39 @@
+{
+  "stage": "STAGE_4",
+  "operation": "STARTUP_HEALTH_VALIDATION",
+  "startup_files": [
+    {
+      "Name": "START_L",
+      "Path": "C:\\Shine_L\\launchers\\START_L.ps1",
+      "Exists": true,
+      "CompileStatus": "N/A"
+    },
+    {
+      "Name": "server.py",
+      "Path": "C:\\Shine_L\\api\\server.py",
+      "Exists": true,
+      "CompileStatus": "OK"
+    },
+    {
+      "Name": "app_factory.py",
+      "Path": "C:\\Shine_L\\api\\app_factory.py",
+      "Exists": true,
+      "CompileStatus": "OK"
+    },
+    {
+      "Name": "runtime_bootstrap.py",
+      "Path": "C:\\Shine_L\\orchestration\\runtime_bootstrap.py",
+      "Exists": true,
+      "CompileStatus": "OK"
+    },
+    {
+      "Name": "index.html",
+      "Path": "C:\\Shine_L\\ui\\index.html",
+      "Exists": true,
+      "CompileStatus": "N/A"
+    }
+  ],
+  "runtime_health_online": false,
+  "ui_online": false,
+  "validation_timestamp": "2026-05-15T18:46:44"
+}

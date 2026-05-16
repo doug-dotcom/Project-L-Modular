@@ -1,0 +1,42 @@
+[
+  {
+    "timestamp": "2026-05-12T17:30:01.343763",
+    "message_preview": "I am overwhelmed and need a short answer",
+    "context": {
+      "mode": "fast",
+      "emotional_load": "high",
+      "needs_reflection": false,
+      "needs_memory": false,
+      "needs_email": false,
+      "needs_fast": true,
+      "needs_orchestration": false,
+      "needs_trust": false
+    },
+    "activated": [
+      {
+        "name": "Emotional Resonance",
+        "score": 8
+      },
+      {
+        "name": "Cognitive Load Reduction",
+        "score": 8
+      }
+    ],
+    "suppressed": [
+      "Context-Aware Prompting",
+      "Reflection Depth",
+      "Inbox Triage"
+    ]
+  },
+  {
+    "timestamp": "2026-05-12T22:09:51.960044",
+    "message_preview": "I am overwhelmed and need a short answer",
+    "activated": [
+      {
+        "name": "Emotional Resonance",
+        "score": 3,
+        "source": "emotional_resonance.json"
+      }
+    ]
+  }
+]

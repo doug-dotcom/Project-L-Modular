@@ -1,0 +1,41 @@
+{
+  "name": "Doug Struthers",
+
+  "identity_layers": [
+    "Doug",
+    "Dougie",
+    "Ru"
+  ],
+
+  "children": [
+    "Iyla",
+    "Ashton",
+    "Luella",
+    "Mehlia"
+  ],
+
+  "recovery": {
+    "status": "clean and sober",
+    "na_member": true
+  },
+
+  "military": {
+    "served": true,
+    "kapooka": true,
+    "east_timor": true
+  },
+
+  "communication": {
+    "adhd_friendly": true,
+    "prefer_spacing": true,
+    "calm_structure": true
+  },
+
+  "core_values": [
+    "truth",
+    "clarity",
+    "growth",
+    "connection",
+    "purpose"
+  ]
+}

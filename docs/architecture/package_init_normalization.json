@@ -1,0 +1,57 @@
+{
+  "targeted_package_results": [
+    {
+      "Directory": "api",
+      "Exists": true,
+      "InitFound": true,
+      "Created": false
+    },
+    {
+      "Directory": "api\\routes",
+      "Exists": true,
+      "InitFound": true,
+      "Created": false
+    },
+    {
+      "Directory": "orchestration",
+      "Exists": true,
+      "InitFound": true,
+      "Created": false
+    },
+    {
+      "Directory": "orchestration\\lieutenants",
+      "Exists": true,
+      "InitFound": true,
+      "Created": false
+    },
+    {
+      "Directory": "core",
+      "Exists": true,
+      "InitFound": true,
+      "Created": false
+    }
+  ],
+  "auto_created_init_count": 17,
+  "auto_created_init_dirs": [
+    "C:\\Shine_L\\memory",
+    "C:\\Shine_L\\Scripts",
+    "C:\\Shine_L\\agents\\sally",
+    "C:\\Shine_L\\api\\Backups",
+    "C:\\Shine_L\\backups\\chat_fix_20260514_233401\\Shine_L",
+    "C:\\Shine_L\\backups\\chat_fix_20260514_233401\\Shine_L\\agents\\sally",
+    "C:\\Shine_L\\backups\\chat_fix_20260514_233401\\Shine_L\\api\\Backups",
+    "C:\\Shine_L\\orchestration\\captains\\communications",
+    "C:\\Shine_L\\orchestration\\captains\\execution_visual",
+    "C:\\Shine_L\\orchestration\\captains\\intelligence",
+    "C:\\Shine_L\\orchestration\\captains\\research_finance",
+    "C:\\Shine_L\\_LOCKED_RELEASE\\legacy_core_memory",
+    "C:\\Shine_L\\_LOCKED_RELEASE\\memory_api",
+    "C:\\Shine_L\\_LOCKED_RELEASE\\ELLIE_UPLOAD_READY_20260506_223141\\api",
+    "C:\\Shine_L\\_LOCKED_RELEASE\\memory\\exports\\supabase_memories_20260514_105452",
+    "C:\\Shine_L\\_LOCKED_RELEASE\\memory\\imports\\classified_20260514_120156",
+    "C:\\Shine_L\\_LOCKED_RELEASE\\memory\\imports\\classified_20260514_120512"
+  ],
+  "compile_failure_count": 0,
+  "compile_failures": [],
+  "generated_at": "2026-05-15T18:21:43"
+}

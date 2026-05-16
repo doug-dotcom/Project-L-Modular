@@ -1,0 +1,56 @@
+{
+  "operation": "AODS 32 Local JSON Population",
+  "created_at": "2026-05-14T12:05:38.475839",
+  "classified_dir": "C:\\Shine_L\\memory\\imports\\classified_20260514_120512",
+  "expected_count": 608,
+  "written_total": 608,
+  "count_verified": true,
+  "runtime_cutover": false,
+  "supabase_modified": false,
+  "outputs": {
+    "emily_communications": {
+      "target": "C:\\Shine_L\\memory\\captains\\emily\\communications.json",
+      "count": 7
+    },
+    "callie_calendar": {
+      "target": "C:\\Shine_L\\memory\\captains\\callie\\calendar.json",
+      "count": 16
+    },
+    "fiona_finance": {
+      "target": "C:\\Shine_L\\memory\\captains\\fiona\\finance.json",
+      "count": 4
+    },
+    "gracie_legacy": {
+      "target": "C:\\Shine_L\\memory\\captains\\gracie\\legacy.json",
+      "count": 29
+    },
+    "richie_reflections": {
+      "target": "C:\\Shine_L\\memory\\captains\\richie\\reflections.json",
+      "count": 70
+    },
+    "emme_emotional": {
+      "target": "C:\\Shine_L\\memory\\captains\\emme\\emotional_state.json",
+      "count": 76
+    },
+    "noelie_research": {
+      "target": "C:\\Shine_L\\memory\\captains\\noelie\\research.json",
+      "count": 406
+    },
+    "tania_addie_execution": {
+      "target": "C:\\Shine_L\\memory\\captains\\tania\\tasks.json",
+      "count": 0
+    },
+    "pixie_visuals": {
+      "target": "C:\\Shine_L\\memory\\captains\\pixie\\visuals.json",
+      "count": 0
+    },
+    "millie_core_memory": {
+      "target": "C:\\Shine_L\\memory\\captains\\millie\\memory_core.json",
+      "count": 0
+    },
+    "quarantine_review": {
+      "target": "C:\\Shine_L\\memory\\quarantine\\review_required.json",
+      "count": 0
+    }
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "project": "Shine L",
+  "operation": "Modular Command Restructure",
+  "created_at": "2026-05-14T10:11:42",
+  "doctrine": "Doug -> L -> Major Tegan Triage -> Captains -> Lieutenants -> Resources",
+  "current_value_increase": 66000,
+  "server_py_touched": false,
+  "memory_migration_started": false,
+  "supabase_memory_protected": true,
+  "modules": [
+    {
+      "status": "complete",
+      "value": 1000,
+      "name": "Framework scaffold"
+    },
+    {
+      "status": "pending",
+      "value": 1000,
+      "name": "Schemas"
+    },
+    {
+      "status": "complete",
+      "value": 1000,
+      "name": "JSON store"
+    },
+    {
+      "status": "pending",
+      "value": 1000,
+      "name": "Paths/config"
+    },
+    {
+      "status": "complete",
+      "value": 1000,
+      "name": "Memory audit"
+    },
+    {
+      "status": "complete",
+      "value": 1000,
+      "name": "Life story store"
+    },
+    {
+      "status": "complete",
+      "value": 1000,
+      "name": "Conversation store"
+    },
+    {
+      "status": "complete",
+      "value": 1000,
+      "name": "Invisible orchestra"
+    },
+    {
+      "status": "complete",
+      "value": 1000,
+      "name": "Specialist state"
+    },
+    {
+      "status": "complete",
+      "value": 1000,
+      "name": "Weighted scoring"
+    },
+    {
+      "status": "complete",
+      "value": 1000,
+      "name": "Response stabilization"
+    },
+    {
+      "status": "pending",
+      "value": 1000,
+      "name": "Agent registry"
+    },
+    {
+      "status": "pending",
+      "value": 1000,
+      "name": "Agent router"
+    },
+    {
+      "status": "complete",
+      "value": 5000,
+      "name": "Major Tegan Triage"
+    },
+    {
+      "status": "pending",
+      "value": 5000,
+      "name": "Routes"
+    },
+    {
+      "status": "pending",
+      "value": 1000,
+      "name": "Chat service"
+    },
+    {
+      "status": "pending",
+      "value": 1000,
+      "name": "Upload service"
+    },
+    {
+      "status": "complete",
+      "value": 1000,
+      "name": "Google route"
+    },
+    {
+      "status": "pending",
+      "value": 1000,
+      "name": "Memory bridge"
+    },
+    {
+      "status": "complete",
+      "value": 1000,
+      "name": "Supabase export"
+    },
+    {
+      "status": "pending",
+      "value": 1000,
+      "name": "Cutover to api.main"
+    }
+  ],
+  "mission_status": "operation_phoenix_complete",
+  "deployment_phase": "active_captain_deployment",
+  "mnemosyne_phase": "memory_orchestration_cleanup_complete",
+  "server_collapse_phase": "complete",
+  "testing_phase": "memory_regression_complete",
+  "lieutenant_phase": "observability_lieutenant_complete"
+}

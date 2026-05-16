@@ -1,0 +1,10 @@
+{
+  "runtime": "local_json_first",
+  "created_by": "AODS34",
+  "supabase_modified": false,
+  "supabase_role": "backup_sync_layer",
+  "cutover_at": "2026-05-14T12:15:34",
+  "status": "runtime_cutover_complete",
+  "memory_deleted": false,
+  "expected_count": 608
+}

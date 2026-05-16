@@ -1,0 +1,46 @@
+{
+  "version": "AODS58",
+  "chains": {
+
+    "memory_chain": [
+      "triage",
+      "memory_review",
+      "memory_save",
+      "context_refresh"
+    ],
+
+    "care_chain": [
+      "triage",
+      "state_assess",
+      "grounding_support",
+      "reflection"
+    ],
+
+    "build_chain": [
+      "triage",
+      "runtime_check",
+      "patch_prepare",
+      "validation"
+    ],
+
+    "email_chain": [
+      "triage",
+      "draft_prepare",
+      "review",
+      "dispatch_ready"
+    ],
+
+    "calendar_chain": [
+      "triage",
+      "availability_check",
+      "schedule_prepare",
+      "calendar_ready"
+    ],
+
+    "general_chain": [
+      "triage",
+      "response_prepare",
+      "reply"
+    ]
+  }
+}

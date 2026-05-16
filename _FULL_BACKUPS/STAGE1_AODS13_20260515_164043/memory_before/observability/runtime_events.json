@@ -1,0 +1,11 @@
+[
+  {
+    "timestamp": "2026-05-14T21:33:18.417510",
+    "event_type": "test_event",
+    "payload": {
+      "captain": "Emily",
+      "handled": true,
+      "message": "check my email"
+    }
+  }
+]

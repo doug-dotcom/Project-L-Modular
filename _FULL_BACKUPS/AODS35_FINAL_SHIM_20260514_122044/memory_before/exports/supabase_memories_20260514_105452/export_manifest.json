@@ -1,0 +1,14 @@
+{
+  "operation": "AODS 10 Supabase Export Protection",
+  "exported_at": "2026-05-14T10:55:03.561104",
+  "table": "public.memories",
+  "expected_count": 608,
+  "actual_count": 608,
+  "count_verified": true,
+  "sha256": "a69b390af35d855477ac90b99645f9439bb8d943e3df9b668c6e6a4a5e288119",
+  "raw_file": "C:\\Shine_L\\memory\\exports\\supabase_memories_20260514_105452\\supabase_memories_raw.json",
+  "pretty_file": "C:\\Shine_L\\memory\\exports\\supabase_memories_20260514_105452\\supabase_memories_pretty.json",
+  "runtime_cutover": false,
+  "supabase_modified": false,
+  "doctrine": "Archive protected before migration. No memory deletion. No live cutover."
+}

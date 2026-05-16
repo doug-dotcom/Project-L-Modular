@@ -1,0 +1,2697 @@
+# OPERATION MNEMOSYNE
+## AODS 47 — Memory Dependency Audit + Import Map
+
+Created: 05/14/2026 16:17:33
+
+## Mission
+Map memory dependencies before moving memory cognition out of core.
+
+## Doctrine
+- Do not move memory files blindly.
+- Map first.
+- Extract second.
+- Preserve rollback.
+- Protect memory.
+
+## Findings Count
+Total memory-related import/reference hits: 2420
+
+### C:\Shine_L\agents\emme\emme.py
+- Line 15: `"memory",`
+
+### C:\Shine_L\agents\fee.py
+- Line 6: `FROLLO_DIR = "C:/Shine_L/memory/frollo"`
+- Line 7: `OUTPUT_PATH = "C:/Shine_L/memory/finance.json"`
+
+### C:\Shine_L\agents\fiona\fiona_backup_20260510_182249.py
+- Line 16: `"memory",`
+
+### C:\Shine_L\agents\fiona\fiona.py
+- Line 41: `"memory": -3,`
+
+### C:\Shine_L\agents\gracie\gracie_backup_20260510_192937.py
+- Line 15: `"memory",`
+- Line 92: `"book memory",`
+- Line 94: `"family memory",`
+
+### C:\Shine_L\agents\gracie\gracie.py
+- Line 8: `"save this memory": 6,`
+- Line 19: `"spoken memory": 5,`
+- Line 36: `"memory audit": -8,`
+
+### C:\Shine_L\agents\millie\__init__.py
+- Line 3: `handle_memory_request,`
+- Line 4: `add_memory,`
+
+### C:\Shine_L\agents\millie\millie.py
+- Line 1: `from memory.memory_engine import (`
+- Line 1: `from memory.memory_engine import (`
+- Line 20: `"memory keeper",`
+- Line 22: `"save this memory",`
+- Line 25: `"memory audit",`
+- Line 26: `"search memory",`
+- Line 37: `# SAVE MEMORY`
+- Line 40: `def add_memory(message):`
+- Line 46: `.replace("save this memory", "")`
+- Line 58: `# SEARCH MEMORY`
+- Line 95: `# MEMORY AUDIT`
+- Line 98: `def memory_audit():`
+- Line 103: `"# Memory Audit\n\n"`
+- Line 111: `def handle_memory_request(message: str):`
+- Line 117: `return memory_audit()`
+- Line 144: `saved = add_memory(message)`
+- Line 147: `"Memory saved:\n\n"`
+
+### C:\Shine_L\agents\noelie\noelie_backup_live_web_v1_20260510_005624.py
+- Line 15: `"memory",`
+- Line 176: `"memory",`
+- Line 283: `"This may benefit from continuity, storytelling, and memory-preservation research.",`
+
+### C:\Shine_L\agents\noelie\noelie_backup_v1_20260510_004239.py
+- Line 15: `"memory",`
+- Line 176: `"memory",`
+- Line 283: `"This may benefit from continuity, storytelling, and memory-preservation research.",`
+
+### C:\Shine_L\agents\noelie\noelie.py
+- Line 15: `"memory",`
+- Line 176: `"memory",`
+- Line 283: `"This may benefit from continuity, storytelling, and memory-preservation research.",`
+
+### C:\Shine_L\agents\pixie\pixie_backup_debug_20260509_134051.py
+- Line 91: `"visual memory anchor poster in Shine style."`
+
+### C:\Shine_L\agents\pixie\pixie_backup_semantic_20260509_140409.py
+- Line 91: `"visual memory anchor poster in Shine style."`
+
+### C:\Shine_L\agents\pixie\pixie_backup_triggers_20260509_135709.py
+- Line 91: `"visual memory anchor poster in Shine style."`
+
+### C:\Shine_L\agents\pixie\pixie.py
+- Line 140: `"visual memory anchor poster in Shine style."`
+
+### C:\Shine_L\agents\richie\richie.py
+- Line 16: `"memory",`
+
+### C:\Shine_L\agents\sally\sally.py
+- Line 15: `"memory",`
+- Line 22: `"memory",`
+
+### C:\Shine_L\agents\tania_backup_live_20260508_224046.py
+- Line 5: `TASK_PATH = "C:/Shine_L/memory/tasks.json"`
+
+### C:\Shine_L\agents\tania\tania.py
+- Line 15: `"memory",`
+
+### C:\Shine_L\agents\tegan\tegan.py
+- Line 1: `from memory.memory_engine import (`
+- Line 1: `from memory.memory_engine import (`
+- Line 33: `"Connected to unified Supabase memory",`
+- Line 73: `f"Unified memory count: {len(facts)}\n"`
+- Line 77: `"Supabase memory spine: ONLINE\n"`
+- Line 81: `"Semantic memory: ACTIVE\n"`
+
+### C:\Shine_L\agents\winnie.py
+- Line 5: `WHATSAPP_DIR = "C:/Shine_L/memory/whatsapp"`
+
+### C:\Shine_L\agents\winnie\winnie.py
+- Line 16: `"memory",`
+
+### C:\Shine_L\api\Backups\broken .py
+- Line 19: `from memory.memory_engine import (`
+- Line 19: `from memory.memory_engine import (`
+- Line 293: `# MILLIE MEMORY KEEPER AGENT`
+- Line 302: `handle_memory_request`
+- Line 409: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 410: `PROFILE_FILE = "memory/profile.json"`
+- Line 411: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 414: `os.makedirs("memory", exist_ok=True)`
+- Line 446: `MEMORY_IMPORTANCE = {`
+- Line 542: `def calculate_memory_score(text):`
+- Line 546: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 579: `return "memory_recall"`
+- Line 641: `memory_score = calculate_memory_score(content_text)`
+- Line 647: `"score": memory_score,`
+- Line 695: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 751: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 754: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 766: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 830: `"# 🧠 Millie Memory Keeper",`
+- Line 839: `"🧠 Millie Memory Keeper:",`
+- Line 920: `"memory",`
+- Line 1008: `"memory": "connected",`
+- Line 1442: `# MILLIE MEMORY ROUTING`
+- Line 1450: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1452: `millie_reply = handle_memory_request(`
+- Line 1458: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1726: `"reply": "I could not find a matching full story file in memory."`
+- Line 1743: `memory_context = build_context()`
+- Line 1760: `You have persistent memory.`
+- Line 1762: `Here is the current memory context:`
+- Line 1764: `{memory_context}`
+- Line 1772: `- Use memory when answering.`
+- Line 1775: `- If story memory is provided, use it.`
+- Line 1776: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1786: `if intent == "memory_recall":`
+- Line 1983: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1989: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 138: `# MILLIE MEMORY KEEPER AGENT`
+- Line 147: `handle_memory_request`
+- Line 254: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 255: `PROFILE_FILE = "memory/profile.json"`
+- Line 256: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 259: `os.makedirs("memory", exist_ok=True)`
+- Line 291: `MEMORY_IMPORTANCE = {`
+- Line 387: `def calculate_memory_score(text):`
+- Line 391: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 424: `return "memory_recall"`
+- Line 486: `memory_score = calculate_memory_score(content_text)`
+- Line 492: `"score": memory_score,`
+- Line 540: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 596: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 599: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 610: `"memory": "connected",`
+- Line 678: `# MILLIE MEMORY ROUTING`
+- Line 686: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 688: `millie_reply = handle_memory_request(`
+- Line 694: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 700: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 869: `"reply": "I could not find a matching full story file in memory."`
+- Line 886: `memory_context = build_context()`
+- Line 895: `You have persistent memory.`
+- Line 897: `Here is the current memory context:`
+- Line 899: `{memory_context}`
+- Line 905: `- Use memory when answering.`
+- Line 908: `- If story memory is provided, use it.`
+- Line 909: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 919: `if intent == "memory_recall":`
+- Line 1064: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1070: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 160: `# MILLIE MEMORY KEEPER AGENT`
+- Line 169: `handle_memory_request`
+- Line 276: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 277: `PROFILE_FILE = "memory/profile.json"`
+- Line 278: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 281: `os.makedirs("memory", exist_ok=True)`
+- Line 313: `MEMORY_IMPORTANCE = {`
+- Line 409: `def calculate_memory_score(text):`
+- Line 413: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 446: `return "memory_recall"`
+- Line 508: `memory_score = calculate_memory_score(content_text)`
+- Line 514: `"score": memory_score,`
+- Line 562: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 618: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 621: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 632: `"memory": "connected",`
+- Line 728: `# MILLIE MEMORY ROUTING`
+- Line 736: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 738: `millie_reply = handle_memory_request(`
+- Line 744: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 750: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 919: `"reply": "I could not find a matching full story file in memory."`
+- Line 936: `memory_context = build_context()`
+- Line 945: `You have persistent memory.`
+- Line 947: `Here is the current memory context:`
+- Line 949: `{memory_context}`
+- Line 955: `- Use memory when answering.`
+- Line 958: `- If story memory is provided, use it.`
+- Line 959: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 969: `if intent == "memory_recall":`
+- Line 1114: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1120: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_brittanyroute_20260508_172823.py
+- Line 15: `from memory.memory_engine import (`
+- Line 15: `from memory.memory_engine import (`
+- Line 50: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 51: `PROFILE_FILE = "memory/profile.json"`
+- Line 52: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 55: `os.makedirs("memory", exist_ok=True)`
+- Line 87: `MEMORY_IMPORTANCE = {`
+- Line 183: `def calculate_memory_score(text):`
+- Line 187: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 220: `return "memory_recall"`
+- Line 282: `memory_score = calculate_memory_score(content_text)`
+- Line 288: `"score": memory_score,`
+- Line 336: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 392: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 395: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 406: `"memory": "connected",`
+- Line 442: `"reply": "I could not find a matching full story file in memory."`
+- Line 459: `memory_context = build_context()`
+- Line 468: `You have persistent memory.`
+- Line 470: `Here is the current memory context:`
+- Line 472: `{memory_context}`
+- Line 478: `- Use memory when answering.`
+- Line 481: `- If story memory is provided, use it.`
+- Line 482: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 492: `if intent == "memory_recall":`
+- Line 637: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 643: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_callie_tania_20260508_184451.py
+- Line 15: `from memory.memory_engine import (`
+- Line 15: `from memory.memory_engine import (`
+- Line 72: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 73: `PROFILE_FILE = "memory/profile.json"`
+- Line 74: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 77: `os.makedirs("memory", exist_ok=True)`
+- Line 109: `MEMORY_IMPORTANCE = {`
+- Line 205: `def calculate_memory_score(text):`
+- Line 209: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 242: `return "memory_recall"`
+- Line 304: `memory_score = calculate_memory_score(content_text)`
+- Line 310: `"score": memory_score,`
+- Line 358: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 414: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 417: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 428: `"memory": "connected",`
+- Line 520: `"reply": "I could not find a matching full story file in memory."`
+- Line 537: `memory_context = build_context()`
+- Line 546: `You have persistent memory.`
+- Line 548: `Here is the current memory context:`
+- Line 550: `{memory_context}`
+- Line 556: `- Use memory when answering.`
+- Line 559: `- If story memory is provided, use it.`
+- Line 560: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 570: `if intent == "memory_recall":`
+- Line 715: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 721: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 292: `# MILLIE MEMORY KEEPER AGENT`
+- Line 301: `handle_memory_request`
+- Line 408: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 409: `PROFILE_FILE = "memory/profile.json"`
+- Line 410: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 413: `os.makedirs("memory", exist_ok=True)`
+- Line 445: `MEMORY_IMPORTANCE = {`
+- Line 541: `def calculate_memory_score(text):`
+- Line 545: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 578: `return "memory_recall"`
+- Line 640: `memory_score = calculate_memory_score(content_text)`
+- Line 646: `"score": memory_score,`
+- Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 753: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 829: `"# 🧠 Millie Memory Keeper",`
+- Line 838: `"🧠 Millie Memory Keeper:",`
+- Line 919: `"memory",`
+- Line 1007: `"memory": "connected",`
+- Line 1391: `# MILLIE MEMORY ROUTING`
+- Line 1399: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1401: `millie_reply = handle_memory_request(`
+- Line 1407: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1675: `"reply": "I could not find a matching full story file in memory."`
+- Line 1692: `memory_context = build_context()`
+- Line 1709: `You have persistent memory.`
+- Line 1711: `Here is the current memory context:`
+- Line 1713: `{memory_context}`
+- Line 1721: `- Use memory when answering.`
+- Line 1724: `- If story memory is provided, use it.`
+- Line 1725: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1735: `if intent == "memory_recall":`
+- Line 1880: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1886: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 292: `# MILLIE MEMORY KEEPER AGENT`
+- Line 301: `handle_memory_request`
+- Line 408: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 409: `PROFILE_FILE = "memory/profile.json"`
+- Line 410: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 413: `os.makedirs("memory", exist_ok=True)`
+- Line 445: `MEMORY_IMPORTANCE = {`
+- Line 541: `def calculate_memory_score(text):`
+- Line 545: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 578: `return "memory_recall"`
+- Line 640: `memory_score = calculate_memory_score(content_text)`
+- Line 646: `"score": memory_score,`
+- Line 652: `audit_memory_event(`
+- Line 658: `"score": memory_score`
+- Line 690: `audit_memory_event(`
+- Line 713: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 769: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 772: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 784: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 848: `"# 🧠 Millie Memory Keeper",`
+- Line 857: `"🧠 Millie Memory Keeper:",`
+- Line 938: `"memory",`
+- Line 1023: `# MEMORY OBSERVABILITY V1`
+- Line 1026: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"`
+- Line 1028: `def audit_memory_event(`
+- Line 1037: `MEMORY_AUDIT_FILE,`
+- Line 1054: `MEMORY_AUDIT_FILE,`
+- Line 1061: `"MEMORY AUDIT ERROR:",`
+- Line 1066: `def memory_file_status():`
+- Line 1070: `"memory/conversations.json",`
+- Line 1072: `"memory/life_story.json",`
+- Line 1074: `"memory/profile.json",`
+- Line 1076: `"memory/invisible_orchestra_log.json",`
+- Line 1078: `"memory/memory_audit.json"`
+- Line 1131: `def build_memory_audit_report():`
+- Line 1134: `MEMORY_AUDIT_FILE,`
+- Line 1142: `"memory_files": memory_file_status(),`
+- Line 1152: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION`
+- Line 1155: `def hard_memory_audit_v2():`
+- Line 1158: `"memory/profile.json",`
+- Line 1159: `"memory/conversations.json",`
+- Line 1160: `"memory/life_story.json",`
+- Line 1161: `"memory/invisible_orchestra_log.json",`
+- Line 1162: `"memory/memory_audit.json"`
+- Line 1222: `"audit_version": "Memory Audit V2",`
+- Line 1224: `"memory_files": report,`
+- Line 1230: `def format_hard_memory_audit_v2():`
+- Line 1232: `audit = hard_memory_audit_v2()`
+- Line 1235: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")`
+- Line 1243: `lines.append("MEMORY FILES")`
+- Line 1245: `for item in audit["memory_files"]:`
+- Line 1264: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")`
+- Line 1273: `"memory": "connected",`
+- Line 1279: `@app.get("/memory/audit")`
+- Line 1280: `def memory_audit():`
+- Line 1282: `return build_memory_audit_report()`
+- Line 1285: `@app.get("/memory/audit-v2")`
+- Line 1286: `def memory_audit_v2():`
+- Line 1288: `return hard_memory_audit_v2()`
+- Line 1295: `"memory audit",`
+- Line 1296: `"memory audit please",`
+- Line 1297: `"memory status",`
+- Line 1298: `"show memory audit",`
+- Line 1299: `"show memory status",`
+- Line 1300: `"memory audit v2"`
+- Line 1304: `"reply": format_hard_memory_audit_v2()`
+- Line 1309: `"memory audit",`
+- Line 1311: `"memory status",`
+- Line 1313: `"show memory audit",`
+- Line 1315: `"show memory status"`
+- Line 1319: `report = build_memory_audit_report()`
+- Line 1704: `# MILLIE MEMORY ROUTING`
+- Line 1712: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1714: `millie_reply = handle_memory_request(`
+- Line 1720: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1988: `"reply": "I could not find a matching full story file in memory."`
+- Line 2005: `memory_context = build_context()`
+- Line 2022: `You have persistent memory.`
+- Line 2024: `Here is the current memory context:`
+- Line 2026: `{memory_context}`
+- Line 2039: `- If memory contains Tamara, treat it as relationship history only.`
+- Line 2041: `- If unsure, say memory confidence is uncertain rather than guessing.`
+- Line 2044: `- Use memory when answering.`
+- Line 2047: `- If story memory is provided, use it.`
+- Line 2048: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 2058: `if intent == "memory_recall":`
+- Line 2203: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 2209: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 292: `# MILLIE MEMORY KEEPER AGENT`
+- Line 301: `handle_memory_request`
+- Line 408: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 409: `PROFILE_FILE = "memory/profile.json"`
+- Line 410: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 413: `os.makedirs("memory", exist_ok=True)`
+- Line 445: `MEMORY_IMPORTANCE = {`
+- Line 541: `def calculate_memory_score(text):`
+- Line 545: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 578: `return "memory_recall"`
+- Line 640: `memory_score = calculate_memory_score(content_text)`
+- Line 646: `"score": memory_score,`
+- Line 652: `audit_memory_event(`
+- Line 658: `"score": memory_score`
+- Line 690: `audit_memory_event(`
+- Line 713: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 769: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 772: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 784: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 848: `"# 🧠 Millie Memory Keeper",`
+- Line 857: `"🧠 Millie Memory Keeper:",`
+- Line 938: `"memory",`
+- Line 1023: `# MEMORY OBSERVABILITY V1`
+- Line 1026: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"`
+- Line 1028: `def audit_memory_event(`
+- Line 1037: `MEMORY_AUDIT_FILE,`
+- Line 1054: `MEMORY_AUDIT_FILE,`
+- Line 1061: `"MEMORY AUDIT ERROR:",`
+- Line 1066: `def memory_file_status():`
+- Line 1070: `"memory/conversations.json",`
+- Line 1072: `"memory/life_story.json",`
+- Line 1074: `"memory/profile.json",`
+- Line 1076: `"memory/invisible_orchestra_log.json",`
+- Line 1078: `"memory/memory_audit.json"`
+- Line 1131: `def build_memory_audit_report():`
+- Line 1134: `MEMORY_AUDIT_FILE,`
+- Line 1142: `"memory_files": memory_file_status(),`
+- Line 1152: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION`
+- Line 1155: `def hard_memory_audit_v2():`
+- Line 1158: `"memory/profile.json",`
+- Line 1159: `"memory/conversations.json",`
+- Line 1160: `"memory/life_story.json",`
+- Line 1161: `"memory/invisible_orchestra_log.json",`
+- Line 1162: `"memory/memory_audit.json"`
+- Line 1222: `"audit_version": "Memory Audit V2",`
+- Line 1224: `"memory_files": report,`
+- Line 1230: `def format_hard_memory_audit_v2():`
+- Line 1232: `audit = hard_memory_audit_v2()`
+- Line 1235: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")`
+- Line 1243: `lines.append("MEMORY FILES")`
+- Line 1245: `for item in audit["memory_files"]:`
+- Line 1264: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")`
+- Line 1275: `"memory_observable": True,`
+- Line 1309: `"memory": "connected",`
+- Line 1315: `@app.get("/memory/audit")`
+- Line 1316: `def memory_audit():`
+- Line 1318: `return build_memory_audit_report()`
+- Line 1321: `@app.get("/memory/audit-v2")`
+- Line 1322: `def memory_audit_v2():`
+- Line 1324: `return hard_memory_audit_v2()`
+- Line 1337: `"memory audit",`
+- Line 1338: `"memory audit please",`
+- Line 1339: `"memory status",`
+- Line 1340: `"show memory audit",`
+- Line 1341: `"show memory status",`
+- Line 1342: `"memory audit v2"`
+- Line 1346: `"reply": format_hard_memory_audit_v2()`
+- Line 1351: `"memory audit",`
+- Line 1353: `"memory status",`
+- Line 1355: `"show memory audit",`
+- Line 1357: `"show memory status"`
+- Line 1361: `report = build_memory_audit_report()`
+- Line 1750: `# MILLIE MEMORY ROUTING`
+- Line 1758: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1760: `millie_reply = handle_memory_request(`
+- Line 1766: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 2034: `"reply": "I could not find a matching full story file in memory."`
+- Line 2051: `memory_context = build_context()`
+- Line 2068: `You have persistent memory.`
+- Line 2070: `Here is the current memory context:`
+- Line 2072: `{memory_context}`
+- Line 2085: `- If memory contains Tamara, treat it as relationship history only.`
+- Line 2087: `- If unsure, say memory confidence is uncertain rather than guessing.`
+- Line 2090: `- Use memory when answering.`
+- Line 2093: `- If story memory is provided, use it.`
+- Line 2094: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 2104: `if intent == "memory_recall":`
+- Line 2251: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 2257: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 172: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 173: `PROFILE_FILE = "memory/profile.json"`
+- Line 174: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 177: `os.makedirs("memory", exist_ok=True)`
+- Line 209: `MEMORY_IMPORTANCE = {`
+- Line 305: `def calculate_memory_score(text):`
+- Line 309: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 342: `return "memory_recall"`
+- Line 404: `memory_score = calculate_memory_score(content_text)`
+- Line 410: `"score": memory_score,`
+- Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 517: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 528: `"memory": "connected",`
+- Line 731: `"reply": "I could not find a matching full story file in memory."`
+- Line 748: `memory_context = build_context()`
+- Line 757: `You have persistent memory.`
+- Line 759: `Here is the current memory context:`
+- Line 761: `{memory_context}`
+- Line 767: `- Use memory when answering.`
+- Line 770: `- If story memory is provided, use it.`
+- Line 771: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 781: `if intent == "memory_recall":`
+- Line 926: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 932: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_drift_20260507_233906.py
+- Line 16: `# 👉 Ellie (memory brain)`
+- Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 54: `# 🧠 STEP 1 — store memory`
+- Line 57: `# 🧠 STEP 2 — build memory context`
+- Line 58: `memory_context = build_context()`
+- Line 62: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)`
+- Line 65: `You are L, a personal assistant with persistent memory.`
+- Line 69: `{memory_context}`
+- Line 75: `- ALWAYS use the memory above when answering`
+- Line 76: `- If the answer is clearly in memory, answer confidently`
+- Line 77: `- Do NOT say you don't know if it exists in memory`
+- Line 82: `# STORY MEMORY SEARCH`
+- Line 94: `"\n\nSTORY MEMORY:\n" +`
+- Line 121: `"memory": "Ellie connected",`
+- Line 134: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 142: `def calculate_memory_score(text):`
+- Line 148: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 240: `memory_score = calculate_memory_score(`
+- Line 247: `"score": memory_score`
+- Line 418: `"reply":"I could not find anything in your story memory about that yet."`
+- Line 425: `summary += f"\n\n--- MEMORY {i+1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_emily_20260508_183637.py
+- Line 15: `from memory.memory_engine import (`
+- Line 15: `from memory.memory_engine import (`
+- Line 50: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 51: `PROFILE_FILE = "memory/profile.json"`
+- Line 52: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 55: `os.makedirs("memory", exist_ok=True)`
+- Line 87: `MEMORY_IMPORTANCE = {`
+- Line 183: `def calculate_memory_score(text):`
+- Line 187: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 220: `return "memory_recall"`
+- Line 282: `memory_score = calculate_memory_score(content_text)`
+- Line 288: `"score": memory_score,`
+- Line 336: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 392: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 395: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 406: `"memory": "connected",`
+- Line 470: `"reply": "I could not find a matching full story file in memory."`
+- Line 487: `memory_context = build_context()`
+- Line 496: `You have persistent memory.`
+- Line 498: `Here is the current memory context:`
+- Line 500: `{memory_context}`
+- Line 506: `- Use memory when answering.`
+- Line 509: `- If story memory is provided, use it.`
+- Line 510: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 520: `if intent == "memory_recall":`
+- Line 665: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 671: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_emily_20260508_184421.py
+- Line 15: `from memory.memory_engine import (`
+- Line 15: `from memory.memory_engine import (`
+- Line 72: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 73: `PROFILE_FILE = "memory/profile.json"`
+- Line 74: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 77: `os.makedirs("memory", exist_ok=True)`
+- Line 109: `MEMORY_IMPORTANCE = {`
+- Line 205: `def calculate_memory_score(text):`
+- Line 209: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 242: `return "memory_recall"`
+- Line 304: `memory_score = calculate_memory_score(content_text)`
+- Line 310: `"score": memory_score,`
+- Line 358: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 414: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 417: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 428: `"memory": "connected",`
+- Line 520: `"reply": "I could not find a matching full story file in memory."`
+- Line 537: `memory_context = build_context()`
+- Line 546: `You have persistent memory.`
+- Line 548: `Here is the current memory context:`
+- Line 550: `{memory_context}`
+- Line 556: `- Use memory when answering.`
+- Line 559: `- If story memory is provided, use it.`
+- Line 560: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 570: `if intent == "memory_recall":`
+- Line 715: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 721: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_emily_live_20260508_192137.py
+- Line 15: `from memory.memory_engine import (`
+- Line 15: `from memory.memory_engine import (`
+- Line 116: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 117: `PROFILE_FILE = "memory/profile.json"`
+- Line 118: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 121: `os.makedirs("memory", exist_ok=True)`
+- Line 153: `MEMORY_IMPORTANCE = {`
+- Line 249: `def calculate_memory_score(text):`
+- Line 253: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 286: `return "memory_recall"`
+- Line 348: `memory_score = calculate_memory_score(content_text)`
+- Line 354: `"score": memory_score,`
+- Line 402: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 458: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 461: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 472: `"memory": "connected",`
+- Line 620: `"reply": "I could not find a matching full story file in memory."`
+- Line 637: `memory_context = build_context()`
+- Line 646: `You have persistent memory.`
+- Line 648: `Here is the current memory context:`
+- Line 650: `{memory_context}`
+- Line 656: `- Use memory when answering.`
+- Line 659: `- If story memory is provided, use it.`
+- Line 660: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 670: `if intent == "memory_recall":`
+- Line 815: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 821: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 116: `# MILLIE MEMORY KEEPER AGENT`
+- Line 125: `handle_memory_request`
+- Line 232: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 233: `PROFILE_FILE = "memory/profile.json"`
+- Line 234: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 237: `os.makedirs("memory", exist_ok=True)`
+- Line 269: `MEMORY_IMPORTANCE = {`
+- Line 365: `def calculate_memory_score(text):`
+- Line 369: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 402: `return "memory_recall"`
+- Line 464: `memory_score = calculate_memory_score(content_text)`
+- Line 470: `"score": memory_score,`
+- Line 518: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 574: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 577: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 588: `"memory": "connected",`
+- Line 628: `# MILLIE MEMORY ROUTING`
+- Line 636: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 638: `millie_reply = handle_memory_request(`
+- Line 644: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 650: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 819: `"reply": "I could not find a matching full story file in memory."`
+- Line 836: `memory_context = build_context()`
+- Line 845: `You have persistent memory.`
+- Line 847: `Here is the current memory context:`
+- Line 849: `{memory_context}`
+- Line 855: `- Use memory when answering.`
+- Line 858: `- If story memory is provided, use it.`
+- Line 859: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 869: `if intent == "memory_recall":`
+- Line 1014: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1020: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 138: `# MILLIE MEMORY KEEPER AGENT`
+- Line 147: `handle_memory_request`
+- Line 254: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 255: `PROFILE_FILE = "memory/profile.json"`
+- Line 256: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 259: `os.makedirs("memory", exist_ok=True)`
+- Line 291: `MEMORY_IMPORTANCE = {`
+- Line 387: `def calculate_memory_score(text):`
+- Line 391: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 424: `return "memory_recall"`
+- Line 486: `memory_score = calculate_memory_score(content_text)`
+- Line 492: `"score": memory_score,`
+- Line 540: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 596: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 599: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 610: `"memory": "connected",`
+- Line 678: `# MILLIE MEMORY ROUTING`
+- Line 686: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 688: `millie_reply = handle_memory_request(`
+- Line 694: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 700: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 869: `"reply": "I could not find a matching full story file in memory."`
+- Line 886: `memory_context = build_context()`
+- Line 895: `You have persistent memory.`
+- Line 897: `Here is the current memory context:`
+- Line 899: `{memory_context}`
+- Line 905: `- Use memory when answering.`
+- Line 908: `- If story memory is provided, use it.`
+- Line 909: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 919: `if intent == "memory_recall":`
+- Line 1064: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1070: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 303: `"memory audit",`
+- Line 304: `"memory observability",`
+- Line 339: `# MILLIE MEMORY KEEPER AGENT`
+- Line 348: `handle_memory_request`
+- Line 455: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 456: `PROFILE_FILE = "memory/profile.json"`
+- Line 457: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 460: `os.makedirs("memory", exist_ok=True)`
+- Line 492: `MEMORY_IMPORTANCE = {`
+- Line 588: `def calculate_memory_score(text):`
+- Line 592: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 625: `return "memory_recall"`
+- Line 687: `memory_score = calculate_memory_score(content_text)`
+- Line 693: `"score": memory_score,`
+- Line 699: `audit_memory_event(`
+- Line 705: `"score": memory_score`
+- Line 737: `audit_memory_event(`
+- Line 760: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 816: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 819: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 831: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 895: `"# 🧠 Millie Memory Keeper",`
+- Line 904: `"🧠 Millie Memory Keeper:",`
+- Line 985: `"memory",`
+- Line 1070: `# MEMORY OBSERVABILITY V1`
+- Line 1073: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"`
+- Line 1075: `def audit_memory_event(`
+- Line 1084: `MEMORY_AUDIT_FILE,`
+- Line 1101: `MEMORY_AUDIT_FILE,`
+- Line 1108: `"MEMORY AUDIT ERROR:",`
+- Line 1113: `def memory_file_status():`
+- Line 1117: `"memory/conversations.json",`
+- Line 1119: `"memory/life_story.json",`
+- Line 1121: `"memory/profile.json",`
+- Line 1123: `"memory/invisible_orchestra_log.json",`
+- Line 1125: `"memory/memory_audit.json"`
+- Line 1178: `def build_memory_audit_report():`
+- Line 1181: `MEMORY_AUDIT_FILE,`
+- Line 1189: `"memory_files": memory_file_status(),`
+- Line 1199: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION`
+- Line 1202: `def hard_memory_audit_v2():`
+- Line 1205: `"memory/profile.json",`
+- Line 1206: `"memory/conversations.json",`
+- Line 1207: `"memory/life_story.json",`
+- Line 1208: `"memory/invisible_orchestra_log.json",`
+- Line 1209: `"memory/memory_audit.json"`
+- Line 1269: `"audit_version": "Memory Audit V2",`
+- Line 1271: `"memory_files": report,`
+- Line 1277: `def format_hard_memory_audit_v2():`
+- Line 1279: `audit = hard_memory_audit_v2()`
+- Line 1282: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")`
+- Line 1290: `lines.append("MEMORY FILES")`
+- Line 1292: `for item in audit["memory_files"]:`
+- Line 1311: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")`
+- Line 1322: `"memory_observable": True,`
+- Line 1356: `"memory": "connected",`
+- Line 1362: `@app.get("/memory/audit")`
+- Line 1363: `def memory_audit():`
+- Line 1365: `return build_memory_audit_report()`
+- Line 1368: `@app.get("/memory/audit-v2")`
+- Line 1369: `def memory_audit_v2():`
+- Line 1371: `return hard_memory_audit_v2()`
+- Line 1384: `"memory audit",`
+- Line 1385: `"memory audit please",`
+- Line 1386: `"memory status",`
+- Line 1387: `"show memory audit",`
+- Line 1388: `"show memory status",`
+- Line 1389: `"memory audit v2"`
+- Line 1393: `"reply": format_hard_memory_audit_v2()`
+- Line 1398: `"memory audit",`
+- Line 1400: `"memory status",`
+- Line 1402: `"show memory audit",`
+- Line 1404: `"show memory status"`
+- Line 1408: `report = build_memory_audit_report()`
+- Line 1783: `# MILLIE MEMORY ROUTING`
+- Line 1791: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1793: `millie_reply = handle_memory_request(`
+- Line 1799: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 2067: `"reply": "I could not find a matching full story file in memory."`
+- Line 2084: `memory_context = build_context()`
+- Line 2101: `You have persistent memory.`
+- Line 2103: `Here is the current memory context:`
+- Line 2105: `{memory_context}`
+- Line 2118: `- If memory contains Tamara, treat it as relationship history only.`
+- Line 2120: `- If unsure, say memory confidence is uncertain rather than guessing.`
+- Line 2123: `- Use memory when answering.`
+- Line 2126: `- If story memory is provided, use it.`
+- Line 2127: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 2137: `if intent == "memory_recall":`
+- Line 2284: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 2290: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py
+- Line 17: `from memory.memory_engine import (`
+- Line 17: `from memory.memory_engine import (`
+- Line 139: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 140: `PROFILE_FILE = "memory/profile.json"`
+- Line 141: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 144: `os.makedirs("memory", exist_ok=True)`
+- Line 176: `MEMORY_IMPORTANCE = {`
+- Line 272: `def calculate_memory_score(text):`
+- Line 276: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 309: `return "memory_recall"`
+- Line 371: `memory_score = calculate_memory_score(content_text)`
+- Line 377: `"score": memory_score,`
+- Line 425: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 481: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 484: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 495: `"memory": "connected",`
+- Line 643: `"reply": "I could not find a matching full story file in memory."`
+- Line 660: `memory_context = build_context()`
+- Line 669: `You have persistent memory.`
+- Line 671: `Here is the current memory context:`
+- Line 673: `{memory_context}`
+- Line 679: `- Use memory when answering.`
+- Line 682: `- If story memory is provided, use it.`
+- Line 683: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 693: `if intent == "memory_recall":`
+- Line 838: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 844: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 270: `# MILLIE MEMORY KEEPER AGENT`
+- Line 279: `handle_memory_request`
+- Line 386: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 387: `PROFILE_FILE = "memory/profile.json"`
+- Line 388: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 391: `os.makedirs("memory", exist_ok=True)`
+- Line 423: `MEMORY_IMPORTANCE = {`
+- Line 519: `def calculate_memory_score(text):`
+- Line 523: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 556: `return "memory_recall"`
+- Line 618: `memory_score = calculate_memory_score(content_text)`
+- Line 624: `"score": memory_score,`
+- Line 672: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 728: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 731: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 742: `"memory": "connected",`
+- Line 978: `# MILLIE MEMORY ROUTING`
+- Line 986: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 988: `millie_reply = handle_memory_request(`
+- Line 994: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1000: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1169: `"reply": "I could not find a matching full story file in memory."`
+- Line 1186: `memory_context = build_context()`
+- Line 1195: `You have persistent memory.`
+- Line 1197: `Here is the current memory context:`
+- Line 1199: `{memory_context}`
+- Line 1205: `- Use memory when answering.`
+- Line 1208: `- If story memory is provided, use it.`
+- Line 1209: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1219: `if intent == "memory_recall":`
+- Line 1364: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1370: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 210: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 211: `PROFILE_FILE = "memory/profile.json"`
+- Line 212: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 215: `os.makedirs("memory", exist_ok=True)`
+- Line 247: `MEMORY_IMPORTANCE = {`
+- Line 343: `def calculate_memory_score(text):`
+- Line 347: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 380: `return "memory_recall"`
+- Line 442: `memory_score = calculate_memory_score(content_text)`
+- Line 448: `"score": memory_score,`
+- Line 496: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 552: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 555: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 566: `"memory": "connected",`
+- Line 606: `# MILLIE MEMORY ROUTING`
+- Line 614: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 616: `millie_reply = handle_memory_request(`
+- Line 622: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 628: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 797: `"reply": "I could not find a matching full story file in memory."`
+- Line 814: `memory_context = build_context()`
+- Line 823: `You have persistent memory.`
+- Line 825: `Here is the current memory context:`
+- Line 827: `{memory_context}`
+- Line 833: `- Use memory when answering.`
+- Line 836: `- If story memory is provided, use it.`
+- Line 837: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 847: `if intent == "memory_recall":`
+- Line 992: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 998: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_fullrecall_20260507_235052.py
+- Line 55: `# 👉 Ellie (memory brain)`
+- Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 93: `# 🧠 STEP 1 — store memory`
+- Line 96: `# 🧠 STEP 2 — build memory context`
+- Line 97: `memory_context = build_context()`
+- Line 101: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)`
+- Line 104: `You are L, a personal assistant with persistent memory.`
+- Line 108: `{memory_context}`
+- Line 114: `- ALWAYS use the memory above when answering`
+- Line 115: `- If the answer is clearly in memory, answer confidently`
+- Line 116: `- Do NOT say you don't know if it exists in memory`
+- Line 121: `# STORY MEMORY SEARCH`
+- Line 141: `"\n\nSTORY MEMORY:\n" +`
+- Line 168: `"memory": "Ellie connected",`
+- Line 181: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 202: `def calculate_memory_score(text):`
+- Line 208: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 300: `memory_score = calculate_memory_score(`
+- Line 307: `"score": memory_score`
+- Line 478: `"reply":"I could not find anything in your story memory about that yet."`
+- Line 485: `summary += f"\n\n--- MEMORY {i+1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_google_oauth_20260508_194430.py
+- Line 15: `from memory.memory_engine import (`
+- Line 15: `from memory.memory_engine import (`
+- Line 116: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 117: `PROFILE_FILE = "memory/profile.json"`
+- Line 118: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 121: `os.makedirs("memory", exist_ok=True)`
+- Line 153: `MEMORY_IMPORTANCE = {`
+- Line 249: `def calculate_memory_score(text):`
+- Line 253: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 286: `return "memory_recall"`
+- Line 348: `memory_score = calculate_memory_score(content_text)`
+- Line 354: `"score": memory_score,`
+- Line 402: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 458: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 461: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 472: `"memory": "connected",`
+- Line 620: `"reply": "I could not find a matching full story file in memory."`
+- Line 637: `memory_context = build_context()`
+- Line 646: `You have persistent memory.`
+- Line 648: `Here is the current memory context:`
+- Line 650: `{memory_context}`
+- Line 656: `- Use memory when answering.`
+- Line 659: `- If story memory is provided, use it.`
+- Line 660: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 670: `if intent == "memory_recall":`
+- Line 815: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 821: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 160: `# MILLIE MEMORY KEEPER AGENT`
+- Line 169: `handle_memory_request`
+- Line 276: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 277: `PROFILE_FILE = "memory/profile.json"`
+- Line 278: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 281: `os.makedirs("memory", exist_ok=True)`
+- Line 313: `MEMORY_IMPORTANCE = {`
+- Line 409: `def calculate_memory_score(text):`
+- Line 413: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 446: `return "memory_recall"`
+- Line 508: `memory_score = calculate_memory_score(content_text)`
+- Line 514: `"score": memory_score,`
+- Line 562: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 618: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 621: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 632: `"memory": "connected",`
+- Line 728: `# MILLIE MEMORY ROUTING`
+- Line 736: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 738: `millie_reply = handle_memory_request(`
+- Line 744: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 750: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 919: `"reply": "I could not find a matching full story file in memory."`
+- Line 936: `memory_context = build_context()`
+- Line 945: `You have persistent memory.`
+- Line 947: `Here is the current memory context:`
+- Line 949: `{memory_context}`
+- Line 955: `- Use memory when answering.`
+- Line 958: `- If story memory is provided, use it.`
+- Line 959: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 969: `if intent == "memory_recall":`
+- Line 1114: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1120: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 303: `"memory audit",`
+- Line 304: `"memory observability",`
+- Line 339: `# MILLIE MEMORY KEEPER AGENT`
+- Line 348: `handle_memory_request`
+- Line 455: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 456: `PROFILE_FILE = "memory/profile.json"`
+- Line 457: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 460: `os.makedirs("memory", exist_ok=True)`
+- Line 492: `MEMORY_IMPORTANCE = {`
+- Line 588: `def calculate_memory_score(text):`
+- Line 592: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 625: `return "memory_recall"`
+- Line 687: `memory_score = calculate_memory_score(content_text)`
+- Line 693: `"score": memory_score,`
+- Line 699: `audit_memory_event(`
+- Line 705: `"score": memory_score`
+- Line 737: `audit_memory_event(`
+- Line 760: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 816: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 819: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 831: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 895: `"# 🧠 Millie Memory Keeper",`
+- Line 904: `"🧠 Millie Memory Keeper:",`
+- Line 985: `"memory",`
+- Line 1170: `# MEMORY OBSERVABILITY V1`
+- Line 1173: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"`
+- Line 1175: `def audit_memory_event(`
+- Line 1184: `MEMORY_AUDIT_FILE,`
+- Line 1201: `MEMORY_AUDIT_FILE,`
+- Line 1208: `"MEMORY AUDIT ERROR:",`
+- Line 1213: `def memory_file_status():`
+- Line 1217: `"memory/conversations.json",`
+- Line 1219: `"memory/life_story.json",`
+- Line 1221: `"memory/profile.json",`
+- Line 1223: `"memory/invisible_orchestra_log.json",`
+- Line 1225: `"memory/memory_audit.json"`
+- Line 1278: `def build_memory_audit_report():`
+- Line 1281: `MEMORY_AUDIT_FILE,`
+- Line 1289: `"memory_files": memory_file_status(),`
+- Line 1299: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION`
+- Line 1302: `def hard_memory_audit_v2():`
+- Line 1305: `"memory/profile.json",`
+- Line 1306: `"memory/conversations.json",`
+- Line 1307: `"memory/life_story.json",`
+- Line 1308: `"memory/invisible_orchestra_log.json",`
+- Line 1309: `"memory/memory_audit.json"`
+- Line 1369: `"audit_version": "Memory Audit V2",`
+- Line 1371: `"memory_files": report,`
+- Line 1377: `def format_hard_memory_audit_v2():`
+- Line 1379: `audit = hard_memory_audit_v2()`
+- Line 1382: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")`
+- Line 1390: `lines.append("MEMORY FILES")`
+- Line 1392: `for item in audit["memory_files"]:`
+- Line 1411: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")`
+- Line 1422: `"memory_observable": True,`
+- Line 1456: `"memory": "connected",`
+- Line 1462: `@app.get("/memory/audit")`
+- Line 1463: `def memory_audit():`
+- Line 1465: `return build_memory_audit_report()`
+- Line 1468: `@app.get("/memory/audit-v2")`
+- Line 1469: `def memory_audit_v2():`
+- Line 1471: `return hard_memory_audit_v2()`
+- Line 1484: `"memory audit",`
+- Line 1485: `"memory audit please",`
+- Line 1486: `"memory status",`
+- Line 1487: `"show memory audit",`
+- Line 1488: `"show memory status",`
+- Line 1489: `"memory audit v2"`
+- Line 1493: `"reply": format_hard_memory_audit_v2()`
+- Line 1498: `"memory audit",`
+- Line 1500: `"memory status",`
+- Line 1502: `"show memory audit",`
+- Line 1504: `"show memory status"`
+- Line 1508: `report = build_memory_audit_report()`
+- Line 1883: `# MILLIE MEMORY ROUTING`
+- Line 1891: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1893: `millie_reply = handle_memory_request(`
+- Line 1899: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 2167: `"reply": "I could not find a matching full story file in memory."`
+- Line 2184: `memory_context = build_context()`
+- Line 2209: `You have persistent memory.`
+- Line 2211: `Here is the current memory context:`
+- Line 2213: `{memory_context}`
+- Line 2228: `- If memory contains Tamara, treat it as relationship history only.`
+- Line 2230: `- If unsure, say memory confidence is uncertain rather than guessing.`
+- Line 2233: `- Use memory when answering.`
+- Line 2236: `- If story memory is provided, use it.`
+- Line 2237: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 2247: `if intent == "memory_recall":`
+- Line 2394: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 2400: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 292: `# MILLIE MEMORY KEEPER AGENT`
+- Line 301: `handle_memory_request`
+- Line 408: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 409: `PROFILE_FILE = "memory/profile.json"`
+- Line 410: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 413: `os.makedirs("memory", exist_ok=True)`
+- Line 445: `MEMORY_IMPORTANCE = {`
+- Line 541: `def calculate_memory_score(text):`
+- Line 545: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 578: `return "memory_recall"`
+- Line 640: `memory_score = calculate_memory_score(content_text)`
+- Line 646: `"score": memory_score,`
+- Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 753: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 764: `"memory": "connected",`
+- Line 1028: `# MILLIE MEMORY ROUTING`
+- Line 1036: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1038: `millie_reply = handle_memory_request(`
+- Line 1044: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1050: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1219: `"reply": "I could not find a matching full story file in memory."`
+- Line 1236: `memory_context = build_context()`
+- Line 1245: `You have persistent memory.`
+- Line 1247: `Here is the current memory context:`
+- Line 1249: `{memory_context}`
+- Line 1255: `- Use memory when answering.`
+- Line 1258: `- If story memory is provided, use it.`
+- Line 1259: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1269: `if intent == "memory_recall":`
+- Line 1414: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1420: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 292: `# MILLIE MEMORY KEEPER AGENT`
+- Line 301: `handle_memory_request`
+- Line 408: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 409: `PROFILE_FILE = "memory/profile.json"`
+- Line 410: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 413: `os.makedirs("memory", exist_ok=True)`
+- Line 445: `MEMORY_IMPORTANCE = {`
+- Line 541: `def calculate_memory_score(text):`
+- Line 545: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 578: `return "memory_recall"`
+- Line 640: `memory_score = calculate_memory_score(content_text)`
+- Line 646: `"score": memory_score,`
+- Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 753: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 829: `"# 🧠 Millie Memory Keeper",`
+- Line 838: `"🧠 Millie Memory Keeper:",`
+- Line 919: `"memory",`
+- Line 1007: `"memory": "connected",`
+- Line 1391: `# MILLIE MEMORY ROUTING`
+- Line 1399: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1401: `millie_reply = handle_memory_request(`
+- Line 1407: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1675: `"reply": "I could not find a matching full story file in memory."`
+- Line 1692: `memory_context = build_context()`
+- Line 1709: `You have persistent memory.`
+- Line 1711: `Here is the current memory context:`
+- Line 1713: `{memory_context}`
+- Line 1721: `- Use memory when answering.`
+- Line 1724: `- If story memory is provided, use it.`
+- Line 1725: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1735: `if intent == "memory_recall":`
+- Line 1880: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1886: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 292: `# MILLIE MEMORY KEEPER AGENT`
+- Line 301: `handle_memory_request`
+- Line 408: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 409: `PROFILE_FILE = "memory/profile.json"`
+- Line 410: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 413: `os.makedirs("memory", exist_ok=True)`
+- Line 445: `MEMORY_IMPORTANCE = {`
+- Line 541: `def calculate_memory_score(text):`
+- Line 545: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 578: `return "memory_recall"`
+- Line 640: `memory_score = calculate_memory_score(content_text)`
+- Line 646: `"score": memory_score,`
+- Line 652: `audit_memory_event(`
+- Line 658: `"score": memory_score`
+- Line 690: `audit_memory_event(`
+- Line 713: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 769: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 772: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 784: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 848: `"# 🧠 Millie Memory Keeper",`
+- Line 857: `"🧠 Millie Memory Keeper:",`
+- Line 938: `"memory",`
+- Line 1023: `# MEMORY OBSERVABILITY V1`
+- Line 1026: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"`
+- Line 1028: `def audit_memory_event(`
+- Line 1037: `MEMORY_AUDIT_FILE,`
+- Line 1054: `MEMORY_AUDIT_FILE,`
+- Line 1061: `"MEMORY AUDIT ERROR:",`
+- Line 1066: `def memory_file_status():`
+- Line 1070: `"memory/conversations.json",`
+- Line 1072: `"memory/life_story.json",`
+- Line 1074: `"memory/profile.json",`
+- Line 1076: `"memory/invisible_orchestra_log.json",`
+- Line 1078: `"memory/memory_audit.json"`
+- Line 1131: `def build_memory_audit_report():`
+- Line 1134: `MEMORY_AUDIT_FILE,`
+- Line 1142: `"memory_files": memory_file_status(),`
+- Line 1155: `"memory": "connected",`
+- Line 1161: `@app.get("/memory/audit")`
+- Line 1162: `def memory_audit():`
+- Line 1164: `return build_memory_audit_report()`
+- Line 1172: `"memory audit",`
+- Line 1174: `"memory status",`
+- Line 1176: `"show memory audit",`
+- Line 1178: `"show memory status"`
+- Line 1182: `report = build_memory_audit_report()`
+- Line 1567: `# MILLIE MEMORY ROUTING`
+- Line 1575: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1577: `millie_reply = handle_memory_request(`
+- Line 1583: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1851: `"reply": "I could not find a matching full story file in memory."`
+- Line 1868: `memory_context = build_context()`
+- Line 1885: `You have persistent memory.`
+- Line 1887: `Here is the current memory context:`
+- Line 1889: `{memory_context}`
+- Line 1897: `- Use memory when answering.`
+- Line 1900: `- If story memory is provided, use it.`
+- Line 1901: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1911: `if intent == "memory_recall":`
+- Line 2056: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 2062: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 292: `# MILLIE MEMORY KEEPER AGENT`
+- Line 301: `handle_memory_request`
+- Line 408: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 409: `PROFILE_FILE = "memory/profile.json"`
+- Line 410: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 413: `os.makedirs("memory", exist_ok=True)`
+- Line 445: `MEMORY_IMPORTANCE = {`
+- Line 541: `def calculate_memory_score(text):`
+- Line 545: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 578: `return "memory_recall"`
+- Line 640: `memory_score = calculate_memory_score(content_text)`
+- Line 646: `"score": memory_score,`
+- Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 753: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 829: `"# 🧠 Millie Memory Keeper",`
+- Line 838: `"🧠 Millie Memory Keeper:",`
+- Line 919: `"memory",`
+- Line 1007: `"memory": "connected",`
+- Line 1391: `# MILLIE MEMORY ROUTING`
+- Line 1399: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1401: `millie_reply = handle_memory_request(`
+- Line 1407: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1675: `"reply": "I could not find a matching full story file in memory."`
+- Line 1692: `memory_context = build_context()`
+- Line 1709: `You have persistent memory.`
+- Line 1711: `Here is the current memory context:`
+- Line 1713: `{memory_context}`
+- Line 1721: `- Use memory when answering.`
+- Line 1724: `- If story memory is provided, use it.`
+- Line 1725: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1735: `if intent == "memory_recall":`
+- Line 1880: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1886: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_memscore_20260507_233124.py
+- Line 16: `# 👉 Ellie (memory brain)`
+- Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 54: `# 🧠 STEP 1 — store memory`
+- Line 57: `# 🧠 STEP 2 — build memory context`
+- Line 58: `memory_context = build_context()`
+- Line 62: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)`
+- Line 65: `You are L, a personal assistant with persistent memory.`
+- Line 69: `{memory_context}`
+- Line 75: `- ALWAYS use the memory above when answering`
+- Line 76: `- If the answer is clearly in memory, answer confidently`
+- Line 77: `- Do NOT say you don't know if it exists in memory`
+- Line 82: `# STORY MEMORY SEARCH`
+- Line 94: `"\n\nSTORY MEMORY:\n" +`
+- Line 121: `"memory": "Ellie connected",`
+- Line 134: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 393: `"reply":"I could not find anything in your story memory about that yet."`
+- Line 400: `summary += f"\n\n--- MEMORY {i+1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 292: `# MILLIE MEMORY KEEPER AGENT`
+- Line 301: `handle_memory_request`
+- Line 408: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 409: `PROFILE_FILE = "memory/profile.json"`
+- Line 410: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 413: `os.makedirs("memory", exist_ok=True)`
+- Line 445: `MEMORY_IMPORTANCE = {`
+- Line 541: `def calculate_memory_score(text):`
+- Line 545: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 578: `return "memory_recall"`
+- Line 640: `memory_score = calculate_memory_score(content_text)`
+- Line 646: `"score": memory_score,`
+- Line 652: `audit_memory_event(`
+- Line 658: `"score": memory_score`
+- Line 690: `audit_memory_event(`
+- Line 713: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 769: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 772: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 784: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 848: `"# 🧠 Millie Memory Keeper",`
+- Line 857: `"🧠 Millie Memory Keeper:",`
+- Line 938: `"memory",`
+- Line 1023: `# MEMORY OBSERVABILITY V1`
+- Line 1026: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"`
+- Line 1028: `def audit_memory_event(`
+- Line 1037: `MEMORY_AUDIT_FILE,`
+- Line 1054: `MEMORY_AUDIT_FILE,`
+- Line 1061: `"MEMORY AUDIT ERROR:",`
+- Line 1066: `def memory_file_status():`
+- Line 1070: `"memory/conversations.json",`
+- Line 1072: `"memory/life_story.json",`
+- Line 1074: `"memory/profile.json",`
+- Line 1076: `"memory/invisible_orchestra_log.json",`
+- Line 1078: `"memory/memory_audit.json"`
+- Line 1131: `def build_memory_audit_report():`
+- Line 1134: `MEMORY_AUDIT_FILE,`
+- Line 1142: `"memory_files": memory_file_status(),`
+- Line 1152: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION`
+- Line 1155: `def hard_memory_audit_v2():`
+- Line 1158: `"memory/profile.json",`
+- Line 1159: `"memory/conversations.json",`
+- Line 1160: `"memory/life_story.json",`
+- Line 1161: `"memory/invisible_orchestra_log.json",`
+- Line 1162: `"memory/memory_audit.json"`
+- Line 1222: `"audit_version": "Memory Audit V2",`
+- Line 1224: `"memory_files": report,`
+- Line 1230: `def format_hard_memory_audit_v2():`
+- Line 1232: `audit = hard_memory_audit_v2()`
+- Line 1235: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")`
+- Line 1243: `lines.append("MEMORY FILES")`
+- Line 1245: `for item in audit["memory_files"]:`
+- Line 1264: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")`
+- Line 1275: `"memory_observable": True,`
+- Line 1309: `"memory": "connected",`
+- Line 1315: `@app.get("/memory/audit")`
+- Line 1316: `def memory_audit():`
+- Line 1318: `return build_memory_audit_report()`
+- Line 1321: `@app.get("/memory/audit-v2")`
+- Line 1322: `def memory_audit_v2():`
+- Line 1324: `return hard_memory_audit_v2()`
+- Line 1337: `"memory audit",`
+- Line 1338: `"memory audit please",`
+- Line 1339: `"memory status",`
+- Line 1340: `"show memory audit",`
+- Line 1341: `"show memory status",`
+- Line 1342: `"memory audit v2"`
+- Line 1346: `"reply": format_hard_memory_audit_v2()`
+- Line 1351: `"memory audit",`
+- Line 1353: `"memory status",`
+- Line 1355: `"show memory audit",`
+- Line 1357: `"show memory status"`
+- Line 1361: `report = build_memory_audit_report()`
+- Line 1750: `# MILLIE MEMORY ROUTING`
+- Line 1758: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1760: `millie_reply = handle_memory_request(`
+- Line 1766: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 2034: `"reply": "I could not find a matching full story file in memory."`
+- Line 2051: `memory_context = build_context()`
+- Line 2068: `You have persistent memory.`
+- Line 2070: `Here is the current memory context:`
+- Line 2072: `{memory_context}`
+- Line 2085: `- If memory contains Tamara, treat it as relationship history only.`
+- Line 2087: `- If unsure, say memory confidence is uncertain rather than guessing.`
+- Line 2090: `- Use memory when answering.`
+- Line 2093: `- If story memory is provided, use it.`
+- Line 2094: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 2104: `if intent == "memory_recall":`
+- Line 2251: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 2257: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 292: `# MILLIE MEMORY KEEPER AGENT`
+- Line 301: `handle_memory_request`
+- Line 408: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 409: `PROFILE_FILE = "memory/profile.json"`
+- Line 410: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 413: `os.makedirs("memory", exist_ok=True)`
+- Line 445: `MEMORY_IMPORTANCE = {`
+- Line 541: `def calculate_memory_score(text):`
+- Line 545: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 578: `return "memory_recall"`
+- Line 640: `memory_score = calculate_memory_score(content_text)`
+- Line 646: `"score": memory_score,`
+- Line 652: `audit_memory_event(`
+- Line 658: `"score": memory_score`
+- Line 690: `audit_memory_event(`
+- Line 713: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 769: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 772: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 784: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 848: `"# 🧠 Millie Memory Keeper",`
+- Line 857: `"🧠 Millie Memory Keeper:",`
+- Line 938: `"memory",`
+- Line 1023: `# MEMORY OBSERVABILITY V1`
+- Line 1026: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"`
+- Line 1028: `def audit_memory_event(`
+- Line 1037: `MEMORY_AUDIT_FILE,`
+- Line 1054: `MEMORY_AUDIT_FILE,`
+- Line 1061: `"MEMORY AUDIT ERROR:",`
+- Line 1066: `def memory_file_status():`
+- Line 1070: `"memory/conversations.json",`
+- Line 1072: `"memory/life_story.json",`
+- Line 1074: `"memory/profile.json",`
+- Line 1076: `"memory/invisible_orchestra_log.json",`
+- Line 1078: `"memory/memory_audit.json"`
+- Line 1131: `def build_memory_audit_report():`
+- Line 1134: `MEMORY_AUDIT_FILE,`
+- Line 1142: `"memory_files": memory_file_status(),`
+- Line 1152: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION`
+- Line 1155: `def hard_memory_audit_v2():`
+- Line 1158: `"memory/profile.json",`
+- Line 1159: `"memory/conversations.json",`
+- Line 1160: `"memory/life_story.json",`
+- Line 1161: `"memory/invisible_orchestra_log.json",`
+- Line 1162: `"memory/memory_audit.json"`
+- Line 1222: `"audit_version": "Memory Audit V2",`
+- Line 1224: `"memory_files": report,`
+- Line 1230: `def format_hard_memory_audit_v2():`
+- Line 1232: `audit = hard_memory_audit_v2()`
+- Line 1235: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")`
+- Line 1243: `lines.append("MEMORY FILES")`
+- Line 1245: `for item in audit["memory_files"]:`
+- Line 1264: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")`
+- Line 1275: `"memory_observable": True,`
+- Line 1309: `"memory": "connected",`
+- Line 1315: `@app.get("/memory/audit")`
+- Line 1316: `def memory_audit():`
+- Line 1318: `return build_memory_audit_report()`
+- Line 1321: `@app.get("/memory/audit-v2")`
+- Line 1322: `def memory_audit_v2():`
+- Line 1324: `return hard_memory_audit_v2()`
+- Line 1337: `"memory audit",`
+- Line 1338: `"memory audit please",`
+- Line 1339: `"memory status",`
+- Line 1340: `"show memory audit",`
+- Line 1341: `"show memory status",`
+- Line 1342: `"memory audit v2"`
+- Line 1346: `"reply": format_hard_memory_audit_v2()`
+- Line 1351: `"memory audit",`
+- Line 1353: `"memory status",`
+- Line 1355: `"show memory audit",`
+- Line 1357: `"show memory status"`
+- Line 1361: `report = build_memory_audit_report()`
+- Line 1746: `# MILLIE MEMORY ROUTING`
+- Line 1754: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1756: `millie_reply = handle_memory_request(`
+- Line 1762: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 2030: `"reply": "I could not find a matching full story file in memory."`
+- Line 2047: `memory_context = build_context()`
+- Line 2064: `You have persistent memory.`
+- Line 2066: `Here is the current memory context:`
+- Line 2068: `{memory_context}`
+- Line 2081: `- If memory contains Tamara, treat it as relationship history only.`
+- Line 2083: `- If unsure, say memory confidence is uncertain rather than guessing.`
+- Line 2086: `- Use memory when answering.`
+- Line 2089: `- If story memory is provided, use it.`
+- Line 2090: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 2100: `if intent == "memory_recall":`
+- Line 2247: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 2253: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 210: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 211: `PROFILE_FILE = "memory/profile.json"`
+- Line 212: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 215: `os.makedirs("memory", exist_ok=True)`
+- Line 247: `MEMORY_IMPORTANCE = {`
+- Line 343: `def calculate_memory_score(text):`
+- Line 347: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 380: `return "memory_recall"`
+- Line 442: `memory_score = calculate_memory_score(content_text)`
+- Line 448: `"score": memory_score,`
+- Line 496: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 552: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 555: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 566: `"memory": "connected",`
+- Line 769: `"reply": "I could not find a matching full story file in memory."`
+- Line 786: `memory_context = build_context()`
+- Line 795: `You have persistent memory.`
+- Line 797: `Here is the current memory context:`
+- Line 799: `{memory_context}`
+- Line 805: `- Use memory when answering.`
+- Line 808: `- If story memory is provided, use it.`
+- Line 809: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 819: `if intent == "memory_recall":`
+- Line 964: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 970: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_mystory_20260507_230357.py
+- Line 15: `# 👉 Ellie (memory brain)`
+- Line 16: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 16: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 53: `# 🧠 STEP 1 — store memory`
+- Line 56: `# 🧠 STEP 2 — build memory context`
+- Line 57: `memory_context = build_context()`
+- Line 61: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)`
+- Line 64: `You are L, a personal assistant with persistent memory.`
+- Line 68: `{memory_context}`
+- Line 74: `- ALWAYS use the memory above when answering`
+- Line 75: `- If the answer is clearly in memory, answer confidently`
+- Line 76: `- Do NOT say you don't know if it exists in memory`
+- Line 101: `"memory": "Ellie connected",`
+
+### C:\Shine_L\api\Backups\server_backup_mystory_20260507_231128.py
+- Line 16: `# 👉 Ellie (memory brain)`
+- Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 54: `# 🧠 STEP 1 — store memory`
+- Line 57: `# 🧠 STEP 2 — build memory context`
+- Line 58: `memory_context = build_context()`
+- Line 62: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)`
+- Line 65: `You are L, a personal assistant with persistent memory.`
+- Line 69: `{memory_context}`
+- Line 75: `- ALWAYS use the memory above when answering`
+- Line 76: `- If the answer is clearly in memory, answer confidently`
+- Line 77: `- Do NOT say you don't know if it exists in memory`
+- Line 102: `"memory": "Ellie connected",`
+- Line 115: `LIFE_STORY_FILE = "memory/life_story.json"`
+
+### C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 182: `# MILLIE MEMORY KEEPER AGENT`
+- Line 191: `handle_memory_request`
+- Line 298: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 299: `PROFILE_FILE = "memory/profile.json"`
+- Line 300: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 303: `os.makedirs("memory", exist_ok=True)`
+- Line 335: `MEMORY_IMPORTANCE = {`
+- Line 431: `def calculate_memory_score(text):`
+- Line 435: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 468: `return "memory_recall"`
+- Line 530: `memory_score = calculate_memory_score(content_text)`
+- Line 536: `"score": memory_score,`
+- Line 584: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 640: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 643: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 654: `"memory": "connected",`
+- Line 778: `# MILLIE MEMORY ROUTING`
+- Line 786: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 788: `millie_reply = handle_memory_request(`
+- Line 794: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 800: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 969: `"reply": "I could not find a matching full story file in memory."`
+- Line 986: `memory_context = build_context()`
+- Line 995: `You have persistent memory.`
+- Line 997: `Here is the current memory context:`
+- Line 999: `{memory_context}`
+- Line 1005: `- Use memory when answering.`
+- Line 1008: `- If story memory is provided, use it.`
+- Line 1009: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1019: `if intent == "memory_recall":`
+- Line 1164: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1170: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 292: `# MILLIE MEMORY KEEPER AGENT`
+- Line 301: `handle_memory_request`
+- Line 408: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 409: `PROFILE_FILE = "memory/profile.json"`
+- Line 410: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 413: `os.makedirs("memory", exist_ok=True)`
+- Line 445: `MEMORY_IMPORTANCE = {`
+- Line 541: `def calculate_memory_score(text):`
+- Line 545: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 578: `return "memory_recall"`
+- Line 640: `memory_score = calculate_memory_score(content_text)`
+- Line 646: `"score": memory_score,`
+- Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 753: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 764: `"memory": "connected",`
+- Line 1148: `# MILLIE MEMORY ROUTING`
+- Line 1156: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1158: `millie_reply = handle_memory_request(`
+- Line 1164: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1432: `"reply": "I could not find a matching full story file in memory."`
+- Line 1449: `memory_context = build_context()`
+- Line 1458: `You have persistent memory.`
+- Line 1460: `Here is the current memory context:`
+- Line 1462: `{memory_context}`
+- Line 1468: `- Use memory when answering.`
+- Line 1471: `- If story memory is provided, use it.`
+- Line 1472: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1482: `if intent == "memory_recall":`
+- Line 1627: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1633: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 292: `# MILLIE MEMORY KEEPER AGENT`
+- Line 301: `handle_memory_request`
+- Line 408: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 409: `PROFILE_FILE = "memory/profile.json"`
+- Line 410: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 413: `os.makedirs("memory", exist_ok=True)`
+- Line 445: `MEMORY_IMPORTANCE = {`
+- Line 541: `def calculate_memory_score(text):`
+- Line 545: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 578: `return "memory_recall"`
+- Line 640: `memory_score = calculate_memory_score(content_text)`
+- Line 646: `"score": memory_score,`
+- Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 753: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 829: `"# 🧠 Millie Memory Keeper",`
+- Line 838: `"🧠 Millie Memory Keeper:",`
+- Line 881: `"memory": "connected",`
+- Line 1265: `# MILLIE MEMORY ROUTING`
+- Line 1273: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1275: `millie_reply = handle_memory_request(`
+- Line 1281: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1549: `"reply": "I could not find a matching full story file in memory."`
+- Line 1566: `memory_context = build_context()`
+- Line 1575: `You have persistent memory.`
+- Line 1577: `Here is the current memory context:`
+- Line 1579: `{memory_context}`
+- Line 1585: `- Use memory when answering.`
+- Line 1588: `- If story memory is provided, use it.`
+- Line 1589: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1599: `if intent == "memory_recall":`
+- Line 1744: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1750: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 292: `# MILLIE MEMORY KEEPER AGENT`
+- Line 301: `handle_memory_request`
+- Line 408: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 409: `PROFILE_FILE = "memory/profile.json"`
+- Line 410: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 413: `os.makedirs("memory", exist_ok=True)`
+- Line 445: `MEMORY_IMPORTANCE = {`
+- Line 541: `def calculate_memory_score(text):`
+- Line 545: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 578: `return "memory_recall"`
+- Line 640: `memory_score = calculate_memory_score(content_text)`
+- Line 646: `"score": memory_score,`
+- Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 753: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 829: `"# 🧠 Millie Memory Keeper",`
+- Line 838: `"🧠 Millie Memory Keeper:",`
+- Line 881: `"memory": "connected",`
+- Line 1265: `# MILLIE MEMORY ROUTING`
+- Line 1273: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1275: `millie_reply = handle_memory_request(`
+- Line 1281: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1549: `"reply": "I could not find a matching full story file in memory."`
+- Line 1566: `memory_context = build_context()`
+- Line 1583: `You have persistent memory.`
+- Line 1585: `Here is the current memory context:`
+- Line 1587: `{memory_context}`
+- Line 1595: `- Use memory when answering.`
+- Line 1598: `- If story memory is provided, use it.`
+- Line 1599: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1609: `if intent == "memory_recall":`
+- Line 1754: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1760: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_persist_20260508_005821.py
+- Line 13: `from memory.memory_engine import (`
+- Line 13: `from memory.memory_engine import (`
+- Line 36: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 37: `PROFILE_FILE = "memory/profile.json"`
+- Line 40: `os.makedirs("memory", exist_ok=True)`
+- Line 72: `MEMORY_IMPORTANCE = {`
+- Line 168: `def calculate_memory_score(text):`
+- Line 172: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 205: `return "memory_recall"`
+- Line 267: `memory_score = calculate_memory_score(content_text)`
+- Line 273: `"score": memory_score,`
+- Line 286: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 299: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 302: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 313: `"memory": "connected",`
+- Line 330: `"reply": "I could not find a matching full story file in memory."`
+- Line 347: `memory_context = build_context()`
+- Line 354: `You have persistent memory.`
+- Line 356: `Here is the current memory context:`
+- Line 358: `{memory_context}`
+- Line 364: `- Use memory when answering.`
+- Line 367: `- If story memory is provided, use it.`
+- Line 368: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 374: `if intent == "memory_recall":`
+- Line 514: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 520: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py
+- Line 17: `from memory.memory_engine import (`
+- Line 17: `from memory.memory_engine import (`
+- Line 139: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 140: `PROFILE_FILE = "memory/profile.json"`
+- Line 141: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 144: `os.makedirs("memory", exist_ok=True)`
+- Line 176: `MEMORY_IMPORTANCE = {`
+- Line 272: `def calculate_memory_score(text):`
+- Line 276: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 309: `return "memory_recall"`
+- Line 371: `memory_score = calculate_memory_score(content_text)`
+- Line 377: `"score": memory_score,`
+- Line 425: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 481: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 484: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 495: `"memory": "connected",`
+- Line 643: `"reply": "I could not find a matching full story file in memory."`
+- Line 660: `memory_context = build_context()`
+- Line 669: `You have persistent memory.`
+- Line 671: `Here is the current memory context:`
+- Line 673: `{memory_context}`
+- Line 679: `- Use memory when answering.`
+- Line 682: `- If story memory is provided, use it.`
+- Line 683: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 693: `if intent == "memory_recall":`
+- Line 838: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 844: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 172: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 173: `PROFILE_FILE = "memory/profile.json"`
+- Line 174: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 177: `os.makedirs("memory", exist_ok=True)`
+- Line 209: `MEMORY_IMPORTANCE = {`
+- Line 305: `def calculate_memory_score(text):`
+- Line 309: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 342: `return "memory_recall"`
+- Line 404: `memory_score = calculate_memory_score(content_text)`
+- Line 410: `"score": memory_score,`
+- Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 517: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 528: `"memory": "connected",`
+- Line 676: `"reply": "I could not find a matching full story file in memory."`
+- Line 693: `memory_context = build_context()`
+- Line 702: `You have persistent memory.`
+- Line 704: `Here is the current memory context:`
+- Line 706: `{memory_context}`
+- Line 712: `- Use memory when answering.`
+- Line 715: `- If story memory is provided, use it.`
+- Line 716: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 726: `if intent == "memory_recall":`
+- Line 871: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 877: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 172: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 173: `PROFILE_FILE = "memory/profile.json"`
+- Line 174: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 177: `os.makedirs("memory", exist_ok=True)`
+- Line 209: `MEMORY_IMPORTANCE = {`
+- Line 305: `def calculate_memory_score(text):`
+- Line 309: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 342: `return "memory_recall"`
+- Line 404: `memory_score = calculate_memory_score(content_text)`
+- Line 410: `"score": memory_score,`
+- Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 517: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 528: `"memory": "connected",`
+- Line 703: `"reply": "I could not find a matching full story file in memory."`
+- Line 720: `memory_context = build_context()`
+- Line 729: `You have persistent memory.`
+- Line 731: `Here is the current memory context:`
+- Line 733: `{memory_context}`
+- Line 739: `- Use memory when answering.`
+- Line 742: `- If story memory is provided, use it.`
+- Line 743: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 753: `if intent == "memory_recall":`
+- Line 898: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 904: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 172: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 173: `PROFILE_FILE = "memory/profile.json"`
+- Line 174: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 177: `os.makedirs("memory", exist_ok=True)`
+- Line 209: `MEMORY_IMPORTANCE = {`
+- Line 305: `def calculate_memory_score(text):`
+- Line 309: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 342: `return "memory_recall"`
+- Line 404: `memory_score = calculate_memory_score(content_text)`
+- Line 410: `"score": memory_score,`
+- Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 517: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 528: `"memory": "connected",`
+- Line 676: `"reply": "I could not find a matching full story file in memory."`
+- Line 693: `memory_context = build_context()`
+- Line 702: `You have persistent memory.`
+- Line 704: `Here is the current memory context:`
+- Line 706: `{memory_context}`
+- Line 712: `- Use memory when answering.`
+- Line 715: `- If story memory is provided, use it.`
+- Line 716: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 726: `if intent == "memory_recall":`
+- Line 871: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 877: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 172: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 173: `PROFILE_FILE = "memory/profile.json"`
+- Line 174: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 177: `os.makedirs("memory", exist_ok=True)`
+- Line 209: `MEMORY_IMPORTANCE = {`
+- Line 305: `def calculate_memory_score(text):`
+- Line 309: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 342: `return "memory_recall"`
+- Line 404: `memory_score = calculate_memory_score(content_text)`
+- Line 410: `"score": memory_score,`
+- Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 517: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 528: `"memory": "connected",`
+- Line 733: `"reply": "I could not find a matching full story file in memory."`
+- Line 750: `memory_context = build_context()`
+- Line 759: `You have persistent memory.`
+- Line 761: `Here is the current memory context:`
+- Line 763: `{memory_context}`
+- Line 769: `- Use memory when answering.`
+- Line 772: `- If story memory is provided, use it.`
+- Line 773: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 783: `if intent == "memory_recall":`
+- Line 928: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 934: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py
+- Line 17: `from memory.memory_engine import (`
+- Line 17: `from memory.memory_engine import (`
+- Line 139: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 140: `PROFILE_FILE = "memory/profile.json"`
+- Line 141: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 144: `os.makedirs("memory", exist_ok=True)`
+- Line 176: `MEMORY_IMPORTANCE = {`
+- Line 272: `def calculate_memory_score(text):`
+- Line 276: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 309: `return "memory_recall"`
+- Line 371: `memory_score = calculate_memory_score(content_text)`
+- Line 377: `"score": memory_score,`
+- Line 425: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 481: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 484: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 495: `"memory": "connected",`
+- Line 643: `"reply": "I could not find a matching full story file in memory."`
+- Line 660: `memory_context = build_context()`
+- Line 669: `You have persistent memory.`
+- Line 671: `Here is the current memory context:`
+- Line 673: `{memory_context}`
+- Line 679: `- Use memory when answering.`
+- Line 682: `- If story memory is provided, use it.`
+- Line 683: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 693: `if intent == "memory_recall":`
+- Line 838: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 844: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_profileauth_20260508_001049.py
+- Line 55: `# 👉 Ellie (memory brain)`
+- Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 108: `"reply":"I could not find a matching full file in memory."`
+- Line 127: `# MEMORY RECALL`
+- Line 130: `if intent == "memory_recall":`
+- Line 136: `memory_context = ""`
+- Line 140: `memory_context += (`
+- Line 141: `"\n\nMEMORY:\n"`
+- Line 145: `system_prompt += memory_context`
+- Line 149: `# 🧠 STEP 1 — store memory`
+- Line 152: `# 🧠 STEP 2 — build memory context`
+- Line 153: `memory_context = build_context()`
+- Line 157: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)`
+- Line 160: `You are L, a personal assistant with persistent memory.`
+- Line 164: `{memory_context}`
+- Line 170: `- ALWAYS use the memory above when answering`
+- Line 171: `- If the answer is clearly in memory, answer confidently`
+- Line 172: `- Do NOT say you don't know if it exists in memory`
+- Line 177: `# STORY MEMORY SEARCH`
+- Line 197: `"\n\nSTORY MEMORY:\n" +`
+- Line 224: `"memory": "Ellie connected",`
+- Line 237: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 266: `# MEMORY RECALL`
+- Line 276: `return "memory_recall"`
+- Line 296: `def calculate_memory_score(text):`
+- Line 302: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 394: `memory_score = calculate_memory_score(`
+- Line 404: `"score": memory_score`
+- Line 575: `"reply":"I could not find anything in your story memory about that yet."`
+- Line 582: `summary += f"\n\n--- MEMORY {i+1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 204: `# MILLIE MEMORY KEEPER AGENT`
+- Line 213: `handle_memory_request`
+- Line 320: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 321: `PROFILE_FILE = "memory/profile.json"`
+- Line 322: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 325: `os.makedirs("memory", exist_ok=True)`
+- Line 357: `MEMORY_IMPORTANCE = {`
+- Line 453: `def calculate_memory_score(text):`
+- Line 457: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 490: `return "memory_recall"`
+- Line 552: `memory_score = calculate_memory_score(content_text)`
+- Line 558: `"score": memory_score,`
+- Line 606: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 662: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 665: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 676: `"memory": "connected",`
+- Line 828: `# MILLIE MEMORY ROUTING`
+- Line 836: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 838: `millie_reply = handle_memory_request(`
+- Line 844: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 850: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1019: `"reply": "I could not find a matching full story file in memory."`
+- Line 1036: `memory_context = build_context()`
+- Line 1045: `You have persistent memory.`
+- Line 1047: `Here is the current memory context:`
+- Line 1049: `{memory_context}`
+- Line 1055: `- Use memory when answering.`
+- Line 1058: `- If story memory is provided, use it.`
+- Line 1059: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1069: `if intent == "memory_recall":`
+- Line 1214: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1220: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_router_20260507_235807.py
+- Line 55: `# 👉 Ellie (memory brain)`
+- Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 93: `# 🧠 STEP 1 — store memory`
+- Line 96: `# 🧠 STEP 2 — build memory context`
+- Line 97: `memory_context = build_context()`
+- Line 101: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)`
+- Line 104: `You are L, a personal assistant with persistent memory.`
+- Line 108: `{memory_context}`
+- Line 114: `- ALWAYS use the memory above when answering`
+- Line 115: `- If the answer is clearly in memory, answer confidently`
+- Line 116: `- Do NOT say you don't know if it exists in memory`
+- Line 121: `# STORY MEMORY SEARCH`
+- Line 141: `"\n\nSTORY MEMORY:\n" +`
+- Line 168: `"memory": "Ellie connected",`
+- Line 181: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 202: `def calculate_memory_score(text):`
+- Line 208: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 300: `memory_score = calculate_memory_score(`
+- Line 310: `"score": memory_score`
+- Line 481: `"reply":"I could not find anything in your story memory about that yet."`
+- Line 488: `summary += f"\n\n--- MEMORY {i+1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py
+- Line 17: `from memory.memory_engine import (`
+- Line 17: `from memory.memory_engine import (`
+- Line 139: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 140: `PROFILE_FILE = "memory/profile.json"`
+- Line 141: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 144: `os.makedirs("memory", exist_ok=True)`
+- Line 176: `MEMORY_IMPORTANCE = {`
+- Line 272: `def calculate_memory_score(text):`
+- Line 276: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 309: `return "memory_recall"`
+- Line 371: `memory_score = calculate_memory_score(content_text)`
+- Line 377: `"score": memory_score,`
+- Line 425: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 481: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 484: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 495: `"memory": "connected",`
+- Line 643: `"reply": "I could not find a matching full story file in memory."`
+- Line 660: `memory_context = build_context()`
+- Line 669: `You have persistent memory.`
+- Line 671: `Here is the current memory context:`
+- Line 673: `{memory_context}`
+- Line 679: `- Use memory when answering.`
+- Line 682: `- If story memory is provided, use it.`
+- Line 683: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 693: `if intent == "memory_recall":`
+- Line 838: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 844: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_semantic_20260507_231211.py
+- Line 16: `# 👉 Ellie (memory brain)`
+- Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 54: `# 🧠 STEP 1 — store memory`
+- Line 57: `# 🧠 STEP 2 — build memory context`
+- Line 58: `memory_context = build_context()`
+- Line 62: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)`
+- Line 65: `You are L, a personal assistant with persistent memory.`
+- Line 69: `{memory_context}`
+- Line 75: `- ALWAYS use the memory above when answering`
+- Line 76: `- If the answer is clearly in memory, answer confidently`
+- Line 77: `- Do NOT say you don't know if it exists in memory`
+- Line 102: `"memory": "Ellie connected",`
+- Line 115: `LIFE_STORY_FILE = "memory/life_story.json"`
+
+### C:\Shine_L\api\Backups\server_backup_semanticv2_20260507_232115.py
+- Line 16: `# 👉 Ellie (memory brain)`
+- Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 54: `# 🧠 STEP 1 — store memory`
+- Line 57: `# 🧠 STEP 2 — build memory context`
+- Line 58: `memory_context = build_context()`
+- Line 62: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)`
+- Line 65: `You are L, a personal assistant with persistent memory.`
+- Line 69: `{memory_context}`
+- Line 75: `- ALWAYS use the memory above when answering`
+- Line 76: `- If the answer is clearly in memory, answer confidently`
+- Line 77: `- Do NOT say you don't know if it exists in memory`
+- Line 82: `# STORY MEMORY SEARCH`
+- Line 94: `"\n\nSTORY MEMORY:\n" +`
+- Line 121: `"memory": "Ellie connected",`
+- Line 134: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 370: `"reply":"I could not find anything in your story memory about that yet."`
+- Line 377: `summary += f"\n\n--- MEMORY {i+1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 292: `# MILLIE MEMORY KEEPER AGENT`
+- Line 301: `handle_memory_request`
+- Line 408: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 409: `PROFILE_FILE = "memory/profile.json"`
+- Line 410: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 413: `os.makedirs("memory", exist_ok=True)`
+- Line 445: `MEMORY_IMPORTANCE = {`
+- Line 541: `def calculate_memory_score(text):`
+- Line 545: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 578: `return "memory_recall"`
+- Line 640: `memory_score = calculate_memory_score(content_text)`
+- Line 646: `"score": memory_score,`
+- Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 753: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 829: `"# 🧠 Millie Memory Keeper",`
+- Line 838: `"🧠 Millie Memory Keeper:",`
+- Line 919: `"memory",`
+- Line 1007: `"memory": "connected",`
+- Line 1391: `# MILLIE MEMORY ROUTING`
+- Line 1399: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1401: `millie_reply = handle_memory_request(`
+- Line 1407: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1675: `"reply": "I could not find a matching full story file in memory."`
+- Line 1692: `memory_context = build_context()`
+- Line 1709: `You have persistent memory.`
+- Line 1711: `Here is the current memory context:`
+- Line 1713: `{memory_context}`
+- Line 1721: `- Use memory when answering.`
+- Line 1724: `- If story memory is provided, use it.`
+- Line 1725: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1735: `if intent == "memory_recall":`
+- Line 1880: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1886: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_storylib_20260508_000523.py
+- Line 55: `# 👉 Ellie (memory brain)`
+- Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 108: `"reply":"I could not find a matching full file in memory."`
+- Line 127: `# MEMORY RECALL`
+- Line 130: `if intent == "memory_recall":`
+- Line 136: `memory_context = ""`
+- Line 140: `memory_context += (`
+- Line 141: `"\n\nMEMORY:\n"`
+- Line 145: `system_prompt += memory_context`
+- Line 149: `# 🧠 STEP 1 — store memory`
+- Line 152: `# 🧠 STEP 2 — build memory context`
+- Line 153: `memory_context = build_context()`
+- Line 157: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)`
+- Line 160: `You are L, a personal assistant with persistent memory.`
+- Line 164: `{memory_context}`
+- Line 170: `- ALWAYS use the memory above when answering`
+- Line 171: `- If the answer is clearly in memory, answer confidently`
+- Line 172: `- Do NOT say you don't know if it exists in memory`
+- Line 177: `# STORY MEMORY SEARCH`
+- Line 197: `"\n\nSTORY MEMORY:\n" +`
+- Line 224: `"memory": "Ellie connected",`
+- Line 237: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 266: `# MEMORY RECALL`
+- Line 276: `return "memory_recall"`
+- Line 296: `def calculate_memory_score(text):`
+- Line 302: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 394: `memory_score = calculate_memory_score(`
+- Line 404: `"score": memory_score`
+- Line 575: `"reply":"I could not find anything in your story memory about that yet."`
+- Line 582: `summary += f"\n\n--- MEMORY {i+1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 226: `# MILLIE MEMORY KEEPER AGENT`
+- Line 235: `handle_memory_request`
+- Line 342: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 343: `PROFILE_FILE = "memory/profile.json"`
+- Line 344: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 347: `os.makedirs("memory", exist_ok=True)`
+- Line 379: `MEMORY_IMPORTANCE = {`
+- Line 475: `def calculate_memory_score(text):`
+- Line 479: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 512: `return "memory_recall"`
+- Line 574: `memory_score = calculate_memory_score(content_text)`
+- Line 580: `"score": memory_score,`
+- Line 628: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 684: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 687: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 698: `"memory": "connected",`
+- Line 878: `# MILLIE MEMORY ROUTING`
+- Line 886: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 888: `millie_reply = handle_memory_request(`
+- Line 894: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 900: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1069: `"reply": "I could not find a matching full story file in memory."`
+- Line 1086: `memory_context = build_context()`
+- Line 1095: `You have persistent memory.`
+- Line 1097: `Here is the current memory context:`
+- Line 1099: `{memory_context}`
+- Line 1105: `- Use memory when answering.`
+- Line 1108: `- If story memory is provided, use it.`
+- Line 1109: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1119: `if intent == "memory_recall":`
+- Line 1264: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1270: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_timefix_20260508_010248.py
+- Line 14: `from memory.memory_engine import (`
+- Line 14: `from memory.memory_engine import (`
+- Line 37: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 38: `PROFILE_FILE = "memory/profile.json"`
+- Line 39: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 42: `os.makedirs("memory", exist_ok=True)`
+- Line 74: `MEMORY_IMPORTANCE = {`
+- Line 170: `def calculate_memory_score(text):`
+- Line 174: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 207: `return "memory_recall"`
+- Line 269: `memory_score = calculate_memory_score(content_text)`
+- Line 275: `"score": memory_score,`
+- Line 323: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 379: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 382: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 393: `"memory": "connected",`
+- Line 410: `"reply": "I could not find a matching full story file in memory."`
+- Line 427: `memory_context = build_context()`
+- Line 434: `You have persistent memory.`
+- Line 436: `Here is the current memory context:`
+- Line 438: `{memory_context}`
+- Line 444: `- Use memory when answering.`
+- Line 447: `- If story memory is provided, use it.`
+- Line 448: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 458: `if intent == "memory_recall":`
+- Line 603: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 609: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_uploadv1_20260507_213852.py
+- Line 8: `# 👉 Ellie (memory brain)`
+- Line 9: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 9: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 46: `# 🧠 STEP 1 — store memory`
+- Line 49: `# 🧠 STEP 2 — build memory context`
+- Line 50: `memory_context = build_context()`
+- Line 54: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)`
+- Line 57: `You are L, a personal assistant with persistent memory.`
+- Line 61: `{memory_context}`
+- Line 67: `- ALWAYS use the memory above when answering`
+- Line 68: `- If the answer is clearly in memory, answer confidently`
+- Line 69: `- Do NOT say you don't know if it exists in memory`
+- Line 94: `"memory": "Ellie connected",`
+
+### C:\Shine_L\api\Backups\server_backup_visionv1_20260507_221521.py
+- Line 14: `# 👉 Ellie (memory brain)`
+- Line 15: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 15: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone`
+- Line 52: `# 🧠 STEP 1 — store memory`
+- Line 55: `# 🧠 STEP 2 — build memory context`
+- Line 56: `memory_context = build_context()`
+- Line 60: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)`
+- Line 63: `You are L, a personal assistant with persistent memory.`
+- Line 67: `{memory_context}`
+- Line 73: `- ALWAYS use the memory above when answering`
+- Line 74: `- If the answer is clearly in memory, answer confidently`
+- Line 75: `- Do NOT say you don't know if it exists in memory`
+- Line 100: `"memory": "Ellie connected",`
+
+### C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py
+- Line 19: `from memory.memory_engine import (`
+- Line 19: `from memory.memory_engine import (`
+- Line 293: `# MILLIE MEMORY KEEPER AGENT`
+- Line 302: `handle_memory_request`
+- Line 409: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 410: `PROFILE_FILE = "memory/profile.json"`
+- Line 411: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 414: `os.makedirs("memory", exist_ok=True)`
+- Line 446: `MEMORY_IMPORTANCE = {`
+- Line 542: `def calculate_memory_score(text):`
+- Line 546: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 579: `return "memory_recall"`
+- Line 641: `memory_score = calculate_memory_score(content_text)`
+- Line 647: `"score": memory_score,`
+- Line 695: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 751: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 754: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 766: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 830: `"# 🧠 Millie Memory Keeper",`
+- Line 839: `"🧠 Millie Memory Keeper:",`
+- Line 920: `"memory",`
+- Line 1008: `"memory": "connected",`
+- Line 1442: `# MILLIE MEMORY ROUTING`
+- Line 1450: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1452: `millie_reply = handle_memory_request(`
+- Line 1458: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1726: `"reply": "I could not find a matching full story file in memory."`
+- Line 1743: `memory_context = build_context()`
+- Line 1760: `You have persistent memory.`
+- Line 1762: `Here is the current memory context:`
+- Line 1764: `{memory_context}`
+- Line 1772: `- Use memory when answering.`
+- Line 1775: `- If story memory is provided, use it.`
+- Line 1776: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1786: `if intent == "memory_recall":`
+- Line 1931: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1937: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py
+- Line 19: `from memory.memory_engine import (`
+- Line 19: `from memory.memory_engine import (`
+- Line 293: `# MILLIE MEMORY KEEPER AGENT`
+- Line 302: `handle_memory_request`
+- Line 409: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 410: `PROFILE_FILE = "memory/profile.json"`
+- Line 411: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 414: `os.makedirs("memory", exist_ok=True)`
+- Line 446: `MEMORY_IMPORTANCE = {`
+- Line 542: `def calculate_memory_score(text):`
+- Line 546: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 579: `return "memory_recall"`
+- Line 641: `memory_score = calculate_memory_score(content_text)`
+- Line 647: `"score": memory_score,`
+- Line 695: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 751: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 754: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 766: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 830: `"# 🧠 Millie Memory Keeper",`
+- Line 839: `"🧠 Millie Memory Keeper:",`
+- Line 920: `"memory",`
+- Line 1008: `"memory": "connected",`
+- Line 1442: `# MILLIE MEMORY ROUTING`
+- Line 1450: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1452: `millie_reply = handle_memory_request(`
+- Line 1458: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1726: `"reply": "I could not find a matching full story file in memory."`
+- Line 1743: `memory_context = build_context()`
+- Line 1760: `You have persistent memory.`
+- Line 1762: `Here is the current memory context:`
+- Line 1764: `{memory_context}`
+- Line 1772: `- Use memory when answering.`
+- Line 1775: `- If story memory is provided, use it.`
+- Line 1776: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1786: `if intent == "memory_recall":`
+- Line 1941: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1947: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 248: `# MILLIE MEMORY KEEPER AGENT`
+- Line 257: `handle_memory_request`
+- Line 364: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 365: `PROFILE_FILE = "memory/profile.json"`
+- Line 366: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 369: `os.makedirs("memory", exist_ok=True)`
+- Line 401: `MEMORY_IMPORTANCE = {`
+- Line 497: `def calculate_memory_score(text):`
+- Line 501: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 534: `return "memory_recall"`
+- Line 596: `memory_score = calculate_memory_score(content_text)`
+- Line 602: `"score": memory_score,`
+- Line 650: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 706: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 709: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 720: `"memory": "connected",`
+- Line 928: `# MILLIE MEMORY ROUTING`
+- Line 936: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 938: `millie_reply = handle_memory_request(`
+- Line 944: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 950: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1119: `"reply": "I could not find a matching full story file in memory."`
+- Line 1136: `memory_context = build_context()`
+- Line 1145: `You have persistent memory.`
+- Line 1147: `Here is the current memory context:`
+- Line 1149: `{memory_context}`
+- Line 1155: `- Use memory when answering.`
+- Line 1158: `- If story memory is provided, use it.`
+- Line 1159: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1169: `if intent == "memory_recall":`
+- Line 1314: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1320: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_wire_brittany_20260508_170007.py
+- Line 15: `from memory.memory_engine import (`
+- Line 15: `from memory.memory_engine import (`
+- Line 38: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 39: `PROFILE_FILE = "memory/profile.json"`
+- Line 40: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 43: `os.makedirs("memory", exist_ok=True)`
+- Line 75: `MEMORY_IMPORTANCE = {`
+- Line 171: `def calculate_memory_score(text):`
+- Line 175: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 208: `return "memory_recall"`
+- Line 270: `memory_score = calculate_memory_score(content_text)`
+- Line 276: `"score": memory_score,`
+- Line 324: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 380: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 383: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 394: `"memory": "connected",`
+- Line 430: `"reply": "I could not find a matching full story file in memory."`
+- Line 447: `memory_context = build_context()`
+- Line 456: `You have persistent memory.`
+- Line 458: `Here is the current memory context:`
+- Line 460: `{memory_context}`
+- Line 466: `- Use memory when answering.`
+- Line 469: `- If story memory is provided, use it.`
+- Line 470: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 480: `if intent == "memory_recall":`
+- Line 625: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 631: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 172: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 173: `PROFILE_FILE = "memory/profile.json"`
+- Line 174: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 177: `os.makedirs("memory", exist_ok=True)`
+- Line 209: `MEMORY_IMPORTANCE = {`
+- Line 305: `def calculate_memory_score(text):`
+- Line 309: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 342: `return "memory_recall"`
+- Line 404: `memory_score = calculate_memory_score(content_text)`
+- Line 410: `"score": memory_score,`
+- Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 517: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 528: `"memory": "connected",`
+- Line 676: `"reply": "I could not find a matching full story file in memory."`
+- Line 693: `memory_context = build_context()`
+- Line 702: `You have persistent memory.`
+- Line 704: `Here is the current memory context:`
+- Line 706: `{memory_context}`
+- Line 712: `- Use memory when answering.`
+- Line 715: `- If story memory is provided, use it.`
+- Line 716: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 726: `if intent == "memory_recall":`
+- Line 871: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 877: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py
+- Line 18: `from memory.memory_engine import (`
+- Line 18: `from memory.memory_engine import (`
+- Line 292: `# MILLIE MEMORY KEEPER AGENT`
+- Line 301: `handle_memory_request`
+- Line 408: `LIFE_STORY_FILE = "memory/life_story.json"`
+- Line 409: `PROFILE_FILE = "memory/profile.json"`
+- Line 410: `CONVERSATION_FILE = "memory/conversations.json"`
+- Line 413: `os.makedirs("memory", exist_ok=True)`
+- Line 445: `MEMORY_IMPORTANCE = {`
+- Line 541: `def calculate_memory_score(text):`
+- Line 545: `for key, value in MEMORY_IMPORTANCE.items():`
+- Line 578: `return "memory_recall"`
+- Line 640: `memory_score = calculate_memory_score(content_text)`
+- Line 646: `"score": memory_score,`
+- Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(`
+- Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"`
+- Line 753: `story_context += "\n--- STORY MEMORY ---\n"`
+- Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"`
+- Line 829: `"# 🧠 Millie Memory Keeper",`
+- Line 838: `"🧠 Millie Memory Keeper:",`
+- Line 919: `"memory",`
+- Line 1007: `"memory": "connected",`
+- Line 1391: `# MILLIE MEMORY ROUTING`
+- Line 1399: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1401: `millie_reply = handle_memory_request(`
+- Line 1407: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 1675: `"reply": "I could not find a matching full story file in memory."`
+- Line 1692: `memory_context = build_context()`
+- Line 1709: `You have persistent memory.`
+- Line 1711: `Here is the current memory context:`
+- Line 1713: `{memory_context}`
+- Line 1721: `- Use memory when answering.`
+- Line 1724: `- If story memory is provided, use it.`
+- Line 1725: `- Do not claim you cannot access memory if memory context is provided.`
+- Line 1735: `if intent == "memory_recall":`
+- Line 1880: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 1886: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+
+### C:\Shine_L\api\google_auth.py
+- Line 79: `supabase.table("system_memory")`
+- Line 93: `supabase.table("system_memory")`
+- Line 102: `supabase.table("system_memory")`
+- Line 112: `supabase.table("system_memory")`
+- Line 139: `supabase.table("system_memory")`
+
+### C:\Shine_L\api\routes\memory.py
+- Line 10: `MEMORY_AUDIT_HANDLER = None`
+- Line 11: `MEMORY_AUDIT_V2_HANDLER = None`
+- Line 16: `def register_memory_handlers(`
+- Line 23: `global MEMORY_AUDIT_HANDLER`
+- Line 24: `global MEMORY_AUDIT_V2_HANDLER`
+- Line 28: `MEMORY_AUDIT_HANDLER = audit_handler`
+- Line 29: `MEMORY_AUDIT_V2_HANDLER = audit_v2_handler`
+- Line 34: `@router.get("/memory/audit")`
+- Line 35: `async def memory_audit():`
+- Line 37: `return await MEMORY_AUDIT_HANDLER()`
+- Line 40: `@router.get("/memory/audit-v2")`
+- Line 41: `async def memory_audit_v2():`
+- Line 43: `return await MEMORY_AUDIT_V2_HANDLER()`
+
+### C:\Shine_L\api\routes\system.py
+- Line 3: `from memory.memory_audit import (`
+- Line 4: `build_memory_audit_report,`
+- Line 5: `hard_memory_audit_v2,`
+- Line 13: `"memory_observable": True,`
+- Line 26: `"memory": "connected",`
+- Line 37: `@router.get("/memory/audit")`
+- Line 38: `def memory_audit():`
+- Line 40: `return build_memory_audit_report()`
+- Line 43: `@router.get("/memory/audit-v2")`
+- Line 44: `def memory_audit_v2():`
+- Line 46: `return hard_memory_audit_v2()`
+
+### C:\Shine_L\api\server.py
+- Line 21: `from api.routes.memory import (`
+- Line 22: `router as memory_router,`
+- Line 23: `register_memory_handlers,`
+- Line 51: `MEMORY_AUDIT_FILE,`
+- Line 417: `from memory.confidence import (`
+- Line 417: `from memory.confidence import (`
+- Line 418: `calculate_memory_confidence,`
+- Line 419: `apply_memory_confidence,`
+- Line 420: `build_memory_confidence_layer,`
+- Line 423: `from memory.memory_audit import (`
+- Line 424: `audit_memory_event,`
+- Line 425: `build_memory_audit_report,`
+- Line 426: `hard_memory_audit_v2,`
+- Line 427: `format_hard_memory_audit_v2,`
+- Line 430: `from memory.life_story_store import (`
+- Line 438: `from memory.conversation_store import (`
+- Line 465: `from memory.local_runtime import (`
+- Line 465: `from memory.local_runtime import (`
+- Line 469: `from memory.local_runtime import (`
+- Line 469: `from memory.local_runtime import (`
+- Line 474: `from memory.memory_engine import (`
+- Line 474: `from memory.memory_engine import (`
+- Line 476: `build_memory_confidence_context,`
+- Line 477: `build_natural_memory_injection,`
+- Line 479: `extract_relational_memory,`
+- Line 480: `build_relational_memory_context,`
+- Line 481: `build_full_memory_audit,`
+- Line 482: `get_memory_record_count,`
+- Line 501: `register_memory_handlers(`
+- Line 502: `handle_memory_audit,`
+- Line 503: `handle_memory_audit_v2,`
+- Line 604: `app.include_router(memory_router)`
+- Line 800: `# MILLIE MEMORY KEEPER AGENT`
+- Line 809: `handle_memory_request`
+- Line 937: `os.makedirs("memory", exist_ok=True)`
+- Line 980: `Memory:`
+- Line 981: `- Millie: Memory keeper and continuity support.`
+- Line 982: `- Supabase Memory Spine: Persistent semantic memory storage and retrieval.`
+- Line 998: `- Gracie: Legacy preservation, life story, and family memory workflows.`
+- Line 1050: `"score": memory_score`
+- Line 1120: `"memory audit",`
+- Line 1121: `"memory audit please",`
+- Line 1122: `"memory status",`
+- Line 1123: `"show memory audit",`
+- Line 1124: `"show memory status",`
+- Line 1125: `"memory audit v2"`
+- Line 1129: `"reply": format_hard_memory_audit_v2()`
+- Line 1134: `"memory audit",`
+- Line 1136: `"memory status",`
+- Line 1138: `"show memory audit",`
+- Line 1140: `"show memory status"`
+- Line 1144: `report = build_memory_audit_report()`
+- Line 1160: `# LIVE MEMORY AUDIT`
+- Line 1163: `memory_audit_requests = [`
+- Line 1165: `"memory audit",`
+- Line 1166: `"full memory audit",`
+- Line 1167: `"live memory audit",`
+- Line 1168: `"memory count",`
+- Line 1170: `"audit memory"`
+- Line 1176: `for x in memory_audit_requests`
+- Line 1180: `"reply": build_full_memory_audit()`
+- Line 1266: `handle_memory_request,`
+- Line 1841: `# MILLIE MEMORY ROUTING`
+- Line 1849: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")`
+- Line 1851: `millie_reply = handle_memory_request(`
+- Line 1857: `"🧠 Millie Memory Keeper:\n\n"`
+- Line 2203: `"reply": "I could not find a matching full story file in memory."`
+- Line 2220: `memory_context = build_context()`
+- Line 2222: `# RELATIONAL MEMORY RETRIEVAL`
+- Line 2225: `relational_memories = extract_relational_memory(`
+- Line 2229: `relational_context = build_relational_memory_context(`
+- Line 2233: `# RELATIONAL MEMORY CONTINUITY`
+- Line 2241: `natural_memory_continuity = build_natural_memory_injection(`
+- Line 2245: `# MEMORY CONFIDENCE + CONTRADICTION AWARENESS`
+- Line 2248: `memory_confidence_context = build_memory_confidence_context(`
+- Line 2297: `memory_context=memory_context,`
+- Line 2310: `if intent == "memory_recall":`
+- Line 2316: `memory_confidence = calculate_memory_confidence(`
+- Line 2320: `system_prompt += build_memory_confidence_layer(`
+- Line 2321: `memory_confidence`
+- Line 2344: `# MEMORY CONFIDENCE + AMBIGUITY AWARENESS`
+- Line 2347: `reply = apply_memory_confidence(`
+- Line 2353: `print("🧠 MEMORY CONFIDENCE APPLIED")`
+- Line 2502: `# MEMORY ROUTE MOVED TO api/routes/memory.py`
+- Line 2508: `"reply": "I could not find anything in your story memory about that yet."`
+- Line 2514: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`
+- Line 2520: `# MEMORY ROUTE MOVED TO api/routes/memory.py`
+
+### C:\Shine_L\core\compatibility.py
+- Line 12: `"memory_runtime": "local_json_first",`
+
+### C:\Shine_L\core\memory_learn.py
+- Line 6: `OUTCOME_PATH = os.path.join(BASE, "memory_outcomes.json")`
+
+### C:\Shine_L\core\memory.py
+- Line 6: `PATTERN_PATH = os.path.join(BASE, "memory_patterns.json")`
+- Line 7: `OUTCOME_PATH = os.path.join(BASE, "memory_outcomes.json")`
+
+### C:\Shine_L\core\paths.py
+- Line 8: `MEMORY_DIR = ROOT / "memory"`
+- Line 12: `LIFE_STORY_FILE = MEMORY_DIR / "life_story.json"`
+- Line 14: `PROFILE_FILE = MEMORY_DIR / "profile.json"`
+- Line 16: `CONVERSATION_FILE = MEMORY_DIR / "conversations.json"`
+- Line 18: `MEMORY_AUDIT_FILE = MEMORY_DIR / "memory_audit.json"`
+- Line 20: `INVISIBLE_ORCHESTRA_LOG = MEMORY_DIR / "invisible_orchestra_log.json"`
+
+### C:\Shine_L\core\prompt_builder.py
+- Line 3: `memory_context,`
+- Line 15: `You have persistent memory.`
+- Line 17: `Here is the current memory context:`
+- Line 19: `{memory_context}`
+- Line 36: `IMPORTANT MEMORY CONFIDENCE DOCTRINE:`
+- Line 37: `- Distinguish between confirmed memory and inferred context.`
+- Line 41: `IMPORTANT MEMORY CONTINUITY DOCTRINE:`
+- Line 42: `- Human memory is associative and relational.`
+- Line 72: `- Use memory naturally.`
+- Line 73: `- Use profile memory as highest authority.`
+
+### C:\Shine_L\core\response_stabilizer.py
+- Line 54: `"supabase memory spine",`
+- Line 55: `"semantic memory",`
+
+### C:\Shine_L\core\spine.py
+- Line 3: `PROFILE_PATH = "C:/Shine_L/memory/doug_profile.json"`
+
+### C:\Shine_L\orchestration\agent_registry.py
+- Line 27: `"domain": "memory",`
+- Line 28: `"specialty": "memory continuity",`
+
+### C:\Shine_L\orchestration\captains\intelligence_command.py
+- Line 26: `handle_memory_request,`
+- Line 130: `# MILLIE MEMORY`
+- Line 140: `millie_reply = handle_memory_request(`
+- Line 146: `"🧠 Millie Memory Keeper:\n\n"`
+
+### C:\Shine_L\orchestration\captains\intelligence\captain_millie.py
+- Line 15: `domain="memory"`
+
+### C:\Shine_L\orchestration\invisible_orchestra.py
+- Line 82: `"# 🧠 Millie Memory Keeper",`
+- Line 91: `"🧠 Millie Memory Keeper:",`
+
+### C:\Shine_L\orchestration\meta_suppression.py
+- Line 9: `"memory audit",`
+- Line 10: `"memory observability",`
+
+### C:\Shine_L\orchestration\runtime_engine.py
+- Line 10: `from memory.local_runtime import (`
+- Line 10: `from memory.local_runtime import (`
+- Line 40: `from memory.confidence import (`
+- Line 40: `from memory.confidence import (`
+- Line 41: `apply_memory_confidence`
+- Line 64: `# MEMORY PROCESS`
+- Line 69: `memory_context = build_context()`
+- Line 126: `memory_context=memory_context,`
+- Line 160: `"memory_context": memory_context,`
+- Line 179: `reply = apply_memory_confidence(`
+
+### C:\Shine_L\orchestration\weighted_scoring.py
+- Line 39: `"memory",`
+- Line 150: `memory_terms = [`
+- Line 155: `"memory audit"`
+- Line 201: `for term in memory_terms:`
+
+### C:\Shine_L\tests\test_dynamic_dispatch.py
+- Line 34: `return "memory" in msg.lower()`
+- Line 63: `"show memory"`
+
+### C:\Shine_L\tests\test_final_modular.py
+- Line 14: `from memory.local_runtime import runtime_status`
+- Line 14: `from memory.local_runtime import runtime_status`
+- Line 23: `print(build_tegan_triage_report("I need help with memory and emails"))`
+
+### C:\Shine_L\tests\test_intelligence_deployment.py
+- Line 14: `return "memory" in msg.lower()`
+- Line 34: `"show my memory"`
+- Line 39: `"show my memory"`
+
+### C:\Shine_L\tests\test_supabase_sync.py
+- Line 9: `from memory.supabase_sync.sync_engine import (`
+- Line 9: `from memory.supabase_sync.sync_engine import (`
+
+### C:\Shine_L\tests\test_tegan_triage.py
+- Line 7: `'memory audit please',`
+
+## Current Memory Architecture Issue
+
+Memory cognition is currently split between:
+- core/
+- memory/
+
+Known core memory files:
+- core/memory.py
+- core/memory_detect.py
+- core/memory_learn.py
+- core/memory_patterns.json
+- core/memory_outcomes.json
+
+## Target Future Structure
+
+`	ext
+memory/
+  runtime/
+  retrieval/
+  learning/
+  patterns/
+  confidence/
+  sync/
+  captains/
+`"
+# OPERATION MNEMOSYNE ## AODS 47 — Memory Dependency Audit + Import Map  Created: 05/14/2026 16:17:33  ## Mission Map memory dependencies before moving memory cognition out of core.  ## Doctrine - Do not move memory files blindly. - Map first. - Extract second. - Preserve rollback. - Protect memory.  ## Findings Count Total memory-related import/reference hits: 2420  ### C:\Shine_L\agents\emme\emme.py - Line 15: `"memory",`  ### C:\Shine_L\agents\fee.py - Line 6: `FROLLO_DIR = "C:/Shine_L/memory/frollo"` - Line 7: `OUTPUT_PATH = "C:/Shine_L/memory/finance.json"`  ### C:\Shine_L\agents\fiona\fiona_backup_20260510_182249.py - Line 16: `"memory",`  ### C:\Shine_L\agents\fiona\fiona.py - Line 41: `"memory": -3,`  ### C:\Shine_L\agents\gracie\gracie_backup_20260510_192937.py - Line 15: `"memory",` - Line 92: `"book memory",` - Line 94: `"family memory",`  ### C:\Shine_L\agents\gracie\gracie.py - Line 8: `"save this memory": 6,` - Line 19: `"spoken memory": 5,` - Line 36: `"memory audit": -8,`  ### C:\Shine_L\agents\millie\__init__.py - Line 3: `handle_memory_request,` - Line 4: `add_memory,`  ### C:\Shine_L\agents\millie\millie.py - Line 1: `from memory.memory_engine import (` - Line 1: `from memory.memory_engine import (` - Line 20: `"memory keeper",` - Line 22: `"save this memory",` - Line 25: `"memory audit",` - Line 26: `"search memory",` - Line 37: `# SAVE MEMORY` - Line 40: `def add_memory(message):` - Line 46: `.replace("save this memory", "")` - Line 58: `# SEARCH MEMORY` - Line 95: `# MEMORY AUDIT` - Line 98: `def memory_audit():` - Line 103: `"# Memory Audit\n\n"` - Line 111: `def handle_memory_request(message: str):` - Line 117: `return memory_audit()` - Line 144: `saved = add_memory(message)` - Line 147: `"Memory saved:\n\n"`  ### C:\Shine_L\agents\noelie\noelie_backup_live_web_v1_20260510_005624.py - Line 15: `"memory",` - Line 176: `"memory",` - Line 283: `"This may benefit from continuity, storytelling, and memory-preservation research.",`  ### C:\Shine_L\agents\noelie\noelie_backup_v1_20260510_004239.py - Line 15: `"memory",` - Line 176: `"memory",` - Line 283: `"This may benefit from continuity, storytelling, and memory-preservation research.",`  ### C:\Shine_L\agents\noelie\noelie.py - Line 15: `"memory",` - Line 176: `"memory",` - Line 283: `"This may benefit from continuity, storytelling, and memory-preservation research.",`  ### C:\Shine_L\agents\pixie\pixie_backup_debug_20260509_134051.py - Line 91: `"visual memory anchor poster in Shine style."`  ### C:\Shine_L\agents\pixie\pixie_backup_semantic_20260509_140409.py - Line 91: `"visual memory anchor poster in Shine style."`  ### C:\Shine_L\agents\pixie\pixie_backup_triggers_20260509_135709.py - Line 91: `"visual memory anchor poster in Shine style."`  ### C:\Shine_L\agents\pixie\pixie.py - Line 140: `"visual memory anchor poster in Shine style."`  ### C:\Shine_L\agents\richie\richie.py - Line 16: `"memory",`  ### C:\Shine_L\agents\sally\sally.py - Line 15: `"memory",` - Line 22: `"memory",`  ### C:\Shine_L\agents\tania_backup_live_20260508_224046.py - Line 5: `TASK_PATH = "C:/Shine_L/memory/tasks.json"`  ### C:\Shine_L\agents\tania\tania.py - Line 15: `"memory",`  ### C:\Shine_L\agents\tegan\tegan.py - Line 1: `from memory.memory_engine import (` - Line 1: `from memory.memory_engine import (` - Line 33: `"Connected to unified Supabase memory",` - Line 73: `f"Unified memory count: {len(facts)}\n"` - Line 77: `"Supabase memory spine: ONLINE\n"` - Line 81: `"Semantic memory: ACTIVE\n"`  ### C:\Shine_L\agents\winnie.py - Line 5: `WHATSAPP_DIR = "C:/Shine_L/memory/whatsapp"`  ### C:\Shine_L\agents\winnie\winnie.py - Line 16: `"memory",`  ### C:\Shine_L\api\Backups\broken .py - Line 19: `from memory.memory_engine import (` - Line 19: `from memory.memory_engine import (` - Line 293: `# MILLIE MEMORY KEEPER AGENT` - Line 302: `handle_memory_request` - Line 409: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 410: `PROFILE_FILE = "memory/profile.json"` - Line 411: `CONVERSATION_FILE = "memory/conversations.json"` - Line 414: `os.makedirs("memory", exist_ok=True)` - Line 446: `MEMORY_IMPORTANCE = {` - Line 542: `def calculate_memory_score(text):` - Line 546: `for key, value in MEMORY_IMPORTANCE.items():` - Line 579: `return "memory_recall"` - Line 641: `memory_score = calculate_memory_score(content_text)` - Line 647: `"score": memory_score,` - Line 695: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 751: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 754: `story_context += "\n--- STORY MEMORY ---\n"` - Line 766: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 830: `"# 🧠 Millie Memory Keeper",` - Line 839: `"🧠 Millie Memory Keeper:",` - Line 920: `"memory",` - Line 1008: `"memory": "connected",` - Line 1442: `# MILLIE MEMORY ROUTING` - Line 1450: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1452: `millie_reply = handle_memory_request(` - Line 1458: `"🧠 Millie Memory Keeper:\n\n"` - Line 1726: `"reply": "I could not find a matching full story file in memory."` - Line 1743: `memory_context = build_context()` - Line 1760: `You have persistent memory.` - Line 1762: `Here is the current memory context:` - Line 1764: `{memory_context}` - Line 1772: `- Use memory when answering.` - Line 1775: `- If story memory is provided, use it.` - Line 1776: `- Do not claim you cannot access memory if memory context is provided.` - Line 1786: `if intent == "memory_recall":` - Line 1983: `"reply": "I could not find anything in your story memory about that yet."` - Line 1989: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 138: `# MILLIE MEMORY KEEPER AGENT` - Line 147: `handle_memory_request` - Line 254: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 255: `PROFILE_FILE = "memory/profile.json"` - Line 256: `CONVERSATION_FILE = "memory/conversations.json"` - Line 259: `os.makedirs("memory", exist_ok=True)` - Line 291: `MEMORY_IMPORTANCE = {` - Line 387: `def calculate_memory_score(text):` - Line 391: `for key, value in MEMORY_IMPORTANCE.items():` - Line 424: `return "memory_recall"` - Line 486: `memory_score = calculate_memory_score(content_text)` - Line 492: `"score": memory_score,` - Line 540: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 596: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 599: `story_context += "\n--- STORY MEMORY ---\n"` - Line 610: `"memory": "connected",` - Line 678: `# MILLIE MEMORY ROUTING` - Line 686: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 688: `millie_reply = handle_memory_request(` - Line 694: `"🧠 Millie Memory Keeper:\n\n"` - Line 700: `"🧠 Millie Memory Keeper:\n\n"` - Line 869: `"reply": "I could not find a matching full story file in memory."` - Line 886: `memory_context = build_context()` - Line 895: `You have persistent memory.` - Line 897: `Here is the current memory context:` - Line 899: `{memory_context}` - Line 905: `- Use memory when answering.` - Line 908: `- If story memory is provided, use it.` - Line 909: `- Do not claim you cannot access memory if memory context is provided.` - Line 919: `if intent == "memory_recall":` - Line 1064: `"reply": "I could not find anything in your story memory about that yet."` - Line 1070: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 160: `# MILLIE MEMORY KEEPER AGENT` - Line 169: `handle_memory_request` - Line 276: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 277: `PROFILE_FILE = "memory/profile.json"` - Line 278: `CONVERSATION_FILE = "memory/conversations.json"` - Line 281: `os.makedirs("memory", exist_ok=True)` - Line 313: `MEMORY_IMPORTANCE = {` - Line 409: `def calculate_memory_score(text):` - Line 413: `for key, value in MEMORY_IMPORTANCE.items():` - Line 446: `return "memory_recall"` - Line 508: `memory_score = calculate_memory_score(content_text)` - Line 514: `"score": memory_score,` - Line 562: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 618: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 621: `story_context += "\n--- STORY MEMORY ---\n"` - Line 632: `"memory": "connected",` - Line 728: `# MILLIE MEMORY ROUTING` - Line 736: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 738: `millie_reply = handle_memory_request(` - Line 744: `"🧠 Millie Memory Keeper:\n\n"` - Line 750: `"🧠 Millie Memory Keeper:\n\n"` - Line 919: `"reply": "I could not find a matching full story file in memory."` - Line 936: `memory_context = build_context()` - Line 945: `You have persistent memory.` - Line 947: `Here is the current memory context:` - Line 949: `{memory_context}` - Line 955: `- Use memory when answering.` - Line 958: `- If story memory is provided, use it.` - Line 959: `- Do not claim you cannot access memory if memory context is provided.` - Line 969: `if intent == "memory_recall":` - Line 1114: `"reply": "I could not find anything in your story memory about that yet."` - Line 1120: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_brittanyroute_20260508_172823.py - Line 15: `from memory.memory_engine import (` - Line 15: `from memory.memory_engine import (` - Line 50: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 51: `PROFILE_FILE = "memory/profile.json"` - Line 52: `CONVERSATION_FILE = "memory/conversations.json"` - Line 55: `os.makedirs("memory", exist_ok=True)` - Line 87: `MEMORY_IMPORTANCE = {` - Line 183: `def calculate_memory_score(text):` - Line 187: `for key, value in MEMORY_IMPORTANCE.items():` - Line 220: `return "memory_recall"` - Line 282: `memory_score = calculate_memory_score(content_text)` - Line 288: `"score": memory_score,` - Line 336: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 392: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 395: `story_context += "\n--- STORY MEMORY ---\n"` - Line 406: `"memory": "connected",` - Line 442: `"reply": "I could not find a matching full story file in memory."` - Line 459: `memory_context = build_context()` - Line 468: `You have persistent memory.` - Line 470: `Here is the current memory context:` - Line 472: `{memory_context}` - Line 478: `- Use memory when answering.` - Line 481: `- If story memory is provided, use it.` - Line 482: `- Do not claim you cannot access memory if memory context is provided.` - Line 492: `if intent == "memory_recall":` - Line 637: `"reply": "I could not find anything in your story memory about that yet."` - Line 643: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_callie_tania_20260508_184451.py - Line 15: `from memory.memory_engine import (` - Line 15: `from memory.memory_engine import (` - Line 72: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 73: `PROFILE_FILE = "memory/profile.json"` - Line 74: `CONVERSATION_FILE = "memory/conversations.json"` - Line 77: `os.makedirs("memory", exist_ok=True)` - Line 109: `MEMORY_IMPORTANCE = {` - Line 205: `def calculate_memory_score(text):` - Line 209: `for key, value in MEMORY_IMPORTANCE.items():` - Line 242: `return "memory_recall"` - Line 304: `memory_score = calculate_memory_score(content_text)` - Line 310: `"score": memory_score,` - Line 358: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 414: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 417: `story_context += "\n--- STORY MEMORY ---\n"` - Line 428: `"memory": "connected",` - Line 520: `"reply": "I could not find a matching full story file in memory."` - Line 537: `memory_context = build_context()` - Line 546: `You have persistent memory.` - Line 548: `Here is the current memory context:` - Line 550: `{memory_context}` - Line 556: `- Use memory when answering.` - Line 559: `- If story memory is provided, use it.` - Line 560: `- Do not claim you cannot access memory if memory context is provided.` - Line 570: `if intent == "memory_recall":` - Line 715: `"reply": "I could not find anything in your story memory about that yet."` - Line 721: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 829: `"# 🧠 Millie Memory Keeper",` - Line 838: `"🧠 Millie Memory Keeper:",` - Line 919: `"memory",` - Line 1007: `"memory": "connected",` - Line 1391: `# MILLIE MEMORY ROUTING` - Line 1399: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1401: `millie_reply = handle_memory_request(` - Line 1407: `"🧠 Millie Memory Keeper:\n\n"` - Line 1675: `"reply": "I could not find a matching full story file in memory."` - Line 1692: `memory_context = build_context()` - Line 1709: `You have persistent memory.` - Line 1711: `Here is the current memory context:` - Line 1713: `{memory_context}` - Line 1721: `- Use memory when answering.` - Line 1724: `- If story memory is provided, use it.` - Line 1725: `- Do not claim you cannot access memory if memory context is provided.` - Line 1735: `if intent == "memory_recall":` - Line 1880: `"reply": "I could not find anything in your story memory about that yet."` - Line 1886: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 652: `audit_memory_event(` - Line 658: `"score": memory_score` - Line 690: `audit_memory_event(` - Line 713: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 769: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 772: `story_context += "\n--- STORY MEMORY ---\n"` - Line 784: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 848: `"# 🧠 Millie Memory Keeper",` - Line 857: `"🧠 Millie Memory Keeper:",` - Line 938: `"memory",` - Line 1023: `# MEMORY OBSERVABILITY V1` - Line 1026: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"` - Line 1028: `def audit_memory_event(` - Line 1037: `MEMORY_AUDIT_FILE,` - Line 1054: `MEMORY_AUDIT_FILE,` - Line 1061: `"MEMORY AUDIT ERROR:",` - Line 1066: `def memory_file_status():` - Line 1070: `"memory/conversations.json",` - Line 1072: `"memory/life_story.json",` - Line 1074: `"memory/profile.json",` - Line 1076: `"memory/invisible_orchestra_log.json",` - Line 1078: `"memory/memory_audit.json"` - Line 1131: `def build_memory_audit_report():` - Line 1134: `MEMORY_AUDIT_FILE,` - Line 1142: `"memory_files": memory_file_status(),` - Line 1152: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION` - Line 1155: `def hard_memory_audit_v2():` - Line 1158: `"memory/profile.json",` - Line 1159: `"memory/conversations.json",` - Line 1160: `"memory/life_story.json",` - Line 1161: `"memory/invisible_orchestra_log.json",` - Line 1162: `"memory/memory_audit.json"` - Line 1222: `"audit_version": "Memory Audit V2",` - Line 1224: `"memory_files": report,` - Line 1230: `def format_hard_memory_audit_v2():` - Line 1232: `audit = hard_memory_audit_v2()` - Line 1235: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")` - Line 1243: `lines.append("MEMORY FILES")` - Line 1245: `for item in audit["memory_files"]:` - Line 1264: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")` - Line 1273: `"memory": "connected",` - Line 1279: `@app.get("/memory/audit")` - Line 1280: `def memory_audit():` - Line 1282: `return build_memory_audit_report()` - Line 1285: `@app.get("/memory/audit-v2")` - Line 1286: `def memory_audit_v2():` - Line 1288: `return hard_memory_audit_v2()` - Line 1295: `"memory audit",` - Line 1296: `"memory audit please",` - Line 1297: `"memory status",` - Line 1298: `"show memory audit",` - Line 1299: `"show memory status",` - Line 1300: `"memory audit v2"` - Line 1304: `"reply": format_hard_memory_audit_v2()` - Line 1309: `"memory audit",` - Line 1311: `"memory status",` - Line 1313: `"show memory audit",` - Line 1315: `"show memory status"` - Line 1319: `report = build_memory_audit_report()` - Line 1704: `# MILLIE MEMORY ROUTING` - Line 1712: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1714: `millie_reply = handle_memory_request(` - Line 1720: `"🧠 Millie Memory Keeper:\n\n"` - Line 1988: `"reply": "I could not find a matching full story file in memory."` - Line 2005: `memory_context = build_context()` - Line 2022: `You have persistent memory.` - Line 2024: `Here is the current memory context:` - Line 2026: `{memory_context}` - Line 2039: `- If memory contains Tamara, treat it as relationship history only.` - Line 2041: `- If unsure, say memory confidence is uncertain rather than guessing.` - Line 2044: `- Use memory when answering.` - Line 2047: `- If story memory is provided, use it.` - Line 2048: `- Do not claim you cannot access memory if memory context is provided.` - Line 2058: `if intent == "memory_recall":` - Line 2203: `"reply": "I could not find anything in your story memory about that yet."` - Line 2209: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 652: `audit_memory_event(` - Line 658: `"score": memory_score` - Line 690: `audit_memory_event(` - Line 713: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 769: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 772: `story_context += "\n--- STORY MEMORY ---\n"` - Line 784: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 848: `"# 🧠 Millie Memory Keeper",` - Line 857: `"🧠 Millie Memory Keeper:",` - Line 938: `"memory",` - Line 1023: `# MEMORY OBSERVABILITY V1` - Line 1026: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"` - Line 1028: `def audit_memory_event(` - Line 1037: `MEMORY_AUDIT_FILE,` - Line 1054: `MEMORY_AUDIT_FILE,` - Line 1061: `"MEMORY AUDIT ERROR:",` - Line 1066: `def memory_file_status():` - Line 1070: `"memory/conversations.json",` - Line 1072: `"memory/life_story.json",` - Line 1074: `"memory/profile.json",` - Line 1076: `"memory/invisible_orchestra_log.json",` - Line 1078: `"memory/memory_audit.json"` - Line 1131: `def build_memory_audit_report():` - Line 1134: `MEMORY_AUDIT_FILE,` - Line 1142: `"memory_files": memory_file_status(),` - Line 1152: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION` - Line 1155: `def hard_memory_audit_v2():` - Line 1158: `"memory/profile.json",` - Line 1159: `"memory/conversations.json",` - Line 1160: `"memory/life_story.json",` - Line 1161: `"memory/invisible_orchestra_log.json",` - Line 1162: `"memory/memory_audit.json"` - Line 1222: `"audit_version": "Memory Audit V2",` - Line 1224: `"memory_files": report,` - Line 1230: `def format_hard_memory_audit_v2():` - Line 1232: `audit = hard_memory_audit_v2()` - Line 1235: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")` - Line 1243: `lines.append("MEMORY FILES")` - Line 1245: `for item in audit["memory_files"]:` - Line 1264: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")` - Line 1275: `"memory_observable": True,` - Line 1309: `"memory": "connected",` - Line 1315: `@app.get("/memory/audit")` - Line 1316: `def memory_audit():` - Line 1318: `return build_memory_audit_report()` - Line 1321: `@app.get("/memory/audit-v2")` - Line 1322: `def memory_audit_v2():` - Line 1324: `return hard_memory_audit_v2()` - Line 1337: `"memory audit",` - Line 1338: `"memory audit please",` - Line 1339: `"memory status",` - Line 1340: `"show memory audit",` - Line 1341: `"show memory status",` - Line 1342: `"memory audit v2"` - Line 1346: `"reply": format_hard_memory_audit_v2()` - Line 1351: `"memory audit",` - Line 1353: `"memory status",` - Line 1355: `"show memory audit",` - Line 1357: `"show memory status"` - Line 1361: `report = build_memory_audit_report()` - Line 1750: `# MILLIE MEMORY ROUTING` - Line 1758: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1760: `millie_reply = handle_memory_request(` - Line 1766: `"🧠 Millie Memory Keeper:\n\n"` - Line 2034: `"reply": "I could not find a matching full story file in memory."` - Line 2051: `memory_context = build_context()` - Line 2068: `You have persistent memory.` - Line 2070: `Here is the current memory context:` - Line 2072: `{memory_context}` - Line 2085: `- If memory contains Tamara, treat it as relationship history only.` - Line 2087: `- If unsure, say memory confidence is uncertain rather than guessing.` - Line 2090: `- Use memory when answering.` - Line 2093: `- If story memory is provided, use it.` - Line 2094: `- Do not claim you cannot access memory if memory context is provided.` - Line 2104: `if intent == "memory_recall":` - Line 2251: `"reply": "I could not find anything in your story memory about that yet."` - Line 2257: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 172: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 173: `PROFILE_FILE = "memory/profile.json"` - Line 174: `CONVERSATION_FILE = "memory/conversations.json"` - Line 177: `os.makedirs("memory", exist_ok=True)` - Line 209: `MEMORY_IMPORTANCE = {` - Line 305: `def calculate_memory_score(text):` - Line 309: `for key, value in MEMORY_IMPORTANCE.items():` - Line 342: `return "memory_recall"` - Line 404: `memory_score = calculate_memory_score(content_text)` - Line 410: `"score": memory_score,` - Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 517: `story_context += "\n--- STORY MEMORY ---\n"` - Line 528: `"memory": "connected",` - Line 731: `"reply": "I could not find a matching full story file in memory."` - Line 748: `memory_context = build_context()` - Line 757: `You have persistent memory.` - Line 759: `Here is the current memory context:` - Line 761: `{memory_context}` - Line 767: `- Use memory when answering.` - Line 770: `- If story memory is provided, use it.` - Line 771: `- Do not claim you cannot access memory if memory context is provided.` - Line 781: `if intent == "memory_recall":` - Line 926: `"reply": "I could not find anything in your story memory about that yet."` - Line 932: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_drift_20260507_233906.py - Line 16: `# 👉 Ellie (memory brain)` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 54: `# 🧠 STEP 1 — store memory` - Line 57: `# 🧠 STEP 2 — build memory context` - Line 58: `memory_context = build_context()` - Line 62: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 65: `You are L, a personal assistant with persistent memory.` - Line 69: `{memory_context}` - Line 75: `- ALWAYS use the memory above when answering` - Line 76: `- If the answer is clearly in memory, answer confidently` - Line 77: `- Do NOT say you don't know if it exists in memory` - Line 82: `# STORY MEMORY SEARCH` - Line 94: `"\n\nSTORY MEMORY:\n" +` - Line 121: `"memory": "Ellie connected",` - Line 134: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 142: `def calculate_memory_score(text):` - Line 148: `for key, value in MEMORY_IMPORTANCE.items():` - Line 240: `memory_score = calculate_memory_score(` - Line 247: `"score": memory_score` - Line 418: `"reply":"I could not find anything in your story memory about that yet."` - Line 425: `summary += f"\n\n--- MEMORY {i+1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_emily_20260508_183637.py - Line 15: `from memory.memory_engine import (` - Line 15: `from memory.memory_engine import (` - Line 50: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 51: `PROFILE_FILE = "memory/profile.json"` - Line 52: `CONVERSATION_FILE = "memory/conversations.json"` - Line 55: `os.makedirs("memory", exist_ok=True)` - Line 87: `MEMORY_IMPORTANCE = {` - Line 183: `def calculate_memory_score(text):` - Line 187: `for key, value in MEMORY_IMPORTANCE.items():` - Line 220: `return "memory_recall"` - Line 282: `memory_score = calculate_memory_score(content_text)` - Line 288: `"score": memory_score,` - Line 336: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 392: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 395: `story_context += "\n--- STORY MEMORY ---\n"` - Line 406: `"memory": "connected",` - Line 470: `"reply": "I could not find a matching full story file in memory."` - Line 487: `memory_context = build_context()` - Line 496: `You have persistent memory.` - Line 498: `Here is the current memory context:` - Line 500: `{memory_context}` - Line 506: `- Use memory when answering.` - Line 509: `- If story memory is provided, use it.` - Line 510: `- Do not claim you cannot access memory if memory context is provided.` - Line 520: `if intent == "memory_recall":` - Line 665: `"reply": "I could not find anything in your story memory about that yet."` - Line 671: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_emily_20260508_184421.py - Line 15: `from memory.memory_engine import (` - Line 15: `from memory.memory_engine import (` - Line 72: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 73: `PROFILE_FILE = "memory/profile.json"` - Line 74: `CONVERSATION_FILE = "memory/conversations.json"` - Line 77: `os.makedirs("memory", exist_ok=True)` - Line 109: `MEMORY_IMPORTANCE = {` - Line 205: `def calculate_memory_score(text):` - Line 209: `for key, value in MEMORY_IMPORTANCE.items():` - Line 242: `return "memory_recall"` - Line 304: `memory_score = calculate_memory_score(content_text)` - Line 310: `"score": memory_score,` - Line 358: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 414: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 417: `story_context += "\n--- STORY MEMORY ---\n"` - Line 428: `"memory": "connected",` - Line 520: `"reply": "I could not find a matching full story file in memory."` - Line 537: `memory_context = build_context()` - Line 546: `You have persistent memory.` - Line 548: `Here is the current memory context:` - Line 550: `{memory_context}` - Line 556: `- Use memory when answering.` - Line 559: `- If story memory is provided, use it.` - Line 560: `- Do not claim you cannot access memory if memory context is provided.` - Line 570: `if intent == "memory_recall":` - Line 715: `"reply": "I could not find anything in your story memory about that yet."` - Line 721: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_emily_live_20260508_192137.py - Line 15: `from memory.memory_engine import (` - Line 15: `from memory.memory_engine import (` - Line 116: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 117: `PROFILE_FILE = "memory/profile.json"` - Line 118: `CONVERSATION_FILE = "memory/conversations.json"` - Line 121: `os.makedirs("memory", exist_ok=True)` - Line 153: `MEMORY_IMPORTANCE = {` - Line 249: `def calculate_memory_score(text):` - Line 253: `for key, value in MEMORY_IMPORTANCE.items():` - Line 286: `return "memory_recall"` - Line 348: `memory_score = calculate_memory_score(content_text)` - Line 354: `"score": memory_score,` - Line 402: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 458: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 461: `story_context += "\n--- STORY MEMORY ---\n"` - Line 472: `"memory": "connected",` - Line 620: `"reply": "I could not find a matching full story file in memory."` - Line 637: `memory_context = build_context()` - Line 646: `You have persistent memory.` - Line 648: `Here is the current memory context:` - Line 650: `{memory_context}` - Line 656: `- Use memory when answering.` - Line 659: `- If story memory is provided, use it.` - Line 660: `- Do not claim you cannot access memory if memory context is provided.` - Line 670: `if intent == "memory_recall":` - Line 815: `"reply": "I could not find anything in your story memory about that yet."` - Line 821: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 116: `# MILLIE MEMORY KEEPER AGENT` - Line 125: `handle_memory_request` - Line 232: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 233: `PROFILE_FILE = "memory/profile.json"` - Line 234: `CONVERSATION_FILE = "memory/conversations.json"` - Line 237: `os.makedirs("memory", exist_ok=True)` - Line 269: `MEMORY_IMPORTANCE = {` - Line 365: `def calculate_memory_score(text):` - Line 369: `for key, value in MEMORY_IMPORTANCE.items():` - Line 402: `return "memory_recall"` - Line 464: `memory_score = calculate_memory_score(content_text)` - Line 470: `"score": memory_score,` - Line 518: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 574: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 577: `story_context += "\n--- STORY MEMORY ---\n"` - Line 588: `"memory": "connected",` - Line 628: `# MILLIE MEMORY ROUTING` - Line 636: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 638: `millie_reply = handle_memory_request(` - Line 644: `"🧠 Millie Memory Keeper:\n\n"` - Line 650: `"🧠 Millie Memory Keeper:\n\n"` - Line 819: `"reply": "I could not find a matching full story file in memory."` - Line 836: `memory_context = build_context()` - Line 845: `You have persistent memory.` - Line 847: `Here is the current memory context:` - Line 849: `{memory_context}` - Line 855: `- Use memory when answering.` - Line 858: `- If story memory is provided, use it.` - Line 859: `- Do not claim you cannot access memory if memory context is provided.` - Line 869: `if intent == "memory_recall":` - Line 1014: `"reply": "I could not find anything in your story memory about that yet."` - Line 1020: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 138: `# MILLIE MEMORY KEEPER AGENT` - Line 147: `handle_memory_request` - Line 254: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 255: `PROFILE_FILE = "memory/profile.json"` - Line 256: `CONVERSATION_FILE = "memory/conversations.json"` - Line 259: `os.makedirs("memory", exist_ok=True)` - Line 291: `MEMORY_IMPORTANCE = {` - Line 387: `def calculate_memory_score(text):` - Line 391: `for key, value in MEMORY_IMPORTANCE.items():` - Line 424: `return "memory_recall"` - Line 486: `memory_score = calculate_memory_score(content_text)` - Line 492: `"score": memory_score,` - Line 540: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 596: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 599: `story_context += "\n--- STORY MEMORY ---\n"` - Line 610: `"memory": "connected",` - Line 678: `# MILLIE MEMORY ROUTING` - Line 686: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 688: `millie_reply = handle_memory_request(` - Line 694: `"🧠 Millie Memory Keeper:\n\n"` - Line 700: `"🧠 Millie Memory Keeper:\n\n"` - Line 869: `"reply": "I could not find a matching full story file in memory."` - Line 886: `memory_context = build_context()` - Line 895: `You have persistent memory.` - Line 897: `Here is the current memory context:` - Line 899: `{memory_context}` - Line 905: `- Use memory when answering.` - Line 908: `- If story memory is provided, use it.` - Line 909: `- Do not claim you cannot access memory if memory context is provided.` - Line 919: `if intent == "memory_recall":` - Line 1064: `"reply": "I could not find anything in your story memory about that yet."` - Line 1070: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 303: `"memory audit",` - Line 304: `"memory observability",` - Line 339: `# MILLIE MEMORY KEEPER AGENT` - Line 348: `handle_memory_request` - Line 455: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 456: `PROFILE_FILE = "memory/profile.json"` - Line 457: `CONVERSATION_FILE = "memory/conversations.json"` - Line 460: `os.makedirs("memory", exist_ok=True)` - Line 492: `MEMORY_IMPORTANCE = {` - Line 588: `def calculate_memory_score(text):` - Line 592: `for key, value in MEMORY_IMPORTANCE.items():` - Line 625: `return "memory_recall"` - Line 687: `memory_score = calculate_memory_score(content_text)` - Line 693: `"score": memory_score,` - Line 699: `audit_memory_event(` - Line 705: `"score": memory_score` - Line 737: `audit_memory_event(` - Line 760: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 816: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 819: `story_context += "\n--- STORY MEMORY ---\n"` - Line 831: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 895: `"# 🧠 Millie Memory Keeper",` - Line 904: `"🧠 Millie Memory Keeper:",` - Line 985: `"memory",` - Line 1070: `# MEMORY OBSERVABILITY V1` - Line 1073: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"` - Line 1075: `def audit_memory_event(` - Line 1084: `MEMORY_AUDIT_FILE,` - Line 1101: `MEMORY_AUDIT_FILE,` - Line 1108: `"MEMORY AUDIT ERROR:",` - Line 1113: `def memory_file_status():` - Line 1117: `"memory/conversations.json",` - Line 1119: `"memory/life_story.json",` - Line 1121: `"memory/profile.json",` - Line 1123: `"memory/invisible_orchestra_log.json",` - Line 1125: `"memory/memory_audit.json"` - Line 1178: `def build_memory_audit_report():` - Line 1181: `MEMORY_AUDIT_FILE,` - Line 1189: `"memory_files": memory_file_status(),` - Line 1199: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION` - Line 1202: `def hard_memory_audit_v2():` - Line 1205: `"memory/profile.json",` - Line 1206: `"memory/conversations.json",` - Line 1207: `"memory/life_story.json",` - Line 1208: `"memory/invisible_orchestra_log.json",` - Line 1209: `"memory/memory_audit.json"` - Line 1269: `"audit_version": "Memory Audit V2",` - Line 1271: `"memory_files": report,` - Line 1277: `def format_hard_memory_audit_v2():` - Line 1279: `audit = hard_memory_audit_v2()` - Line 1282: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")` - Line 1290: `lines.append("MEMORY FILES")` - Line 1292: `for item in audit["memory_files"]:` - Line 1311: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")` - Line 1322: `"memory_observable": True,` - Line 1356: `"memory": "connected",` - Line 1362: `@app.get("/memory/audit")` - Line 1363: `def memory_audit():` - Line 1365: `return build_memory_audit_report()` - Line 1368: `@app.get("/memory/audit-v2")` - Line 1369: `def memory_audit_v2():` - Line 1371: `return hard_memory_audit_v2()` - Line 1384: `"memory audit",` - Line 1385: `"memory audit please",` - Line 1386: `"memory status",` - Line 1387: `"show memory audit",` - Line 1388: `"show memory status",` - Line 1389: `"memory audit v2"` - Line 1393: `"reply": format_hard_memory_audit_v2()` - Line 1398: `"memory audit",` - Line 1400: `"memory status",` - Line 1402: `"show memory audit",` - Line 1404: `"show memory status"` - Line 1408: `report = build_memory_audit_report()` - Line 1783: `# MILLIE MEMORY ROUTING` - Line 1791: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1793: `millie_reply = handle_memory_request(` - Line 1799: `"🧠 Millie Memory Keeper:\n\n"` - Line 2067: `"reply": "I could not find a matching full story file in memory."` - Line 2084: `memory_context = build_context()` - Line 2101: `You have persistent memory.` - Line 2103: `Here is the current memory context:` - Line 2105: `{memory_context}` - Line 2118: `- If memory contains Tamara, treat it as relationship history only.` - Line 2120: `- If unsure, say memory confidence is uncertain rather than guessing.` - Line 2123: `- Use memory when answering.` - Line 2126: `- If story memory is provided, use it.` - Line 2127: `- Do not claim you cannot access memory if memory context is provided.` - Line 2137: `if intent == "memory_recall":` - Line 2284: `"reply": "I could not find anything in your story memory about that yet."` - Line 2290: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py - Line 17: `from memory.memory_engine import (` - Line 17: `from memory.memory_engine import (` - Line 139: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 140: `PROFILE_FILE = "memory/profile.json"` - Line 141: `CONVERSATION_FILE = "memory/conversations.json"` - Line 144: `os.makedirs("memory", exist_ok=True)` - Line 176: `MEMORY_IMPORTANCE = {` - Line 272: `def calculate_memory_score(text):` - Line 276: `for key, value in MEMORY_IMPORTANCE.items():` - Line 309: `return "memory_recall"` - Line 371: `memory_score = calculate_memory_score(content_text)` - Line 377: `"score": memory_score,` - Line 425: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 481: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 484: `story_context += "\n--- STORY MEMORY ---\n"` - Line 495: `"memory": "connected",` - Line 643: `"reply": "I could not find a matching full story file in memory."` - Line 660: `memory_context = build_context()` - Line 669: `You have persistent memory.` - Line 671: `Here is the current memory context:` - Line 673: `{memory_context}` - Line 679: `- Use memory when answering.` - Line 682: `- If story memory is provided, use it.` - Line 683: `- Do not claim you cannot access memory if memory context is provided.` - Line 693: `if intent == "memory_recall":` - Line 838: `"reply": "I could not find anything in your story memory about that yet."` - Line 844: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 270: `# MILLIE MEMORY KEEPER AGENT` - Line 279: `handle_memory_request` - Line 386: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 387: `PROFILE_FILE = "memory/profile.json"` - Line 388: `CONVERSATION_FILE = "memory/conversations.json"` - Line 391: `os.makedirs("memory", exist_ok=True)` - Line 423: `MEMORY_IMPORTANCE = {` - Line 519: `def calculate_memory_score(text):` - Line 523: `for key, value in MEMORY_IMPORTANCE.items():` - Line 556: `return "memory_recall"` - Line 618: `memory_score = calculate_memory_score(content_text)` - Line 624: `"score": memory_score,` - Line 672: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 728: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 731: `story_context += "\n--- STORY MEMORY ---\n"` - Line 742: `"memory": "connected",` - Line 978: `# MILLIE MEMORY ROUTING` - Line 986: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 988: `millie_reply = handle_memory_request(` - Line 994: `"🧠 Millie Memory Keeper:\n\n"` - Line 1000: `"🧠 Millie Memory Keeper:\n\n"` - Line 1169: `"reply": "I could not find a matching full story file in memory."` - Line 1186: `memory_context = build_context()` - Line 1195: `You have persistent memory.` - Line 1197: `Here is the current memory context:` - Line 1199: `{memory_context}` - Line 1205: `- Use memory when answering.` - Line 1208: `- If story memory is provided, use it.` - Line 1209: `- Do not claim you cannot access memory if memory context is provided.` - Line 1219: `if intent == "memory_recall":` - Line 1364: `"reply": "I could not find anything in your story memory about that yet."` - Line 1370: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 210: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 211: `PROFILE_FILE = "memory/profile.json"` - Line 212: `CONVERSATION_FILE = "memory/conversations.json"` - Line 215: `os.makedirs("memory", exist_ok=True)` - Line 247: `MEMORY_IMPORTANCE = {` - Line 343: `def calculate_memory_score(text):` - Line 347: `for key, value in MEMORY_IMPORTANCE.items():` - Line 380: `return "memory_recall"` - Line 442: `memory_score = calculate_memory_score(content_text)` - Line 448: `"score": memory_score,` - Line 496: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 552: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 555: `story_context += "\n--- STORY MEMORY ---\n"` - Line 566: `"memory": "connected",` - Line 606: `# MILLIE MEMORY ROUTING` - Line 614: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 616: `millie_reply = handle_memory_request(` - Line 622: `"🧠 Millie Memory Keeper:\n\n"` - Line 628: `"🧠 Millie Memory Keeper:\n\n"` - Line 797: `"reply": "I could not find a matching full story file in memory."` - Line 814: `memory_context = build_context()` - Line 823: `You have persistent memory.` - Line 825: `Here is the current memory context:` - Line 827: `{memory_context}` - Line 833: `- Use memory when answering.` - Line 836: `- If story memory is provided, use it.` - Line 837: `- Do not claim you cannot access memory if memory context is provided.` - Line 847: `if intent == "memory_recall":` - Line 992: `"reply": "I could not find anything in your story memory about that yet."` - Line 998: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_fullrecall_20260507_235052.py - Line 55: `# 👉 Ellie (memory brain)` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 93: `# 🧠 STEP 1 — store memory` - Line 96: `# 🧠 STEP 2 — build memory context` - Line 97: `memory_context = build_context()` - Line 101: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 104: `You are L, a personal assistant with persistent memory.` - Line 108: `{memory_context}` - Line 114: `- ALWAYS use the memory above when answering` - Line 115: `- If the answer is clearly in memory, answer confidently` - Line 116: `- Do NOT say you don't know if it exists in memory` - Line 121: `# STORY MEMORY SEARCH` - Line 141: `"\n\nSTORY MEMORY:\n" +` - Line 168: `"memory": "Ellie connected",` - Line 181: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 202: `def calculate_memory_score(text):` - Line 208: `for key, value in MEMORY_IMPORTANCE.items():` - Line 300: `memory_score = calculate_memory_score(` - Line 307: `"score": memory_score` - Line 478: `"reply":"I could not find anything in your story memory about that yet."` - Line 485: `summary += f"\n\n--- MEMORY {i+1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_google_oauth_20260508_194430.py - Line 15: `from memory.memory_engine import (` - Line 15: `from memory.memory_engine import (` - Line 116: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 117: `PROFILE_FILE = "memory/profile.json"` - Line 118: `CONVERSATION_FILE = "memory/conversations.json"` - Line 121: `os.makedirs("memory", exist_ok=True)` - Line 153: `MEMORY_IMPORTANCE = {` - Line 249: `def calculate_memory_score(text):` - Line 253: `for key, value in MEMORY_IMPORTANCE.items():` - Line 286: `return "memory_recall"` - Line 348: `memory_score = calculate_memory_score(content_text)` - Line 354: `"score": memory_score,` - Line 402: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 458: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 461: `story_context += "\n--- STORY MEMORY ---\n"` - Line 472: `"memory": "connected",` - Line 620: `"reply": "I could not find a matching full story file in memory."` - Line 637: `memory_context = build_context()` - Line 646: `You have persistent memory.` - Line 648: `Here is the current memory context:` - Line 650: `{memory_context}` - Line 656: `- Use memory when answering.` - Line 659: `- If story memory is provided, use it.` - Line 660: `- Do not claim you cannot access memory if memory context is provided.` - Line 670: `if intent == "memory_recall":` - Line 815: `"reply": "I could not find anything in your story memory about that yet."` - Line 821: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 160: `# MILLIE MEMORY KEEPER AGENT` - Line 169: `handle_memory_request` - Line 276: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 277: `PROFILE_FILE = "memory/profile.json"` - Line 278: `CONVERSATION_FILE = "memory/conversations.json"` - Line 281: `os.makedirs("memory", exist_ok=True)` - Line 313: `MEMORY_IMPORTANCE = {` - Line 409: `def calculate_memory_score(text):` - Line 413: `for key, value in MEMORY_IMPORTANCE.items():` - Line 446: `return "memory_recall"` - Line 508: `memory_score = calculate_memory_score(content_text)` - Line 514: `"score": memory_score,` - Line 562: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 618: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 621: `story_context += "\n--- STORY MEMORY ---\n"` - Line 632: `"memory": "connected",` - Line 728: `# MILLIE MEMORY ROUTING` - Line 736: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 738: `millie_reply = handle_memory_request(` - Line 744: `"🧠 Millie Memory Keeper:\n\n"` - Line 750: `"🧠 Millie Memory Keeper:\n\n"` - Line 919: `"reply": "I could not find a matching full story file in memory."` - Line 936: `memory_context = build_context()` - Line 945: `You have persistent memory.` - Line 947: `Here is the current memory context:` - Line 949: `{memory_context}` - Line 955: `- Use memory when answering.` - Line 958: `- If story memory is provided, use it.` - Line 959: `- Do not claim you cannot access memory if memory context is provided.` - Line 969: `if intent == "memory_recall":` - Line 1114: `"reply": "I could not find anything in your story memory about that yet."` - Line 1120: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 303: `"memory audit",` - Line 304: `"memory observability",` - Line 339: `# MILLIE MEMORY KEEPER AGENT` - Line 348: `handle_memory_request` - Line 455: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 456: `PROFILE_FILE = "memory/profile.json"` - Line 457: `CONVERSATION_FILE = "memory/conversations.json"` - Line 460: `os.makedirs("memory", exist_ok=True)` - Line 492: `MEMORY_IMPORTANCE = {` - Line 588: `def calculate_memory_score(text):` - Line 592: `for key, value in MEMORY_IMPORTANCE.items():` - Line 625: `return "memory_recall"` - Line 687: `memory_score = calculate_memory_score(content_text)` - Line 693: `"score": memory_score,` - Line 699: `audit_memory_event(` - Line 705: `"score": memory_score` - Line 737: `audit_memory_event(` - Line 760: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 816: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 819: `story_context += "\n--- STORY MEMORY ---\n"` - Line 831: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 895: `"# 🧠 Millie Memory Keeper",` - Line 904: `"🧠 Millie Memory Keeper:",` - Line 985: `"memory",` - Line 1170: `# MEMORY OBSERVABILITY V1` - Line 1173: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"` - Line 1175: `def audit_memory_event(` - Line 1184: `MEMORY_AUDIT_FILE,` - Line 1201: `MEMORY_AUDIT_FILE,` - Line 1208: `"MEMORY AUDIT ERROR:",` - Line 1213: `def memory_file_status():` - Line 1217: `"memory/conversations.json",` - Line 1219: `"memory/life_story.json",` - Line 1221: `"memory/profile.json",` - Line 1223: `"memory/invisible_orchestra_log.json",` - Line 1225: `"memory/memory_audit.json"` - Line 1278: `def build_memory_audit_report():` - Line 1281: `MEMORY_AUDIT_FILE,` - Line 1289: `"memory_files": memory_file_status(),` - Line 1299: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION` - Line 1302: `def hard_memory_audit_v2():` - Line 1305: `"memory/profile.json",` - Line 1306: `"memory/conversations.json",` - Line 1307: `"memory/life_story.json",` - Line 1308: `"memory/invisible_orchestra_log.json",` - Line 1309: `"memory/memory_audit.json"` - Line 1369: `"audit_version": "Memory Audit V2",` - Line 1371: `"memory_files": report,` - Line 1377: `def format_hard_memory_audit_v2():` - Line 1379: `audit = hard_memory_audit_v2()` - Line 1382: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")` - Line 1390: `lines.append("MEMORY FILES")` - Line 1392: `for item in audit["memory_files"]:` - Line 1411: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")` - Line 1422: `"memory_observable": True,` - Line 1456: `"memory": "connected",` - Line 1462: `@app.get("/memory/audit")` - Line 1463: `def memory_audit():` - Line 1465: `return build_memory_audit_report()` - Line 1468: `@app.get("/memory/audit-v2")` - Line 1469: `def memory_audit_v2():` - Line 1471: `return hard_memory_audit_v2()` - Line 1484: `"memory audit",` - Line 1485: `"memory audit please",` - Line 1486: `"memory status",` - Line 1487: `"show memory audit",` - Line 1488: `"show memory status",` - Line 1489: `"memory audit v2"` - Line 1493: `"reply": format_hard_memory_audit_v2()` - Line 1498: `"memory audit",` - Line 1500: `"memory status",` - Line 1502: `"show memory audit",` - Line 1504: `"show memory status"` - Line 1508: `report = build_memory_audit_report()` - Line 1883: `# MILLIE MEMORY ROUTING` - Line 1891: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1893: `millie_reply = handle_memory_request(` - Line 1899: `"🧠 Millie Memory Keeper:\n\n"` - Line 2167: `"reply": "I could not find a matching full story file in memory."` - Line 2184: `memory_context = build_context()` - Line 2209: `You have persistent memory.` - Line 2211: `Here is the current memory context:` - Line 2213: `{memory_context}` - Line 2228: `- If memory contains Tamara, treat it as relationship history only.` - Line 2230: `- If unsure, say memory confidence is uncertain rather than guessing.` - Line 2233: `- Use memory when answering.` - Line 2236: `- If story memory is provided, use it.` - Line 2237: `- Do not claim you cannot access memory if memory context is provided.` - Line 2247: `if intent == "memory_recall":` - Line 2394: `"reply": "I could not find anything in your story memory about that yet."` - Line 2400: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 764: `"memory": "connected",` - Line 1028: `# MILLIE MEMORY ROUTING` - Line 1036: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1038: `millie_reply = handle_memory_request(` - Line 1044: `"🧠 Millie Memory Keeper:\n\n"` - Line 1050: `"🧠 Millie Memory Keeper:\n\n"` - Line 1219: `"reply": "I could not find a matching full story file in memory."` - Line 1236: `memory_context = build_context()` - Line 1245: `You have persistent memory.` - Line 1247: `Here is the current memory context:` - Line 1249: `{memory_context}` - Line 1255: `- Use memory when answering.` - Line 1258: `- If story memory is provided, use it.` - Line 1259: `- Do not claim you cannot access memory if memory context is provided.` - Line 1269: `if intent == "memory_recall":` - Line 1414: `"reply": "I could not find anything in your story memory about that yet."` - Line 1420: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 829: `"# 🧠 Millie Memory Keeper",` - Line 838: `"🧠 Millie Memory Keeper:",` - Line 919: `"memory",` - Line 1007: `"memory": "connected",` - Line 1391: `# MILLIE MEMORY ROUTING` - Line 1399: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1401: `millie_reply = handle_memory_request(` - Line 1407: `"🧠 Millie Memory Keeper:\n\n"` - Line 1675: `"reply": "I could not find a matching full story file in memory."` - Line 1692: `memory_context = build_context()` - Line 1709: `You have persistent memory.` - Line 1711: `Here is the current memory context:` - Line 1713: `{memory_context}` - Line 1721: `- Use memory when answering.` - Line 1724: `- If story memory is provided, use it.` - Line 1725: `- Do not claim you cannot access memory if memory context is provided.` - Line 1735: `if intent == "memory_recall":` - Line 1880: `"reply": "I could not find anything in your story memory about that yet."` - Line 1886: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 652: `audit_memory_event(` - Line 658: `"score": memory_score` - Line 690: `audit_memory_event(` - Line 713: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 769: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 772: `story_context += "\n--- STORY MEMORY ---\n"` - Line 784: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 848: `"# 🧠 Millie Memory Keeper",` - Line 857: `"🧠 Millie Memory Keeper:",` - Line 938: `"memory",` - Line 1023: `# MEMORY OBSERVABILITY V1` - Line 1026: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"` - Line 1028: `def audit_memory_event(` - Line 1037: `MEMORY_AUDIT_FILE,` - Line 1054: `MEMORY_AUDIT_FILE,` - Line 1061: `"MEMORY AUDIT ERROR:",` - Line 1066: `def memory_file_status():` - Line 1070: `"memory/conversations.json",` - Line 1072: `"memory/life_story.json",` - Line 1074: `"memory/profile.json",` - Line 1076: `"memory/invisible_orchestra_log.json",` - Line 1078: `"memory/memory_audit.json"` - Line 1131: `def build_memory_audit_report():` - Line 1134: `MEMORY_AUDIT_FILE,` - Line 1142: `"memory_files": memory_file_status(),` - Line 1155: `"memory": "connected",` - Line 1161: `@app.get("/memory/audit")` - Line 1162: `def memory_audit():` - Line 1164: `return build_memory_audit_report()` - Line 1172: `"memory audit",` - Line 1174: `"memory status",` - Line 1176: `"show memory audit",` - Line 1178: `"show memory status"` - Line 1182: `report = build_memory_audit_report()` - Line 1567: `# MILLIE MEMORY ROUTING` - Line 1575: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1577: `millie_reply = handle_memory_request(` - Line 1583: `"🧠 Millie Memory Keeper:\n\n"` - Line 1851: `"reply": "I could not find a matching full story file in memory."` - Line 1868: `memory_context = build_context()` - Line 1885: `You have persistent memory.` - Line 1887: `Here is the current memory context:` - Line 1889: `{memory_context}` - Line 1897: `- Use memory when answering.` - Line 1900: `- If story memory is provided, use it.` - Line 1901: `- Do not claim you cannot access memory if memory context is provided.` - Line 1911: `if intent == "memory_recall":` - Line 2056: `"reply": "I could not find anything in your story memory about that yet."` - Line 2062: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 829: `"# 🧠 Millie Memory Keeper",` - Line 838: `"🧠 Millie Memory Keeper:",` - Line 919: `"memory",` - Line 1007: `"memory": "connected",` - Line 1391: `# MILLIE MEMORY ROUTING` - Line 1399: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1401: `millie_reply = handle_memory_request(` - Line 1407: `"🧠 Millie Memory Keeper:\n\n"` - Line 1675: `"reply": "I could not find a matching full story file in memory."` - Line 1692: `memory_context = build_context()` - Line 1709: `You have persistent memory.` - Line 1711: `Here is the current memory context:` - Line 1713: `{memory_context}` - Line 1721: `- Use memory when answering.` - Line 1724: `- If story memory is provided, use it.` - Line 1725: `- Do not claim you cannot access memory if memory context is provided.` - Line 1735: `if intent == "memory_recall":` - Line 1880: `"reply": "I could not find anything in your story memory about that yet."` - Line 1886: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_memscore_20260507_233124.py - Line 16: `# 👉 Ellie (memory brain)` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 54: `# 🧠 STEP 1 — store memory` - Line 57: `# 🧠 STEP 2 — build memory context` - Line 58: `memory_context = build_context()` - Line 62: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 65: `You are L, a personal assistant with persistent memory.` - Line 69: `{memory_context}` - Line 75: `- ALWAYS use the memory above when answering` - Line 76: `- If the answer is clearly in memory, answer confidently` - Line 77: `- Do NOT say you don't know if it exists in memory` - Line 82: `# STORY MEMORY SEARCH` - Line 94: `"\n\nSTORY MEMORY:\n" +` - Line 121: `"memory": "Ellie connected",` - Line 134: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 393: `"reply":"I could not find anything in your story memory about that yet."` - Line 400: `summary += f"\n\n--- MEMORY {i+1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 652: `audit_memory_event(` - Line 658: `"score": memory_score` - Line 690: `audit_memory_event(` - Line 713: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 769: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 772: `story_context += "\n--- STORY MEMORY ---\n"` - Line 784: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 848: `"# 🧠 Millie Memory Keeper",` - Line 857: `"🧠 Millie Memory Keeper:",` - Line 938: `"memory",` - Line 1023: `# MEMORY OBSERVABILITY V1` - Line 1026: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"` - Line 1028: `def audit_memory_event(` - Line 1037: `MEMORY_AUDIT_FILE,` - Line 1054: `MEMORY_AUDIT_FILE,` - Line 1061: `"MEMORY AUDIT ERROR:",` - Line 1066: `def memory_file_status():` - Line 1070: `"memory/conversations.json",` - Line 1072: `"memory/life_story.json",` - Line 1074: `"memory/profile.json",` - Line 1076: `"memory/invisible_orchestra_log.json",` - Line 1078: `"memory/memory_audit.json"` - Line 1131: `def build_memory_audit_report():` - Line 1134: `MEMORY_AUDIT_FILE,` - Line 1142: `"memory_files": memory_file_status(),` - Line 1152: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION` - Line 1155: `def hard_memory_audit_v2():` - Line 1158: `"memory/profile.json",` - Line 1159: `"memory/conversations.json",` - Line 1160: `"memory/life_story.json",` - Line 1161: `"memory/invisible_orchestra_log.json",` - Line 1162: `"memory/memory_audit.json"` - Line 1222: `"audit_version": "Memory Audit V2",` - Line 1224: `"memory_files": report,` - Line 1230: `def format_hard_memory_audit_v2():` - Line 1232: `audit = hard_memory_audit_v2()` - Line 1235: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")` - Line 1243: `lines.append("MEMORY FILES")` - Line 1245: `for item in audit["memory_files"]:` - Line 1264: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")` - Line 1275: `"memory_observable": True,` - Line 1309: `"memory": "connected",` - Line 1315: `@app.get("/memory/audit")` - Line 1316: `def memory_audit():` - Line 1318: `return build_memory_audit_report()` - Line 1321: `@app.get("/memory/audit-v2")` - Line 1322: `def memory_audit_v2():` - Line 1324: `return hard_memory_audit_v2()` - Line 1337: `"memory audit",` - Line 1338: `"memory audit please",` - Line 1339: `"memory status",` - Line 1340: `"show memory audit",` - Line 1341: `"show memory status",` - Line 1342: `"memory audit v2"` - Line 1346: `"reply": format_hard_memory_audit_v2()` - Line 1351: `"memory audit",` - Line 1353: `"memory status",` - Line 1355: `"show memory audit",` - Line 1357: `"show memory status"` - Line 1361: `report = build_memory_audit_report()` - Line 1750: `# MILLIE MEMORY ROUTING` - Line 1758: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1760: `millie_reply = handle_memory_request(` - Line 1766: `"🧠 Millie Memory Keeper:\n\n"` - Line 2034: `"reply": "I could not find a matching full story file in memory."` - Line 2051: `memory_context = build_context()` - Line 2068: `You have persistent memory.` - Line 2070: `Here is the current memory context:` - Line 2072: `{memory_context}` - Line 2085: `- If memory contains Tamara, treat it as relationship history only.` - Line 2087: `- If unsure, say memory confidence is uncertain rather than guessing.` - Line 2090: `- Use memory when answering.` - Line 2093: `- If story memory is provided, use it.` - Line 2094: `- Do not claim you cannot access memory if memory context is provided.` - Line 2104: `if intent == "memory_recall":` - Line 2251: `"reply": "I could not find anything in your story memory about that yet."` - Line 2257: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 652: `audit_memory_event(` - Line 658: `"score": memory_score` - Line 690: `audit_memory_event(` - Line 713: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 769: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 772: `story_context += "\n--- STORY MEMORY ---\n"` - Line 784: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 848: `"# 🧠 Millie Memory Keeper",` - Line 857: `"🧠 Millie Memory Keeper:",` - Line 938: `"memory",` - Line 1023: `# MEMORY OBSERVABILITY V1` - Line 1026: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"` - Line 1028: `def audit_memory_event(` - Line 1037: `MEMORY_AUDIT_FILE,` - Line 1054: `MEMORY_AUDIT_FILE,` - Line 1061: `"MEMORY AUDIT ERROR:",` - Line 1066: `def memory_file_status():` - Line 1070: `"memory/conversations.json",` - Line 1072: `"memory/life_story.json",` - Line 1074: `"memory/profile.json",` - Line 1076: `"memory/invisible_orchestra_log.json",` - Line 1078: `"memory/memory_audit.json"` - Line 1131: `def build_memory_audit_report():` - Line 1134: `MEMORY_AUDIT_FILE,` - Line 1142: `"memory_files": memory_file_status(),` - Line 1152: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION` - Line 1155: `def hard_memory_audit_v2():` - Line 1158: `"memory/profile.json",` - Line 1159: `"memory/conversations.json",` - Line 1160: `"memory/life_story.json",` - Line 1161: `"memory/invisible_orchestra_log.json",` - Line 1162: `"memory/memory_audit.json"` - Line 1222: `"audit_version": "Memory Audit V2",` - Line 1224: `"memory_files": report,` - Line 1230: `def format_hard_memory_audit_v2():` - Line 1232: `audit = hard_memory_audit_v2()` - Line 1235: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")` - Line 1243: `lines.append("MEMORY FILES")` - Line 1245: `for item in audit["memory_files"]:` - Line 1264: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")` - Line 1275: `"memory_observable": True,` - Line 1309: `"memory": "connected",` - Line 1315: `@app.get("/memory/audit")` - Line 1316: `def memory_audit():` - Line 1318: `return build_memory_audit_report()` - Line 1321: `@app.get("/memory/audit-v2")` - Line 1322: `def memory_audit_v2():` - Line 1324: `return hard_memory_audit_v2()` - Line 1337: `"memory audit",` - Line 1338: `"memory audit please",` - Line 1339: `"memory status",` - Line 1340: `"show memory audit",` - Line 1341: `"show memory status",` - Line 1342: `"memory audit v2"` - Line 1346: `"reply": format_hard_memory_audit_v2()` - Line 1351: `"memory audit",` - Line 1353: `"memory status",` - Line 1355: `"show memory audit",` - Line 1357: `"show memory status"` - Line 1361: `report = build_memory_audit_report()` - Line 1746: `# MILLIE MEMORY ROUTING` - Line 1754: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1756: `millie_reply = handle_memory_request(` - Line 1762: `"🧠 Millie Memory Keeper:\n\n"` - Line 2030: `"reply": "I could not find a matching full story file in memory."` - Line 2047: `memory_context = build_context()` - Line 2064: `You have persistent memory.` - Line 2066: `Here is the current memory context:` - Line 2068: `{memory_context}` - Line 2081: `- If memory contains Tamara, treat it as relationship history only.` - Line 2083: `- If unsure, say memory confidence is uncertain rather than guessing.` - Line 2086: `- Use memory when answering.` - Line 2089: `- If story memory is provided, use it.` - Line 2090: `- Do not claim you cannot access memory if memory context is provided.` - Line 2100: `if intent == "memory_recall":` - Line 2247: `"reply": "I could not find anything in your story memory about that yet."` - Line 2253: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 210: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 211: `PROFILE_FILE = "memory/profile.json"` - Line 212: `CONVERSATION_FILE = "memory/conversations.json"` - Line 215: `os.makedirs("memory", exist_ok=True)` - Line 247: `MEMORY_IMPORTANCE = {` - Line 343: `def calculate_memory_score(text):` - Line 347: `for key, value in MEMORY_IMPORTANCE.items():` - Line 380: `return "memory_recall"` - Line 442: `memory_score = calculate_memory_score(content_text)` - Line 448: `"score": memory_score,` - Line 496: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 552: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 555: `story_context += "\n--- STORY MEMORY ---\n"` - Line 566: `"memory": "connected",` - Line 769: `"reply": "I could not find a matching full story file in memory."` - Line 786: `memory_context = build_context()` - Line 795: `You have persistent memory.` - Line 797: `Here is the current memory context:` - Line 799: `{memory_context}` - Line 805: `- Use memory when answering.` - Line 808: `- If story memory is provided, use it.` - Line 809: `- Do not claim you cannot access memory if memory context is provided.` - Line 819: `if intent == "memory_recall":` - Line 964: `"reply": "I could not find anything in your story memory about that yet."` - Line 970: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_mystory_20260507_230357.py - Line 15: `# 👉 Ellie (memory brain)` - Line 16: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 16: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 53: `# 🧠 STEP 1 — store memory` - Line 56: `# 🧠 STEP 2 — build memory context` - Line 57: `memory_context = build_context()` - Line 61: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 64: `You are L, a personal assistant with persistent memory.` - Line 68: `{memory_context}` - Line 74: `- ALWAYS use the memory above when answering` - Line 75: `- If the answer is clearly in memory, answer confidently` - Line 76: `- Do NOT say you don't know if it exists in memory` - Line 101: `"memory": "Ellie connected",`  ### C:\Shine_L\api\Backups\server_backup_mystory_20260507_231128.py - Line 16: `# 👉 Ellie (memory brain)` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 54: `# 🧠 STEP 1 — store memory` - Line 57: `# 🧠 STEP 2 — build memory context` - Line 58: `memory_context = build_context()` - Line 62: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 65: `You are L, a personal assistant with persistent memory.` - Line 69: `{memory_context}` - Line 75: `- ALWAYS use the memory above when answering` - Line 76: `- If the answer is clearly in memory, answer confidently` - Line 77: `- Do NOT say you don't know if it exists in memory` - Line 102: `"memory": "Ellie connected",` - Line 115: `LIFE_STORY_FILE = "memory/life_story.json"`  ### C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 182: `# MILLIE MEMORY KEEPER AGENT` - Line 191: `handle_memory_request` - Line 298: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 299: `PROFILE_FILE = "memory/profile.json"` - Line 300: `CONVERSATION_FILE = "memory/conversations.json"` - Line 303: `os.makedirs("memory", exist_ok=True)` - Line 335: `MEMORY_IMPORTANCE = {` - Line 431: `def calculate_memory_score(text):` - Line 435: `for key, value in MEMORY_IMPORTANCE.items():` - Line 468: `return "memory_recall"` - Line 530: `memory_score = calculate_memory_score(content_text)` - Line 536: `"score": memory_score,` - Line 584: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 640: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 643: `story_context += "\n--- STORY MEMORY ---\n"` - Line 654: `"memory": "connected",` - Line 778: `# MILLIE MEMORY ROUTING` - Line 786: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 788: `millie_reply = handle_memory_request(` - Line 794: `"🧠 Millie Memory Keeper:\n\n"` - Line 800: `"🧠 Millie Memory Keeper:\n\n"` - Line 969: `"reply": "I could not find a matching full story file in memory."` - Line 986: `memory_context = build_context()` - Line 995: `You have persistent memory.` - Line 997: `Here is the current memory context:` - Line 999: `{memory_context}` - Line 1005: `- Use memory when answering.` - Line 1008: `- If story memory is provided, use it.` - Line 1009: `- Do not claim you cannot access memory if memory context is provided.` - Line 1019: `if intent == "memory_recall":` - Line 1164: `"reply": "I could not find anything in your story memory about that yet."` - Line 1170: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 764: `"memory": "connected",` - Line 1148: `# MILLIE MEMORY ROUTING` - Line 1156: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1158: `millie_reply = handle_memory_request(` - Line 1164: `"🧠 Millie Memory Keeper:\n\n"` - Line 1432: `"reply": "I could not find a matching full story file in memory."` - Line 1449: `memory_context = build_context()` - Line 1458: `You have persistent memory.` - Line 1460: `Here is the current memory context:` - Line 1462: `{memory_context}` - Line 1468: `- Use memory when answering.` - Line 1471: `- If story memory is provided, use it.` - Line 1472: `- Do not claim you cannot access memory if memory context is provided.` - Line 1482: `if intent == "memory_recall":` - Line 1627: `"reply": "I could not find anything in your story memory about that yet."` - Line 1633: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 829: `"# 🧠 Millie Memory Keeper",` - Line 838: `"🧠 Millie Memory Keeper:",` - Line 881: `"memory": "connected",` - Line 1265: `# MILLIE MEMORY ROUTING` - Line 1273: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1275: `millie_reply = handle_memory_request(` - Line 1281: `"🧠 Millie Memory Keeper:\n\n"` - Line 1549: `"reply": "I could not find a matching full story file in memory."` - Line 1566: `memory_context = build_context()` - Line 1575: `You have persistent memory.` - Line 1577: `Here is the current memory context:` - Line 1579: `{memory_context}` - Line 1585: `- Use memory when answering.` - Line 1588: `- If story memory is provided, use it.` - Line 1589: `- Do not claim you cannot access memory if memory context is provided.` - Line 1599: `if intent == "memory_recall":` - Line 1744: `"reply": "I could not find anything in your story memory about that yet."` - Line 1750: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 829: `"# 🧠 Millie Memory Keeper",` - Line 838: `"🧠 Millie Memory Keeper:",` - Line 881: `"memory": "connected",` - Line 1265: `# MILLIE MEMORY ROUTING` - Line 1273: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1275: `millie_reply = handle_memory_request(` - Line 1281: `"🧠 Millie Memory Keeper:\n\n"` - Line 1549: `"reply": "I could not find a matching full story file in memory."` - Line 1566: `memory_context = build_context()` - Line 1583: `You have persistent memory.` - Line 1585: `Here is the current memory context:` - Line 1587: `{memory_context}` - Line 1595: `- Use memory when answering.` - Line 1598: `- If story memory is provided, use it.` - Line 1599: `- Do not claim you cannot access memory if memory context is provided.` - Line 1609: `if intent == "memory_recall":` - Line 1754: `"reply": "I could not find anything in your story memory about that yet."` - Line 1760: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_persist_20260508_005821.py - Line 13: `from memory.memory_engine import (` - Line 13: `from memory.memory_engine import (` - Line 36: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 37: `PROFILE_FILE = "memory/profile.json"` - Line 40: `os.makedirs("memory", exist_ok=True)` - Line 72: `MEMORY_IMPORTANCE = {` - Line 168: `def calculate_memory_score(text):` - Line 172: `for key, value in MEMORY_IMPORTANCE.items():` - Line 205: `return "memory_recall"` - Line 267: `memory_score = calculate_memory_score(content_text)` - Line 273: `"score": memory_score,` - Line 286: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 299: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 302: `story_context += "\n--- STORY MEMORY ---\n"` - Line 313: `"memory": "connected",` - Line 330: `"reply": "I could not find a matching full story file in memory."` - Line 347: `memory_context = build_context()` - Line 354: `You have persistent memory.` - Line 356: `Here is the current memory context:` - Line 358: `{memory_context}` - Line 364: `- Use memory when answering.` - Line 367: `- If story memory is provided, use it.` - Line 368: `- Do not claim you cannot access memory if memory context is provided.` - Line 374: `if intent == "memory_recall":` - Line 514: `"reply": "I could not find anything in your story memory about that yet."` - Line 520: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py - Line 17: `from memory.memory_engine import (` - Line 17: `from memory.memory_engine import (` - Line 139: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 140: `PROFILE_FILE = "memory/profile.json"` - Line 141: `CONVERSATION_FILE = "memory/conversations.json"` - Line 144: `os.makedirs("memory", exist_ok=True)` - Line 176: `MEMORY_IMPORTANCE = {` - Line 272: `def calculate_memory_score(text):` - Line 276: `for key, value in MEMORY_IMPORTANCE.items():` - Line 309: `return "memory_recall"` - Line 371: `memory_score = calculate_memory_score(content_text)` - Line 377: `"score": memory_score,` - Line 425: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 481: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 484: `story_context += "\n--- STORY MEMORY ---\n"` - Line 495: `"memory": "connected",` - Line 643: `"reply": "I could not find a matching full story file in memory."` - Line 660: `memory_context = build_context()` - Line 669: `You have persistent memory.` - Line 671: `Here is the current memory context:` - Line 673: `{memory_context}` - Line 679: `- Use memory when answering.` - Line 682: `- If story memory is provided, use it.` - Line 683: `- Do not claim you cannot access memory if memory context is provided.` - Line 693: `if intent == "memory_recall":` - Line 838: `"reply": "I could not find anything in your story memory about that yet."` - Line 844: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 172: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 173: `PROFILE_FILE = "memory/profile.json"` - Line 174: `CONVERSATION_FILE = "memory/conversations.json"` - Line 177: `os.makedirs("memory", exist_ok=True)` - Line 209: `MEMORY_IMPORTANCE = {` - Line 305: `def calculate_memory_score(text):` - Line 309: `for key, value in MEMORY_IMPORTANCE.items():` - Line 342: `return "memory_recall"` - Line 404: `memory_score = calculate_memory_score(content_text)` - Line 410: `"score": memory_score,` - Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 517: `story_context += "\n--- STORY MEMORY ---\n"` - Line 528: `"memory": "connected",` - Line 676: `"reply": "I could not find a matching full story file in memory."` - Line 693: `memory_context = build_context()` - Line 702: `You have persistent memory.` - Line 704: `Here is the current memory context:` - Line 706: `{memory_context}` - Line 712: `- Use memory when answering.` - Line 715: `- If story memory is provided, use it.` - Line 716: `- Do not claim you cannot access memory if memory context is provided.` - Line 726: `if intent == "memory_recall":` - Line 871: `"reply": "I could not find anything in your story memory about that yet."` - Line 877: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 172: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 173: `PROFILE_FILE = "memory/profile.json"` - Line 174: `CONVERSATION_FILE = "memory/conversations.json"` - Line 177: `os.makedirs("memory", exist_ok=True)` - Line 209: `MEMORY_IMPORTANCE = {` - Line 305: `def calculate_memory_score(text):` - Line 309: `for key, value in MEMORY_IMPORTANCE.items():` - Line 342: `return "memory_recall"` - Line 404: `memory_score = calculate_memory_score(content_text)` - Line 410: `"score": memory_score,` - Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 517: `story_context += "\n--- STORY MEMORY ---\n"` - Line 528: `"memory": "connected",` - Line 703: `"reply": "I could not find a matching full story file in memory."` - Line 720: `memory_context = build_context()` - Line 729: `You have persistent memory.` - Line 731: `Here is the current memory context:` - Line 733: `{memory_context}` - Line 739: `- Use memory when answering.` - Line 742: `- If story memory is provided, use it.` - Line 743: `- Do not claim you cannot access memory if memory context is provided.` - Line 753: `if intent == "memory_recall":` - Line 898: `"reply": "I could not find anything in your story memory about that yet."` - Line 904: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 172: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 173: `PROFILE_FILE = "memory/profile.json"` - Line 174: `CONVERSATION_FILE = "memory/conversations.json"` - Line 177: `os.makedirs("memory", exist_ok=True)` - Line 209: `MEMORY_IMPORTANCE = {` - Line 305: `def calculate_memory_score(text):` - Line 309: `for key, value in MEMORY_IMPORTANCE.items():` - Line 342: `return "memory_recall"` - Line 404: `memory_score = calculate_memory_score(content_text)` - Line 410: `"score": memory_score,` - Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 517: `story_context += "\n--- STORY MEMORY ---\n"` - Line 528: `"memory": "connected",` - Line 676: `"reply": "I could not find a matching full story file in memory."` - Line 693: `memory_context = build_context()` - Line 702: `You have persistent memory.` - Line 704: `Here is the current memory context:` - Line 706: `{memory_context}` - Line 712: `- Use memory when answering.` - Line 715: `- If story memory is provided, use it.` - Line 716: `- Do not claim you cannot access memory if memory context is provided.` - Line 726: `if intent == "memory_recall":` - Line 871: `"reply": "I could not find anything in your story memory about that yet."` - Line 877: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 172: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 173: `PROFILE_FILE = "memory/profile.json"` - Line 174: `CONVERSATION_FILE = "memory/conversations.json"` - Line 177: `os.makedirs("memory", exist_ok=True)` - Line 209: `MEMORY_IMPORTANCE = {` - Line 305: `def calculate_memory_score(text):` - Line 309: `for key, value in MEMORY_IMPORTANCE.items():` - Line 342: `return "memory_recall"` - Line 404: `memory_score = calculate_memory_score(content_text)` - Line 410: `"score": memory_score,` - Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 517: `story_context += "\n--- STORY MEMORY ---\n"` - Line 528: `"memory": "connected",` - Line 733: `"reply": "I could not find a matching full story file in memory."` - Line 750: `memory_context = build_context()` - Line 759: `You have persistent memory.` - Line 761: `Here is the current memory context:` - Line 763: `{memory_context}` - Line 769: `- Use memory when answering.` - Line 772: `- If story memory is provided, use it.` - Line 773: `- Do not claim you cannot access memory if memory context is provided.` - Line 783: `if intent == "memory_recall":` - Line 928: `"reply": "I could not find anything in your story memory about that yet."` - Line 934: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py - Line 17: `from memory.memory_engine import (` - Line 17: `from memory.memory_engine import (` - Line 139: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 140: `PROFILE_FILE = "memory/profile.json"` - Line 141: `CONVERSATION_FILE = "memory/conversations.json"` - Line 144: `os.makedirs("memory", exist_ok=True)` - Line 176: `MEMORY_IMPORTANCE = {` - Line 272: `def calculate_memory_score(text):` - Line 276: `for key, value in MEMORY_IMPORTANCE.items():` - Line 309: `return "memory_recall"` - Line 371: `memory_score = calculate_memory_score(content_text)` - Line 377: `"score": memory_score,` - Line 425: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 481: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 484: `story_context += "\n--- STORY MEMORY ---\n"` - Line 495: `"memory": "connected",` - Line 643: `"reply": "I could not find a matching full story file in memory."` - Line 660: `memory_context = build_context()` - Line 669: `You have persistent memory.` - Line 671: `Here is the current memory context:` - Line 673: `{memory_context}` - Line 679: `- Use memory when answering.` - Line 682: `- If story memory is provided, use it.` - Line 683: `- Do not claim you cannot access memory if memory context is provided.` - Line 693: `if intent == "memory_recall":` - Line 838: `"reply": "I could not find anything in your story memory about that yet."` - Line 844: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_profileauth_20260508_001049.py - Line 55: `# 👉 Ellie (memory brain)` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 108: `"reply":"I could not find a matching full file in memory."` - Line 127: `# MEMORY RECALL` - Line 130: `if intent == "memory_recall":` - Line 136: `memory_context = ""` - Line 140: `memory_context += (` - Line 141: `"\n\nMEMORY:\n"` - Line 145: `system_prompt += memory_context` - Line 149: `# 🧠 STEP 1 — store memory` - Line 152: `# 🧠 STEP 2 — build memory context` - Line 153: `memory_context = build_context()` - Line 157: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 160: `You are L, a personal assistant with persistent memory.` - Line 164: `{memory_context}` - Line 170: `- ALWAYS use the memory above when answering` - Line 171: `- If the answer is clearly in memory, answer confidently` - Line 172: `- Do NOT say you don't know if it exists in memory` - Line 177: `# STORY MEMORY SEARCH` - Line 197: `"\n\nSTORY MEMORY:\n" +` - Line 224: `"memory": "Ellie connected",` - Line 237: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 266: `# MEMORY RECALL` - Line 276: `return "memory_recall"` - Line 296: `def calculate_memory_score(text):` - Line 302: `for key, value in MEMORY_IMPORTANCE.items():` - Line 394: `memory_score = calculate_memory_score(` - Line 404: `"score": memory_score` - Line 575: `"reply":"I could not find anything in your story memory about that yet."` - Line 582: `summary += f"\n\n--- MEMORY {i+1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 204: `# MILLIE MEMORY KEEPER AGENT` - Line 213: `handle_memory_request` - Line 320: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 321: `PROFILE_FILE = "memory/profile.json"` - Line 322: `CONVERSATION_FILE = "memory/conversations.json"` - Line 325: `os.makedirs("memory", exist_ok=True)` - Line 357: `MEMORY_IMPORTANCE = {` - Line 453: `def calculate_memory_score(text):` - Line 457: `for key, value in MEMORY_IMPORTANCE.items():` - Line 490: `return "memory_recall"` - Line 552: `memory_score = calculate_memory_score(content_text)` - Line 558: `"score": memory_score,` - Line 606: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 662: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 665: `story_context += "\n--- STORY MEMORY ---\n"` - Line 676: `"memory": "connected",` - Line 828: `# MILLIE MEMORY ROUTING` - Line 836: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 838: `millie_reply = handle_memory_request(` - Line 844: `"🧠 Millie Memory Keeper:\n\n"` - Line 850: `"🧠 Millie Memory Keeper:\n\n"` - Line 1019: `"reply": "I could not find a matching full story file in memory."` - Line 1036: `memory_context = build_context()` - Line 1045: `You have persistent memory.` - Line 1047: `Here is the current memory context:` - Line 1049: `{memory_context}` - Line 1055: `- Use memory when answering.` - Line 1058: `- If story memory is provided, use it.` - Line 1059: `- Do not claim you cannot access memory if memory context is provided.` - Line 1069: `if intent == "memory_recall":` - Line 1214: `"reply": "I could not find anything in your story memory about that yet."` - Line 1220: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_router_20260507_235807.py - Line 55: `# 👉 Ellie (memory brain)` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 93: `# 🧠 STEP 1 — store memory` - Line 96: `# 🧠 STEP 2 — build memory context` - Line 97: `memory_context = build_context()` - Line 101: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 104: `You are L, a personal assistant with persistent memory.` - Line 108: `{memory_context}` - Line 114: `- ALWAYS use the memory above when answering` - Line 115: `- If the answer is clearly in memory, answer confidently` - Line 116: `- Do NOT say you don't know if it exists in memory` - Line 121: `# STORY MEMORY SEARCH` - Line 141: `"\n\nSTORY MEMORY:\n" +` - Line 168: `"memory": "Ellie connected",` - Line 181: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 202: `def calculate_memory_score(text):` - Line 208: `for key, value in MEMORY_IMPORTANCE.items():` - Line 300: `memory_score = calculate_memory_score(` - Line 310: `"score": memory_score` - Line 481: `"reply":"I could not find anything in your story memory about that yet."` - Line 488: `summary += f"\n\n--- MEMORY {i+1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py - Line 17: `from memory.memory_engine import (` - Line 17: `from memory.memory_engine import (` - Line 139: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 140: `PROFILE_FILE = "memory/profile.json"` - Line 141: `CONVERSATION_FILE = "memory/conversations.json"` - Line 144: `os.makedirs("memory", exist_ok=True)` - Line 176: `MEMORY_IMPORTANCE = {` - Line 272: `def calculate_memory_score(text):` - Line 276: `for key, value in MEMORY_IMPORTANCE.items():` - Line 309: `return "memory_recall"` - Line 371: `memory_score = calculate_memory_score(content_text)` - Line 377: `"score": memory_score,` - Line 425: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 481: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 484: `story_context += "\n--- STORY MEMORY ---\n"` - Line 495: `"memory": "connected",` - Line 643: `"reply": "I could not find a matching full story file in memory."` - Line 660: `memory_context = build_context()` - Line 669: `You have persistent memory.` - Line 671: `Here is the current memory context:` - Line 673: `{memory_context}` - Line 679: `- Use memory when answering.` - Line 682: `- If story memory is provided, use it.` - Line 683: `- Do not claim you cannot access memory if memory context is provided.` - Line 693: `if intent == "memory_recall":` - Line 838: `"reply": "I could not find anything in your story memory about that yet."` - Line 844: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_semantic_20260507_231211.py - Line 16: `# 👉 Ellie (memory brain)` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 54: `# 🧠 STEP 1 — store memory` - Line 57: `# 🧠 STEP 2 — build memory context` - Line 58: `memory_context = build_context()` - Line 62: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 65: `You are L, a personal assistant with persistent memory.` - Line 69: `{memory_context}` - Line 75: `- ALWAYS use the memory above when answering` - Line 76: `- If the answer is clearly in memory, answer confidently` - Line 77: `- Do NOT say you don't know if it exists in memory` - Line 102: `"memory": "Ellie connected",` - Line 115: `LIFE_STORY_FILE = "memory/life_story.json"`  ### C:\Shine_L\api\Backups\server_backup_semanticv2_20260507_232115.py - Line 16: `# 👉 Ellie (memory brain)` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 54: `# 🧠 STEP 1 — store memory` - Line 57: `# 🧠 STEP 2 — build memory context` - Line 58: `memory_context = build_context()` - Line 62: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 65: `You are L, a personal assistant with persistent memory.` - Line 69: `{memory_context}` - Line 75: `- ALWAYS use the memory above when answering` - Line 76: `- If the answer is clearly in memory, answer confidently` - Line 77: `- Do NOT say you don't know if it exists in memory` - Line 82: `# STORY MEMORY SEARCH` - Line 94: `"\n\nSTORY MEMORY:\n" +` - Line 121: `"memory": "Ellie connected",` - Line 134: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 370: `"reply":"I could not find anything in your story memory about that yet."` - Line 377: `summary += f"\n\n--- MEMORY {i+1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 829: `"# 🧠 Millie Memory Keeper",` - Line 838: `"🧠 Millie Memory Keeper:",` - Line 919: `"memory",` - Line 1007: `"memory": "connected",` - Line 1391: `# MILLIE MEMORY ROUTING` - Line 1399: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1401: `millie_reply = handle_memory_request(` - Line 1407: `"🧠 Millie Memory Keeper:\n\n"` - Line 1675: `"reply": "I could not find a matching full story file in memory."` - Line 1692: `memory_context = build_context()` - Line 1709: `You have persistent memory.` - Line 1711: `Here is the current memory context:` - Line 1713: `{memory_context}` - Line 1721: `- Use memory when answering.` - Line 1724: `- If story memory is provided, use it.` - Line 1725: `- Do not claim you cannot access memory if memory context is provided.` - Line 1735: `if intent == "memory_recall":` - Line 1880: `"reply": "I could not find anything in your story memory about that yet."` - Line 1886: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_storylib_20260508_000523.py - Line 55: `# 👉 Ellie (memory brain)` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 108: `"reply":"I could not find a matching full file in memory."` - Line 127: `# MEMORY RECALL` - Line 130: `if intent == "memory_recall":` - Line 136: `memory_context = ""` - Line 140: `memory_context += (` - Line 141: `"\n\nMEMORY:\n"` - Line 145: `system_prompt += memory_context` - Line 149: `# 🧠 STEP 1 — store memory` - Line 152: `# 🧠 STEP 2 — build memory context` - Line 153: `memory_context = build_context()` - Line 157: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 160: `You are L, a personal assistant with persistent memory.` - Line 164: `{memory_context}` - Line 170: `- ALWAYS use the memory above when answering` - Line 171: `- If the answer is clearly in memory, answer confidently` - Line 172: `- Do NOT say you don't know if it exists in memory` - Line 177: `# STORY MEMORY SEARCH` - Line 197: `"\n\nSTORY MEMORY:\n" +` - Line 224: `"memory": "Ellie connected",` - Line 237: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 266: `# MEMORY RECALL` - Line 276: `return "memory_recall"` - Line 296: `def calculate_memory_score(text):` - Line 302: `for key, value in MEMORY_IMPORTANCE.items():` - Line 394: `memory_score = calculate_memory_score(` - Line 404: `"score": memory_score` - Line 575: `"reply":"I could not find anything in your story memory about that yet."` - Line 582: `summary += f"\n\n--- MEMORY {i+1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 226: `# MILLIE MEMORY KEEPER AGENT` - Line 235: `handle_memory_request` - Line 342: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 343: `PROFILE_FILE = "memory/profile.json"` - Line 344: `CONVERSATION_FILE = "memory/conversations.json"` - Line 347: `os.makedirs("memory", exist_ok=True)` - Line 379: `MEMORY_IMPORTANCE = {` - Line 475: `def calculate_memory_score(text):` - Line 479: `for key, value in MEMORY_IMPORTANCE.items():` - Line 512: `return "memory_recall"` - Line 574: `memory_score = calculate_memory_score(content_text)` - Line 580: `"score": memory_score,` - Line 628: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 684: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 687: `story_context += "\n--- STORY MEMORY ---\n"` - Line 698: `"memory": "connected",` - Line 878: `# MILLIE MEMORY ROUTING` - Line 886: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 888: `millie_reply = handle_memory_request(` - Line 894: `"🧠 Millie Memory Keeper:\n\n"` - Line 900: `"🧠 Millie Memory Keeper:\n\n"` - Line 1069: `"reply": "I could not find a matching full story file in memory."` - Line 1086: `memory_context = build_context()` - Line 1095: `You have persistent memory.` - Line 1097: `Here is the current memory context:` - Line 1099: `{memory_context}` - Line 1105: `- Use memory when answering.` - Line 1108: `- If story memory is provided, use it.` - Line 1109: `- Do not claim you cannot access memory if memory context is provided.` - Line 1119: `if intent == "memory_recall":` - Line 1264: `"reply": "I could not find anything in your story memory about that yet."` - Line 1270: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_timefix_20260508_010248.py - Line 14: `from memory.memory_engine import (` - Line 14: `from memory.memory_engine import (` - Line 37: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 38: `PROFILE_FILE = "memory/profile.json"` - Line 39: `CONVERSATION_FILE = "memory/conversations.json"` - Line 42: `os.makedirs("memory", exist_ok=True)` - Line 74: `MEMORY_IMPORTANCE = {` - Line 170: `def calculate_memory_score(text):` - Line 174: `for key, value in MEMORY_IMPORTANCE.items():` - Line 207: `return "memory_recall"` - Line 269: `memory_score = calculate_memory_score(content_text)` - Line 275: `"score": memory_score,` - Line 323: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 379: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 382: `story_context += "\n--- STORY MEMORY ---\n"` - Line 393: `"memory": "connected",` - Line 410: `"reply": "I could not find a matching full story file in memory."` - Line 427: `memory_context = build_context()` - Line 434: `You have persistent memory.` - Line 436: `Here is the current memory context:` - Line 438: `{memory_context}` - Line 444: `- Use memory when answering.` - Line 447: `- If story memory is provided, use it.` - Line 448: `- Do not claim you cannot access memory if memory context is provided.` - Line 458: `if intent == "memory_recall":` - Line 603: `"reply": "I could not find anything in your story memory about that yet."` - Line 609: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_uploadv1_20260507_213852.py - Line 8: `# 👉 Ellie (memory brain)` - Line 9: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 9: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 46: `# 🧠 STEP 1 — store memory` - Line 49: `# 🧠 STEP 2 — build memory context` - Line 50: `memory_context = build_context()` - Line 54: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 57: `You are L, a personal assistant with persistent memory.` - Line 61: `{memory_context}` - Line 67: `- ALWAYS use the memory above when answering` - Line 68: `- If the answer is clearly in memory, answer confidently` - Line 69: `- Do NOT say you don't know if it exists in memory` - Line 94: `"memory": "Ellie connected",`  ### C:\Shine_L\api\Backups\server_backup_visionv1_20260507_221521.py - Line 14: `# 👉 Ellie (memory brain)` - Line 15: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 15: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 52: `# 🧠 STEP 1 — store memory` - Line 55: `# 🧠 STEP 2 — build memory context` - Line 56: `memory_context = build_context()` - Line 60: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 63: `You are L, a personal assistant with persistent memory.` - Line 67: `{memory_context}` - Line 73: `- ALWAYS use the memory above when answering` - Line 74: `- If the answer is clearly in memory, answer confidently` - Line 75: `- Do NOT say you don't know if it exists in memory` - Line 100: `"memory": "Ellie connected",`  ### C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py - Line 19: `from memory.memory_engine import (` - Line 19: `from memory.memory_engine import (` - Line 293: `# MILLIE MEMORY KEEPER AGENT` - Line 302: `handle_memory_request` - Line 409: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 410: `PROFILE_FILE = "memory/profile.json"` - Line 411: `CONVERSATION_FILE = "memory/conversations.json"` - Line 414: `os.makedirs("memory", exist_ok=True)` - Line 446: `MEMORY_IMPORTANCE = {` - Line 542: `def calculate_memory_score(text):` - Line 546: `for key, value in MEMORY_IMPORTANCE.items():` - Line 579: `return "memory_recall"` - Line 641: `memory_score = calculate_memory_score(content_text)` - Line 647: `"score": memory_score,` - Line 695: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 751: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 754: `story_context += "\n--- STORY MEMORY ---\n"` - Line 766: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 830: `"# 🧠 Millie Memory Keeper",` - Line 839: `"🧠 Millie Memory Keeper:",` - Line 920: `"memory",` - Line 1008: `"memory": "connected",` - Line 1442: `# MILLIE MEMORY ROUTING` - Line 1450: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1452: `millie_reply = handle_memory_request(` - Line 1458: `"🧠 Millie Memory Keeper:\n\n"` - Line 1726: `"reply": "I could not find a matching full story file in memory."` - Line 1743: `memory_context = build_context()` - Line 1760: `You have persistent memory.` - Line 1762: `Here is the current memory context:` - Line 1764: `{memory_context}` - Line 1772: `- Use memory when answering.` - Line 1775: `- If story memory is provided, use it.` - Line 1776: `- Do not claim you cannot access memory if memory context is provided.` - Line 1786: `if intent == "memory_recall":` - Line 1931: `"reply": "I could not find anything in your story memory about that yet."` - Line 1937: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py - Line 19: `from memory.memory_engine import (` - Line 19: `from memory.memory_engine import (` - Line 293: `# MILLIE MEMORY KEEPER AGENT` - Line 302: `handle_memory_request` - Line 409: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 410: `PROFILE_FILE = "memory/profile.json"` - Line 411: `CONVERSATION_FILE = "memory/conversations.json"` - Line 414: `os.makedirs("memory", exist_ok=True)` - Line 446: `MEMORY_IMPORTANCE = {` - Line 542: `def calculate_memory_score(text):` - Line 546: `for key, value in MEMORY_IMPORTANCE.items():` - Line 579: `return "memory_recall"` - Line 641: `memory_score = calculate_memory_score(content_text)` - Line 647: `"score": memory_score,` - Line 695: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 751: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 754: `story_context += "\n--- STORY MEMORY ---\n"` - Line 766: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 830: `"# 🧠 Millie Memory Keeper",` - Line 839: `"🧠 Millie Memory Keeper:",` - Line 920: `"memory",` - Line 1008: `"memory": "connected",` - Line 1442: `# MILLIE MEMORY ROUTING` - Line 1450: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1452: `millie_reply = handle_memory_request(` - Line 1458: `"🧠 Millie Memory Keeper:\n\n"` - Line 1726: `"reply": "I could not find a matching full story file in memory."` - Line 1743: `memory_context = build_context()` - Line 1760: `You have persistent memory.` - Line 1762: `Here is the current memory context:` - Line 1764: `{memory_context}` - Line 1772: `- Use memory when answering.` - Line 1775: `- If story memory is provided, use it.` - Line 1776: `- Do not claim you cannot access memory if memory context is provided.` - Line 1786: `if intent == "memory_recall":` - Line 1941: `"reply": "I could not find anything in your story memory about that yet."` - Line 1947: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 248: `# MILLIE MEMORY KEEPER AGENT` - Line 257: `handle_memory_request` - Line 364: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 365: `PROFILE_FILE = "memory/profile.json"` - Line 366: `CONVERSATION_FILE = "memory/conversations.json"` - Line 369: `os.makedirs("memory", exist_ok=True)` - Line 401: `MEMORY_IMPORTANCE = {` - Line 497: `def calculate_memory_score(text):` - Line 501: `for key, value in MEMORY_IMPORTANCE.items():` - Line 534: `return "memory_recall"` - Line 596: `memory_score = calculate_memory_score(content_text)` - Line 602: `"score": memory_score,` - Line 650: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 706: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 709: `story_context += "\n--- STORY MEMORY ---\n"` - Line 720: `"memory": "connected",` - Line 928: `# MILLIE MEMORY ROUTING` - Line 936: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 938: `millie_reply = handle_memory_request(` - Line 944: `"🧠 Millie Memory Keeper:\n\n"` - Line 950: `"🧠 Millie Memory Keeper:\n\n"` - Line 1119: `"reply": "I could not find a matching full story file in memory."` - Line 1136: `memory_context = build_context()` - Line 1145: `You have persistent memory.` - Line 1147: `Here is the current memory context:` - Line 1149: `{memory_context}` - Line 1155: `- Use memory when answering.` - Line 1158: `- If story memory is provided, use it.` - Line 1159: `- Do not claim you cannot access memory if memory context is provided.` - Line 1169: `if intent == "memory_recall":` - Line 1314: `"reply": "I could not find anything in your story memory about that yet."` - Line 1320: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_wire_brittany_20260508_170007.py - Line 15: `from memory.memory_engine import (` - Line 15: `from memory.memory_engine import (` - Line 38: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 39: `PROFILE_FILE = "memory/profile.json"` - Line 40: `CONVERSATION_FILE = "memory/conversations.json"` - Line 43: `os.makedirs("memory", exist_ok=True)` - Line 75: `MEMORY_IMPORTANCE = {` - Line 171: `def calculate_memory_score(text):` - Line 175: `for key, value in MEMORY_IMPORTANCE.items():` - Line 208: `return "memory_recall"` - Line 270: `memory_score = calculate_memory_score(content_text)` - Line 276: `"score": memory_score,` - Line 324: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 380: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 383: `story_context += "\n--- STORY MEMORY ---\n"` - Line 394: `"memory": "connected",` - Line 430: `"reply": "I could not find a matching full story file in memory."` - Line 447: `memory_context = build_context()` - Line 456: `You have persistent memory.` - Line 458: `Here is the current memory context:` - Line 460: `{memory_context}` - Line 466: `- Use memory when answering.` - Line 469: `- If story memory is provided, use it.` - Line 470: `- Do not claim you cannot access memory if memory context is provided.` - Line 480: `if intent == "memory_recall":` - Line 625: `"reply": "I could not find anything in your story memory about that yet."` - Line 631: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 172: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 173: `PROFILE_FILE = "memory/profile.json"` - Line 174: `CONVERSATION_FILE = "memory/conversations.json"` - Line 177: `os.makedirs("memory", exist_ok=True)` - Line 209: `MEMORY_IMPORTANCE = {` - Line 305: `def calculate_memory_score(text):` - Line 309: `for key, value in MEMORY_IMPORTANCE.items():` - Line 342: `return "memory_recall"` - Line 404: `memory_score = calculate_memory_score(content_text)` - Line 410: `"score": memory_score,` - Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 517: `story_context += "\n--- STORY MEMORY ---\n"` - Line 528: `"memory": "connected",` - Line 676: `"reply": "I could not find a matching full story file in memory."` - Line 693: `memory_context = build_context()` - Line 702: `You have persistent memory.` - Line 704: `Here is the current memory context:` - Line 706: `{memory_context}` - Line 712: `- Use memory when answering.` - Line 715: `- If story memory is provided, use it.` - Line 716: `- Do not claim you cannot access memory if memory context is provided.` - Line 726: `if intent == "memory_recall":` - Line 871: `"reply": "I could not find anything in your story memory about that yet."` - Line 877: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 829: `"# 🧠 Millie Memory Keeper",` - Line 838: `"🧠 Millie Memory Keeper:",` - Line 919: `"memory",` - Line 1007: `"memory": "connected",` - Line 1391: `# MILLIE MEMORY ROUTING` - Line 1399: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1401: `millie_reply = handle_memory_request(` - Line 1407: `"🧠 Millie Memory Keeper:\n\n"` - Line 1675: `"reply": "I could not find a matching full story file in memory."` - Line 1692: `memory_context = build_context()` - Line 1709: `You have persistent memory.` - Line 1711: `Here is the current memory context:` - Line 1713: `{memory_context}` - Line 1721: `- Use memory when answering.` - Line 1724: `- If story memory is provided, use it.` - Line 1725: `- Do not claim you cannot access memory if memory context is provided.` - Line 1735: `if intent == "memory_recall":` - Line 1880: `"reply": "I could not find anything in your story memory about that yet."` - Line 1886: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\google_auth.py - Line 79: `supabase.table("system_memory")` - Line 93: `supabase.table("system_memory")` - Line 102: `supabase.table("system_memory")` - Line 112: `supabase.table("system_memory")` - Line 139: `supabase.table("system_memory")`  ### C:\Shine_L\api\routes\memory.py - Line 10: `MEMORY_AUDIT_HANDLER = None` - Line 11: `MEMORY_AUDIT_V2_HANDLER = None` - Line 16: `def register_memory_handlers(` - Line 23: `global MEMORY_AUDIT_HANDLER` - Line 24: `global MEMORY_AUDIT_V2_HANDLER` - Line 28: `MEMORY_AUDIT_HANDLER = audit_handler` - Line 29: `MEMORY_AUDIT_V2_HANDLER = audit_v2_handler` - Line 34: `@router.get("/memory/audit")` - Line 35: `async def memory_audit():` - Line 37: `return await MEMORY_AUDIT_HANDLER()` - Line 40: `@router.get("/memory/audit-v2")` - Line 41: `async def memory_audit_v2():` - Line 43: `return await MEMORY_AUDIT_V2_HANDLER()`  ### C:\Shine_L\api\routes\system.py - Line 3: `from memory.memory_audit import (` - Line 4: `build_memory_audit_report,` - Line 5: `hard_memory_audit_v2,` - Line 13: `"memory_observable": True,` - Line 26: `"memory": "connected",` - Line 37: `@router.get("/memory/audit")` - Line 38: `def memory_audit():` - Line 40: `return build_memory_audit_report()` - Line 43: `@router.get("/memory/audit-v2")` - Line 44: `def memory_audit_v2():` - Line 46: `return hard_memory_audit_v2()`  ### C:\Shine_L\api\server.py - Line 21: `from api.routes.memory import (` - Line 22: `router as memory_router,` - Line 23: `register_memory_handlers,` - Line 51: `MEMORY_AUDIT_FILE,` - Line 417: `from memory.confidence import (` - Line 417: `from memory.confidence import (` - Line 418: `calculate_memory_confidence,` - Line 419: `apply_memory_confidence,` - Line 420: `build_memory_confidence_layer,` - Line 423: `from memory.memory_audit import (` - Line 424: `audit_memory_event,` - Line 425: `build_memory_audit_report,` - Line 426: `hard_memory_audit_v2,` - Line 427: `format_hard_memory_audit_v2,` - Line 430: `from memory.life_story_store import (` - Line 438: `from memory.conversation_store import (` - Line 465: `from memory.local_runtime import (` - Line 465: `from memory.local_runtime import (` - Line 469: `from memory.local_runtime import (` - Line 469: `from memory.local_runtime import (` - Line 474: `from memory.memory_engine import (` - Line 474: `from memory.memory_engine import (` - Line 476: `build_memory_confidence_context,` - Line 477: `build_natural_memory_injection,` - Line 479: `extract_relational_memory,` - Line 480: `build_relational_memory_context,` - Line 481: `build_full_memory_audit,` - Line 482: `get_memory_record_count,` - Line 501: `register_memory_handlers(` - Line 502: `handle_memory_audit,` - Line 503: `handle_memory_audit_v2,` - Line 604: `app.include_router(memory_router)` - Line 800: `# MILLIE MEMORY KEEPER AGENT` - Line 809: `handle_memory_request` - Line 937: `os.makedirs("memory", exist_ok=True)` - Line 980: `Memory:` - Line 981: `- Millie: Memory keeper and continuity support.` - Line 982: `- Supabase Memory Spine: Persistent semantic memory storage and retrieval.` - Line 998: `- Gracie: Legacy preservation, life story, and family memory workflows.` - Line 1050: `"score": memory_score` - Line 1120: `"memory audit",` - Line 1121: `"memory audit please",` - Line 1122: `"memory status",` - Line 1123: `"show memory audit",` - Line 1124: `"show memory status",` - Line 1125: `"memory audit v2"` - Line 1129: `"reply": format_hard_memory_audit_v2()` - Line 1134: `"memory audit",` - Line 1136: `"memory status",` - Line 1138: `"show memory audit",` - Line 1140: `"show memory status"` - Line 1144: `report = build_memory_audit_report()` - Line 1160: `# LIVE MEMORY AUDIT` - Line 1163: `memory_audit_requests = [` - Line 1165: `"memory audit",` - Line 1166: `"full memory audit",` - Line 1167: `"live memory audit",` - Line 1168: `"memory count",` - Line 1170: `"audit memory"` - Line 1176: `for x in memory_audit_requests` - Line 1180: `"reply": build_full_memory_audit()` - Line 1266: `handle_memory_request,` - Line 1841: `# MILLIE MEMORY ROUTING` - Line 1849: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1851: `millie_reply = handle_memory_request(` - Line 1857: `"🧠 Millie Memory Keeper:\n\n"` - Line 2203: `"reply": "I could not find a matching full story file in memory."` - Line 2220: `memory_context = build_context()` - Line 2222: `# RELATIONAL MEMORY RETRIEVAL` - Line 2225: `relational_memories = extract_relational_memory(` - Line 2229: `relational_context = build_relational_memory_context(` - Line 2233: `# RELATIONAL MEMORY CONTINUITY` - Line 2241: `natural_memory_continuity = build_natural_memory_injection(` - Line 2245: `# MEMORY CONFIDENCE + CONTRADICTION AWARENESS` - Line 2248: `memory_confidence_context = build_memory_confidence_context(` - Line 2297: `memory_context=memory_context,` - Line 2310: `if intent == "memory_recall":` - Line 2316: `memory_confidence = calculate_memory_confidence(` - Line 2320: `system_prompt += build_memory_confidence_layer(` - Line 2321: `memory_confidence` - Line 2344: `# MEMORY CONFIDENCE + AMBIGUITY AWARENESS` - Line 2347: `reply = apply_memory_confidence(` - Line 2353: `print("🧠 MEMORY CONFIDENCE APPLIED")` - Line 2502: `# MEMORY ROUTE MOVED TO api/routes/memory.py` - Line 2508: `"reply": "I could not find anything in your story memory about that yet."` - Line 2514: `reply += f"\n\n--- MEMORY {i + 1} ---\n"` - Line 2520: `# MEMORY ROUTE MOVED TO api/routes/memory.py`  ### C:\Shine_L\core\compatibility.py - Line 12: `"memory_runtime": "local_json_first",`  ### C:\Shine_L\core\memory_learn.py - Line 6: `OUTCOME_PATH = os.path.join(BASE, "memory_outcomes.json")`  ### C:\Shine_L\core\memory.py - Line 6: `PATTERN_PATH = os.path.join(BASE, "memory_patterns.json")` - Line 7: `OUTCOME_PATH = os.path.join(BASE, "memory_outcomes.json")`  ### C:\Shine_L\core\paths.py - Line 8: `MEMORY_DIR = ROOT / "memory"` - Line 12: `LIFE_STORY_FILE = MEMORY_DIR / "life_story.json"` - Line 14: `PROFILE_FILE = MEMORY_DIR / "profile.json"` - Line 16: `CONVERSATION_FILE = MEMORY_DIR / "conversations.json"` - Line 18: `MEMORY_AUDIT_FILE = MEMORY_DIR / "memory_audit.json"` - Line 20: `INVISIBLE_ORCHESTRA_LOG = MEMORY_DIR / "invisible_orchestra_log.json"`  ### C:\Shine_L\core\prompt_builder.py - Line 3: `memory_context,` - Line 15: `You have persistent memory.` - Line 17: `Here is the current memory context:` - Line 19: `{memory_context}` - Line 36: `IMPORTANT MEMORY CONFIDENCE DOCTRINE:` - Line 37: `- Distinguish between confirmed memory and inferred context.` - Line 41: `IMPORTANT MEMORY CONTINUITY DOCTRINE:` - Line 42: `- Human memory is associative and relational.` - Line 72: `- Use memory naturally.` - Line 73: `- Use profile memory as highest authority.`  ### C:\Shine_L\core\response_stabilizer.py - Line 54: `"supabase memory spine",` - Line 55: `"semantic memory",`  ### C:\Shine_L\core\spine.py - Line 3: `PROFILE_PATH = "C:/Shine_L/memory/doug_profile.json"`  ### C:\Shine_L\orchestration\agent_registry.py - Line 27: `"domain": "memory",` - Line 28: `"specialty": "memory continuity",`  ### C:\Shine_L\orchestration\captains\intelligence_command.py - Line 26: `handle_memory_request,` - Line 130: `# MILLIE MEMORY` - Line 140: `millie_reply = handle_memory_request(` - Line 146: `"🧠 Millie Memory Keeper:\n\n"`  ### C:\Shine_L\orchestration\captains\intelligence\captain_millie.py - Line 15: `domain="memory"`  ### C:\Shine_L\orchestration\invisible_orchestra.py - Line 82: `"# 🧠 Millie Memory Keeper",` - Line 91: `"🧠 Millie Memory Keeper:",`  ### C:\Shine_L\orchestration\meta_suppression.py - Line 9: `"memory audit",` - Line 10: `"memory observability",`  ### C:\Shine_L\orchestration\runtime_engine.py - Line 10: `from memory.local_runtime import (` - Line 10: `from memory.local_runtime import (` - Line 40: `from memory.confidence import (` - Line 40: `from memory.confidence import (` - Line 41: `apply_memory_confidence` - Line 64: `# MEMORY PROCESS` - Line 69: `memory_context = build_context()` - Line 126: `memory_context=memory_context,` - Line 160: `"memory_context": memory_context,` - Line 179: `reply = apply_memory_confidence(`  ### C:\Shine_L\orchestration\weighted_scoring.py - Line 39: `"memory",` - Line 150: `memory_terms = [` - Line 155: `"memory audit"` - Line 201: `for term in memory_terms:`  ### C:\Shine_L\tests\test_dynamic_dispatch.py - Line 34: `return "memory" in msg.lower()` - Line 63: `"show memory"`  ### C:\Shine_L\tests\test_final_modular.py - Line 14: `from memory.local_runtime import runtime_status` - Line 14: `from memory.local_runtime import runtime_status` - Line 23: `print(build_tegan_triage_report("I need help with memory and emails"))`  ### C:\Shine_L\tests\test_intelligence_deployment.py - Line 14: `return "memory" in msg.lower()` - Line 34: `"show my memory"` - Line 39: `"show my memory"`  ### C:\Shine_L\tests\test_supabase_sync.py - Line 9: `from memory.supabase_sync.sync_engine import (` - Line 9: `from memory.supabase_sync.sync_engine import (`  ### C:\Shine_L\tests\test_tegan_triage.py - Line 7: `'memory audit please',`  ## Current Memory Architecture Issue  Memory cognition is currently split between: - core/ - memory/  Known core memory files: - core/memory.py - core/memory_detect.py - core/memory_learn.py - core/memory_patterns.json - core/memory_outcomes.json  ## Target Future Structure  `	ext memory/   runtime/   retrieval/   learning/   patterns/   confidence/   sync/   captains/ += "
+# OPERATION MNEMOSYNE ## AODS 47 — Memory Dependency Audit + Import Map  Created: 05/14/2026 16:17:33  ## Mission Map memory dependencies before moving memory cognition out of core.  ## Doctrine - Do not move memory files blindly. - Map first. - Extract second. - Preserve rollback. - Protect memory.  ## Findings Count Total memory-related import/reference hits: 2420  ### C:\Shine_L\agents\emme\emme.py - Line 15: `"memory",`  ### C:\Shine_L\agents\fee.py - Line 6: `FROLLO_DIR = "C:/Shine_L/memory/frollo"` - Line 7: `OUTPUT_PATH = "C:/Shine_L/memory/finance.json"`  ### C:\Shine_L\agents\fiona\fiona_backup_20260510_182249.py - Line 16: `"memory",`  ### C:\Shine_L\agents\fiona\fiona.py - Line 41: `"memory": -3,`  ### C:\Shine_L\agents\gracie\gracie_backup_20260510_192937.py - Line 15: `"memory",` - Line 92: `"book memory",` - Line 94: `"family memory",`  ### C:\Shine_L\agents\gracie\gracie.py - Line 8: `"save this memory": 6,` - Line 19: `"spoken memory": 5,` - Line 36: `"memory audit": -8,`  ### C:\Shine_L\agents\millie\__init__.py - Line 3: `handle_memory_request,` - Line 4: `add_memory,`  ### C:\Shine_L\agents\millie\millie.py - Line 1: `from memory.memory_engine import (` - Line 1: `from memory.memory_engine import (` - Line 20: `"memory keeper",` - Line 22: `"save this memory",` - Line 25: `"memory audit",` - Line 26: `"search memory",` - Line 37: `# SAVE MEMORY` - Line 40: `def add_memory(message):` - Line 46: `.replace("save this memory", "")` - Line 58: `# SEARCH MEMORY` - Line 95: `# MEMORY AUDIT` - Line 98: `def memory_audit():` - Line 103: `"# Memory Audit\n\n"` - Line 111: `def handle_memory_request(message: str):` - Line 117: `return memory_audit()` - Line 144: `saved = add_memory(message)` - Line 147: `"Memory saved:\n\n"`  ### C:\Shine_L\agents\noelie\noelie_backup_live_web_v1_20260510_005624.py - Line 15: `"memory",` - Line 176: `"memory",` - Line 283: `"This may benefit from continuity, storytelling, and memory-preservation research.",`  ### C:\Shine_L\agents\noelie\noelie_backup_v1_20260510_004239.py - Line 15: `"memory",` - Line 176: `"memory",` - Line 283: `"This may benefit from continuity, storytelling, and memory-preservation research.",`  ### C:\Shine_L\agents\noelie\noelie.py - Line 15: `"memory",` - Line 176: `"memory",` - Line 283: `"This may benefit from continuity, storytelling, and memory-preservation research.",`  ### C:\Shine_L\agents\pixie\pixie_backup_debug_20260509_134051.py - Line 91: `"visual memory anchor poster in Shine style."`  ### C:\Shine_L\agents\pixie\pixie_backup_semantic_20260509_140409.py - Line 91: `"visual memory anchor poster in Shine style."`  ### C:\Shine_L\agents\pixie\pixie_backup_triggers_20260509_135709.py - Line 91: `"visual memory anchor poster in Shine style."`  ### C:\Shine_L\agents\pixie\pixie.py - Line 140: `"visual memory anchor poster in Shine style."`  ### C:\Shine_L\agents\richie\richie.py - Line 16: `"memory",`  ### C:\Shine_L\agents\sally\sally.py - Line 15: `"memory",` - Line 22: `"memory",`  ### C:\Shine_L\agents\tania_backup_live_20260508_224046.py - Line 5: `TASK_PATH = "C:/Shine_L/memory/tasks.json"`  ### C:\Shine_L\agents\tania\tania.py - Line 15: `"memory",`  ### C:\Shine_L\agents\tegan\tegan.py - Line 1: `from memory.memory_engine import (` - Line 1: `from memory.memory_engine import (` - Line 33: `"Connected to unified Supabase memory",` - Line 73: `f"Unified memory count: {len(facts)}\n"` - Line 77: `"Supabase memory spine: ONLINE\n"` - Line 81: `"Semantic memory: ACTIVE\n"`  ### C:\Shine_L\agents\winnie.py - Line 5: `WHATSAPP_DIR = "C:/Shine_L/memory/whatsapp"`  ### C:\Shine_L\agents\winnie\winnie.py - Line 16: `"memory",`  ### C:\Shine_L\api\Backups\broken .py - Line 19: `from memory.memory_engine import (` - Line 19: `from memory.memory_engine import (` - Line 293: `# MILLIE MEMORY KEEPER AGENT` - Line 302: `handle_memory_request` - Line 409: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 410: `PROFILE_FILE = "memory/profile.json"` - Line 411: `CONVERSATION_FILE = "memory/conversations.json"` - Line 414: `os.makedirs("memory", exist_ok=True)` - Line 446: `MEMORY_IMPORTANCE = {` - Line 542: `def calculate_memory_score(text):` - Line 546: `for key, value in MEMORY_IMPORTANCE.items():` - Line 579: `return "memory_recall"` - Line 641: `memory_score = calculate_memory_score(content_text)` - Line 647: `"score": memory_score,` - Line 695: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 751: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 754: `story_context += "\n--- STORY MEMORY ---\n"` - Line 766: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 830: `"# 🧠 Millie Memory Keeper",` - Line 839: `"🧠 Millie Memory Keeper:",` - Line 920: `"memory",` - Line 1008: `"memory": "connected",` - Line 1442: `# MILLIE MEMORY ROUTING` - Line 1450: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1452: `millie_reply = handle_memory_request(` - Line 1458: `"🧠 Millie Memory Keeper:\n\n"` - Line 1726: `"reply": "I could not find a matching full story file in memory."` - Line 1743: `memory_context = build_context()` - Line 1760: `You have persistent memory.` - Line 1762: `Here is the current memory context:` - Line 1764: `{memory_context}` - Line 1772: `- Use memory when answering.` - Line 1775: `- If story memory is provided, use it.` - Line 1776: `- Do not claim you cannot access memory if memory context is provided.` - Line 1786: `if intent == "memory_recall":` - Line 1983: `"reply": "I could not find anything in your story memory about that yet."` - Line 1989: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 138: `# MILLIE MEMORY KEEPER AGENT` - Line 147: `handle_memory_request` - Line 254: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 255: `PROFILE_FILE = "memory/profile.json"` - Line 256: `CONVERSATION_FILE = "memory/conversations.json"` - Line 259: `os.makedirs("memory", exist_ok=True)` - Line 291: `MEMORY_IMPORTANCE = {` - Line 387: `def calculate_memory_score(text):` - Line 391: `for key, value in MEMORY_IMPORTANCE.items():` - Line 424: `return "memory_recall"` - Line 486: `memory_score = calculate_memory_score(content_text)` - Line 492: `"score": memory_score,` - Line 540: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 596: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 599: `story_context += "\n--- STORY MEMORY ---\n"` - Line 610: `"memory": "connected",` - Line 678: `# MILLIE MEMORY ROUTING` - Line 686: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 688: `millie_reply = handle_memory_request(` - Line 694: `"🧠 Millie Memory Keeper:\n\n"` - Line 700: `"🧠 Millie Memory Keeper:\n\n"` - Line 869: `"reply": "I could not find a matching full story file in memory."` - Line 886: `memory_context = build_context()` - Line 895: `You have persistent memory.` - Line 897: `Here is the current memory context:` - Line 899: `{memory_context}` - Line 905: `- Use memory when answering.` - Line 908: `- If story memory is provided, use it.` - Line 909: `- Do not claim you cannot access memory if memory context is provided.` - Line 919: `if intent == "memory_recall":` - Line 1064: `"reply": "I could not find anything in your story memory about that yet."` - Line 1070: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 160: `# MILLIE MEMORY KEEPER AGENT` - Line 169: `handle_memory_request` - Line 276: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 277: `PROFILE_FILE = "memory/profile.json"` - Line 278: `CONVERSATION_FILE = "memory/conversations.json"` - Line 281: `os.makedirs("memory", exist_ok=True)` - Line 313: `MEMORY_IMPORTANCE = {` - Line 409: `def calculate_memory_score(text):` - Line 413: `for key, value in MEMORY_IMPORTANCE.items():` - Line 446: `return "memory_recall"` - Line 508: `memory_score = calculate_memory_score(content_text)` - Line 514: `"score": memory_score,` - Line 562: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 618: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 621: `story_context += "\n--- STORY MEMORY ---\n"` - Line 632: `"memory": "connected",` - Line 728: `# MILLIE MEMORY ROUTING` - Line 736: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 738: `millie_reply = handle_memory_request(` - Line 744: `"🧠 Millie Memory Keeper:\n\n"` - Line 750: `"🧠 Millie Memory Keeper:\n\n"` - Line 919: `"reply": "I could not find a matching full story file in memory."` - Line 936: `memory_context = build_context()` - Line 945: `You have persistent memory.` - Line 947: `Here is the current memory context:` - Line 949: `{memory_context}` - Line 955: `- Use memory when answering.` - Line 958: `- If story memory is provided, use it.` - Line 959: `- Do not claim you cannot access memory if memory context is provided.` - Line 969: `if intent == "memory_recall":` - Line 1114: `"reply": "I could not find anything in your story memory about that yet."` - Line 1120: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_brittanyroute_20260508_172823.py - Line 15: `from memory.memory_engine import (` - Line 15: `from memory.memory_engine import (` - Line 50: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 51: `PROFILE_FILE = "memory/profile.json"` - Line 52: `CONVERSATION_FILE = "memory/conversations.json"` - Line 55: `os.makedirs("memory", exist_ok=True)` - Line 87: `MEMORY_IMPORTANCE = {` - Line 183: `def calculate_memory_score(text):` - Line 187: `for key, value in MEMORY_IMPORTANCE.items():` - Line 220: `return "memory_recall"` - Line 282: `memory_score = calculate_memory_score(content_text)` - Line 288: `"score": memory_score,` - Line 336: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 392: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 395: `story_context += "\n--- STORY MEMORY ---\n"` - Line 406: `"memory": "connected",` - Line 442: `"reply": "I could not find a matching full story file in memory."` - Line 459: `memory_context = build_context()` - Line 468: `You have persistent memory.` - Line 470: `Here is the current memory context:` - Line 472: `{memory_context}` - Line 478: `- Use memory when answering.` - Line 481: `- If story memory is provided, use it.` - Line 482: `- Do not claim you cannot access memory if memory context is provided.` - Line 492: `if intent == "memory_recall":` - Line 637: `"reply": "I could not find anything in your story memory about that yet."` - Line 643: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_callie_tania_20260508_184451.py - Line 15: `from memory.memory_engine import (` - Line 15: `from memory.memory_engine import (` - Line 72: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 73: `PROFILE_FILE = "memory/profile.json"` - Line 74: `CONVERSATION_FILE = "memory/conversations.json"` - Line 77: `os.makedirs("memory", exist_ok=True)` - Line 109: `MEMORY_IMPORTANCE = {` - Line 205: `def calculate_memory_score(text):` - Line 209: `for key, value in MEMORY_IMPORTANCE.items():` - Line 242: `return "memory_recall"` - Line 304: `memory_score = calculate_memory_score(content_text)` - Line 310: `"score": memory_score,` - Line 358: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 414: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 417: `story_context += "\n--- STORY MEMORY ---\n"` - Line 428: `"memory": "connected",` - Line 520: `"reply": "I could not find a matching full story file in memory."` - Line 537: `memory_context = build_context()` - Line 546: `You have persistent memory.` - Line 548: `Here is the current memory context:` - Line 550: `{memory_context}` - Line 556: `- Use memory when answering.` - Line 559: `- If story memory is provided, use it.` - Line 560: `- Do not claim you cannot access memory if memory context is provided.` - Line 570: `if intent == "memory_recall":` - Line 715: `"reply": "I could not find anything in your story memory about that yet."` - Line 721: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 829: `"# 🧠 Millie Memory Keeper",` - Line 838: `"🧠 Millie Memory Keeper:",` - Line 919: `"memory",` - Line 1007: `"memory": "connected",` - Line 1391: `# MILLIE MEMORY ROUTING` - Line 1399: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1401: `millie_reply = handle_memory_request(` - Line 1407: `"🧠 Millie Memory Keeper:\n\n"` - Line 1675: `"reply": "I could not find a matching full story file in memory."` - Line 1692: `memory_context = build_context()` - Line 1709: `You have persistent memory.` - Line 1711: `Here is the current memory context:` - Line 1713: `{memory_context}` - Line 1721: `- Use memory when answering.` - Line 1724: `- If story memory is provided, use it.` - Line 1725: `- Do not claim you cannot access memory if memory context is provided.` - Line 1735: `if intent == "memory_recall":` - Line 1880: `"reply": "I could not find anything in your story memory about that yet."` - Line 1886: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 652: `audit_memory_event(` - Line 658: `"score": memory_score` - Line 690: `audit_memory_event(` - Line 713: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 769: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 772: `story_context += "\n--- STORY MEMORY ---\n"` - Line 784: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 848: `"# 🧠 Millie Memory Keeper",` - Line 857: `"🧠 Millie Memory Keeper:",` - Line 938: `"memory",` - Line 1023: `# MEMORY OBSERVABILITY V1` - Line 1026: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"` - Line 1028: `def audit_memory_event(` - Line 1037: `MEMORY_AUDIT_FILE,` - Line 1054: `MEMORY_AUDIT_FILE,` - Line 1061: `"MEMORY AUDIT ERROR:",` - Line 1066: `def memory_file_status():` - Line 1070: `"memory/conversations.json",` - Line 1072: `"memory/life_story.json",` - Line 1074: `"memory/profile.json",` - Line 1076: `"memory/invisible_orchestra_log.json",` - Line 1078: `"memory/memory_audit.json"` - Line 1131: `def build_memory_audit_report():` - Line 1134: `MEMORY_AUDIT_FILE,` - Line 1142: `"memory_files": memory_file_status(),` - Line 1152: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION` - Line 1155: `def hard_memory_audit_v2():` - Line 1158: `"memory/profile.json",` - Line 1159: `"memory/conversations.json",` - Line 1160: `"memory/life_story.json",` - Line 1161: `"memory/invisible_orchestra_log.json",` - Line 1162: `"memory/memory_audit.json"` - Line 1222: `"audit_version": "Memory Audit V2",` - Line 1224: `"memory_files": report,` - Line 1230: `def format_hard_memory_audit_v2():` - Line 1232: `audit = hard_memory_audit_v2()` - Line 1235: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")` - Line 1243: `lines.append("MEMORY FILES")` - Line 1245: `for item in audit["memory_files"]:` - Line 1264: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")` - Line 1273: `"memory": "connected",` - Line 1279: `@app.get("/memory/audit")` - Line 1280: `def memory_audit():` - Line 1282: `return build_memory_audit_report()` - Line 1285: `@app.get("/memory/audit-v2")` - Line 1286: `def memory_audit_v2():` - Line 1288: `return hard_memory_audit_v2()` - Line 1295: `"memory audit",` - Line 1296: `"memory audit please",` - Line 1297: `"memory status",` - Line 1298: `"show memory audit",` - Line 1299: `"show memory status",` - Line 1300: `"memory audit v2"` - Line 1304: `"reply": format_hard_memory_audit_v2()` - Line 1309: `"memory audit",` - Line 1311: `"memory status",` - Line 1313: `"show memory audit",` - Line 1315: `"show memory status"` - Line 1319: `report = build_memory_audit_report()` - Line 1704: `# MILLIE MEMORY ROUTING` - Line 1712: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1714: `millie_reply = handle_memory_request(` - Line 1720: `"🧠 Millie Memory Keeper:\n\n"` - Line 1988: `"reply": "I could not find a matching full story file in memory."` - Line 2005: `memory_context = build_context()` - Line 2022: `You have persistent memory.` - Line 2024: `Here is the current memory context:` - Line 2026: `{memory_context}` - Line 2039: `- If memory contains Tamara, treat it as relationship history only.` - Line 2041: `- If unsure, say memory confidence is uncertain rather than guessing.` - Line 2044: `- Use memory when answering.` - Line 2047: `- If story memory is provided, use it.` - Line 2048: `- Do not claim you cannot access memory if memory context is provided.` - Line 2058: `if intent == "memory_recall":` - Line 2203: `"reply": "I could not find anything in your story memory about that yet."` - Line 2209: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 652: `audit_memory_event(` - Line 658: `"score": memory_score` - Line 690: `audit_memory_event(` - Line 713: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 769: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 772: `story_context += "\n--- STORY MEMORY ---\n"` - Line 784: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 848: `"# 🧠 Millie Memory Keeper",` - Line 857: `"🧠 Millie Memory Keeper:",` - Line 938: `"memory",` - Line 1023: `# MEMORY OBSERVABILITY V1` - Line 1026: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"` - Line 1028: `def audit_memory_event(` - Line 1037: `MEMORY_AUDIT_FILE,` - Line 1054: `MEMORY_AUDIT_FILE,` - Line 1061: `"MEMORY AUDIT ERROR:",` - Line 1066: `def memory_file_status():` - Line 1070: `"memory/conversations.json",` - Line 1072: `"memory/life_story.json",` - Line 1074: `"memory/profile.json",` - Line 1076: `"memory/invisible_orchestra_log.json",` - Line 1078: `"memory/memory_audit.json"` - Line 1131: `def build_memory_audit_report():` - Line 1134: `MEMORY_AUDIT_FILE,` - Line 1142: `"memory_files": memory_file_status(),` - Line 1152: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION` - Line 1155: `def hard_memory_audit_v2():` - Line 1158: `"memory/profile.json",` - Line 1159: `"memory/conversations.json",` - Line 1160: `"memory/life_story.json",` - Line 1161: `"memory/invisible_orchestra_log.json",` - Line 1162: `"memory/memory_audit.json"` - Line 1222: `"audit_version": "Memory Audit V2",` - Line 1224: `"memory_files": report,` - Line 1230: `def format_hard_memory_audit_v2():` - Line 1232: `audit = hard_memory_audit_v2()` - Line 1235: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")` - Line 1243: `lines.append("MEMORY FILES")` - Line 1245: `for item in audit["memory_files"]:` - Line 1264: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")` - Line 1275: `"memory_observable": True,` - Line 1309: `"memory": "connected",` - Line 1315: `@app.get("/memory/audit")` - Line 1316: `def memory_audit():` - Line 1318: `return build_memory_audit_report()` - Line 1321: `@app.get("/memory/audit-v2")` - Line 1322: `def memory_audit_v2():` - Line 1324: `return hard_memory_audit_v2()` - Line 1337: `"memory audit",` - Line 1338: `"memory audit please",` - Line 1339: `"memory status",` - Line 1340: `"show memory audit",` - Line 1341: `"show memory status",` - Line 1342: `"memory audit v2"` - Line 1346: `"reply": format_hard_memory_audit_v2()` - Line 1351: `"memory audit",` - Line 1353: `"memory status",` - Line 1355: `"show memory audit",` - Line 1357: `"show memory status"` - Line 1361: `report = build_memory_audit_report()` - Line 1750: `# MILLIE MEMORY ROUTING` - Line 1758: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1760: `millie_reply = handle_memory_request(` - Line 1766: `"🧠 Millie Memory Keeper:\n\n"` - Line 2034: `"reply": "I could not find a matching full story file in memory."` - Line 2051: `memory_context = build_context()` - Line 2068: `You have persistent memory.` - Line 2070: `Here is the current memory context:` - Line 2072: `{memory_context}` - Line 2085: `- If memory contains Tamara, treat it as relationship history only.` - Line 2087: `- If unsure, say memory confidence is uncertain rather than guessing.` - Line 2090: `- Use memory when answering.` - Line 2093: `- If story memory is provided, use it.` - Line 2094: `- Do not claim you cannot access memory if memory context is provided.` - Line 2104: `if intent == "memory_recall":` - Line 2251: `"reply": "I could not find anything in your story memory about that yet."` - Line 2257: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 172: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 173: `PROFILE_FILE = "memory/profile.json"` - Line 174: `CONVERSATION_FILE = "memory/conversations.json"` - Line 177: `os.makedirs("memory", exist_ok=True)` - Line 209: `MEMORY_IMPORTANCE = {` - Line 305: `def calculate_memory_score(text):` - Line 309: `for key, value in MEMORY_IMPORTANCE.items():` - Line 342: `return "memory_recall"` - Line 404: `memory_score = calculate_memory_score(content_text)` - Line 410: `"score": memory_score,` - Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 517: `story_context += "\n--- STORY MEMORY ---\n"` - Line 528: `"memory": "connected",` - Line 731: `"reply": "I could not find a matching full story file in memory."` - Line 748: `memory_context = build_context()` - Line 757: `You have persistent memory.` - Line 759: `Here is the current memory context:` - Line 761: `{memory_context}` - Line 767: `- Use memory when answering.` - Line 770: `- If story memory is provided, use it.` - Line 771: `- Do not claim you cannot access memory if memory context is provided.` - Line 781: `if intent == "memory_recall":` - Line 926: `"reply": "I could not find anything in your story memory about that yet."` - Line 932: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_drift_20260507_233906.py - Line 16: `# 👉 Ellie (memory brain)` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 54: `# 🧠 STEP 1 — store memory` - Line 57: `# 🧠 STEP 2 — build memory context` - Line 58: `memory_context = build_context()` - Line 62: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 65: `You are L, a personal assistant with persistent memory.` - Line 69: `{memory_context}` - Line 75: `- ALWAYS use the memory above when answering` - Line 76: `- If the answer is clearly in memory, answer confidently` - Line 77: `- Do NOT say you don't know if it exists in memory` - Line 82: `# STORY MEMORY SEARCH` - Line 94: `"\n\nSTORY MEMORY:\n" +` - Line 121: `"memory": "Ellie connected",` - Line 134: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 142: `def calculate_memory_score(text):` - Line 148: `for key, value in MEMORY_IMPORTANCE.items():` - Line 240: `memory_score = calculate_memory_score(` - Line 247: `"score": memory_score` - Line 418: `"reply":"I could not find anything in your story memory about that yet."` - Line 425: `summary += f"\n\n--- MEMORY {i+1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_emily_20260508_183637.py - Line 15: `from memory.memory_engine import (` - Line 15: `from memory.memory_engine import (` - Line 50: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 51: `PROFILE_FILE = "memory/profile.json"` - Line 52: `CONVERSATION_FILE = "memory/conversations.json"` - Line 55: `os.makedirs("memory", exist_ok=True)` - Line 87: `MEMORY_IMPORTANCE = {` - Line 183: `def calculate_memory_score(text):` - Line 187: `for key, value in MEMORY_IMPORTANCE.items():` - Line 220: `return "memory_recall"` - Line 282: `memory_score = calculate_memory_score(content_text)` - Line 288: `"score": memory_score,` - Line 336: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 392: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 395: `story_context += "\n--- STORY MEMORY ---\n"` - Line 406: `"memory": "connected",` - Line 470: `"reply": "I could not find a matching full story file in memory."` - Line 487: `memory_context = build_context()` - Line 496: `You have persistent memory.` - Line 498: `Here is the current memory context:` - Line 500: `{memory_context}` - Line 506: `- Use memory when answering.` - Line 509: `- If story memory is provided, use it.` - Line 510: `- Do not claim you cannot access memory if memory context is provided.` - Line 520: `if intent == "memory_recall":` - Line 665: `"reply": "I could not find anything in your story memory about that yet."` - Line 671: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_emily_20260508_184421.py - Line 15: `from memory.memory_engine import (` - Line 15: `from memory.memory_engine import (` - Line 72: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 73: `PROFILE_FILE = "memory/profile.json"` - Line 74: `CONVERSATION_FILE = "memory/conversations.json"` - Line 77: `os.makedirs("memory", exist_ok=True)` - Line 109: `MEMORY_IMPORTANCE = {` - Line 205: `def calculate_memory_score(text):` - Line 209: `for key, value in MEMORY_IMPORTANCE.items():` - Line 242: `return "memory_recall"` - Line 304: `memory_score = calculate_memory_score(content_text)` - Line 310: `"score": memory_score,` - Line 358: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 414: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 417: `story_context += "\n--- STORY MEMORY ---\n"` - Line 428: `"memory": "connected",` - Line 520: `"reply": "I could not find a matching full story file in memory."` - Line 537: `memory_context = build_context()` - Line 546: `You have persistent memory.` - Line 548: `Here is the current memory context:` - Line 550: `{memory_context}` - Line 556: `- Use memory when answering.` - Line 559: `- If story memory is provided, use it.` - Line 560: `- Do not claim you cannot access memory if memory context is provided.` - Line 570: `if intent == "memory_recall":` - Line 715: `"reply": "I could not find anything in your story memory about that yet."` - Line 721: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_emily_live_20260508_192137.py - Line 15: `from memory.memory_engine import (` - Line 15: `from memory.memory_engine import (` - Line 116: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 117: `PROFILE_FILE = "memory/profile.json"` - Line 118: `CONVERSATION_FILE = "memory/conversations.json"` - Line 121: `os.makedirs("memory", exist_ok=True)` - Line 153: `MEMORY_IMPORTANCE = {` - Line 249: `def calculate_memory_score(text):` - Line 253: `for key, value in MEMORY_IMPORTANCE.items():` - Line 286: `return "memory_recall"` - Line 348: `memory_score = calculate_memory_score(content_text)` - Line 354: `"score": memory_score,` - Line 402: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 458: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 461: `story_context += "\n--- STORY MEMORY ---\n"` - Line 472: `"memory": "connected",` - Line 620: `"reply": "I could not find a matching full story file in memory."` - Line 637: `memory_context = build_context()` - Line 646: `You have persistent memory.` - Line 648: `Here is the current memory context:` - Line 650: `{memory_context}` - Line 656: `- Use memory when answering.` - Line 659: `- If story memory is provided, use it.` - Line 660: `- Do not claim you cannot access memory if memory context is provided.` - Line 670: `if intent == "memory_recall":` - Line 815: `"reply": "I could not find anything in your story memory about that yet."` - Line 821: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 116: `# MILLIE MEMORY KEEPER AGENT` - Line 125: `handle_memory_request` - Line 232: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 233: `PROFILE_FILE = "memory/profile.json"` - Line 234: `CONVERSATION_FILE = "memory/conversations.json"` - Line 237: `os.makedirs("memory", exist_ok=True)` - Line 269: `MEMORY_IMPORTANCE = {` - Line 365: `def calculate_memory_score(text):` - Line 369: `for key, value in MEMORY_IMPORTANCE.items():` - Line 402: `return "memory_recall"` - Line 464: `memory_score = calculate_memory_score(content_text)` - Line 470: `"score": memory_score,` - Line 518: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 574: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 577: `story_context += "\n--- STORY MEMORY ---\n"` - Line 588: `"memory": "connected",` - Line 628: `# MILLIE MEMORY ROUTING` - Line 636: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 638: `millie_reply = handle_memory_request(` - Line 644: `"🧠 Millie Memory Keeper:\n\n"` - Line 650: `"🧠 Millie Memory Keeper:\n\n"` - Line 819: `"reply": "I could not find a matching full story file in memory."` - Line 836: `memory_context = build_context()` - Line 845: `You have persistent memory.` - Line 847: `Here is the current memory context:` - Line 849: `{memory_context}` - Line 855: `- Use memory when answering.` - Line 858: `- If story memory is provided, use it.` - Line 859: `- Do not claim you cannot access memory if memory context is provided.` - Line 869: `if intent == "memory_recall":` - Line 1014: `"reply": "I could not find anything in your story memory about that yet."` - Line 1020: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 138: `# MILLIE MEMORY KEEPER AGENT` - Line 147: `handle_memory_request` - Line 254: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 255: `PROFILE_FILE = "memory/profile.json"` - Line 256: `CONVERSATION_FILE = "memory/conversations.json"` - Line 259: `os.makedirs("memory", exist_ok=True)` - Line 291: `MEMORY_IMPORTANCE = {` - Line 387: `def calculate_memory_score(text):` - Line 391: `for key, value in MEMORY_IMPORTANCE.items():` - Line 424: `return "memory_recall"` - Line 486: `memory_score = calculate_memory_score(content_text)` - Line 492: `"score": memory_score,` - Line 540: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 596: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 599: `story_context += "\n--- STORY MEMORY ---\n"` - Line 610: `"memory": "connected",` - Line 678: `# MILLIE MEMORY ROUTING` - Line 686: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 688: `millie_reply = handle_memory_request(` - Line 694: `"🧠 Millie Memory Keeper:\n\n"` - Line 700: `"🧠 Millie Memory Keeper:\n\n"` - Line 869: `"reply": "I could not find a matching full story file in memory."` - Line 886: `memory_context = build_context()` - Line 895: `You have persistent memory.` - Line 897: `Here is the current memory context:` - Line 899: `{memory_context}` - Line 905: `- Use memory when answering.` - Line 908: `- If story memory is provided, use it.` - Line 909: `- Do not claim you cannot access memory if memory context is provided.` - Line 919: `if intent == "memory_recall":` - Line 1064: `"reply": "I could not find anything in your story memory about that yet."` - Line 1070: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 303: `"memory audit",` - Line 304: `"memory observability",` - Line 339: `# MILLIE MEMORY KEEPER AGENT` - Line 348: `handle_memory_request` - Line 455: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 456: `PROFILE_FILE = "memory/profile.json"` - Line 457: `CONVERSATION_FILE = "memory/conversations.json"` - Line 460: `os.makedirs("memory", exist_ok=True)` - Line 492: `MEMORY_IMPORTANCE = {` - Line 588: `def calculate_memory_score(text):` - Line 592: `for key, value in MEMORY_IMPORTANCE.items():` - Line 625: `return "memory_recall"` - Line 687: `memory_score = calculate_memory_score(content_text)` - Line 693: `"score": memory_score,` - Line 699: `audit_memory_event(` - Line 705: `"score": memory_score` - Line 737: `audit_memory_event(` - Line 760: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 816: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 819: `story_context += "\n--- STORY MEMORY ---\n"` - Line 831: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 895: `"# 🧠 Millie Memory Keeper",` - Line 904: `"🧠 Millie Memory Keeper:",` - Line 985: `"memory",` - Line 1070: `# MEMORY OBSERVABILITY V1` - Line 1073: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"` - Line 1075: `def audit_memory_event(` - Line 1084: `MEMORY_AUDIT_FILE,` - Line 1101: `MEMORY_AUDIT_FILE,` - Line 1108: `"MEMORY AUDIT ERROR:",` - Line 1113: `def memory_file_status():` - Line 1117: `"memory/conversations.json",` - Line 1119: `"memory/life_story.json",` - Line 1121: `"memory/profile.json",` - Line 1123: `"memory/invisible_orchestra_log.json",` - Line 1125: `"memory/memory_audit.json"` - Line 1178: `def build_memory_audit_report():` - Line 1181: `MEMORY_AUDIT_FILE,` - Line 1189: `"memory_files": memory_file_status(),` - Line 1199: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION` - Line 1202: `def hard_memory_audit_v2():` - Line 1205: `"memory/profile.json",` - Line 1206: `"memory/conversations.json",` - Line 1207: `"memory/life_story.json",` - Line 1208: `"memory/invisible_orchestra_log.json",` - Line 1209: `"memory/memory_audit.json"` - Line 1269: `"audit_version": "Memory Audit V2",` - Line 1271: `"memory_files": report,` - Line 1277: `def format_hard_memory_audit_v2():` - Line 1279: `audit = hard_memory_audit_v2()` - Line 1282: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")` - Line 1290: `lines.append("MEMORY FILES")` - Line 1292: `for item in audit["memory_files"]:` - Line 1311: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")` - Line 1322: `"memory_observable": True,` - Line 1356: `"memory": "connected",` - Line 1362: `@app.get("/memory/audit")` - Line 1363: `def memory_audit():` - Line 1365: `return build_memory_audit_report()` - Line 1368: `@app.get("/memory/audit-v2")` - Line 1369: `def memory_audit_v2():` - Line 1371: `return hard_memory_audit_v2()` - Line 1384: `"memory audit",` - Line 1385: `"memory audit please",` - Line 1386: `"memory status",` - Line 1387: `"show memory audit",` - Line 1388: `"show memory status",` - Line 1389: `"memory audit v2"` - Line 1393: `"reply": format_hard_memory_audit_v2()` - Line 1398: `"memory audit",` - Line 1400: `"memory status",` - Line 1402: `"show memory audit",` - Line 1404: `"show memory status"` - Line 1408: `report = build_memory_audit_report()` - Line 1783: `# MILLIE MEMORY ROUTING` - Line 1791: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1793: `millie_reply = handle_memory_request(` - Line 1799: `"🧠 Millie Memory Keeper:\n\n"` - Line 2067: `"reply": "I could not find a matching full story file in memory."` - Line 2084: `memory_context = build_context()` - Line 2101: `You have persistent memory.` - Line 2103: `Here is the current memory context:` - Line 2105: `{memory_context}` - Line 2118: `- If memory contains Tamara, treat it as relationship history only.` - Line 2120: `- If unsure, say memory confidence is uncertain rather than guessing.` - Line 2123: `- Use memory when answering.` - Line 2126: `- If story memory is provided, use it.` - Line 2127: `- Do not claim you cannot access memory if memory context is provided.` - Line 2137: `if intent == "memory_recall":` - Line 2284: `"reply": "I could not find anything in your story memory about that yet."` - Line 2290: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py - Line 17: `from memory.memory_engine import (` - Line 17: `from memory.memory_engine import (` - Line 139: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 140: `PROFILE_FILE = "memory/profile.json"` - Line 141: `CONVERSATION_FILE = "memory/conversations.json"` - Line 144: `os.makedirs("memory", exist_ok=True)` - Line 176: `MEMORY_IMPORTANCE = {` - Line 272: `def calculate_memory_score(text):` - Line 276: `for key, value in MEMORY_IMPORTANCE.items():` - Line 309: `return "memory_recall"` - Line 371: `memory_score = calculate_memory_score(content_text)` - Line 377: `"score": memory_score,` - Line 425: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 481: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 484: `story_context += "\n--- STORY MEMORY ---\n"` - Line 495: `"memory": "connected",` - Line 643: `"reply": "I could not find a matching full story file in memory."` - Line 660: `memory_context = build_context()` - Line 669: `You have persistent memory.` - Line 671: `Here is the current memory context:` - Line 673: `{memory_context}` - Line 679: `- Use memory when answering.` - Line 682: `- If story memory is provided, use it.` - Line 683: `- Do not claim you cannot access memory if memory context is provided.` - Line 693: `if intent == "memory_recall":` - Line 838: `"reply": "I could not find anything in your story memory about that yet."` - Line 844: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 270: `# MILLIE MEMORY KEEPER AGENT` - Line 279: `handle_memory_request` - Line 386: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 387: `PROFILE_FILE = "memory/profile.json"` - Line 388: `CONVERSATION_FILE = "memory/conversations.json"` - Line 391: `os.makedirs("memory", exist_ok=True)` - Line 423: `MEMORY_IMPORTANCE = {` - Line 519: `def calculate_memory_score(text):` - Line 523: `for key, value in MEMORY_IMPORTANCE.items():` - Line 556: `return "memory_recall"` - Line 618: `memory_score = calculate_memory_score(content_text)` - Line 624: `"score": memory_score,` - Line 672: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 728: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 731: `story_context += "\n--- STORY MEMORY ---\n"` - Line 742: `"memory": "connected",` - Line 978: `# MILLIE MEMORY ROUTING` - Line 986: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 988: `millie_reply = handle_memory_request(` - Line 994: `"🧠 Millie Memory Keeper:\n\n"` - Line 1000: `"🧠 Millie Memory Keeper:\n\n"` - Line 1169: `"reply": "I could not find a matching full story file in memory."` - Line 1186: `memory_context = build_context()` - Line 1195: `You have persistent memory.` - Line 1197: `Here is the current memory context:` - Line 1199: `{memory_context}` - Line 1205: `- Use memory when answering.` - Line 1208: `- If story memory is provided, use it.` - Line 1209: `- Do not claim you cannot access memory if memory context is provided.` - Line 1219: `if intent == "memory_recall":` - Line 1364: `"reply": "I could not find anything in your story memory about that yet."` - Line 1370: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 210: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 211: `PROFILE_FILE = "memory/profile.json"` - Line 212: `CONVERSATION_FILE = "memory/conversations.json"` - Line 215: `os.makedirs("memory", exist_ok=True)` - Line 247: `MEMORY_IMPORTANCE = {` - Line 343: `def calculate_memory_score(text):` - Line 347: `for key, value in MEMORY_IMPORTANCE.items():` - Line 380: `return "memory_recall"` - Line 442: `memory_score = calculate_memory_score(content_text)` - Line 448: `"score": memory_score,` - Line 496: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 552: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 555: `story_context += "\n--- STORY MEMORY ---\n"` - Line 566: `"memory": "connected",` - Line 606: `# MILLIE MEMORY ROUTING` - Line 614: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 616: `millie_reply = handle_memory_request(` - Line 622: `"🧠 Millie Memory Keeper:\n\n"` - Line 628: `"🧠 Millie Memory Keeper:\n\n"` - Line 797: `"reply": "I could not find a matching full story file in memory."` - Line 814: `memory_context = build_context()` - Line 823: `You have persistent memory.` - Line 825: `Here is the current memory context:` - Line 827: `{memory_context}` - Line 833: `- Use memory when answering.` - Line 836: `- If story memory is provided, use it.` - Line 837: `- Do not claim you cannot access memory if memory context is provided.` - Line 847: `if intent == "memory_recall":` - Line 992: `"reply": "I could not find anything in your story memory about that yet."` - Line 998: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_fullrecall_20260507_235052.py - Line 55: `# 👉 Ellie (memory brain)` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 93: `# 🧠 STEP 1 — store memory` - Line 96: `# 🧠 STEP 2 — build memory context` - Line 97: `memory_context = build_context()` - Line 101: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 104: `You are L, a personal assistant with persistent memory.` - Line 108: `{memory_context}` - Line 114: `- ALWAYS use the memory above when answering` - Line 115: `- If the answer is clearly in memory, answer confidently` - Line 116: `- Do NOT say you don't know if it exists in memory` - Line 121: `# STORY MEMORY SEARCH` - Line 141: `"\n\nSTORY MEMORY:\n" +` - Line 168: `"memory": "Ellie connected",` - Line 181: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 202: `def calculate_memory_score(text):` - Line 208: `for key, value in MEMORY_IMPORTANCE.items():` - Line 300: `memory_score = calculate_memory_score(` - Line 307: `"score": memory_score` - Line 478: `"reply":"I could not find anything in your story memory about that yet."` - Line 485: `summary += f"\n\n--- MEMORY {i+1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_google_oauth_20260508_194430.py - Line 15: `from memory.memory_engine import (` - Line 15: `from memory.memory_engine import (` - Line 116: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 117: `PROFILE_FILE = "memory/profile.json"` - Line 118: `CONVERSATION_FILE = "memory/conversations.json"` - Line 121: `os.makedirs("memory", exist_ok=True)` - Line 153: `MEMORY_IMPORTANCE = {` - Line 249: `def calculate_memory_score(text):` - Line 253: `for key, value in MEMORY_IMPORTANCE.items():` - Line 286: `return "memory_recall"` - Line 348: `memory_score = calculate_memory_score(content_text)` - Line 354: `"score": memory_score,` - Line 402: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 458: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 461: `story_context += "\n--- STORY MEMORY ---\n"` - Line 472: `"memory": "connected",` - Line 620: `"reply": "I could not find a matching full story file in memory."` - Line 637: `memory_context = build_context()` - Line 646: `You have persistent memory.` - Line 648: `Here is the current memory context:` - Line 650: `{memory_context}` - Line 656: `- Use memory when answering.` - Line 659: `- If story memory is provided, use it.` - Line 660: `- Do not claim you cannot access memory if memory context is provided.` - Line 670: `if intent == "memory_recall":` - Line 815: `"reply": "I could not find anything in your story memory about that yet."` - Line 821: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 160: `# MILLIE MEMORY KEEPER AGENT` - Line 169: `handle_memory_request` - Line 276: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 277: `PROFILE_FILE = "memory/profile.json"` - Line 278: `CONVERSATION_FILE = "memory/conversations.json"` - Line 281: `os.makedirs("memory", exist_ok=True)` - Line 313: `MEMORY_IMPORTANCE = {` - Line 409: `def calculate_memory_score(text):` - Line 413: `for key, value in MEMORY_IMPORTANCE.items():` - Line 446: `return "memory_recall"` - Line 508: `memory_score = calculate_memory_score(content_text)` - Line 514: `"score": memory_score,` - Line 562: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 618: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 621: `story_context += "\n--- STORY MEMORY ---\n"` - Line 632: `"memory": "connected",` - Line 728: `# MILLIE MEMORY ROUTING` - Line 736: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 738: `millie_reply = handle_memory_request(` - Line 744: `"🧠 Millie Memory Keeper:\n\n"` - Line 750: `"🧠 Millie Memory Keeper:\n\n"` - Line 919: `"reply": "I could not find a matching full story file in memory."` - Line 936: `memory_context = build_context()` - Line 945: `You have persistent memory.` - Line 947: `Here is the current memory context:` - Line 949: `{memory_context}` - Line 955: `- Use memory when answering.` - Line 958: `- If story memory is provided, use it.` - Line 959: `- Do not claim you cannot access memory if memory context is provided.` - Line 969: `if intent == "memory_recall":` - Line 1114: `"reply": "I could not find anything in your story memory about that yet."` - Line 1120: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 303: `"memory audit",` - Line 304: `"memory observability",` - Line 339: `# MILLIE MEMORY KEEPER AGENT` - Line 348: `handle_memory_request` - Line 455: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 456: `PROFILE_FILE = "memory/profile.json"` - Line 457: `CONVERSATION_FILE = "memory/conversations.json"` - Line 460: `os.makedirs("memory", exist_ok=True)` - Line 492: `MEMORY_IMPORTANCE = {` - Line 588: `def calculate_memory_score(text):` - Line 592: `for key, value in MEMORY_IMPORTANCE.items():` - Line 625: `return "memory_recall"` - Line 687: `memory_score = calculate_memory_score(content_text)` - Line 693: `"score": memory_score,` - Line 699: `audit_memory_event(` - Line 705: `"score": memory_score` - Line 737: `audit_memory_event(` - Line 760: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 816: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 819: `story_context += "\n--- STORY MEMORY ---\n"` - Line 831: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 895: `"# 🧠 Millie Memory Keeper",` - Line 904: `"🧠 Millie Memory Keeper:",` - Line 985: `"memory",` - Line 1170: `# MEMORY OBSERVABILITY V1` - Line 1173: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"` - Line 1175: `def audit_memory_event(` - Line 1184: `MEMORY_AUDIT_FILE,` - Line 1201: `MEMORY_AUDIT_FILE,` - Line 1208: `"MEMORY AUDIT ERROR:",` - Line 1213: `def memory_file_status():` - Line 1217: `"memory/conversations.json",` - Line 1219: `"memory/life_story.json",` - Line 1221: `"memory/profile.json",` - Line 1223: `"memory/invisible_orchestra_log.json",` - Line 1225: `"memory/memory_audit.json"` - Line 1278: `def build_memory_audit_report():` - Line 1281: `MEMORY_AUDIT_FILE,` - Line 1289: `"memory_files": memory_file_status(),` - Line 1299: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION` - Line 1302: `def hard_memory_audit_v2():` - Line 1305: `"memory/profile.json",` - Line 1306: `"memory/conversations.json",` - Line 1307: `"memory/life_story.json",` - Line 1308: `"memory/invisible_orchestra_log.json",` - Line 1309: `"memory/memory_audit.json"` - Line 1369: `"audit_version": "Memory Audit V2",` - Line 1371: `"memory_files": report,` - Line 1377: `def format_hard_memory_audit_v2():` - Line 1379: `audit = hard_memory_audit_v2()` - Line 1382: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")` - Line 1390: `lines.append("MEMORY FILES")` - Line 1392: `for item in audit["memory_files"]:` - Line 1411: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")` - Line 1422: `"memory_observable": True,` - Line 1456: `"memory": "connected",` - Line 1462: `@app.get("/memory/audit")` - Line 1463: `def memory_audit():` - Line 1465: `return build_memory_audit_report()` - Line 1468: `@app.get("/memory/audit-v2")` - Line 1469: `def memory_audit_v2():` - Line 1471: `return hard_memory_audit_v2()` - Line 1484: `"memory audit",` - Line 1485: `"memory audit please",` - Line 1486: `"memory status",` - Line 1487: `"show memory audit",` - Line 1488: `"show memory status",` - Line 1489: `"memory audit v2"` - Line 1493: `"reply": format_hard_memory_audit_v2()` - Line 1498: `"memory audit",` - Line 1500: `"memory status",` - Line 1502: `"show memory audit",` - Line 1504: `"show memory status"` - Line 1508: `report = build_memory_audit_report()` - Line 1883: `# MILLIE MEMORY ROUTING` - Line 1891: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1893: `millie_reply = handle_memory_request(` - Line 1899: `"🧠 Millie Memory Keeper:\n\n"` - Line 2167: `"reply": "I could not find a matching full story file in memory."` - Line 2184: `memory_context = build_context()` - Line 2209: `You have persistent memory.` - Line 2211: `Here is the current memory context:` - Line 2213: `{memory_context}` - Line 2228: `- If memory contains Tamara, treat it as relationship history only.` - Line 2230: `- If unsure, say memory confidence is uncertain rather than guessing.` - Line 2233: `- Use memory when answering.` - Line 2236: `- If story memory is provided, use it.` - Line 2237: `- Do not claim you cannot access memory if memory context is provided.` - Line 2247: `if intent == "memory_recall":` - Line 2394: `"reply": "I could not find anything in your story memory about that yet."` - Line 2400: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 764: `"memory": "connected",` - Line 1028: `# MILLIE MEMORY ROUTING` - Line 1036: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1038: `millie_reply = handle_memory_request(` - Line 1044: `"🧠 Millie Memory Keeper:\n\n"` - Line 1050: `"🧠 Millie Memory Keeper:\n\n"` - Line 1219: `"reply": "I could not find a matching full story file in memory."` - Line 1236: `memory_context = build_context()` - Line 1245: `You have persistent memory.` - Line 1247: `Here is the current memory context:` - Line 1249: `{memory_context}` - Line 1255: `- Use memory when answering.` - Line 1258: `- If story memory is provided, use it.` - Line 1259: `- Do not claim you cannot access memory if memory context is provided.` - Line 1269: `if intent == "memory_recall":` - Line 1414: `"reply": "I could not find anything in your story memory about that yet."` - Line 1420: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 829: `"# 🧠 Millie Memory Keeper",` - Line 838: `"🧠 Millie Memory Keeper:",` - Line 919: `"memory",` - Line 1007: `"memory": "connected",` - Line 1391: `# MILLIE MEMORY ROUTING` - Line 1399: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1401: `millie_reply = handle_memory_request(` - Line 1407: `"🧠 Millie Memory Keeper:\n\n"` - Line 1675: `"reply": "I could not find a matching full story file in memory."` - Line 1692: `memory_context = build_context()` - Line 1709: `You have persistent memory.` - Line 1711: `Here is the current memory context:` - Line 1713: `{memory_context}` - Line 1721: `- Use memory when answering.` - Line 1724: `- If story memory is provided, use it.` - Line 1725: `- Do not claim you cannot access memory if memory context is provided.` - Line 1735: `if intent == "memory_recall":` - Line 1880: `"reply": "I could not find anything in your story memory about that yet."` - Line 1886: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 652: `audit_memory_event(` - Line 658: `"score": memory_score` - Line 690: `audit_memory_event(` - Line 713: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 769: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 772: `story_context += "\n--- STORY MEMORY ---\n"` - Line 784: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 848: `"# 🧠 Millie Memory Keeper",` - Line 857: `"🧠 Millie Memory Keeper:",` - Line 938: `"memory",` - Line 1023: `# MEMORY OBSERVABILITY V1` - Line 1026: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"` - Line 1028: `def audit_memory_event(` - Line 1037: `MEMORY_AUDIT_FILE,` - Line 1054: `MEMORY_AUDIT_FILE,` - Line 1061: `"MEMORY AUDIT ERROR:",` - Line 1066: `def memory_file_status():` - Line 1070: `"memory/conversations.json",` - Line 1072: `"memory/life_story.json",` - Line 1074: `"memory/profile.json",` - Line 1076: `"memory/invisible_orchestra_log.json",` - Line 1078: `"memory/memory_audit.json"` - Line 1131: `def build_memory_audit_report():` - Line 1134: `MEMORY_AUDIT_FILE,` - Line 1142: `"memory_files": memory_file_status(),` - Line 1155: `"memory": "connected",` - Line 1161: `@app.get("/memory/audit")` - Line 1162: `def memory_audit():` - Line 1164: `return build_memory_audit_report()` - Line 1172: `"memory audit",` - Line 1174: `"memory status",` - Line 1176: `"show memory audit",` - Line 1178: `"show memory status"` - Line 1182: `report = build_memory_audit_report()` - Line 1567: `# MILLIE MEMORY ROUTING` - Line 1575: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1577: `millie_reply = handle_memory_request(` - Line 1583: `"🧠 Millie Memory Keeper:\n\n"` - Line 1851: `"reply": "I could not find a matching full story file in memory."` - Line 1868: `memory_context = build_context()` - Line 1885: `You have persistent memory.` - Line 1887: `Here is the current memory context:` - Line 1889: `{memory_context}` - Line 1897: `- Use memory when answering.` - Line 1900: `- If story memory is provided, use it.` - Line 1901: `- Do not claim you cannot access memory if memory context is provided.` - Line 1911: `if intent == "memory_recall":` - Line 2056: `"reply": "I could not find anything in your story memory about that yet."` - Line 2062: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 829: `"# 🧠 Millie Memory Keeper",` - Line 838: `"🧠 Millie Memory Keeper:",` - Line 919: `"memory",` - Line 1007: `"memory": "connected",` - Line 1391: `# MILLIE MEMORY ROUTING` - Line 1399: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1401: `millie_reply = handle_memory_request(` - Line 1407: `"🧠 Millie Memory Keeper:\n\n"` - Line 1675: `"reply": "I could not find a matching full story file in memory."` - Line 1692: `memory_context = build_context()` - Line 1709: `You have persistent memory.` - Line 1711: `Here is the current memory context:` - Line 1713: `{memory_context}` - Line 1721: `- Use memory when answering.` - Line 1724: `- If story memory is provided, use it.` - Line 1725: `- Do not claim you cannot access memory if memory context is provided.` - Line 1735: `if intent == "memory_recall":` - Line 1880: `"reply": "I could not find anything in your story memory about that yet."` - Line 1886: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_memscore_20260507_233124.py - Line 16: `# 👉 Ellie (memory brain)` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 54: `# 🧠 STEP 1 — store memory` - Line 57: `# 🧠 STEP 2 — build memory context` - Line 58: `memory_context = build_context()` - Line 62: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 65: `You are L, a personal assistant with persistent memory.` - Line 69: `{memory_context}` - Line 75: `- ALWAYS use the memory above when answering` - Line 76: `- If the answer is clearly in memory, answer confidently` - Line 77: `- Do NOT say you don't know if it exists in memory` - Line 82: `# STORY MEMORY SEARCH` - Line 94: `"\n\nSTORY MEMORY:\n" +` - Line 121: `"memory": "Ellie connected",` - Line 134: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 393: `"reply":"I could not find anything in your story memory about that yet."` - Line 400: `summary += f"\n\n--- MEMORY {i+1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 652: `audit_memory_event(` - Line 658: `"score": memory_score` - Line 690: `audit_memory_event(` - Line 713: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 769: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 772: `story_context += "\n--- STORY MEMORY ---\n"` - Line 784: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 848: `"# 🧠 Millie Memory Keeper",` - Line 857: `"🧠 Millie Memory Keeper:",` - Line 938: `"memory",` - Line 1023: `# MEMORY OBSERVABILITY V1` - Line 1026: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"` - Line 1028: `def audit_memory_event(` - Line 1037: `MEMORY_AUDIT_FILE,` - Line 1054: `MEMORY_AUDIT_FILE,` - Line 1061: `"MEMORY AUDIT ERROR:",` - Line 1066: `def memory_file_status():` - Line 1070: `"memory/conversations.json",` - Line 1072: `"memory/life_story.json",` - Line 1074: `"memory/profile.json",` - Line 1076: `"memory/invisible_orchestra_log.json",` - Line 1078: `"memory/memory_audit.json"` - Line 1131: `def build_memory_audit_report():` - Line 1134: `MEMORY_AUDIT_FILE,` - Line 1142: `"memory_files": memory_file_status(),` - Line 1152: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION` - Line 1155: `def hard_memory_audit_v2():` - Line 1158: `"memory/profile.json",` - Line 1159: `"memory/conversations.json",` - Line 1160: `"memory/life_story.json",` - Line 1161: `"memory/invisible_orchestra_log.json",` - Line 1162: `"memory/memory_audit.json"` - Line 1222: `"audit_version": "Memory Audit V2",` - Line 1224: `"memory_files": report,` - Line 1230: `def format_hard_memory_audit_v2():` - Line 1232: `audit = hard_memory_audit_v2()` - Line 1235: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")` - Line 1243: `lines.append("MEMORY FILES")` - Line 1245: `for item in audit["memory_files"]:` - Line 1264: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")` - Line 1275: `"memory_observable": True,` - Line 1309: `"memory": "connected",` - Line 1315: `@app.get("/memory/audit")` - Line 1316: `def memory_audit():` - Line 1318: `return build_memory_audit_report()` - Line 1321: `@app.get("/memory/audit-v2")` - Line 1322: `def memory_audit_v2():` - Line 1324: `return hard_memory_audit_v2()` - Line 1337: `"memory audit",` - Line 1338: `"memory audit please",` - Line 1339: `"memory status",` - Line 1340: `"show memory audit",` - Line 1341: `"show memory status",` - Line 1342: `"memory audit v2"` - Line 1346: `"reply": format_hard_memory_audit_v2()` - Line 1351: `"memory audit",` - Line 1353: `"memory status",` - Line 1355: `"show memory audit",` - Line 1357: `"show memory status"` - Line 1361: `report = build_memory_audit_report()` - Line 1750: `# MILLIE MEMORY ROUTING` - Line 1758: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1760: `millie_reply = handle_memory_request(` - Line 1766: `"🧠 Millie Memory Keeper:\n\n"` - Line 2034: `"reply": "I could not find a matching full story file in memory."` - Line 2051: `memory_context = build_context()` - Line 2068: `You have persistent memory.` - Line 2070: `Here is the current memory context:` - Line 2072: `{memory_context}` - Line 2085: `- If memory contains Tamara, treat it as relationship history only.` - Line 2087: `- If unsure, say memory confidence is uncertain rather than guessing.` - Line 2090: `- Use memory when answering.` - Line 2093: `- If story memory is provided, use it.` - Line 2094: `- Do not claim you cannot access memory if memory context is provided.` - Line 2104: `if intent == "memory_recall":` - Line 2251: `"reply": "I could not find anything in your story memory about that yet."` - Line 2257: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 652: `audit_memory_event(` - Line 658: `"score": memory_score` - Line 690: `audit_memory_event(` - Line 713: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 769: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 772: `story_context += "\n--- STORY MEMORY ---\n"` - Line 784: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 848: `"# 🧠 Millie Memory Keeper",` - Line 857: `"🧠 Millie Memory Keeper:",` - Line 938: `"memory",` - Line 1023: `# MEMORY OBSERVABILITY V1` - Line 1026: `MEMORY_AUDIT_FILE = "memory/memory_audit.json"` - Line 1028: `def audit_memory_event(` - Line 1037: `MEMORY_AUDIT_FILE,` - Line 1054: `MEMORY_AUDIT_FILE,` - Line 1061: `"MEMORY AUDIT ERROR:",` - Line 1066: `def memory_file_status():` - Line 1070: `"memory/conversations.json",` - Line 1072: `"memory/life_story.json",` - Line 1074: `"memory/profile.json",` - Line 1076: `"memory/invisible_orchestra_log.json",` - Line 1078: `"memory/memory_audit.json"` - Line 1131: `def build_memory_audit_report():` - Line 1134: `MEMORY_AUDIT_FILE,` - Line 1142: `"memory_files": memory_file_status(),` - Line 1152: `# MEMORY AUDIT V2 SOURCE ATTRIBUTION` - Line 1155: `def hard_memory_audit_v2():` - Line 1158: `"memory/profile.json",` - Line 1159: `"memory/conversations.json",` - Line 1160: `"memory/life_story.json",` - Line 1161: `"memory/invisible_orchestra_log.json",` - Line 1162: `"memory/memory_audit.json"` - Line 1222: `"audit_version": "Memory Audit V2",` - Line 1224: `"memory_files": report,` - Line 1230: `def format_hard_memory_audit_v2():` - Line 1232: `audit = hard_memory_audit_v2()` - Line 1235: `lines.append("MEMORY AUDIT V2 — SOURCE ATTRIBUTION")` - Line 1243: `lines.append("MEMORY FILES")` - Line 1245: `for item in audit["memory_files"]:` - Line 1264: `lines.append("If memory recall is uncertain, say which file was searched and what confidence level was found.")` - Line 1275: `"memory_observable": True,` - Line 1309: `"memory": "connected",` - Line 1315: `@app.get("/memory/audit")` - Line 1316: `def memory_audit():` - Line 1318: `return build_memory_audit_report()` - Line 1321: `@app.get("/memory/audit-v2")` - Line 1322: `def memory_audit_v2():` - Line 1324: `return hard_memory_audit_v2()` - Line 1337: `"memory audit",` - Line 1338: `"memory audit please",` - Line 1339: `"memory status",` - Line 1340: `"show memory audit",` - Line 1341: `"show memory status",` - Line 1342: `"memory audit v2"` - Line 1346: `"reply": format_hard_memory_audit_v2()` - Line 1351: `"memory audit",` - Line 1353: `"memory status",` - Line 1355: `"show memory audit",` - Line 1357: `"show memory status"` - Line 1361: `report = build_memory_audit_report()` - Line 1746: `# MILLIE MEMORY ROUTING` - Line 1754: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1756: `millie_reply = handle_memory_request(` - Line 1762: `"🧠 Millie Memory Keeper:\n\n"` - Line 2030: `"reply": "I could not find a matching full story file in memory."` - Line 2047: `memory_context = build_context()` - Line 2064: `You have persistent memory.` - Line 2066: `Here is the current memory context:` - Line 2068: `{memory_context}` - Line 2081: `- If memory contains Tamara, treat it as relationship history only.` - Line 2083: `- If unsure, say memory confidence is uncertain rather than guessing.` - Line 2086: `- Use memory when answering.` - Line 2089: `- If story memory is provided, use it.` - Line 2090: `- Do not claim you cannot access memory if memory context is provided.` - Line 2100: `if intent == "memory_recall":` - Line 2247: `"reply": "I could not find anything in your story memory about that yet."` - Line 2253: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 210: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 211: `PROFILE_FILE = "memory/profile.json"` - Line 212: `CONVERSATION_FILE = "memory/conversations.json"` - Line 215: `os.makedirs("memory", exist_ok=True)` - Line 247: `MEMORY_IMPORTANCE = {` - Line 343: `def calculate_memory_score(text):` - Line 347: `for key, value in MEMORY_IMPORTANCE.items():` - Line 380: `return "memory_recall"` - Line 442: `memory_score = calculate_memory_score(content_text)` - Line 448: `"score": memory_score,` - Line 496: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 552: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 555: `story_context += "\n--- STORY MEMORY ---\n"` - Line 566: `"memory": "connected",` - Line 769: `"reply": "I could not find a matching full story file in memory."` - Line 786: `memory_context = build_context()` - Line 795: `You have persistent memory.` - Line 797: `Here is the current memory context:` - Line 799: `{memory_context}` - Line 805: `- Use memory when answering.` - Line 808: `- If story memory is provided, use it.` - Line 809: `- Do not claim you cannot access memory if memory context is provided.` - Line 819: `if intent == "memory_recall":` - Line 964: `"reply": "I could not find anything in your story memory about that yet."` - Line 970: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_mystory_20260507_230357.py - Line 15: `# 👉 Ellie (memory brain)` - Line 16: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 16: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 53: `# 🧠 STEP 1 — store memory` - Line 56: `# 🧠 STEP 2 — build memory context` - Line 57: `memory_context = build_context()` - Line 61: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 64: `You are L, a personal assistant with persistent memory.` - Line 68: `{memory_context}` - Line 74: `- ALWAYS use the memory above when answering` - Line 75: `- If the answer is clearly in memory, answer confidently` - Line 76: `- Do NOT say you don't know if it exists in memory` - Line 101: `"memory": "Ellie connected",`  ### C:\Shine_L\api\Backups\server_backup_mystory_20260507_231128.py - Line 16: `# 👉 Ellie (memory brain)` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 54: `# 🧠 STEP 1 — store memory` - Line 57: `# 🧠 STEP 2 — build memory context` - Line 58: `memory_context = build_context()` - Line 62: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 65: `You are L, a personal assistant with persistent memory.` - Line 69: `{memory_context}` - Line 75: `- ALWAYS use the memory above when answering` - Line 76: `- If the answer is clearly in memory, answer confidently` - Line 77: `- Do NOT say you don't know if it exists in memory` - Line 102: `"memory": "Ellie connected",` - Line 115: `LIFE_STORY_FILE = "memory/life_story.json"`  ### C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 182: `# MILLIE MEMORY KEEPER AGENT` - Line 191: `handle_memory_request` - Line 298: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 299: `PROFILE_FILE = "memory/profile.json"` - Line 300: `CONVERSATION_FILE = "memory/conversations.json"` - Line 303: `os.makedirs("memory", exist_ok=True)` - Line 335: `MEMORY_IMPORTANCE = {` - Line 431: `def calculate_memory_score(text):` - Line 435: `for key, value in MEMORY_IMPORTANCE.items():` - Line 468: `return "memory_recall"` - Line 530: `memory_score = calculate_memory_score(content_text)` - Line 536: `"score": memory_score,` - Line 584: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 640: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 643: `story_context += "\n--- STORY MEMORY ---\n"` - Line 654: `"memory": "connected",` - Line 778: `# MILLIE MEMORY ROUTING` - Line 786: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 788: `millie_reply = handle_memory_request(` - Line 794: `"🧠 Millie Memory Keeper:\n\n"` - Line 800: `"🧠 Millie Memory Keeper:\n\n"` - Line 969: `"reply": "I could not find a matching full story file in memory."` - Line 986: `memory_context = build_context()` - Line 995: `You have persistent memory.` - Line 997: `Here is the current memory context:` - Line 999: `{memory_context}` - Line 1005: `- Use memory when answering.` - Line 1008: `- If story memory is provided, use it.` - Line 1009: `- Do not claim you cannot access memory if memory context is provided.` - Line 1019: `if intent == "memory_recall":` - Line 1164: `"reply": "I could not find anything in your story memory about that yet."` - Line 1170: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 764: `"memory": "connected",` - Line 1148: `# MILLIE MEMORY ROUTING` - Line 1156: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1158: `millie_reply = handle_memory_request(` - Line 1164: `"🧠 Millie Memory Keeper:\n\n"` - Line 1432: `"reply": "I could not find a matching full story file in memory."` - Line 1449: `memory_context = build_context()` - Line 1458: `You have persistent memory.` - Line 1460: `Here is the current memory context:` - Line 1462: `{memory_context}` - Line 1468: `- Use memory when answering.` - Line 1471: `- If story memory is provided, use it.` - Line 1472: `- Do not claim you cannot access memory if memory context is provided.` - Line 1482: `if intent == "memory_recall":` - Line 1627: `"reply": "I could not find anything in your story memory about that yet."` - Line 1633: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 829: `"# 🧠 Millie Memory Keeper",` - Line 838: `"🧠 Millie Memory Keeper:",` - Line 881: `"memory": "connected",` - Line 1265: `# MILLIE MEMORY ROUTING` - Line 1273: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1275: `millie_reply = handle_memory_request(` - Line 1281: `"🧠 Millie Memory Keeper:\n\n"` - Line 1549: `"reply": "I could not find a matching full story file in memory."` - Line 1566: `memory_context = build_context()` - Line 1575: `You have persistent memory.` - Line 1577: `Here is the current memory context:` - Line 1579: `{memory_context}` - Line 1585: `- Use memory when answering.` - Line 1588: `- If story memory is provided, use it.` - Line 1589: `- Do not claim you cannot access memory if memory context is provided.` - Line 1599: `if intent == "memory_recall":` - Line 1744: `"reply": "I could not find anything in your story memory about that yet."` - Line 1750: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 829: `"# 🧠 Millie Memory Keeper",` - Line 838: `"🧠 Millie Memory Keeper:",` - Line 881: `"memory": "connected",` - Line 1265: `# MILLIE MEMORY ROUTING` - Line 1273: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1275: `millie_reply = handle_memory_request(` - Line 1281: `"🧠 Millie Memory Keeper:\n\n"` - Line 1549: `"reply": "I could not find a matching full story file in memory."` - Line 1566: `memory_context = build_context()` - Line 1583: `You have persistent memory.` - Line 1585: `Here is the current memory context:` - Line 1587: `{memory_context}` - Line 1595: `- Use memory when answering.` - Line 1598: `- If story memory is provided, use it.` - Line 1599: `- Do not claim you cannot access memory if memory context is provided.` - Line 1609: `if intent == "memory_recall":` - Line 1754: `"reply": "I could not find anything in your story memory about that yet."` - Line 1760: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_persist_20260508_005821.py - Line 13: `from memory.memory_engine import (` - Line 13: `from memory.memory_engine import (` - Line 36: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 37: `PROFILE_FILE = "memory/profile.json"` - Line 40: `os.makedirs("memory", exist_ok=True)` - Line 72: `MEMORY_IMPORTANCE = {` - Line 168: `def calculate_memory_score(text):` - Line 172: `for key, value in MEMORY_IMPORTANCE.items():` - Line 205: `return "memory_recall"` - Line 267: `memory_score = calculate_memory_score(content_text)` - Line 273: `"score": memory_score,` - Line 286: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 299: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 302: `story_context += "\n--- STORY MEMORY ---\n"` - Line 313: `"memory": "connected",` - Line 330: `"reply": "I could not find a matching full story file in memory."` - Line 347: `memory_context = build_context()` - Line 354: `You have persistent memory.` - Line 356: `Here is the current memory context:` - Line 358: `{memory_context}` - Line 364: `- Use memory when answering.` - Line 367: `- If story memory is provided, use it.` - Line 368: `- Do not claim you cannot access memory if memory context is provided.` - Line 374: `if intent == "memory_recall":` - Line 514: `"reply": "I could not find anything in your story memory about that yet."` - Line 520: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py - Line 17: `from memory.memory_engine import (` - Line 17: `from memory.memory_engine import (` - Line 139: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 140: `PROFILE_FILE = "memory/profile.json"` - Line 141: `CONVERSATION_FILE = "memory/conversations.json"` - Line 144: `os.makedirs("memory", exist_ok=True)` - Line 176: `MEMORY_IMPORTANCE = {` - Line 272: `def calculate_memory_score(text):` - Line 276: `for key, value in MEMORY_IMPORTANCE.items():` - Line 309: `return "memory_recall"` - Line 371: `memory_score = calculate_memory_score(content_text)` - Line 377: `"score": memory_score,` - Line 425: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 481: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 484: `story_context += "\n--- STORY MEMORY ---\n"` - Line 495: `"memory": "connected",` - Line 643: `"reply": "I could not find a matching full story file in memory."` - Line 660: `memory_context = build_context()` - Line 669: `You have persistent memory.` - Line 671: `Here is the current memory context:` - Line 673: `{memory_context}` - Line 679: `- Use memory when answering.` - Line 682: `- If story memory is provided, use it.` - Line 683: `- Do not claim you cannot access memory if memory context is provided.` - Line 693: `if intent == "memory_recall":` - Line 838: `"reply": "I could not find anything in your story memory about that yet."` - Line 844: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 172: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 173: `PROFILE_FILE = "memory/profile.json"` - Line 174: `CONVERSATION_FILE = "memory/conversations.json"` - Line 177: `os.makedirs("memory", exist_ok=True)` - Line 209: `MEMORY_IMPORTANCE = {` - Line 305: `def calculate_memory_score(text):` - Line 309: `for key, value in MEMORY_IMPORTANCE.items():` - Line 342: `return "memory_recall"` - Line 404: `memory_score = calculate_memory_score(content_text)` - Line 410: `"score": memory_score,` - Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 517: `story_context += "\n--- STORY MEMORY ---\n"` - Line 528: `"memory": "connected",` - Line 676: `"reply": "I could not find a matching full story file in memory."` - Line 693: `memory_context = build_context()` - Line 702: `You have persistent memory.` - Line 704: `Here is the current memory context:` - Line 706: `{memory_context}` - Line 712: `- Use memory when answering.` - Line 715: `- If story memory is provided, use it.` - Line 716: `- Do not claim you cannot access memory if memory context is provided.` - Line 726: `if intent == "memory_recall":` - Line 871: `"reply": "I could not find anything in your story memory about that yet."` - Line 877: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 172: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 173: `PROFILE_FILE = "memory/profile.json"` - Line 174: `CONVERSATION_FILE = "memory/conversations.json"` - Line 177: `os.makedirs("memory", exist_ok=True)` - Line 209: `MEMORY_IMPORTANCE = {` - Line 305: `def calculate_memory_score(text):` - Line 309: `for key, value in MEMORY_IMPORTANCE.items():` - Line 342: `return "memory_recall"` - Line 404: `memory_score = calculate_memory_score(content_text)` - Line 410: `"score": memory_score,` - Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 517: `story_context += "\n--- STORY MEMORY ---\n"` - Line 528: `"memory": "connected",` - Line 703: `"reply": "I could not find a matching full story file in memory."` - Line 720: `memory_context = build_context()` - Line 729: `You have persistent memory.` - Line 731: `Here is the current memory context:` - Line 733: `{memory_context}` - Line 739: `- Use memory when answering.` - Line 742: `- If story memory is provided, use it.` - Line 743: `- Do not claim you cannot access memory if memory context is provided.` - Line 753: `if intent == "memory_recall":` - Line 898: `"reply": "I could not find anything in your story memory about that yet."` - Line 904: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 172: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 173: `PROFILE_FILE = "memory/profile.json"` - Line 174: `CONVERSATION_FILE = "memory/conversations.json"` - Line 177: `os.makedirs("memory", exist_ok=True)` - Line 209: `MEMORY_IMPORTANCE = {` - Line 305: `def calculate_memory_score(text):` - Line 309: `for key, value in MEMORY_IMPORTANCE.items():` - Line 342: `return "memory_recall"` - Line 404: `memory_score = calculate_memory_score(content_text)` - Line 410: `"score": memory_score,` - Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 517: `story_context += "\n--- STORY MEMORY ---\n"` - Line 528: `"memory": "connected",` - Line 676: `"reply": "I could not find a matching full story file in memory."` - Line 693: `memory_context = build_context()` - Line 702: `You have persistent memory.` - Line 704: `Here is the current memory context:` - Line 706: `{memory_context}` - Line 712: `- Use memory when answering.` - Line 715: `- If story memory is provided, use it.` - Line 716: `- Do not claim you cannot access memory if memory context is provided.` - Line 726: `if intent == "memory_recall":` - Line 871: `"reply": "I could not find anything in your story memory about that yet."` - Line 877: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 172: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 173: `PROFILE_FILE = "memory/profile.json"` - Line 174: `CONVERSATION_FILE = "memory/conversations.json"` - Line 177: `os.makedirs("memory", exist_ok=True)` - Line 209: `MEMORY_IMPORTANCE = {` - Line 305: `def calculate_memory_score(text):` - Line 309: `for key, value in MEMORY_IMPORTANCE.items():` - Line 342: `return "memory_recall"` - Line 404: `memory_score = calculate_memory_score(content_text)` - Line 410: `"score": memory_score,` - Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 517: `story_context += "\n--- STORY MEMORY ---\n"` - Line 528: `"memory": "connected",` - Line 733: `"reply": "I could not find a matching full story file in memory."` - Line 750: `memory_context = build_context()` - Line 759: `You have persistent memory.` - Line 761: `Here is the current memory context:` - Line 763: `{memory_context}` - Line 769: `- Use memory when answering.` - Line 772: `- If story memory is provided, use it.` - Line 773: `- Do not claim you cannot access memory if memory context is provided.` - Line 783: `if intent == "memory_recall":` - Line 928: `"reply": "I could not find anything in your story memory about that yet."` - Line 934: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py - Line 17: `from memory.memory_engine import (` - Line 17: `from memory.memory_engine import (` - Line 139: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 140: `PROFILE_FILE = "memory/profile.json"` - Line 141: `CONVERSATION_FILE = "memory/conversations.json"` - Line 144: `os.makedirs("memory", exist_ok=True)` - Line 176: `MEMORY_IMPORTANCE = {` - Line 272: `def calculate_memory_score(text):` - Line 276: `for key, value in MEMORY_IMPORTANCE.items():` - Line 309: `return "memory_recall"` - Line 371: `memory_score = calculate_memory_score(content_text)` - Line 377: `"score": memory_score,` - Line 425: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 481: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 484: `story_context += "\n--- STORY MEMORY ---\n"` - Line 495: `"memory": "connected",` - Line 643: `"reply": "I could not find a matching full story file in memory."` - Line 660: `memory_context = build_context()` - Line 669: `You have persistent memory.` - Line 671: `Here is the current memory context:` - Line 673: `{memory_context}` - Line 679: `- Use memory when answering.` - Line 682: `- If story memory is provided, use it.` - Line 683: `- Do not claim you cannot access memory if memory context is provided.` - Line 693: `if intent == "memory_recall":` - Line 838: `"reply": "I could not find anything in your story memory about that yet."` - Line 844: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_profileauth_20260508_001049.py - Line 55: `# 👉 Ellie (memory brain)` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 108: `"reply":"I could not find a matching full file in memory."` - Line 127: `# MEMORY RECALL` - Line 130: `if intent == "memory_recall":` - Line 136: `memory_context = ""` - Line 140: `memory_context += (` - Line 141: `"\n\nMEMORY:\n"` - Line 145: `system_prompt += memory_context` - Line 149: `# 🧠 STEP 1 — store memory` - Line 152: `# 🧠 STEP 2 — build memory context` - Line 153: `memory_context = build_context()` - Line 157: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 160: `You are L, a personal assistant with persistent memory.` - Line 164: `{memory_context}` - Line 170: `- ALWAYS use the memory above when answering` - Line 171: `- If the answer is clearly in memory, answer confidently` - Line 172: `- Do NOT say you don't know if it exists in memory` - Line 177: `# STORY MEMORY SEARCH` - Line 197: `"\n\nSTORY MEMORY:\n" +` - Line 224: `"memory": "Ellie connected",` - Line 237: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 266: `# MEMORY RECALL` - Line 276: `return "memory_recall"` - Line 296: `def calculate_memory_score(text):` - Line 302: `for key, value in MEMORY_IMPORTANCE.items():` - Line 394: `memory_score = calculate_memory_score(` - Line 404: `"score": memory_score` - Line 575: `"reply":"I could not find anything in your story memory about that yet."` - Line 582: `summary += f"\n\n--- MEMORY {i+1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 204: `# MILLIE MEMORY KEEPER AGENT` - Line 213: `handle_memory_request` - Line 320: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 321: `PROFILE_FILE = "memory/profile.json"` - Line 322: `CONVERSATION_FILE = "memory/conversations.json"` - Line 325: `os.makedirs("memory", exist_ok=True)` - Line 357: `MEMORY_IMPORTANCE = {` - Line 453: `def calculate_memory_score(text):` - Line 457: `for key, value in MEMORY_IMPORTANCE.items():` - Line 490: `return "memory_recall"` - Line 552: `memory_score = calculate_memory_score(content_text)` - Line 558: `"score": memory_score,` - Line 606: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 662: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 665: `story_context += "\n--- STORY MEMORY ---\n"` - Line 676: `"memory": "connected",` - Line 828: `# MILLIE MEMORY ROUTING` - Line 836: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 838: `millie_reply = handle_memory_request(` - Line 844: `"🧠 Millie Memory Keeper:\n\n"` - Line 850: `"🧠 Millie Memory Keeper:\n\n"` - Line 1019: `"reply": "I could not find a matching full story file in memory."` - Line 1036: `memory_context = build_context()` - Line 1045: `You have persistent memory.` - Line 1047: `Here is the current memory context:` - Line 1049: `{memory_context}` - Line 1055: `- Use memory when answering.` - Line 1058: `- If story memory is provided, use it.` - Line 1059: `- Do not claim you cannot access memory if memory context is provided.` - Line 1069: `if intent == "memory_recall":` - Line 1214: `"reply": "I could not find anything in your story memory about that yet."` - Line 1220: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_router_20260507_235807.py - Line 55: `# 👉 Ellie (memory brain)` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 93: `# 🧠 STEP 1 — store memory` - Line 96: `# 🧠 STEP 2 — build memory context` - Line 97: `memory_context = build_context()` - Line 101: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 104: `You are L, a personal assistant with persistent memory.` - Line 108: `{memory_context}` - Line 114: `- ALWAYS use the memory above when answering` - Line 115: `- If the answer is clearly in memory, answer confidently` - Line 116: `- Do NOT say you don't know if it exists in memory` - Line 121: `# STORY MEMORY SEARCH` - Line 141: `"\n\nSTORY MEMORY:\n" +` - Line 168: `"memory": "Ellie connected",` - Line 181: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 202: `def calculate_memory_score(text):` - Line 208: `for key, value in MEMORY_IMPORTANCE.items():` - Line 300: `memory_score = calculate_memory_score(` - Line 310: `"score": memory_score` - Line 481: `"reply":"I could not find anything in your story memory about that yet."` - Line 488: `summary += f"\n\n--- MEMORY {i+1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py - Line 17: `from memory.memory_engine import (` - Line 17: `from memory.memory_engine import (` - Line 139: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 140: `PROFILE_FILE = "memory/profile.json"` - Line 141: `CONVERSATION_FILE = "memory/conversations.json"` - Line 144: `os.makedirs("memory", exist_ok=True)` - Line 176: `MEMORY_IMPORTANCE = {` - Line 272: `def calculate_memory_score(text):` - Line 276: `for key, value in MEMORY_IMPORTANCE.items():` - Line 309: `return "memory_recall"` - Line 371: `memory_score = calculate_memory_score(content_text)` - Line 377: `"score": memory_score,` - Line 425: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 481: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 484: `story_context += "\n--- STORY MEMORY ---\n"` - Line 495: `"memory": "connected",` - Line 643: `"reply": "I could not find a matching full story file in memory."` - Line 660: `memory_context = build_context()` - Line 669: `You have persistent memory.` - Line 671: `Here is the current memory context:` - Line 673: `{memory_context}` - Line 679: `- Use memory when answering.` - Line 682: `- If story memory is provided, use it.` - Line 683: `- Do not claim you cannot access memory if memory context is provided.` - Line 693: `if intent == "memory_recall":` - Line 838: `"reply": "I could not find anything in your story memory about that yet."` - Line 844: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_semantic_20260507_231211.py - Line 16: `# 👉 Ellie (memory brain)` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 54: `# 🧠 STEP 1 — store memory` - Line 57: `# 🧠 STEP 2 — build memory context` - Line 58: `memory_context = build_context()` - Line 62: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 65: `You are L, a personal assistant with persistent memory.` - Line 69: `{memory_context}` - Line 75: `- ALWAYS use the memory above when answering` - Line 76: `- If the answer is clearly in memory, answer confidently` - Line 77: `- Do NOT say you don't know if it exists in memory` - Line 102: `"memory": "Ellie connected",` - Line 115: `LIFE_STORY_FILE = "memory/life_story.json"`  ### C:\Shine_L\api\Backups\server_backup_semanticv2_20260507_232115.py - Line 16: `# 👉 Ellie (memory brain)` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 17: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 54: `# 🧠 STEP 1 — store memory` - Line 57: `# 🧠 STEP 2 — build memory context` - Line 58: `memory_context = build_context()` - Line 62: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 65: `You are L, a personal assistant with persistent memory.` - Line 69: `{memory_context}` - Line 75: `- ALWAYS use the memory above when answering` - Line 76: `- If the answer is clearly in memory, answer confidently` - Line 77: `- Do NOT say you don't know if it exists in memory` - Line 82: `# STORY MEMORY SEARCH` - Line 94: `"\n\nSTORY MEMORY:\n" +` - Line 121: `"memory": "Ellie connected",` - Line 134: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 370: `"reply":"I could not find anything in your story memory about that yet."` - Line 377: `summary += f"\n\n--- MEMORY {i+1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 829: `"# 🧠 Millie Memory Keeper",` - Line 838: `"🧠 Millie Memory Keeper:",` - Line 919: `"memory",` - Line 1007: `"memory": "connected",` - Line 1391: `# MILLIE MEMORY ROUTING` - Line 1399: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1401: `millie_reply = handle_memory_request(` - Line 1407: `"🧠 Millie Memory Keeper:\n\n"` - Line 1675: `"reply": "I could not find a matching full story file in memory."` - Line 1692: `memory_context = build_context()` - Line 1709: `You have persistent memory.` - Line 1711: `Here is the current memory context:` - Line 1713: `{memory_context}` - Line 1721: `- Use memory when answering.` - Line 1724: `- If story memory is provided, use it.` - Line 1725: `- Do not claim you cannot access memory if memory context is provided.` - Line 1735: `if intent == "memory_recall":` - Line 1880: `"reply": "I could not find anything in your story memory about that yet."` - Line 1886: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_storylib_20260508_000523.py - Line 55: `# 👉 Ellie (memory brain)` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 56: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 108: `"reply":"I could not find a matching full file in memory."` - Line 127: `# MEMORY RECALL` - Line 130: `if intent == "memory_recall":` - Line 136: `memory_context = ""` - Line 140: `memory_context += (` - Line 141: `"\n\nMEMORY:\n"` - Line 145: `system_prompt += memory_context` - Line 149: `# 🧠 STEP 1 — store memory` - Line 152: `# 🧠 STEP 2 — build memory context` - Line 153: `memory_context = build_context()` - Line 157: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 160: `You are L, a personal assistant with persistent memory.` - Line 164: `{memory_context}` - Line 170: `- ALWAYS use the memory above when answering` - Line 171: `- If the answer is clearly in memory, answer confidently` - Line 172: `- Do NOT say you don't know if it exists in memory` - Line 177: `# STORY MEMORY SEARCH` - Line 197: `"\n\nSTORY MEMORY:\n" +` - Line 224: `"memory": "Ellie connected",` - Line 237: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 266: `# MEMORY RECALL` - Line 276: `return "memory_recall"` - Line 296: `def calculate_memory_score(text):` - Line 302: `for key, value in MEMORY_IMPORTANCE.items():` - Line 394: `memory_score = calculate_memory_score(` - Line 404: `"score": memory_score` - Line 575: `"reply":"I could not find anything in your story memory about that yet."` - Line 582: `summary += f"\n\n--- MEMORY {i+1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 226: `# MILLIE MEMORY KEEPER AGENT` - Line 235: `handle_memory_request` - Line 342: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 343: `PROFILE_FILE = "memory/profile.json"` - Line 344: `CONVERSATION_FILE = "memory/conversations.json"` - Line 347: `os.makedirs("memory", exist_ok=True)` - Line 379: `MEMORY_IMPORTANCE = {` - Line 475: `def calculate_memory_score(text):` - Line 479: `for key, value in MEMORY_IMPORTANCE.items():` - Line 512: `return "memory_recall"` - Line 574: `memory_score = calculate_memory_score(content_text)` - Line 580: `"score": memory_score,` - Line 628: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 684: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 687: `story_context += "\n--- STORY MEMORY ---\n"` - Line 698: `"memory": "connected",` - Line 878: `# MILLIE MEMORY ROUTING` - Line 886: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 888: `millie_reply = handle_memory_request(` - Line 894: `"🧠 Millie Memory Keeper:\n\n"` - Line 900: `"🧠 Millie Memory Keeper:\n\n"` - Line 1069: `"reply": "I could not find a matching full story file in memory."` - Line 1086: `memory_context = build_context()` - Line 1095: `You have persistent memory.` - Line 1097: `Here is the current memory context:` - Line 1099: `{memory_context}` - Line 1105: `- Use memory when answering.` - Line 1108: `- If story memory is provided, use it.` - Line 1109: `- Do not claim you cannot access memory if memory context is provided.` - Line 1119: `if intent == "memory_recall":` - Line 1264: `"reply": "I could not find anything in your story memory about that yet."` - Line 1270: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_timefix_20260508_010248.py - Line 14: `from memory.memory_engine import (` - Line 14: `from memory.memory_engine import (` - Line 37: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 38: `PROFILE_FILE = "memory/profile.json"` - Line 39: `CONVERSATION_FILE = "memory/conversations.json"` - Line 42: `os.makedirs("memory", exist_ok=True)` - Line 74: `MEMORY_IMPORTANCE = {` - Line 170: `def calculate_memory_score(text):` - Line 174: `for key, value in MEMORY_IMPORTANCE.items():` - Line 207: `return "memory_recall"` - Line 269: `memory_score = calculate_memory_score(content_text)` - Line 275: `"score": memory_score,` - Line 323: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 379: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 382: `story_context += "\n--- STORY MEMORY ---\n"` - Line 393: `"memory": "connected",` - Line 410: `"reply": "I could not find a matching full story file in memory."` - Line 427: `memory_context = build_context()` - Line 434: `You have persistent memory.` - Line 436: `Here is the current memory context:` - Line 438: `{memory_context}` - Line 444: `- Use memory when answering.` - Line 447: `- If story memory is provided, use it.` - Line 448: `- Do not claim you cannot access memory if memory context is provided.` - Line 458: `if intent == "memory_recall":` - Line 603: `"reply": "I could not find anything in your story memory about that yet."` - Line 609: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_uploadv1_20260507_213852.py - Line 8: `# 👉 Ellie (memory brain)` - Line 9: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 9: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 46: `# 🧠 STEP 1 — store memory` - Line 49: `# 🧠 STEP 2 — build memory context` - Line 50: `memory_context = build_context()` - Line 54: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 57: `You are L, a personal assistant with persistent memory.` - Line 61: `{memory_context}` - Line 67: `- ALWAYS use the memory above when answering` - Line 68: `- If the answer is clearly in memory, answer confidently` - Line 69: `- Do NOT say you don't know if it exists in memory` - Line 94: `"memory": "Ellie connected",`  ### C:\Shine_L\api\Backups\server_backup_visionv1_20260507_221521.py - Line 14: `# 👉 Ellie (memory brain)` - Line 15: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 15: `from memory.memory_engine import process, build_context, detect_emotional_state, generate_emotional_tone` - Line 52: `# 🧠 STEP 1 — store memory` - Line 55: `# 🧠 STEP 2 — build memory context` - Line 56: `memory_context = build_context()` - Line 60: `print("\n🧠 MEMORY CONTEXT:\n", memory_context)` - Line 63: `You are L, a personal assistant with persistent memory.` - Line 67: `{memory_context}` - Line 73: `- ALWAYS use the memory above when answering` - Line 74: `- If the answer is clearly in memory, answer confidently` - Line 75: `- Do NOT say you don't know if it exists in memory` - Line 100: `"memory": "Ellie connected",`  ### C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py - Line 19: `from memory.memory_engine import (` - Line 19: `from memory.memory_engine import (` - Line 293: `# MILLIE MEMORY KEEPER AGENT` - Line 302: `handle_memory_request` - Line 409: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 410: `PROFILE_FILE = "memory/profile.json"` - Line 411: `CONVERSATION_FILE = "memory/conversations.json"` - Line 414: `os.makedirs("memory", exist_ok=True)` - Line 446: `MEMORY_IMPORTANCE = {` - Line 542: `def calculate_memory_score(text):` - Line 546: `for key, value in MEMORY_IMPORTANCE.items():` - Line 579: `return "memory_recall"` - Line 641: `memory_score = calculate_memory_score(content_text)` - Line 647: `"score": memory_score,` - Line 695: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 751: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 754: `story_context += "\n--- STORY MEMORY ---\n"` - Line 766: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 830: `"# 🧠 Millie Memory Keeper",` - Line 839: `"🧠 Millie Memory Keeper:",` - Line 920: `"memory",` - Line 1008: `"memory": "connected",` - Line 1442: `# MILLIE MEMORY ROUTING` - Line 1450: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1452: `millie_reply = handle_memory_request(` - Line 1458: `"🧠 Millie Memory Keeper:\n\n"` - Line 1726: `"reply": "I could not find a matching full story file in memory."` - Line 1743: `memory_context = build_context()` - Line 1760: `You have persistent memory.` - Line 1762: `Here is the current memory context:` - Line 1764: `{memory_context}` - Line 1772: `- Use memory when answering.` - Line 1775: `- If story memory is provided, use it.` - Line 1776: `- Do not claim you cannot access memory if memory context is provided.` - Line 1786: `if intent == "memory_recall":` - Line 1931: `"reply": "I could not find anything in your story memory about that yet."` - Line 1937: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py - Line 19: `from memory.memory_engine import (` - Line 19: `from memory.memory_engine import (` - Line 293: `# MILLIE MEMORY KEEPER AGENT` - Line 302: `handle_memory_request` - Line 409: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 410: `PROFILE_FILE = "memory/profile.json"` - Line 411: `CONVERSATION_FILE = "memory/conversations.json"` - Line 414: `os.makedirs("memory", exist_ok=True)` - Line 446: `MEMORY_IMPORTANCE = {` - Line 542: `def calculate_memory_score(text):` - Line 546: `for key, value in MEMORY_IMPORTANCE.items():` - Line 579: `return "memory_recall"` - Line 641: `memory_score = calculate_memory_score(content_text)` - Line 647: `"score": memory_score,` - Line 695: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 751: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 754: `story_context += "\n--- STORY MEMORY ---\n"` - Line 766: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 830: `"# 🧠 Millie Memory Keeper",` - Line 839: `"🧠 Millie Memory Keeper:",` - Line 920: `"memory",` - Line 1008: `"memory": "connected",` - Line 1442: `# MILLIE MEMORY ROUTING` - Line 1450: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1452: `millie_reply = handle_memory_request(` - Line 1458: `"🧠 Millie Memory Keeper:\n\n"` - Line 1726: `"reply": "I could not find a matching full story file in memory."` - Line 1743: `memory_context = build_context()` - Line 1760: `You have persistent memory.` - Line 1762: `Here is the current memory context:` - Line 1764: `{memory_context}` - Line 1772: `- Use memory when answering.` - Line 1775: `- If story memory is provided, use it.` - Line 1776: `- Do not claim you cannot access memory if memory context is provided.` - Line 1786: `if intent == "memory_recall":` - Line 1941: `"reply": "I could not find anything in your story memory about that yet."` - Line 1947: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 248: `# MILLIE MEMORY KEEPER AGENT` - Line 257: `handle_memory_request` - Line 364: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 365: `PROFILE_FILE = "memory/profile.json"` - Line 366: `CONVERSATION_FILE = "memory/conversations.json"` - Line 369: `os.makedirs("memory", exist_ok=True)` - Line 401: `MEMORY_IMPORTANCE = {` - Line 497: `def calculate_memory_score(text):` - Line 501: `for key, value in MEMORY_IMPORTANCE.items():` - Line 534: `return "memory_recall"` - Line 596: `memory_score = calculate_memory_score(content_text)` - Line 602: `"score": memory_score,` - Line 650: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 706: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 709: `story_context += "\n--- STORY MEMORY ---\n"` - Line 720: `"memory": "connected",` - Line 928: `# MILLIE MEMORY ROUTING` - Line 936: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 938: `millie_reply = handle_memory_request(` - Line 944: `"🧠 Millie Memory Keeper:\n\n"` - Line 950: `"🧠 Millie Memory Keeper:\n\n"` - Line 1119: `"reply": "I could not find a matching full story file in memory."` - Line 1136: `memory_context = build_context()` - Line 1145: `You have persistent memory.` - Line 1147: `Here is the current memory context:` - Line 1149: `{memory_context}` - Line 1155: `- Use memory when answering.` - Line 1158: `- If story memory is provided, use it.` - Line 1159: `- Do not claim you cannot access memory if memory context is provided.` - Line 1169: `if intent == "memory_recall":` - Line 1314: `"reply": "I could not find anything in your story memory about that yet."` - Line 1320: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_wire_brittany_20260508_170007.py - Line 15: `from memory.memory_engine import (` - Line 15: `from memory.memory_engine import (` - Line 38: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 39: `PROFILE_FILE = "memory/profile.json"` - Line 40: `CONVERSATION_FILE = "memory/conversations.json"` - Line 43: `os.makedirs("memory", exist_ok=True)` - Line 75: `MEMORY_IMPORTANCE = {` - Line 171: `def calculate_memory_score(text):` - Line 175: `for key, value in MEMORY_IMPORTANCE.items():` - Line 208: `return "memory_recall"` - Line 270: `memory_score = calculate_memory_score(content_text)` - Line 276: `"score": memory_score,` - Line 324: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 380: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 383: `story_context += "\n--- STORY MEMORY ---\n"` - Line 394: `"memory": "connected",` - Line 430: `"reply": "I could not find a matching full story file in memory."` - Line 447: `memory_context = build_context()` - Line 456: `You have persistent memory.` - Line 458: `Here is the current memory context:` - Line 460: `{memory_context}` - Line 466: `- Use memory when answering.` - Line 469: `- If story memory is provided, use it.` - Line 470: `- Do not claim you cannot access memory if memory context is provided.` - Line 480: `if intent == "memory_recall":` - Line 625: `"reply": "I could not find anything in your story memory about that yet."` - Line 631: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 172: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 173: `PROFILE_FILE = "memory/profile.json"` - Line 174: `CONVERSATION_FILE = "memory/conversations.json"` - Line 177: `os.makedirs("memory", exist_ok=True)` - Line 209: `MEMORY_IMPORTANCE = {` - Line 305: `def calculate_memory_score(text):` - Line 309: `for key, value in MEMORY_IMPORTANCE.items():` - Line 342: `return "memory_recall"` - Line 404: `memory_score = calculate_memory_score(content_text)` - Line 410: `"score": memory_score,` - Line 458: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 514: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 517: `story_context += "\n--- STORY MEMORY ---\n"` - Line 528: `"memory": "connected",` - Line 676: `"reply": "I could not find a matching full story file in memory."` - Line 693: `memory_context = build_context()` - Line 702: `You have persistent memory.` - Line 704: `Here is the current memory context:` - Line 706: `{memory_context}` - Line 712: `- Use memory when answering.` - Line 715: `- If story memory is provided, use it.` - Line 716: `- Do not claim you cannot access memory if memory context is provided.` - Line 726: `if intent == "memory_recall":` - Line 871: `"reply": "I could not find anything in your story memory about that yet."` - Line 877: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py - Line 18: `from memory.memory_engine import (` - Line 18: `from memory.memory_engine import (` - Line 292: `# MILLIE MEMORY KEEPER AGENT` - Line 301: `handle_memory_request` - Line 408: `LIFE_STORY_FILE = "memory/life_story.json"` - Line 409: `PROFILE_FILE = "memory/profile.json"` - Line 410: `CONVERSATION_FILE = "memory/conversations.json"` - Line 413: `os.makedirs("memory", exist_ok=True)` - Line 445: `MEMORY_IMPORTANCE = {` - Line 541: `def calculate_memory_score(text):` - Line 545: `for key, value in MEMORY_IMPORTANCE.items():` - Line 578: `return "memory_recall"` - Line 640: `memory_score = calculate_memory_score(content_text)` - Line 646: `"score": memory_score,` - Line 694: `return "\n\nCANONICAL PROFILE MEMORY:\n" + json.dumps(` - Line 750: `story_context = "\n\nRELEVANT STORY MEMORY:\n"` - Line 753: `story_context += "\n--- STORY MEMORY ---\n"` - Line 765: `INVISIBLE_ORCHESTRA_LOG = "memory/invisible_orchestra_log.json"` - Line 829: `"# 🧠 Millie Memory Keeper",` - Line 838: `"🧠 Millie Memory Keeper:",` - Line 919: `"memory",` - Line 1007: `"memory": "connected",` - Line 1391: `# MILLIE MEMORY ROUTING` - Line 1399: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1401: `millie_reply = handle_memory_request(` - Line 1407: `"🧠 Millie Memory Keeper:\n\n"` - Line 1675: `"reply": "I could not find a matching full story file in memory."` - Line 1692: `memory_context = build_context()` - Line 1709: `You have persistent memory.` - Line 1711: `Here is the current memory context:` - Line 1713: `{memory_context}` - Line 1721: `- Use memory when answering.` - Line 1724: `- If story memory is provided, use it.` - Line 1725: `- Do not claim you cannot access memory if memory context is provided.` - Line 1735: `if intent == "memory_recall":` - Line 1880: `"reply": "I could not find anything in your story memory about that yet."` - Line 1886: `reply += f"\n\n--- MEMORY {i + 1} ---\n"`  ### C:\Shine_L\api\google_auth.py - Line 79: `supabase.table("system_memory")` - Line 93: `supabase.table("system_memory")` - Line 102: `supabase.table("system_memory")` - Line 112: `supabase.table("system_memory")` - Line 139: `supabase.table("system_memory")`  ### C:\Shine_L\api\routes\memory.py - Line 10: `MEMORY_AUDIT_HANDLER = None` - Line 11: `MEMORY_AUDIT_V2_HANDLER = None` - Line 16: `def register_memory_handlers(` - Line 23: `global MEMORY_AUDIT_HANDLER` - Line 24: `global MEMORY_AUDIT_V2_HANDLER` - Line 28: `MEMORY_AUDIT_HANDLER = audit_handler` - Line 29: `MEMORY_AUDIT_V2_HANDLER = audit_v2_handler` - Line 34: `@router.get("/memory/audit")` - Line 35: `async def memory_audit():` - Line 37: `return await MEMORY_AUDIT_HANDLER()` - Line 40: `@router.get("/memory/audit-v2")` - Line 41: `async def memory_audit_v2():` - Line 43: `return await MEMORY_AUDIT_V2_HANDLER()`  ### C:\Shine_L\api\routes\system.py - Line 3: `from memory.memory_audit import (` - Line 4: `build_memory_audit_report,` - Line 5: `hard_memory_audit_v2,` - Line 13: `"memory_observable": True,` - Line 26: `"memory": "connected",` - Line 37: `@router.get("/memory/audit")` - Line 38: `def memory_audit():` - Line 40: `return build_memory_audit_report()` - Line 43: `@router.get("/memory/audit-v2")` - Line 44: `def memory_audit_v2():` - Line 46: `return hard_memory_audit_v2()`  ### C:\Shine_L\api\server.py - Line 21: `from api.routes.memory import (` - Line 22: `router as memory_router,` - Line 23: `register_memory_handlers,` - Line 51: `MEMORY_AUDIT_FILE,` - Line 417: `from memory.confidence import (` - Line 417: `from memory.confidence import (` - Line 418: `calculate_memory_confidence,` - Line 419: `apply_memory_confidence,` - Line 420: `build_memory_confidence_layer,` - Line 423: `from memory.memory_audit import (` - Line 424: `audit_memory_event,` - Line 425: `build_memory_audit_report,` - Line 426: `hard_memory_audit_v2,` - Line 427: `format_hard_memory_audit_v2,` - Line 430: `from memory.life_story_store import (` - Line 438: `from memory.conversation_store import (` - Line 465: `from memory.local_runtime import (` - Line 465: `from memory.local_runtime import (` - Line 469: `from memory.local_runtime import (` - Line 469: `from memory.local_runtime import (` - Line 474: `from memory.memory_engine import (` - Line 474: `from memory.memory_engine import (` - Line 476: `build_memory_confidence_context,` - Line 477: `build_natural_memory_injection,` - Line 479: `extract_relational_memory,` - Line 480: `build_relational_memory_context,` - Line 481: `build_full_memory_audit,` - Line 482: `get_memory_record_count,` - Line 501: `register_memory_handlers(` - Line 502: `handle_memory_audit,` - Line 503: `handle_memory_audit_v2,` - Line 604: `app.include_router(memory_router)` - Line 800: `# MILLIE MEMORY KEEPER AGENT` - Line 809: `handle_memory_request` - Line 937: `os.makedirs("memory", exist_ok=True)` - Line 980: `Memory:` - Line 981: `- Millie: Memory keeper and continuity support.` - Line 982: `- Supabase Memory Spine: Persistent semantic memory storage and retrieval.` - Line 998: `- Gracie: Legacy preservation, life story, and family memory workflows.` - Line 1050: `"score": memory_score` - Line 1120: `"memory audit",` - Line 1121: `"memory audit please",` - Line 1122: `"memory status",` - Line 1123: `"show memory audit",` - Line 1124: `"show memory status",` - Line 1125: `"memory audit v2"` - Line 1129: `"reply": format_hard_memory_audit_v2()` - Line 1134: `"memory audit",` - Line 1136: `"memory status",` - Line 1138: `"show memory audit",` - Line 1140: `"show memory status"` - Line 1144: `report = build_memory_audit_report()` - Line 1160: `# LIVE MEMORY AUDIT` - Line 1163: `memory_audit_requests = [` - Line 1165: `"memory audit",` - Line 1166: `"full memory audit",` - Line 1167: `"live memory audit",` - Line 1168: `"memory count",` - Line 1170: `"audit memory"` - Line 1176: `for x in memory_audit_requests` - Line 1180: `"reply": build_full_memory_audit()` - Line 1266: `handle_memory_request,` - Line 1841: `# MILLIE MEMORY ROUTING` - Line 1849: `print("\n🧠 ROUTING TO MILLIE MEMORY KEEPER")` - Line 1851: `millie_reply = handle_memory_request(` - Line 1857: `"🧠 Millie Memory Keeper:\n\n"` - Line 2203: `"reply": "I could not find a matching full story file in memory."` - Line 2220: `memory_context = build_context()` - Line 2222: `# RELATIONAL MEMORY RETRIEVAL` - Line 2225: `relational_memories = extract_relational_memory(` - Line 2229: `relational_context = build_relational_memory_context(` - Line 2233: `# RELATIONAL MEMORY CONTINUITY` - Line 2241: `natural_memory_continuity = build_natural_memory_injection(` - Line 2245: `# MEMORY CONFIDENCE + CONTRADICTION AWARENESS` - Line 2248: `memory_confidence_context = build_memory_confidence_context(` - Line 2297: `memory_context=memory_context,` - Line 2310: `if intent == "memory_recall":` - Line 2316: `memory_confidence = calculate_memory_confidence(` - Line 2320: `system_prompt += build_memory_confidence_layer(` - Line 2321: `memory_confidence` - Line 2344: `# MEMORY CONFIDENCE + AMBIGUITY AWARENESS` - Line 2347: `reply = apply_memory_confidence(` - Line 2353: `print("🧠 MEMORY CONFIDENCE APPLIED")` - Line 2502: `# MEMORY ROUTE MOVED TO api/routes/memory.py` - Line 2508: `"reply": "I could not find anything in your story memory about that yet."` - Line 2514: `reply += f"\n\n--- MEMORY {i + 1} ---\n"` - Line 2520: `# MEMORY ROUTE MOVED TO api/routes/memory.py`  ### C:\Shine_L\core\compatibility.py - Line 12: `"memory_runtime": "local_json_first",`  ### C:\Shine_L\core\memory_learn.py - Line 6: `OUTCOME_PATH = os.path.join(BASE, "memory_outcomes.json")`  ### C:\Shine_L\core\memory.py - Line 6: `PATTERN_PATH = os.path.join(BASE, "memory_patterns.json")` - Line 7: `OUTCOME_PATH = os.path.join(BASE, "memory_outcomes.json")`  ### C:\Shine_L\core\paths.py - Line 8: `MEMORY_DIR = ROOT / "memory"` - Line 12: `LIFE_STORY_FILE = MEMORY_DIR / "life_story.json"` - Line 14: `PROFILE_FILE = MEMORY_DIR / "profile.json"` - Line 16: `CONVERSATION_FILE = MEMORY_DIR / "conversations.json"` - Line 18: `MEMORY_AUDIT_FILE = MEMORY_DIR / "memory_audit.json"` - Line 20: `INVISIBLE_ORCHESTRA_LOG = MEMORY_DIR / "invisible_orchestra_log.json"`  ### C:\Shine_L\core\prompt_builder.py - Line 3: `memory_context,` - Line 15: `You have persistent memory.` - Line 17: `Here is the current memory context:` - Line 19: `{memory_context}` - Line 36: `IMPORTANT MEMORY CONFIDENCE DOCTRINE:` - Line 37: `- Distinguish between confirmed memory and inferred context.` - Line 41: `IMPORTANT MEMORY CONTINUITY DOCTRINE:` - Line 42: `- Human memory is associative and relational.` - Line 72: `- Use memory naturally.` - Line 73: `- Use profile memory as highest authority.`  ### C:\Shine_L\core\response_stabilizer.py - Line 54: `"supabase memory spine",` - Line 55: `"semantic memory",`  ### C:\Shine_L\core\spine.py - Line 3: `PROFILE_PATH = "C:/Shine_L/memory/doug_profile.json"`  ### C:\Shine_L\orchestration\agent_registry.py - Line 27: `"domain": "memory",` - Line 28: `"specialty": "memory continuity",`  ### C:\Shine_L\orchestration\captains\intelligence_command.py - Line 26: `handle_memory_request,` - Line 130: `# MILLIE MEMORY` - Line 140: `millie_reply = handle_memory_request(` - Line 146: `"🧠 Millie Memory Keeper:\n\n"`  ### C:\Shine_L\orchestration\captains\intelligence\captain_millie.py - Line 15: `domain="memory"`  ### C:\Shine_L\orchestration\invisible_orchestra.py - Line 82: `"# 🧠 Millie Memory Keeper",` - Line 91: `"🧠 Millie Memory Keeper:",`  ### C:\Shine_L\orchestration\meta_suppression.py - Line 9: `"memory audit",` - Line 10: `"memory observability",`  ### C:\Shine_L\orchestration\runtime_engine.py - Line 10: `from memory.local_runtime import (` - Line 10: `from memory.local_runtime import (` - Line 40: `from memory.confidence import (` - Line 40: `from memory.confidence import (` - Line 41: `apply_memory_confidence` - Line 64: `# MEMORY PROCESS` - Line 69: `memory_context = build_context()` - Line 126: `memory_context=memory_context,` - Line 160: `"memory_context": memory_context,` - Line 179: `reply = apply_memory_confidence(`  ### C:\Shine_L\orchestration\weighted_scoring.py - Line 39: `"memory",` - Line 150: `memory_terms = [` - Line 155: `"memory audit"` - Line 201: `for term in memory_terms:`  ### C:\Shine_L\tests\test_dynamic_dispatch.py - Line 34: `return "memory" in msg.lower()` - Line 63: `"show memory"`  ### C:\Shine_L\tests\test_final_modular.py - Line 14: `from memory.local_runtime import runtime_status` - Line 14: `from memory.local_runtime import runtime_status` - Line 23: `print(build_tegan_triage_report("I need help with memory and emails"))`  ### C:\Shine_L\tests\test_intelligence_deployment.py - Line 14: `return "memory" in msg.lower()` - Line 34: `"show my memory"` - Line 39: `"show my memory"`  ### C:\Shine_L\tests\test_supabase_sync.py - Line 9: `from memory.supabase_sync.sync_engine import (` - Line 9: `from memory.supabase_sync.sync_engine import (`  ### C:\Shine_L\tests\test_tegan_triage.py - Line 7: `'memory audit please',`  ## Current Memory Architecture Issue  Memory cognition is currently split between: - core/ - memory/  Known core memory files: - core/memory.py - core/memory_detect.py - core/memory_learn.py - core/memory_patterns.json - core/memory_outcomes.json  ## Target Future Structure  `	ext memory/   runtime/   retrieval/   learning/   patterns/   confidence/   sync/   captains/ += 
+
+### High Risk
+- Anything imported by api/server.py
+- Anything imported by orchestration/runtime_engine.py
+- Anything used during chat runtime
+
+### Medium Risk
+- Tests
+- Captain memory wrappers
+- Prompt builders
+
+### Low Risk
+- Documentation
+- Archived legacy files
+- Unused placeholders
+
+## Next Step
+AODS 48 should create the target memory folder structure and compatibility imports, but should not delete core memory files yet.

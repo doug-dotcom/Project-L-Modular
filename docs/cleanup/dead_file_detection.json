@@ -1,0 +1,475 @@
+{
+  "total_files_scanned": 3138,
+  "dead_candidate_count": 78,
+  "dead_candidates": [
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS09_20260514_105331\\memory\\skills\\library\\completion_cadence.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS09_20260514_105331\\memory\\skills\\library\\inbox_triage.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS09_20260514_105331\\memory\\skills\\library\\reflection_depth.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS09_20260514_105331\\memory\\skills\\library\\specialist_isolation.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8425689+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS09_20260514_105331\\memory\\addie_tasks.json",
+      "Type": ".json",
+      "LastModified": "2026-05-09T16:21:02.4098176+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS33_SYNC_20260514_120744\\indexes\\memory_migration_status.json",
+      "Type": ".json",
+      "LastModified": "2026-05-14T12:05:38.6827757+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS34_RUNTIME_CUTOVER_20260514_121533\\memory_before\\indexes\\memory_migration_status.json",
+      "Type": ".json",
+      "LastModified": "2026-05-14T12:07:44.8356759+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS34_RUNTIME_CUTOVER_20260514_121533\\memory_before\\skills\\library\\completion_cadence.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS34_RUNTIME_CUTOVER_20260514_121533\\memory_before\\skills\\library\\inbox_triage.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS34_RUNTIME_CUTOVER_20260514_121533\\memory_before\\skills\\library\\reflection_depth.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS34_RUNTIME_CUTOVER_20260514_121533\\memory_before\\skills\\library\\specialist_isolation.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8425689+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS34_RUNTIME_CUTOVER_20260514_121533\\memory_before\\addie_tasks.json",
+      "Type": ".json",
+      "LastModified": "2026-05-09T16:21:02.4098176+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS34_RUNTIME_CUTOVER_20260514_121957\\memory_before\\indexes\\memory_migration_status.json",
+      "Type": ".json",
+      "LastModified": "2026-05-14T12:15:34.2692491+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS34_RUNTIME_CUTOVER_20260514_121957\\memory_before\\skills\\library\\completion_cadence.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS34_RUNTIME_CUTOVER_20260514_121957\\memory_before\\skills\\library\\inbox_triage.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS34_RUNTIME_CUTOVER_20260514_121957\\memory_before\\skills\\library\\reflection_depth.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS34_RUNTIME_CUTOVER_20260514_121957\\memory_before\\skills\\library\\specialist_isolation.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8425689+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS34_RUNTIME_CUTOVER_20260514_121957\\memory_before\\addie_tasks.json",
+      "Type": ".json",
+      "LastModified": "2026-05-09T16:21:02.4098176+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS35_FINAL_SHIM_20260514_122044\\memory_before\\indexes\\memory_migration_status.json",
+      "Type": ".json",
+      "LastModified": "2026-05-14T12:19:57.6190367+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS35_FINAL_SHIM_20260514_122044\\memory_before\\skills\\library\\completion_cadence.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS35_FINAL_SHIM_20260514_122044\\memory_before\\skills\\library\\inbox_triage.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS35_FINAL_SHIM_20260514_122044\\memory_before\\skills\\library\\reflection_depth.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS35_FINAL_SHIM_20260514_122044\\memory_before\\skills\\library\\specialist_isolation.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8425689+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS35_FINAL_SHIM_20260514_122044\\memory_before\\addie_tasks.json",
+      "Type": ".json",
+      "LastModified": "2026-05-09T16:21:02.4098176+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\AODS46_20260514_155207\\agents_before\\brittany_browser\\data\\brittany_memory.json",
+      "Type": ".json",
+      "LastModified": "2026-05-08T16:23:29.0302401+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\MODULAR_FRAMEWORK_20260514_101142\\memory\\skills\\library\\completion_cadence.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\MODULAR_FRAMEWORK_20260514_101142\\memory\\skills\\library\\inbox_triage.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\MODULAR_FRAMEWORK_20260514_101142\\memory\\skills\\library\\reflection_depth.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\MODULAR_FRAMEWORK_20260514_101142\\memory\\skills\\library\\specialist_isolation.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8425689+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\MODULAR_FRAMEWORK_20260514_101142\\memory\\addie_tasks.json",
+      "Type": ".json",
+      "LastModified": "2026-05-09T16:21:02.4098176+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\PHASE1_STABLE_MODULAR_COGNITION_20260513_023451\\agents\\brittany_browser\\data\\brittany_memory.json",
+      "Type": ".json",
+      "LastModified": "2026-05-08T16:23:29.0302401+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\PHASE1_STABLE_MODULAR_COGNITION_20260513_023451\\memory\\skills\\library\\completion_cadence.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\PHASE1_STABLE_MODULAR_COGNITION_20260513_023451\\memory\\skills\\library\\inbox_triage.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\PHASE1_STABLE_MODULAR_COGNITION_20260513_023451\\memory\\skills\\library\\reflection_depth.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\PHASE1_STABLE_MODULAR_COGNITION_20260513_023451\\memory\\skills\\library\\specialist_isolation.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8425689+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\PHASE1_STABLE_MODULAR_COGNITION_20260513_023451\\memory\\addie_tasks.json",
+      "Type": ".json",
+      "LastModified": "2026-05-09T16:21:02.4098176+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\STAGE1_AODS05_20260515_162901\\runtime_bootstrap_before.py",
+      "Type": ".py",
+      "LastModified": "2026-05-15T15:11:29.1555625+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\STAGE1_AODS06_20260515_162936\\runtime_bootstrap_before.py",
+      "Type": ".py",
+      "LastModified": "2026-05-15T15:11:29.1555625+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\STAGE1_AODS07_20260515_163029\\runtime_bootstrap_before.py",
+      "Type": ".py",
+      "LastModified": "2026-05-15T15:11:29.1555625+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\STAGE1_AODS08_20260515_163108\\runtime_bootstrap_before.py",
+      "Type": ".py",
+      "LastModified": "2026-05-15T15:11:29.1555625+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\STAGE1_AODS09_20260515_163159\\runtime_bootstrap_before.py",
+      "Type": ".py",
+      "LastModified": "2026-05-15T15:11:29.1555625+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\STAGE1_AODS11_20260515_163325\\runtime_bootstrap_before.py",
+      "Type": ".py",
+      "LastModified": "2026-05-15T15:11:29.1555625+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\STAGE1_AODS12_20260515_163447\\runtime_bootstrap_before.py",
+      "Type": ".py",
+      "LastModified": "2026-05-15T16:33:25.6493121+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\STAGE1_AODS12_FIX_20260515_163753\\runtime_bootstrap_before.py",
+      "Type": ".py",
+      "LastModified": "2026-05-15T16:33:25.6493121+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\STAGE1_AODS13_20260515_164043\\memory_before\\json_integrity_audit.json",
+      "Type": ".json",
+      "LastModified": "2026-05-15T16:32:48.2400175+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\STAGE1_AODS13_20260515_164043\\memory_before\\safe_memory_loader_normalization.json",
+      "Type": ".json",
+      "LastModified": "2026-05-15T16:33:25.8431812+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\STAGE1_AODS14_20260515_164402\\runtime_bootstrap_before.py",
+      "Type": ".py",
+      "LastModified": "2026-05-15T16:37:53.5637839+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\STAGE1_AODS15_20260515_164500\\runtime_bootstrap_before.py",
+      "Type": ".py",
+      "LastModified": "2026-05-15T16:44:02.1650289+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_FULL_BACKUPS\\STAGE1_AODS16_20260515_164537\\runtime_bootstrap_before.py",
+      "Type": ".py",
+      "LastModified": "2026-05-15T16:45:00.6370307+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_LOCKED_RELEASE\\memory\\indexes\\final_modular_status.json",
+      "Type": ".json",
+      "LastModified": "2026-05-14T12:20:45.9849421+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_LOCKED_RELEASE\\memory\\indexes\\memory_migration_status.json",
+      "Type": ".json",
+      "LastModified": "2026-05-14T12:19:57.6190367+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_LOCKED_RELEASE\\memory\\skills\\library\\completion_cadence.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_LOCKED_RELEASE\\memory\\skills\\library\\inbox_triage.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_LOCKED_RELEASE\\memory\\skills\\library\\reflection_depth.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8394579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_LOCKED_RELEASE\\memory\\skills\\library\\specialist_isolation.json",
+      "Type": ".json",
+      "LastModified": "2026-05-12T22:09:51.8425689+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\_LOCKED_RELEASE\\memory\\addie_tasks.json",
+      "Type": ".json",
+      "LastModified": "2026-05-09T16:21:02.4098176+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\agents\\brittany_browser\\data\\brittany_memory.json",
+      "Type": ".json",
+      "LastModified": "2026-05-08T16:23:29.0302401+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\backups\\chat_fix_20260514_233401\\Shine_L\\agents\\brittany_browser\\data\\brittany_memory.json",
+      "Type": ".json",
+      "LastModified": "2026-05-08T16:23:29.0302401+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\docs\\architecture\\architecture_manifest.json",
+      "Type": ".json",
+      "LastModified": "2026-05-15T16:48:46.671026+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\docs\\architecture\\FINAL_MODULAR_STATUS.json",
+      "Type": ".json",
+      "LastModified": "2026-05-14T12:20:45.9839419+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\docs\\architecture\\modular_extraction_tracker.json",
+      "Type": ".json",
+      "LastModified": "2026-05-14T21:35:40.9062684+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\docs\\architecture\\runtime_manifest.json",
+      "Type": ".json",
+      "LastModified": "2026-05-15T16:48:16.0387377+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\docs\\cleanup\\tree_normalization_audit.json",
+      "Type": ".json",
+      "LastModified": "2026-05-15T16:49:36.6726085+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\docs\\operations\\mnemosyne\\memory_dependency_map.json",
+      "Type": ".json",
+      "LastModified": "2026-05-14T16:17:33.0728728+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\checkpoint_validation.json",
+      "Type": ".json",
+      "LastModified": "2026-05-15T16:47:43.2482579+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\json_integrity_audit.json",
+      "Type": ".json",
+      "LastModified": "2026-05-15T16:32:48.2400175+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\memory_corruption_fallback_test.json",
+      "Type": ".json",
+      "LastModified": "2026-05-15T16:40:43.7246933+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\openai_failure_normalization.json",
+      "Type": ".json",
+      "LastModified": "2026-05-15T16:44:02.3544273+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\response_schema_validation.json",
+      "Type": ".json",
+      "LastModified": "2026-05-15T16:45:00.824195+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\restore_validation.json",
+      "Type": ".json",
+      "LastModified": "2026-05-15T16:46:05.1583855+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\runtime_exception_normalization.json",
+      "Type": ".json",
+      "LastModified": "2026-05-15T16:45:37.7193474+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\runtime_restart_validation.json",
+      "Type": ".json",
+      "LastModified": "2026-05-15T16:46:45.891513+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\memory\\safe_memory_loader_normalization.json",
+      "Type": ".json",
+      "LastModified": "2026-05-15T16:33:25.8431812+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\ui\\index_backup_formatfix_20260508_114622.html",
+      "Type": ".html",
+      "LastModified": "2026-05-08T00:05:23.8608402+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\ui\\index_backup_formatfix_20260508_115253.html",
+      "Type": ".html",
+      "LastModified": "2026-05-08T11:46:22.4101867+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\ui\\index_backup_pixie_fix_20260509_114336.html",
+      "Type": ".html",
+      "LastModified": "2026-05-08T12:21:17.270986+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\ui\\index_backup_storylib_20260508_000523.html",
+      "Type": ".html",
+      "LastModified": "2026-05-07T22:06:44.5620377+10:00",
+      "ReferenceCount": 0
+    },
+    {
+      "File": "C:\\Shine_L\\ui\\index_backup_uploadui_20260507_215618.html",
+      "Type": ".html",
+      "LastModified": "2026-05-06T23:38:04.8013946+10:00",
+      "ReferenceCount": 0
+    }
+  ],
+  "generated_at": "2026-05-15T22:17:13"
+}
