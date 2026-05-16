@@ -6,8 +6,6 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from orchestration.runtime_bootstrap import (
@@ -118,15 +116,6 @@ app.include_router(runtime_router)
 # =====================================================
 # CORS
 # =====================================================
-
-
-# =====================================================
-# UI STATIC
-# =====================================================
-
-UI_PATH = ROOT / "ui"
-
-app.mount("/ui", StaticFiles(directory=UI_PATH), name="ui")
 
 app.add_middleware(
     CORSMiddleware,
