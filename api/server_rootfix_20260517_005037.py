@@ -285,4 +285,3 @@ def routes():
             "/docs"
         ]
     }
-
