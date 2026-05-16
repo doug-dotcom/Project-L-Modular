@@ -112,85 +112,6 @@ except Exception as e:
 
     log_exception(f"SUPABASE FAILED: {e}")
 
-
-# =====================================================
-# MEMORY RETRIEVAL
-# =====================================================
-
-def fetch_relevant_memories(user_message, limit=5):
-
-    if not supabase:
-        return []
-
-    try:
-
-        # ---------------------------------------------
-        # DIRECT CONTENT SEARCH
-        # ---------------------------------------------
-
-        result = (
-            supabase
-            .table("memories")
-            .select("category, content")
-            .ilike("content", f"%{user_message}%")
-            .limit(limit)
-            .execute()
-        )
-
-        if result.data:
-            return result.data
-
-        # ---------------------------------------------
-        # CATEGORY SEARCH
-        # ---------------------------------------------
-
-        words = user_message.lower().split()
-
-        for word in words:
-
-            result = (
-                supabase
-                .table("memories")
-                .select("category, content")
-                .ilike("category", f"%{word}%")
-                .limit(limit)
-                .execute()
-            )
-
-            if result.data:
-                return result.data
-
-        return []
-
-    except Exception as e:
-
-        log_exception(f"MEMORY FETCH FAILED: {e}")
-
-        return []
-
-# =====================================================
-# MEMORY FORMATTER
-# =====================================================
-
-def format_memory_context(memories):
-
-    if not memories:
-        return "No relevant long-term memories found."
-
-    lines = []
-
-    for mem in memories:
-
-        content = mem.get("content", "")
-
-        category = mem.get("category", "general")
-
-        lines.append(
-            f"- ({category}) {content}"
-        )
-
-    return "\n".join(lines)
-
 # =====================================================
 # SERVER START
 # =====================================================
@@ -308,9 +229,7 @@ def chat(req: ChatRequest):
     # MEMORY CONTEXT
     # -------------------------------------------------
 
-    relevant_memories = fetch_relevant_memories(user_message)
-
-memory_context = format_memory_context(relevant_memories)
+    memory_context = build_memory_context(limit=15)
 
     system_prompt = f"""
 You are L.
@@ -434,5 +353,4 @@ def memory_test():
             "connected": False,
             "error": str(e)
         }
-
 
