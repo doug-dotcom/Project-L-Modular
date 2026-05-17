@@ -432,12 +432,6 @@ from core.memory_engine import (
     memory_stats
 )
 
-from memory.cognition_engine import (
-    build_cognition_context,
-    cognition_status
-)
-
-
 from memory.orchestrator import (
     build_memory_runtime_package
 )
@@ -736,10 +730,6 @@ def health():
     return {
         "status": "ok",
         "openai_ready": bool(client),
-        "cognition": cognition_package
-            if "cognition_package" in locals()
-            else {},
-
         "memory_stats": memory_stats()
     }
 
@@ -924,10 +914,6 @@ IDENTITY CONTEXT:
         "memory_wired": True,
         "retrieved_memories": relevant_memories,
         "confidence_layer": confidence_layer,
-        "cognition": cognition_package
-            if "cognition_package" in locals()
-            else {},
-
         "memory_stats": memory_stats()
     }
 
@@ -1007,7 +993,6 @@ def memory_observability():
         return {
             "error": str(e)
         }
-
 
 
 
