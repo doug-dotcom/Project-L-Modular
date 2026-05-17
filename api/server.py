@@ -441,6 +441,12 @@ from memory.memory_queue import (
     queue_memory_candidate
 )
 
+from memory.memory_classifier import (
+    classify_pending_queue,
+    classifier_status
+)
+
+
 
 
 
@@ -986,6 +992,7 @@ def memory_observability():
         return {
             "error": str(e)
         }
+
 
 
 
