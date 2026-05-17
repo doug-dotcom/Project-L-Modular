@@ -401,6 +401,11 @@ from core.memory_engine import (
     memory_stats
 )
 
+from memory.orchestrator import (
+    build_memory_runtime_package
+)
+
+
 from memory.local_runtime import (
     process,
     build_context
@@ -844,6 +849,7 @@ def memory_observability():
         return {
             "error": str(e)
         }
+
 
 
 
