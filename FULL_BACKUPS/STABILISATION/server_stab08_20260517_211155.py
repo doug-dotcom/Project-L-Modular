@@ -438,10 +438,15 @@ from memory.domain_runtime import (
 )
 
 
+from memory.cognition_engine import (
+    build_cognition_context,
+    cognition_status
+)
 
 
-
-
+from memory.orchestrator import (
+    build_memory_runtime_package
+)
 
 
 from memory.local_runtime import (
@@ -783,8 +788,8 @@ def chat(req: ChatRequest):
             importance=importance
         )
 
-    memory_context = (
-        build_domain_memory_context(
+    runtime_package = (
+        build_memory_runtime_package(
             user_message
         )
     )
@@ -793,21 +798,56 @@ def chat(req: ChatRequest):
 
         "user_message": user_message,
 
-        "domain_runtime": True,
-
-        "memory_loaded": bool(
-            memory_context
+        "retrieval_count": len(
+            runtime_package.get(
+                "retrieval_results",
+                []
+            )
         ),
 
-        "memory_length": len(
-            memory_context
+        "confidence": runtime_package.get(
+            "confidence",
+            {}
+        ),
+
+        "status": runtime_package.get(
+            "status",
+            {}
         )
     })
 
-    relevant_memories = []
+    relevant_memories = (
+        runtime_package.get(
+            "retrieval_results",
+            []
+        )
+    )
+
+    retrieval_context = (
+        runtime_package.get(
+            "context",
+            ""
+        )
+    )
+
+    memory_context = f"""
+
+IDENTITY MEMORY:
+{identity_context}
+
+RUNTIME CONTINUITY:
+{runtime_continuity}
+
+RETRIEVAL MEMORY:
+{retrieval_context}
+
+""".strip()
 
     confidence_layer = (
-        "Structured cognition memory active."
+        runtime_package.get(
+            "confidence_layer",
+            ""
+        )
     )
 
     system_prompt = f"""
@@ -818,11 +858,9 @@ You are grounded, calm, practical and supportive.
 Use cognition memory naturally when relevant.
 
 IMPORTANT:
-- The MEMORY section below is trusted structured cognition memory.
-- Use it confidently when answering memory questions.
-- Family, identity, work, sport and health memories are trusted continuity data.
-- Do not ignore known cognition memories.
-- Prioritise cognition memory over generic uncertainty.
+- Cognition memory is considered trusted continuity memory.
+- If family, identity, work or health memories exist, use them confidently.
+- Prioritise structured cognition over generic uncertainty.
 - Group related memories together naturally.
 
 CONFIDENCE RULES:
@@ -894,7 +932,7 @@ IDENTITY CONTEXT:
     return {
         "reply": reply,
         "memory_wired": True,
-
+        "retrieved_memories": relevant_memories,
         "confidence_layer": confidence_layer,
         "domain_runtime": cognition_runtime_status(),
 
@@ -977,7 +1015,6 @@ def memory_observability():
         return {
             "error": str(e)
         }
-
 
 
 
