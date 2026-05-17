@@ -1,0 +1,33 @@
+{
+  "runtime_file": "C:\\Shine_L\\orchestration\\runtime_bootstrap.py",
+  "cognition_helper_count": 6,
+  "cognition_helpers": [
+    {
+      "Function": "handle_chat",
+      "Line": 62
+    },
+    {
+      "Function": "classify_request",
+      "Line": 247
+    },
+    {
+      "Function": "load_captains",
+      "Line": 347
+    },
+    {
+      "Function": "get_active_captains",
+      "Line": 360
+    },
+    {
+      "Function": "dispatch_captain",
+      "Line": 526
+    },
+    {
+      "Function": "protected_openai_call",
+      "Line": 671
+    }
+  ],
+  "openai_import_detected": true,
+  "openai_client_detected": true,
+  "handle_chat_detected": true
+}

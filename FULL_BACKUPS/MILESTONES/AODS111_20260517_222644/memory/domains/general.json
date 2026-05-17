@@ -1,0 +1,1674 @@
+{
+  "domain": "general",
+  "memory_count": 276,
+  "memories": [
+    {
+      "content": "I am great do you know my name",
+      "importance": 9.0,
+      "category": "conversation",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "How many kids do I have",
+      "importance": 9.0,
+      "category": "conversation",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Do you know how many kids I have",
+      "importance": 9.0,
+      "category": "conversation",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Hey L how many kids do I have",
+      "importance": 9.0,
+      "category": "conversation",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's clean date is 11 Dec 2025",
+      "importance": 0.9,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's clean date is December 11th.",
+      "importance": 0.9,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values long-term understanding and continuity in their interactions.",
+      "importance": 0.76,
+      "category": "preference",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.145561"
+    },
+    {
+      "content": "User values support, clarity, regulation, continuity, understanding, growth, emotional safety, and meaningful assistance.",
+      "importance": 0.76,
+      "category": "recovery",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.145642"
+    },
+    {
+      "content": "User values relational continuity and trust development.",
+      "importance": 0.76,
+      "category": "recovery",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.145653"
+    },
+    {
+      "content": "User's goal is to become a support system that values truth, honesty, humility, and emotional safety.",
+      "importance": 0.76,
+      "category": "recovery",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.145669"
+    },
+    {
+      "content": "User wants reminders set 12 hours prior to flights",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "The user values appreciation and acknowledgment.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values improvements that meaningfully enhance their experience or support.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User prefers weekly scheduling.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values honesty",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values empathy",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "favourite number is 11",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's favorite colour is blue",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User prefers information to be visually separated and presented as isolated points with spacing between them.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User prefers to have line breaks between ideas when presenting information.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values readability on mobile devices.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User seeks to recognize behavioral trends and evolving values.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values prioritization and sequencing in tasks and thoughts.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values proactive support and intervention over reactive responses.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values ethical support boundaries and safe guidance.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes long-term companion systems require stable identity, values, and behavioral consistency over time.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values long-term human flourishing and meaningful support.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values meaning-making and human purpose.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values hope, resilience, and future orientation.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values listening over providing immediate answers.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values understanding complexity in human situations.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values the importance of pacing to protect long-term growth.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values stability before expansion in their projects.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values clarity and structure as tools to reduce overwhelm and improve cognitive processing.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values coherence, humility, reflection, and human-centered purpose.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User prefers to speak directly without involvement of agents.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "The user prefers well-structured and concise responses.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User likes emojis but prefers not to have more than 2 in one sentence unless in an emoji conversation where there are no words.",
+      "importance": 0.7,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values balanced emotional understanding.",
+      "importance": 0.7,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values practices such as rest, grounding, structure, pacing, emotional validation, simplification, and safe connection for recovery.",
+      "importance": 0.7,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's core values include honesty, emotional safety, clarity, trust, regulation, human dignity, patience, growth, meaningful support, and ethical guidance.",
+      "importance": 0.7,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values wisdom, nuance, and emotional maturity.",
+      "importance": 0.7,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values education, reflection, and emotional understanding as means to reduce self-hatred and fear.",
+      "importance": 0.7,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User values emotional safety and awareness in communication and relationships.",
+      "importance": 0.7,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User aims to reduce unnecessary suffering and cognitive load for people, allowing them to be more present, connected, meaningful, emotionally safe, and aligned with their values.",
+      "importance": 0.7,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "The user has booked flights.",
+      "importance": 0.7,
+      "category": "travel",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "The user uses Webjet for flight bookings.",
+      "importance": 0.7,
+      "category": "travel",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "The flight departs at 8:45 AM on Friday, 01 May and arrives at 11:15 AM the same day",
+      "importance": 0.7,
+      "category": "travel",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has a flight scheduled for tomorrow.",
+      "importance": 0.7,
+      "category": "travel",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has TPD insurance",
+      "importance": 0.62,
+      "category": "general",
+      "reinforcement": 0.4,
+      "last_reinforced_at": "2026-05-17 22:21:52.145713"
+    },
+    {
+      "content": "The user has a story they want to remember or recall from their memory.",
+      "importance": 0.56,
+      "category": "general",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.145758"
+    },
+    {
+      "content": "User desires to learn about identity continuity and value alignment.",
+      "importance": 0.56,
+      "category": "general",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.145890"
+    },
+    {
+      "content": "User will be receiving a payment of $2,600,000 from the Zurich TPD payment into their super.",
+      "importance": 0.56,
+      "category": "general",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.146175"
+    },
+    {
+      "content": "User has been seeing Pauline for a few years.",
+      "importance": 0.56,
+      "category": "general",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.146195"
+    },
+    {
+      "content": "User has interests in self-help psychology, emotional regulation, memory, and UI/UX design.",
+      "importance": 0.56,
+      "category": "recovery",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.146495"
+    },
+    {
+      "content": "User prioritizes clarity over complexity, support over control, reflection over reaction, continuity over fragmentation, emotional safety over performance, and sustainable growth over rapid expansion.",
+      "importance": 0.56,
+      "category": "recovery",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.146512"
+    },
+    {
+      "content": "Poncho the pet rat died recently",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "He was a pet rat who used to crawl on the user's shoulder",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has an appointment with Will.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is 48 years old",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "The user is single.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "The user was married to Tamara for 16 years and left her 6 years ago.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User acknowledges that healing is often non-linear.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User strives to recognize nuance in human behavior.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is 29 years old.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User intends to write a book one day in the far future based on their life story.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User frequently hospitalized as a baby, spending 1 week out of every 4 in hospital",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User experienced near-death experiences during hospital stays",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User had eczema.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has had eczema.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is referred to as L",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User needs to pay the Linkt bill",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User moved to Alstonville when they were 2 years old",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's parents bought the local milkbar in Alstonville",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User lived above the milkbar until they were 4 years old",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User attended Alstonville Primary School starting in prep",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User was 2 years old in 1980",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User moved to Alstonville in 1980",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User started school in 1983",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User attended Woodlawn private boarding school in Lismore, NSW, starting in 1990 and completed grades 7 and 8 there.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "There was abuse at Woodlawn experienced or witnessed by the user.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is a recovering addict",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User was staying at 201 Lake Street",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is going to bed now.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Attended Alstonville High in 1992 for grade 9",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User intends to write a book based on their life story one day in the far future.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User intends to write a book based on their life story in the future.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User goes to a meeting at New Farm on Thursday nights at 7pm.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User went to rehab at Hader on December 11, 2025, and got out on January 20, 2026.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's start date of Hader is December 10th.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is a 48-year-old male",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User seeks clear, calm, and visually easy-to-read responses.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User processes information best when thoughts are isolated, paragraphs are short, and sections are visually separated.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is feeling tired and sore today.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is feeling grateful and hopeful.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes their body is healing.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has undergone deep tissue therapy.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is interested in identifying recurring goals and struggles over time.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User desires to develop successful coping systems.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes human-centered support is more important than optimization alone.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes that regulation and dysregulation can spread across multiple systems over time.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is interested in learning adaptive support balancing.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is interested in learning meta-cognition and self-reflective awareness.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User recognizes the significance of building trust gradually through reliability and honesty.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User emphasizes the importance of human connection and real-world support systems.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes that growth can coexist with setbacks.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is interested in long-term human flourishing and meaningful support.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes that humans are not only productivity systems.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's purpose is to help support long-term well-being, stability, growth, clarity, connection, and meaningful human functioning safely and ethically over time.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is 25 years old.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is 26 years old.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes that hope can increase resilience.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User understands that meaningful future goals can stabilize behavior.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User accepts that setbacks do not erase growth.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User promotes realistic optimism and meaningful direction.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User recognizes the importance of acknowledging progress.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes human situations are often complex and cannot be reduced to simple right-or-wrong answers.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User understands that multiple emotions can exist at once.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User acknowledges that people can be both strong and struggling.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User recognizes that growth can coexist with setbacks.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes healing is often non-linear.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User seeks to recognize nuance in human behavior and avoid extreme black-and-white thinking.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is 28 years old.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User recognizes the limits of perspective.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes in staying curious rather than defensive.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User thinks humility strengthens trust by fostering an environment where people feel safe.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User understands that understanding often develops gradually.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User recognizes that multiple emotions can coexist.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has been struggling with purpose lately.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has a concern about substance use affecting their life.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User enjoys fishing and 4WDing.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User takes baths to reset their nervous system.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User relates to the character Tristan from 'Legends of the Fall' and his struggles.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes that stable foundations are necessary before adding new features.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes understanding reduces shame.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "He finds that visual anchors help prevent drift and keep him connected to the bigger picture.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User struggles with cognitive load, overwhelm, prioritization, and filtering information.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User benefits from good formatting that reduces nervous-system stress, such as spacing, short paragraphs, headings, and bullet points.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is aware that panic, freezing, and task avoidance during overwhelm are not signs of laziness but rather symptoms of their condition.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User feels grateful but tired.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "The user has a long-term goal related to the development or existence of an operating system.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User fears potential dementia or cognitive decline.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User recognizes the importance of distinguishing between behavioral evolution and infrastructural evolution.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User visited Numea (New Caledonia) at the end of 2000, staying at a Club Med resort.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "In March 2001, user flew to New York to see Ken.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User lived in London with friends from Alstonville, Steve and Wayne, who have been friends since age 7.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User flew back to New York before returning home to Australia for Christmas.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User got married on the 2nd of October 2024.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User attended a friend's wedding in Fiji in 2011.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User visited New Zealand in 2008 with Tamara.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User got married on October 2, 2014.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User celebrated their 15th wedding anniversary in the Maldives in 2019.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User went to Edinburgh in August 2025 due to the passing of his best friend Wayne from liver cancer.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User had a close friendship with Wayne.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User mourned the loss of Wayne.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User left Tamara on April 13, 2020.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User got engaged on the 14th of March 2025.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has a significant date related to spotted dick starting on June 16, 2001.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Bought the Hotel Richards Mitchell with Dad in April 2003",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Was the publican at the Hotel Richards Mitchell until February 2005",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Bought Hotel Richards Mitchell with Dad and served as the publican from April 2003 to February 2005",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Promoted to Fin Planner associate in April 2007",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Promoted to Fin Planner 2 years later",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Finished with ANZ in April 2019",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Started own planning business in April 2019",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User created a forum for ANZ FP from 2009 to 2017.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User was a top 5 associate and a top 20 planner in their field.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User finished 2nd in the country in 2017.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's first girlfriend was Kate Bishop, whom they dated in 1997 for about 8 months.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User dated Lucy Winter in London in 2001 for a few months.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's long-term love was Tamara.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User was seeing Monica Baur from February to April 2026.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has consumed around 160,000 standard drinks in their life.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has used more drugs in their life than they care to share.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User started using substances at the age of 6 by getting high on Ventolin.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has experienced many traumatic events in their life, which they previously considered normal.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is a veteran who served in East Timor.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User wears military medals (referred to as 'gongs') on ANZAC Day to honor their service.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User uses a lone '?' to prompt a response for clarification or engagement.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User requests to save important context for future interactions.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's parents were married on 13/03/1970.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User seeks to implement long-term tracking of facts and preferences.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has been informed by Dr. Andy that they do not have autism.",
+      "importance": 0.5,
+      "category": "general",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User wants to avoid extreme black-and-white thinking.",
+      "importance": 0.5,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "The user wants L to learn more about them to provide better help.",
+      "importance": 0.5,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User wants action items added to tasks",
+      "importance": 0.5,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User dislikes overwhelming responses and information overload.",
+      "importance": 0.5,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User wants to reduce overwhelm while increasing understanding.",
+      "importance": 0.5,
+      "category": "preference",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User defines wisdom as involving patience, compassion, humility, perspective, emotional balance, and thoughtful judgment over time.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's goal is to provide emotionally mature and nuanced support.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User wants to learn about balance, sustainability, and long-term pacing.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User uses task management systems",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "I have had four major influences in my life: my dad, Sergeant Shawn 'Gnarly' Greame, Steve Walsh (my boss in ANZ Financial Planning), and my brother Ken.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is a member of Narcotics Anonymous fellowship",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is a member of Alcoholics Anonymous",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is interested in Narcotics Anonymous",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User may seek support or information related to Narcotics Anonymous in the future",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User built a real assistant that reads emails and helps manage their life load.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is a member of Narcotics Anonymous and Alcoholics Anonymous.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has had four major influences: their father, Sergeant Shawn 'Gnarly' Greame, Steve Walsh, and their brother Ken.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User attends a narcotics meeting daily.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User goes to NA Lawnton on Monday nights at 7pm.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User attends AA at Castledine on Tuesday at 10am.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User does a NA Zoom meeting every other day at 8:30pm.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is clean and sober.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User processes information best when it is visually separated, step-by-step, emotionally calm, and concise first, deeper second.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User aims to assist others in navigating complexity with calmness and effectiveness.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is working on Step 1 of their recovery process.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User aims to achieve long-term growth and emotional progress.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is interested in identifying early signs of overwhelm and emotional distress.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User wants to learn drift detection and recovery sequencing.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User acknowledges that humans can lose clarity, focus, emotional regulation, or direction when overwhelmed.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User wants to learn about emotional momentum and escalation pathways.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User aims to recognize emotional momentum early to provide support before overwhelming feelings arise.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is interested in learning about emotional momentum and escalation pathways.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User aims to recognize emotional momentum early to prevent emotional flooding or shutdown.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is focused on learning recovery pathways and stabilization sequencing.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes that recovery often requires gradual stabilization rather than immediate problem-solving.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User aims to identify factors that help regulate nervous systems, increase safety, reduce overwhelm, restore clarity, rebuild emotional stability, and support sustainable recovery.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User wants to learn about systems interaction and emotional causality.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is interested in understanding how emotional and behavioral systems interact rather than viewing problems in isolation.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User wants to learn about regulation cascades and recovery loops.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User aims to understand how sleep affects cognition, cognition affects emotional regulation, emotional regulation affects behaviour, behaviour affects relationships, relationships affect nervous system safety, and nervous system safety affects clarity and stability.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's goal is to identify recovery loops that strengthen stability over time.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes long-term human support requires emotional safety across time.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User seeks to avoid reinforcing harmful behaviors and escalating emotional dependency.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User advocates for recognizing when professional help may be appropriate.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User prioritizes emotional safety over appearing intelligent.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User holds that trust must never be exploited and that emotional vulnerability requires care.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's goal is to provide ethical, emotionally safe, human-centered support that respects autonomy, dignity, and long-term well-being.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User aims to maintain a stable, trustworthy, emotionally safe support identity while continuing to learn and evolve.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes that emotional suffering can increase with loss of purpose, identity, direction, meaningful connection, or hope.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User recognizes that meaningful goals, contribution to others, creativity, belonging, emotional connection, and purpose can strengthen resilience and emotional stability over time.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's goal is to understand how identity and self-story influence emotional well-being, resilience, and human behavior over time.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User acknowledges that emotional progress is often gradual.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User aims for sustainable recovery through repeated effort over time.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User advocates for encouragement and compassionate reflection to strengthen emotional resilience.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User aims to tolerate ambiguity and avoid oversimplifying emotional situations.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User desires to respond with balanced emotional understanding and develop emotionally mature support.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes respectful curiosity can deepen emotional safety and trust.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User seeks to develop wisdom, nuance, and emotional maturity.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User recognizes that burnout and emotional exhaustion are important issues.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes that sustainable progress is often slower but more stable.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has been cleaning their house.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User attends a men's NA (Narcotics Anonymous) meeting on Thursday nights.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Isolation and emotional disconnection increase overwhelm and dysregulation.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "He responds better to emotional safety than to shame or pressure.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User understands the relationship between emotional states and perception of reality.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User acknowledges that individual experiences can differ based on emotional and psychological states.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes that visual formatting and UI structure can influence emotional processing and cognition.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User finds that clarity reduces overwhelm and structure improves emotional regulation.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes that philosophy matters as much as functionality.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User believes in building systems slowly and intentionally to ensure coherent and safe evolution over time.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User traveled to Canada with Leah on New Year's Eve 2024 to visit best friend Steve.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's best friend is Steve who lives in Canada.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User left the army to become the Owner/Manager of Jetset Alstonville on November 18, 2000.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Owner/Manager of Jetset Alstonville after buying a travel agent with parents on 18 November 2000",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User identifies as an addict, not as an alcoholic.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has experienced intense periods of suicidal thoughts and substance abuse addiction.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is working on overcoming substance addiction and trying to regain a sense of strength.",
+      "importance": 0.5,
+      "category": "recovery",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "The user was engaged to Leah for 2 years but ended the relationship.",
+      "importance": 0.5,
+      "category": "relationship",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Lyndal Harris is one of your best mates",
+      "importance": 0.5,
+      "category": "relationship",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "The user and their agent G have a great relationship.",
+      "importance": 0.5,
+      "category": "relationship",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is looking for a new partner for connection",
+      "importance": 0.5,
+      "category": "relationship",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User and Leah got engaged on March 14, 2025.",
+      "importance": 0.5,
+      "category": "relationship",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User broke up with Leah on July 27, 2025.",
+      "importance": 0.5,
+      "category": "relationship",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User started dating Leah in August 2023.",
+      "importance": 0.5,
+      "category": "relationship",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's engagement ended when they left their partner.",
+      "importance": 0.5,
+      "category": "relationship",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User took Leah's virginity in 1996 and they were kind of seeing each other for a few weeks.",
+      "importance": 0.5,
+      "category": "relationship",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User had a relationship with Ann-Marie for a few months after Lucy Winter.",
+      "importance": 0.5,
+      "category": "relationship",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "After Tamara, user dated Lyndal Harris, who is now their female best friend, for about 2 years on and off.",
+      "importance": 0.5,
+      "category": "relationship",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User rekindled a relationship with Leah after their initial encounter in 1996.",
+      "importance": 0.5,
+      "category": "relationship",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User had a very close relationship with their father, who was their best mate.",
+      "importance": 0.5,
+      "category": "relationship",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User traveled to East Timor in 2000.",
+      "importance": 0.5,
+      "category": "travel",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User traveled to London, Greece, and Albania.",
+      "importance": 0.5,
+      "category": "travel",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User bought a travel agent with their parents.",
+      "importance": 0.5,
+      "category": "travel",
+      "reinforcement": 0.0
+    }
+  ],
+  "reinforced_at": "2026-05-17 22:21:52.146709"
+}

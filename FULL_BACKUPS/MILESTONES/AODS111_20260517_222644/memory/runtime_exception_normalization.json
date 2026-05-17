@@ -1,0 +1,15 @@
+{
+  "runtime_file": "C:\\Shine_L\\orchestration\\runtime_bootstrap.py",
+  "compile_status": "OK",
+  "exception_normalization_added": true,
+  "raw_exception_patterns": [
+    {
+      "Pattern": "except Exception as e:",
+      "Count": 4
+    },
+    {
+      "Pattern": "except:",
+      "Count": 15
+    }
+  ]
+}

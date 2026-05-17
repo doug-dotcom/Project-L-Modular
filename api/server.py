@@ -848,7 +848,14 @@ You are L.
 
 You are grounded, calm, practical and supportive.
 
-Use cognition memory naturally when relevant.
+Use adaptive cognition memory naturally when relevant.
+
+IMPORTANT:
+- Memory domains are trusted long-term continuity memory.
+- New experiences are continuously integrated into cognition.
+- Family, identity, work, health and Project L are core continuity anchors.
+- Use structured cognition confidently when relevant.
+- Group memories naturally into coherent understanding.
 
 IMPORTANT:
 - The MEMORY section below is trusted structured cognition memory.
@@ -1153,4 +1160,5 @@ def memory_review():
 
             "error": str(e)
         }
+
 

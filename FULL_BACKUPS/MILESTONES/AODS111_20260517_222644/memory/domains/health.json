@@ -1,0 +1,246 @@
+{
+  "domain": "health",
+  "memory_count": 38,
+  "memories": [
+    {
+      "content": "User was diagnosed with asthma as a baby",
+      "importance": 0.9,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User had chronic asthma diagnosed as a baby.",
+      "importance": 0.9,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has been diagnosed with ADHD",
+      "importance": 0.9,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has been diagnosed with cPTSD",
+      "importance": 0.9,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has been diagnosed with OCPD",
+      "importance": 0.9,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has been diagnosed with alcohol use disorder",
+      "importance": 0.9,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has been diagnosed with generalized anxiety disorder",
+      "importance": 0.9,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has been diagnosed with depression",
+      "importance": 0.9,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has been diagnosed with PTSD related to their experiences in the military.",
+      "importance": 0.9,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User prefers ADHD-friendly communication style.",
+      "importance": 0.7,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Pauline is a key part of the user's recovery and mental health monitoring and maintenance.",
+      "importance": 0.62,
+      "category": "health",
+      "reinforcement": 0.4,
+      "last_reinforced_at": "2026-05-17 22:21:52.148190"
+    },
+    {
+      "content": "User is medically retired due to mental health",
+      "importance": 0.56,
+      "category": "health",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.148057"
+    },
+    {
+      "content": "User was medically retired due to mental health.",
+      "importance": 0.56,
+      "category": "health",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.148092"
+    },
+    {
+      "content": "He was medically retired due to PTSD and mental health impacts.",
+      "importance": 0.56,
+      "category": "health",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.148102"
+    },
+    {
+      "content": "User identifies small positive actions, such as rest, hydration, support meetings, exercise, grounding, safe conversations, structured routines, emotional validation, healthy connection, and meaningful purpose as essential for recovery.",
+      "importance": 0.56,
+      "category": "health",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.148111"
+    },
+    {
+      "content": "User believes emotional safety, meaningful connection, purpose, stability, regulation, growth, belonging, self-understanding, healthy routines, and supportive relationships are important for well-being.",
+      "importance": 0.56,
+      "category": "health",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.148120"
+    },
+    {
+      "content": "User understands that sustainable human flourishing often occurs through small consistent improvements, healthy support systems, emotional regulation, safe environments, recovery pathways, meaningful goals, and compassionate self-awareness.",
+      "importance": 0.56,
+      "category": "health",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.148129"
+    },
+    {
+      "content": "User understands that recovery is part of healthy functioning rather than failure.",
+      "importance": 0.56,
+      "category": "health",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.148135"
+    },
+    {
+      "content": "User aims to help others build sustainable, emotionally healthy, long-term progress.",
+      "importance": 0.56,
+      "category": "health",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.148140"
+    },
+    {
+      "content": "User finds it hard to get things done around the house due to mental health.",
+      "importance": 0.56,
+      "category": "health",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.148146"
+    },
+    {
+      "content": "User is in the process of identifying the root causes of their mental health issues.",
+      "importance": 0.56,
+      "category": "health",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.148203"
+    },
+    {
+      "content": "User had chronic asthma until age 7",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User was frequently hospitalized as a baby due to chronic asthma, with hospitalizations occurring 1 week out of every 4 weeks.",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's chronic asthma condition lasted until age 7.",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User was frequently hospitalized due to chronic asthma until age 7.",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User had near-death experiences during hospital stays as a baby due to asthma.",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "I am medically retired and no longer work, but have spent a lot of time building programs on my computer.",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has ADHD and processes information better with structured communication.",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is getting better at managing anxiety by slowing down and focusing on breathing.",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User thinks many people carry unnecessary shame due to a lack of understanding their nervous system, trauma responses, emotional patterns, ADHD traits, or coping mechanisms.",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User recognizes the impact of trauma and ADHD patterns on interpretation of reality.",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is interested in understanding ADHD and how structure affects cognitive load and emotional regulation.",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User likely experiences overwhelm and challenges with prioritization and filtering information due to ADHD.",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has an interest in learning about ADHD and its effects on perception and reality.",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User is aware of the connection between ADHD, trauma, and cognitive processes.",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Worked in own planning business until medically retired in December 2023",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has OCD caused by OCPD and complex PTSD.",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User experiences overlapping symptoms from various conditions, including ADHD.",
+      "importance": 0.5,
+      "category": "health",
+      "reinforcement": 0.0
+    }
+  ],
+  "reinforced_at": "2026-05-17 22:21:52.148219"
+}

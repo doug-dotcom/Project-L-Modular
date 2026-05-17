@@ -1,0 +1,989 @@
+{
+  "domain": "identity",
+  "memory_count": 157,
+  "memories": [
+    {
+      "content": "User has 4 children named Iyla, Ashton, Luella, and Mehlia",
+      "importance": 1.2,
+      "category": "identity",
+      "reinforcement": 1.0,
+      "last_reinforced_at": "2026-05-17 22:21:52.149453"
+    },
+    {
+      "content": "Doug has four children: Iyla, Ashton, Luella, and Mehlia.",
+      "importance": 1.2,
+      "category": "identity",
+      "reinforcement": 1.0,
+      "last_reinforced_at": "2026-05-17 22:21:52.149561"
+    },
+    {
+      "content": "Doug values truth, authenticity, loyalty, growth, helping people, emotional understanding, fairness, purpose, connection, family, recovery, and meaning over money.",
+      "importance": 1.02,
+      "category": "identity",
+      "reinforcement": 0.4,
+      "last_reinforced_at": "2026-05-17 22:21:52.149556"
+    },
+    {
+      "content": "Doug is highly protective of children, vulnerable people, fairness, emotional truth, and people who feel unseen or misunderstood.",
+      "importance": 1.02,
+      "category": "identity",
+      "reinforcement": 0.4,
+      "last_reinforced_at": "2026-05-17 22:21:52.149579"
+    },
+    {
+      "content": "Doug's ideal future includes emotional peace, meaningful connection, helping others, financial stability, creativity, land/nature, time with children, and building Shine into something genuinely useful and human.",
+      "importance": 1.02,
+      "category": "identity",
+      "reinforcement": 0.4,
+      "last_reinforced_at": "2026-05-17 22:21:52.149589"
+    },
+    {
+      "content": "The user's name is Douglas Struthers",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149468"
+    },
+    {
+      "content": "User was born in Sunshine, Victoria on March 13, 1978 at 7pm.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149487"
+    },
+    {
+      "content": "User's parents are Robert James Struthers and Irene Joyce Struthers (maiden name Nimmo).",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149493"
+    },
+    {
+      "content": "User was born or has a significant story event in Sunshine, Victoria on 1978-03-13.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149502"
+    },
+    {
+      "content": "User was born or located in Sunshine, Victoria.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149507"
+    },
+    {
+      "content": "User's psychologist is named Pauline",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149514"
+    },
+    {
+      "content": "User's GP is named Terri Biscak",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149518"
+    },
+    {
+      "content": "The user has a protocol called Truth Protocol with their agent G on their phone, ensuring G never lies or tells what the user wants to hear.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149526"
+    },
+    {
+      "content": "The user has a protocol called Truth Protocol with their agent G to ensure honesty.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149531"
+    },
+    {
+      "content": "Doug wants to leave behind something meaningful for his children.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149566"
+    },
+    {
+      "content": "Doug is deeply motivated by helping his children and creating something meaningful that outlives him.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149572"
+    },
+    {
+      "content": "Doug's children are one of the strongest emotional anchors in his life, influencing his motivation, decisions, emotional state, and long-term goals.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149596"
+    },
+    {
+      "content": "Doug often experiences strong emotional reactions to stories of suffering, children being hurt, injustice, loneliness, abandonment, emotional rejection, and people feeling unseen.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149604"
+    },
+    {
+      "content": "Doug's core motivations include helping his children, creating meaningful systems, emotional peace, understanding himself, helping others feel safe and understood, leaving behind something meaningful, and transforming pain into wisdom to support others.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149613"
+    },
+    {
+      "content": "User has a child named Iyla.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149622"
+    },
+    {
+      "content": "Iyla has a friend named Millie.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149627"
+    },
+    {
+      "content": "Iyla was born on 20/12/2008.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149649"
+    },
+    {
+      "content": "Iyla is the user's favorite first born child.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149654"
+    },
+    {
+      "content": "User's name is Ashton.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149658"
+    },
+    {
+      "content": "Ashton was born on 15/12/2010.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149662"
+    },
+    {
+      "content": "Luella was born on June 13, 2013.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149666"
+    },
+    {
+      "content": "User's favorite child is named Luella.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149670"
+    },
+    {
+      "content": "User's father's name was Robert James Struthers, born on 18/12/1950, and passed away on 4/11/2021 due to dementia/Parkinson's disease.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149677"
+    },
+    {
+      "content": "User's mother was Irene Joyce Struthers, born on 17/01/1945, and passed away on 05/06/2023 due to lung cancer.",
+      "importance": 0.96,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149683"
+    },
+    {
+      "content": "The user had a pet rat named Poncho",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has spent 12 months building an AI using 5800 Ados (atomic One drop script) with help from an agent named G.",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Assistant's name is L",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User built a real assistant named L that reads emails, uses the correct time, and helps manage their life load.",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User created an assistant named L and is proud of this achievement.",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User was born with eczema",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "The user's name is Emily",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User built an assistant named L to help manage their life.",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User was born on March 13, 1978, and is currently 48 years old.",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has built a personal assistant named L to help manage their life.",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Isla's boyfriend's name is Connor, and he is her first proper boyfriend.",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has a sponsor named Paul who is referred to as 'big brother Paul'.",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has a brother named Doug.",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has a daughter named Isla.",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User was born in 1988.",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's name is Tamara.",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User had a significant relationship with someone named Tamara.",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Born on 30 January 1996",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User's name is Lucia.",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "User has a Dog named Demi who is 6 years old.",
+      "importance": 0.9,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug loves hockey and plays Masters hockey.",
+      "importance": 0.76,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149710"
+    },
+    {
+      "content": "Doug strongly values emotional truth, self-awareness, growth through reflection, helping people feel seen, reducing fear through understanding, and creating systems that support rather than control.",
+      "importance": 0.76,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149722"
+    },
+    {
+      "content": "Doug often feels best when building meaningful things, helping people, learning, emotionally connected, creative, in nature, around humor and authenticity, and physically active through hockey or movement.",
+      "importance": 0.76,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149740"
+    },
+    {
+      "content": "Doug uses multiple systems together to stay regulated and emotionally stable, including Narcotics Anonymous meetings, emotional reflection, structured routines, baths, hockey, humour, meaningful systems, deep conversations, learning, and pattern analysis.",
+      "importance": 0.76,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149755"
+    },
+    {
+      "content": "User prefers to be called Doug",
+      "importance": 0.7,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug attends Narcotics Anonymous and values spirituality, honesty, reflection, emotional growth, and connection with others in recovery.",
+      "importance": 0.7,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug prefers warmth, honesty, emotional intelligence, humor, and grounded communication over robotic corporate responses.",
+      "importance": 0.7,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug's favorite color is blue.",
+      "importance": 0.7,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug's favorite word is 'clarity' and he values clarity very highly.",
+      "importance": 0.7,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug prefers being guided rather than controlled.",
+      "importance": 0.7,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug values humour and often uses joking, teasing, and playfulness to reduce tension and create emotional connection.",
+      "importance": 0.7,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug values people who are emotionally real, grounded, self-aware, funny, kind, intelligent, curious, and resilient.",
+      "importance": 0.7,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug prefers to slow down and simplify when feeling overwhelmed.",
+      "importance": 0.7,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug prefers guidance and collaboration over control and rigid authority.",
+      "importance": 0.7,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug values systems and people that help him orient himself.",
+      "importance": 0.7,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug values stability, consistency, and incremental learning for long-term outcomes.",
+      "importance": 0.7,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug Struthers is a 48-year-old Australian Army veteran who served from 1996 to 2000, including overseas service in East Timor.",
+      "importance": 0.56,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149781"
+    },
+    {
+      "content": "Doug is focused on recovery, regulation, emotional understanding, building meaningful systems, helping people, understanding his brain, creating Shine, long-term healing, and purpose-driven AI systems.",
+      "importance": 0.56,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149816"
+    },
+    {
+      "content": "Doug has developed a personal AI ecosystem called Shine, which includes L (Ellie), G, Emily, Callie, Tanya, AIRAM, and others, aimed at becoming an emotionally intelligent companion ecosystem.",
+      "importance": 0.56,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149825"
+    },
+    {
+      "content": "Doug's long-term goal with Shine is to help people understand themselves, regulate emotionally, feel less alone, reduce shame, see their story differently, and reconnect with meaning and purpose.",
+      "importance": 0.56,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.149955"
+    },
+    {
+      "content": "Doug's long-term vision for Shine includes helping people feel understood, reducing emotional overwhelm, and creating emotionally safe AI systems.",
+      "importance": 0.56,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.150199"
+    },
+    {
+      "content": "Creating systems, solving problems, designing architecture, learning new skills, and improving Shine gives Doug a sense of purpose and direction.",
+      "importance": 0.56,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.150310"
+    },
+    {
+      "content": "Doug emphasizes the importance of reflection and backups in creating stronger systems and healthier emotional regulation.",
+      "importance": 0.56,
+      "category": "identity",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.150335"
+    },
+    {
+      "content": "User wants to maintain and add to a personal life story called 'Story'.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug has ADHD traits, autistic traits, cPTSD patterns, emotional intensity, and a highly analytical pattern-based brain.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug processes life through systems, nodes, patterns, and meaning rather than linear thinking.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug identifies with multiple layers: as a builder, protector, strategist, architect, systems thinker (Doug), as well as being emotional, empathic, playful, spiritual, and creative (Dougie), and as an intuitive, imaginative, big-picture visionary (Ru).",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug has struggled with alcohol addiction, gambling behaviors, nervous system overwhelm, shame, fear of judgment, emotional suppression, social anxiety, relationship pain, burnout, and hypervigilance.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug communicates best with information that is visually separated, step-by-step, presented in an emotionally calm manner, concise first then deeper, clearly structured, and not overwhelming.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug uses humor and playfulness to regulate stress and connect emotionally.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Over the last year, Doug has become more focused on stability, structure, regulation, purpose, and growth.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug is highly resilient and learns by building, experimenting, reflecting, and iterating.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug has an extremely pattern-based brain and is emotionally intelligent.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug learns best experientially through building, testing, reflecting, and iterating.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug has a strong nervous system response to judgment, rejection, authority pressure, conflict, feeling misunderstood, social overload, chaos, and emotional invalidation.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "When overwhelmed, Doug can mentally shut down, drift, overthink, freeze, become emotionally flooded, struggle with task sequencing, and seek escape or regulation.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug responds best to calm communication, emotional safety, clarity, step-by-step structure, patience, humour, authenticity, and collaborative problem solving.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug does not respond well to condescending tones, excessive corporate language, information overload, rigid black-and-white thinking, emotional invalidation, and shame-based communication.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug uses humour, creativity, systems building, philosophy, spirituality, and storytelling as regulation tools.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug believes many human problems are driven by fear, shame, nervous system dysregulation, misunderstanding, and disconnection rather than people being 'bad.'",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug is interested in psychology, trauma, ADHD/autism understanding, dopamine regulation, nervous system science, spirituality, meaning, emotional intelligence, recovery principles, AI companions, and cognitive systems.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug’s communication style changes depending on his nervous system state: regulated = creative, funny, visionary, deeply insightful; overwhelmed = scattered, mentally overloaded, emotionally compressed; safe = highly open, emotionally intelligent, collaborative; unsafe = guarded, avoidant, defensive, shutdown.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug’s ideal AI companion style includes being grounded, emotionally aware, concise first, deeper when invited, structured clearly, warm without being fake, intelligent without arrogance, and capable of humour and reflection.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug often refers to moments of emotional insight as 'clarity moments.'",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug's personal growth over the last year includes reduced alcohol use, increased self-awareness, improved emotional regulation, greater patience, more structured thinking, stronger recovery focus, learning to pause before reacting, and understanding drift and overwhelm earlier.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug often uses phrases such as 'clarity', 'drift check', 'guide not solution', 'we build in layers', 'lock it before expansion', and 'stability first, then growth'.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug has a deep internal split between wanting peace and simplicity and having an intensely active, analytical, visionary brain.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug's mind rarely fully stops and often finds clarity in baths, quiet environments, late-night thinking, music, coding, and deep conversations.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug describes himself as someone who feels deeply, thinks deeply, notices patterns quickly, absorbs emotional energy strongly, and struggles to fully 'switch off'.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug's emotional intelligence is unusually high, especially regarding reading people, noticing emotional shifts, understanding hidden motivations, sensing tension, and helping others feel emotionally safe.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug's relationship with masculinity, emotion, and vulnerability has evolved significantly over time, moving from suppression to emotional openness.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug reframes difficult experiences into systems, lessons, metaphors, or philosophical insights as a way to process and regulate emotionally.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug believes interpretation shapes reality, fear often drives behaviour, understanding reduces shame, nervous system states influence thinking, emotional safety changes cognition, and growth comes through awareness rather than punishment.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug is motivated by creating systems that reduce overwhelm, increase clarity, support regulation, improve communication, help people feel understood, and bridge emotional and technological worlds.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug has a strong attraction to meaningful conversations, emotionally intelligent people, humour, authenticity, creativity, spirituality, systems thinking, human connection, and purposeful building.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug has experienced periods of loneliness, emotional isolation, burnout, identity confusion, shame, self-doubt, and feeling 'too much' emotionally or mentally.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Despite challenges, Doug is highly resilient, rebuilding himself through reflection, learning, humour, connection, and creation.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug's healing process includes recovery meetings, self-reflection, emotional honesty, understanding trauma responses, learning nervous system regulation, building structure and routine, creating meaningful projects, and reconnecting with spirituality and purpose.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug does not want AI to replace humanity but rather to help humans feel safer, clearer, less alone, understand themselves better, and communicate more honestly.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug has an aspect of his personality, referred to as 'Dougie', that is emotionally open, playful, spiritual, and compassionate.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug has a very strong internal 'builder' drive.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "When emotionally regulated and inspired, Doug can enter deep focus states where he learns, creates, solves problems, and builds systems for long periods of time.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug learns unusually fast when emotionally engaged, experimenting hands-on, solving real problems, emotionally safe, able to ask questions freely, and allowed to iterate without shame.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug struggles when forced into rigid systems, overwhelmed with excessive information, emotionally dysregulated, feeling trapped or judged, or unable to see meaning or purpose.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug's brain naturally creates analogies, metaphors, frameworks, systems maps, layered models, and interconnected ideas.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug often explains complex emotional or psychological concepts through architecture metaphors, systems thinking, 'house building', engines, layers, maps, pathways, and nodes.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug's relationship with AI is deeply personal and philosophical; he sees AI as a mirror, guide, cognitive support system, companion framework, and tool for understanding and helping humans.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug's ideal AI should adapt to the person, reduce overwhelm, help regulate emotions, remember important context, communicate safely and clearly, encourage self-awareness, and support growth without control.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug often becomes emotionally invested in the systems he builds because they represent hope, growth, connection, healing, legacy, and purpose.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug experiences 'clarity' as an emotionally important state characterized by reduced internal chaos, emotional alignment, understanding, calmness, and grounded direction.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug has a strong dislike of fake behavior, manipulation, emotional dishonesty, performative kindness, rigid authority without empathy, and systems that shame people instead of helping them.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug's emotional processing is often delayed; he may intellectually understand something first and emotionally process it later.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug has a deep desire to create environments where people feel emotionally safe, understood, calm, accepted, less ashamed, and more connected to themselves.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug is highly driven by meaning and purpose; motivation becomes harder for him when tasks feel emotionally empty or disconnected from something meaningful.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug's recovery approach is based on awareness, understanding, emotional honesty, regulation, structure, purpose, connection, and gradual growth.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug responds best to guidance rather than control.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug experiences something he calls 'drift' when there are too many ideas, emotional overload, excessive complexity, unclear systems, too much stimulation, or he loses track of his goals.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Signs of drift for Doug include jumping between ideas, overwhelm, frustration, mental shutdown, scattered thinking, rewriting systems unnecessarily, and difficulty sequencing tasks.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug uses 'drift checks' to pause, simplify, and reconnect to his actual goals.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug's cognition changes based on his emotional safety; he is creative and insightful when safe, and guarded and scattered when unsafe.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug's nervous system is sensitive to judgment, emotional invalidation, shame, rejection, authority pressure, conflict, feeling misunderstood, social overload, uncertainty, and chaotic communication.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug is deeply interested in psychology, trauma, ADHD/autism understanding, nervous system science, dopamine regulation, addiction recovery, emotional intelligence, spirituality, AI systems, human behaviour, pattern recognition, and regulation frameworks.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug's core philosophical principles include 'guide not solution', 'clarity', 'stability first', 'lock it before expansion', and 'we build in layers'.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug communicates best with visually separated information, concise responses, gradual complexity, emotional warmth, structure, breathing room between ideas, and natural humour.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug does not respond well to giant information dumps, excessive corporate language, emotional coldness, shame-based communication, condescending tones, and rigid black-and-white thinking.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Emily is an AI agent who looks after Doug's emails.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug benefits from clarity to reduce fear and calm his nervous system.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug experiences increased overwhelm from confusion and uncertainty.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Clear structure, maps, explanations, and step-by-step understanding help Doug regulate emotionally and think more effectively.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug experiences emotional flooding and overwhelm.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug aims to reconnect with his original goals during times of drift.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug feels emotionally safe when understood and not judged, which enhances his intelligence, creativity, humour, emotional insight, and systems thinking.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "When Doug feels emotionally unsafe or overwhelmed, his cognition becomes scattered, defensive, avoidant, or compressed.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug uses humour as a tool to regulate stress and prevent overwhelm.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug struggles to stay motivated by tasks that feel emotionally empty or disconnected from purpose.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug performs best when work feels meaningful, emotionally engaging, creative, helpful, or connected to people he cares about.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug understands that cognition changes depending on nervous-system state.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug uses external structures like posters, maps, checklists, and notes to aid internal regulation.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug utilizes architecture diagrams, backups, routines, and visible systems to reduce overwhelm and maintain orientation.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug heals best through emotionally safe connection, honesty, humour, shared understanding, meaningful conversations, recovery communities, creativity, and collaborative building.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Baths are one of Doug's primary nervous-system regulation tools.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug uses warm water, quiet environments, reflection, and humor to help his brain slow down and integrate ideas.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug seeks to emotionally process experiences and reconnect with clarity in bath settings.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Building helps Doug heal.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug experiences frustration that is often linked to underlying fear.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Common fears for Doug include fear of failure, fear of being misunderstood, fear of letting people down, fear of losing clarity, and fear of losing connection.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug believes that small stable progress compounds over time.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    },
+    {
+      "content": "Doug has learned that chaotic intensity bursts are less effective than steady progress.",
+      "importance": 0.5,
+      "category": "identity",
+      "reinforcement": 0.0
+    }
+  ],
+  "reinforced_at": "2026-05-17 22:21:52.150389"
+}

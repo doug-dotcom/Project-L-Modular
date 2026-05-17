@@ -1,6 +1,6 @@
 # ============================================================
-# DEEP DOMAIN COGNITION RUNTIME
-# AODS-104
+# ADAPTIVE DOMAIN COGNITION RUNTIME
+# AODS-111
 # ============================================================
 
 import json
@@ -71,7 +71,7 @@ def detect_relevant_domains(user_msg):
             "ashton",
             "luella",
             "mehlia",
-            "ages",
+            "age",
             "old",
             "grade"
         ],
@@ -81,7 +81,9 @@ def detect_relevant_domains(user_msg):
             "about me",
             "name",
             "identity",
-            "values"
+            "values",
+            "truth",
+            "continuity"
         ],
 
         "work": [
@@ -92,7 +94,8 @@ def detect_relevant_domains(user_msg):
             "insurance",
             "zurich",
             "claim",
-            "financial"
+            "financial",
+            "anz"
         ],
 
         "health": [
@@ -101,14 +104,43 @@ def detect_relevant_domains(user_msg):
             "adhd",
             "doctor",
             "therapy",
-            "cptsd"
+            "cptsd",
+            "ptsd",
+            "pauline",
+            "terri"
         ],
 
         "sport": [
             "sport",
             "hockey",
             "masters",
-            "fullback"
+            "fullback",
+            "netball"
+        ],
+
+        "project_l": [
+            "project l",
+            "memory",
+            "aods",
+            "orchestration",
+            "cognition",
+            "runtime",
+            "tegan",
+            "emily",
+            "callie",
+            "tania"
+        ],
+
+        "emotional": [
+            "feel",
+            "emotion",
+            "flat",
+            "excited",
+            "joy",
+            "trigger",
+            "sad",
+            "angry",
+            "lonely"
         ]
     }
 
@@ -121,21 +153,19 @@ def detect_relevant_domains(user_msg):
                 matches.add(domain)
 
     # ========================================================
-    # IMPORTANT:
-    # identity + general always loaded
+    # ALWAYS LOAD CORE CONTINUITY
     # ========================================================
 
     matches.add("identity")
-    matches.add("general")
+    matches.add("family")
 
     if not matches:
-
         matches.add("general")
 
     return list(matches)
 
 # ============================================================
-# BUILD COGNITION CONTEXT
+# BUILD ADAPTIVE MEMORY CONTEXT
 # ============================================================
 
 def build_domain_memory_context(user_msg):
@@ -147,10 +177,6 @@ def build_domain_memory_context(user_msg):
     )
 
     grouped = defaultdict(list)
-
-    # ========================================================
-    # LOAD DOMAIN MEMORIES
-    # ========================================================
 
     for domain_name in relevant_domains:
 
@@ -182,21 +208,33 @@ def build_domain_memory_context(user_msg):
                     ) or 0
                 )
 
+                reinforcement = float(
+                    mem.get(
+                        "reinforcement",
+                        0
+                    ) or 0
+                )
+
                 if not content:
                     continue
+
+                cognition_score = (
+                    importance
+                    + reinforcement
+                )
 
                 grouped[domain_name].append({
 
                     "content": content,
 
-                    "importance": importance
+                    "score": cognition_score
                 })
 
             except Exception:
                 pass
 
     # ========================================================
-    # SORT BY IMPORTANCE
+    # SORT MEMORIES
     # ========================================================
 
     for domain_name in grouped:
@@ -204,7 +242,7 @@ def build_domain_memory_context(user_msg):
         grouped[domain_name].sort(
 
             key=lambda x: x.get(
-                "importance",
+                "score",
                 0
             ),
 
@@ -212,7 +250,7 @@ def build_domain_memory_context(user_msg):
         )
 
     # ========================================================
-    # BUILD PROMPT CONTEXT
+    # BUILD CONTEXT
     # ========================================================
 
     context_lines = []
@@ -223,25 +261,36 @@ def build_domain_memory_context(user_msg):
             f"[{domain_name.upper()}]"
         )
 
-        count = 0
+        added = 0
+
+        seen = set()
 
         for mem in memories:
 
-            content = mem.get(
-                "content",
-                ""
-            )
+            content = str(
+                mem.get(
+                    "content",
+                    ""
+                )
+            ).strip()
 
             if not content:
                 continue
+
+            lower = content.lower()
+
+            if lower in seen:
+                continue
+
+            seen.add(lower)
 
             context_lines.append(
                 f"- {content}"
             )
 
-            count += 1
+            added += 1
 
-            if count >= 40:
+            if added >= 12:
                 break
 
         context_lines.append("")
@@ -249,7 +298,7 @@ def build_domain_memory_context(user_msg):
     if not context_lines:
 
         return (
-            "No cognition memory loaded."
+            "No adaptive cognition memory loaded."
         )
 
     return "\n".join(context_lines)
@@ -262,15 +311,24 @@ def cognition_runtime_status():
 
     domains = load_domains()
 
+    domain_stats = {}
+
+    for name, data in domains.items():
+
+        memories = data.get(
+            "memories",
+            []
+        )
+
+        domain_stats[name] = len(memories)
+
     return {
 
         "status": "online",
 
+        "operation": "AODS-111",
+
         "domain_count": len(domains),
 
-        "domains_loaded": list(
-            domains.keys()
-        ),
-
-        "operation": "AODS104"
+        "domains": domain_stats
     }
