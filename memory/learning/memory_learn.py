@@ -1,50 +1,146 @@
+# ============================================================
+# ADVANCED MEMORY LEARNING ENGINE
+# AODS-96
+# ============================================================
+
 import json
-import os
-from collections import defaultdict
+from pathlib import Path
+from datetime import datetime
 
-BASE = os.path.dirname(__file__)
-OUTCOME_PATH = os.path.join(BASE, "memory_outcomes.json")
+ROOT = Path(r"C:\Shine_L")
 
-def analyze_patterns():
+LEARNING_FILE = (
+    ROOT
+    / "memory"
+    / "learning"
+    / "adaptive_learning.json"
+)
+
+def load_learning():
+
     try:
-        with open(OUTCOME_PATH, "r") as f:
-            data = json.load(f)
-    except:
+
+        if not LEARNING_FILE.exists():
+            return {}
+
+        return json.loads(
+            LEARNING_FILE.read_text(
+                encoding="utf-8"
+            )
+        )
+
+    except Exception as e:
+
+        print(
+            "LEARNING LOAD ERROR:",
+            e
+        )
+
         return {}
 
-    stats = defaultdict(lambda: {"worked": 0, "failed": 0})
+def save_learning(data):
 
-    for entry in data:
-        pattern = entry.get("pattern")
-        outcome = entry.get("outcome")
+    try:
 
-        if not pattern:
-            continue
+        LEARNING_FILE.write_text(
+            json.dumps(
+                data,
+                indent=2,
+                ensure_ascii=False
+            ),
+            encoding="utf-8"
+        )
 
-        if outcome == "worked":
-            stats[pattern]["worked"] += 1
-        elif outcome == "failed":
-            stats[pattern]["failed"] += 1
+    except Exception as e:
 
-    return stats
+        print(
+            "LEARNING SAVE ERROR:",
+            e
+        )
 
+def reinforce_memory(text):
 
-def get_best_action(pattern_key):
-    stats = analyze_patterns()
+    try:
 
-    if pattern_key not in stats:
-        return None
+        data = load_learning()
 
-    data = stats[pattern_key]
-    total = data["worked"] + data["failed"]
+        text_lower = str(text).lower()
 
-    if total == 0:
-        return None
+        domains = {
 
-    success_rate = int((data["worked"] / total) * 100)
+            "family": [
+                "family",
+                "children",
+                "kids",
+                "iyla",
+                "ashton",
+                "luella",
+                "mehlia"
+            ],
+
+            "project_l": [
+                "project l",
+                "memory",
+                "orchestration",
+                "runtime",
+                "captains"
+            ],
+
+            "identity": [
+                "truth",
+                "continuity",
+                "growth",
+                "values"
+            ]
+        }
+
+        for domain, triggers in domains.items():
+
+            for trigger in triggers:
+
+                if trigger in text_lower:
+
+                    if domain not in data:
+
+                        data[domain] = {
+
+                            "count": 0,
+                            "last_seen": "",
+                            "importance": 1
+                        }
+
+                    data[domain]["count"] += 1
+
+                    data[domain]["importance"] += 1
+
+                    data[domain]["last_seen"] = str(
+                        datetime.now()
+                    )
+
+        save_learning(data)
+
+        return data
+
+    except Exception as e:
+
+        print(
+            "REINFORCEMENT ERROR:",
+            e
+        )
+
+        return {}
+
+def learning_status():
+
+    data = load_learning()
 
     return {
-        "success_rate": success_rate,
-        "worked": data["worked"],
-        "failed": data["failed"]
+
+        "status": "online",
+
+        "tracked_domains": len(data),
+
+        "domains": list(data.keys()),
+
+        "operation": "AODS96"
     }

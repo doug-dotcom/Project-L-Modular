@@ -1,50 +1,3 @@
-
-# ============================================================
-# SEMANTIC MEMORY DOMAINS
-# ============================================================
-
-SEMANTIC_DOMAINS = {
-
-    "family": [
-        "children",
-        "kids",
-        "daughter",
-        "son",
-        "iyla",
-        "ashton",
-        "luella",
-        "mehlia"
-    ],
-
-    "project l": [
-        "orchestration",
-        "memory",
-        "runtime",
-        "captains",
-        "tegan",
-        "continuity",
-        "supabase",
-        "architecture"
-    ],
-
-    "hockey": [
-        "sport",
-        "field hockey",
-        "fullback",
-        "masters",
-        "brisbane"
-    ],
-
-    "identity": [
-        "values",
-        "truth",
-        "continuity",
-        "growth",
-        "modular"
-    ]
-}
-
-
 # ============================================================
 # MEMORY RETRIEVAL ENGINE
 # Operation Mnemosyne + Retrieval Lieutenant
@@ -112,26 +65,6 @@ def retrieve_memories(
 
     query_lower = str(query).lower()
 
-    expanded_terms = set()
-
-    for domain, terms in SEMANTIC_DOMAINS.items():
-
-        if domain in query_lower:
-
-            expanded_terms.update(terms)
-
-        for term in terms:
-
-            if term in query_lower:
-
-                expanded_terms.update(terms)
-
-                expanded_terms.add(domain)
-
-    expanded_terms.update(
-        query_lower.split()
-    )
-
     results = []
 
     for entry in patterns:
@@ -145,7 +78,7 @@ def retrieve_memories(
 
             score = 0
 
-            for word in expanded_terms:
+            for word in query_lower.split():
 
                 if word in text:
                     score += 1
@@ -285,7 +218,6 @@ def build_retrieval_context(
         )
 
     return "\n".join(context_lines)
-
 
 
 

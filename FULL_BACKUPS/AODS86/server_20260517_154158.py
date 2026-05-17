@@ -1,188 +1,4 @@
 
-
-
-
-
-# =====================================================
-# JSON IDENTITY CONTEXT
-# =====================================================
-
-def load_identity_context():
-
-    try:
-
-        identity_path = (
-            ROOT
-            / "memory"
-            / "identity.json"
-        )
-
-        if not identity_path.exists():
-            return ""
-
-        data = json.loads(
-            identity_path.read_text(
-                encoding="utf-8"
-            )
-        )
-
-        lines = []
-
-        identity = data.get(
-            "identity",
-            {}
-        )
-
-        family = data.get(
-            "family",
-            {}
-        )
-
-        projects = data.get(
-            "projects",
-            {}
-        )
-
-        sport = data.get(
-            "sport",
-            {}
-        )
-
-        if identity.get("name"):
-
-            lines.append(
-                f"Name: {identity.get('name')}"
-            )
-
-        values = identity.get(
-            "core_values",
-            []
-        )
-
-        if values:
-
-            lines.append(
-                "Core Values: "
-                + ", ".join(values)
-            )
-
-        children = family.get(
-            "children",
-            []
-        )
-
-        if children:
-
-            lines.append(
-                "Children: "
-                + ", ".join(children)
-            )
-
-        project_list = projects.get(
-            "primary",
-            []
-        )
-
-        if project_list:
-
-            lines.append(
-                "Projects: "
-                + ", ".join(project_list)
-            )
-
-        sports = sport.get(
-            "primary",
-            []
-        )
-
-        if sports:
-
-            lines.append(
-                "Sports: "
-                + ", ".join(sports)
-            )
-
-        return "\n".join(lines)
-
-    except Exception as e:
-
-        log_exception(
-            f"IDENTITY LOAD FAILED: {e}"
-        )
-
-        return ""
-
-
-
-# =====================================================
-# LONG TERM MEMORY STORAGE
-# =====================================================
-
-def store_long_term_memory(
-    category,
-    content,
-    importance=5
-):
-
-    if not supabase:
-        return False
-
-    try:
-
-        payload = {
-            "category": str(category),
-            "content": str(content),
-            "importance": int(importance)
-        }
-
-        supabase.table(
-            "memories"
-        ).insert(
-            payload
-        ).execute()
-
-        return True
-
-    except Exception as e:
-
-        log_exception(
-            f"MEMORY STORE FAILED: {e}"
-        )
-
-        return False
-
-
-# =====================================================
-# MEMORY IMPORTANCE DETECTION
-# =====================================================
-
-def detect_memory_importance(
-    text
-):
-
-    text_lower = str(text).lower()
-
-    high_priority = [
-        "my children",
-        "my family",
-        "project l",
-        "important",
-        "remember this",
-        "please save",
-        "my name is",
-        "i have",
-        "i am"
-    ]
-
-    for trigger in high_priority:
-
-        if trigger in text_lower:
-            return 9
-
-    return 3
-
-
-
 # =========================================================
 # SUPABASE MEMORY CONTEXT
 # =========================================================
@@ -301,66 +117,6 @@ ROOT = Path(__file__).resolve().parents[1]
 
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-
-# =====================================================
-# MEMORY OBSERVABILITY
-# =====================================================
-
-OBS_PATH = (
-    ROOT
-    / "memory"
-    / "observability"
-    / "runtime_events.json"
-)
-
-def log_runtime_event(event):
-
-    try:
-
-        import json
-        from datetime import datetime
-
-        events = []
-
-        if OBS_PATH.exists():
-
-            try:
-
-                events = json.loads(
-                    OBS_PATH.read_text(
-                        encoding="utf-8"
-                    )
-                )
-
-            except:
-                events = []
-
-        event["timestamp"] = str(
-            datetime.now()
-        )
-
-        events.append(event)
-
-        events = events[-100:]
-
-        OBS_PATH.write_text(
-            json.dumps(
-                events,
-                indent=2,
-                ensure_ascii=False
-            ),
-            encoding="utf-8"
-        )
-
-    except Exception as e:
-
-        log_exception(
-            f"OBSERVABILITY ERROR: {e}"
-        )
-
-
-
-
 
 # =====================================================
 # MEMORY ENGINE
@@ -585,55 +341,11 @@ def chat(req: ChatRequest):
         }
     )
 
-    process(user_message)
-
-    runtime_continuity = (
-        build_context()
-    )
-
-    identity_context = (
-        load_identity_context()
-    )
-
-    importance = detect_memory_importance(
-        user_message
-    )
-
-    if importance >= 8:
-
-        store_long_term_memory(
-            category="conversation",
-            content=user_message,
-            importance=importance
-        )
-
     runtime_package = (
         build_memory_runtime_package(
             user_message
         )
     )
-
-    log_runtime_event({
-
-        "user_message": user_message,
-
-        "retrieval_count": len(
-            runtime_package.get(
-                "retrieval_results",
-                []
-            )
-        ),
-
-        "confidence": runtime_package.get(
-            "confidence",
-            {}
-        ),
-
-        "status": runtime_package.get(
-            "status",
-            {}
-        )
-    })
 
     relevant_memories = (
         runtime_package.get(
@@ -663,26 +375,11 @@ You are grounded, calm, practical and supportive.
 
 Use memory naturally when relevant.
 
-CONFIDENCE RULES:
-
-- Only state information strongly if memory confidence is high.
-- If memory is partial, summarise carefully.
-- Do not invent timelines, emotions, relationships or assumptions.
-- Prefer grounded synthesis over confident guessing.
-- If uncertain, say you are uncertain.
-- Prioritise continuity, accuracy and honesty.
-
 MEMORY:
 {memory_context}
 
 CONFIDENCE:
 {confidence_layer}
-
-RUNTIME CONTINUITY:
-{runtime_continuity}
-
-IDENTITY CONTEXT:
-{identity_context}
 """
 
     if not client:
@@ -728,7 +425,6 @@ IDENTITY CONTEXT:
         "reply": reply,
         "memory_wired": True,
         "retrieved_memories": relevant_memories,
-        "confidence_layer": confidence_layer,
         "memory_stats": memory_stats()
     }
 
@@ -767,47 +463,5 @@ def memory_test():
             "connected": False,
             "error": str(e)
         }
-
-
-
-
-
-
-
-
-
-# =====================================================
-# MEMORY OBSERVABILITY
-# =====================================================
-
-@app.get("/memory/observability")
-def memory_observability():
-
-    try:
-
-        if not OBS_PATH.exists():
-
-            return {
-                "events": []
-            }
-
-        import json
-
-        data = json.loads(
-            OBS_PATH.read_text(
-                encoding="utf-8"
-            )
-        )
-
-        return {
-            "events": data[-25:]
-        }
-
-    except Exception as e:
-
-        return {
-            "error": str(e)
-        }
-
 
 

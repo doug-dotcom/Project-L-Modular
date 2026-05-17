@@ -91,17 +91,13 @@ def build_context():
         []
     )
 
-    compressed = compress_recent_topics(
-        topics
-    )
-
-    if not compressed:
+    if not topics:
 
         return ""
 
     return (
         "RECENT CONTINUITY:\n"
-        + compressed
+        + "\n".join(topics)
     )
 
 def runtime_status():
@@ -113,49 +109,3 @@ def runtime_status():
             CONTINUITY_FILE
         )
     }
-
-
-
-# ============================================================
-# RUNTIME CONVERSATION COMPRESSION
-# ============================================================
-
-def compress_recent_topics(topics):
-
-    try:
-
-        if not topics:
-            return ""
-
-        cleaned = []
-
-        for item in topics[-10:]:
-
-            text = str(item).strip()
-
-            if not text:
-                continue
-
-            if text not in cleaned:
-                cleaned.append(text)
-
-        if not cleaned:
-            return ""
-
-        return (
-            "Recent conversation summary:\n"
-            + "\n".join(
-                "- " + x
-                for x in cleaned[-6:]
-            )
-        )
-
-    except Exception as e:
-
-        print(
-            "CONTINUITY COMPRESSION ERROR:",
-            e
-        )
-
-        return ""
-

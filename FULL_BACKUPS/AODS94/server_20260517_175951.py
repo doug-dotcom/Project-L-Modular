@@ -1,8 +1,4 @@
 
-
-
-
-
 # =====================================================
 # JSON IDENTITY CONTEXT
 # =====================================================
@@ -303,66 +299,6 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 # =====================================================
-# MEMORY OBSERVABILITY
-# =====================================================
-
-OBS_PATH = (
-    ROOT
-    / "memory"
-    / "observability"
-    / "runtime_events.json"
-)
-
-def log_runtime_event(event):
-
-    try:
-
-        import json
-        from datetime import datetime
-
-        events = []
-
-        if OBS_PATH.exists():
-
-            try:
-
-                events = json.loads(
-                    OBS_PATH.read_text(
-                        encoding="utf-8"
-                    )
-                )
-
-            except:
-                events = []
-
-        event["timestamp"] = str(
-            datetime.now()
-        )
-
-        events.append(event)
-
-        events = events[-100:]
-
-        OBS_PATH.write_text(
-            json.dumps(
-                events,
-                indent=2,
-                ensure_ascii=False
-            ),
-            encoding="utf-8"
-        )
-
-    except Exception as e:
-
-        log_exception(
-            f"OBSERVABILITY ERROR: {e}"
-        )
-
-
-
-
-
-# =====================================================
 # MEMORY ENGINE
 # =====================================================
 
@@ -613,28 +549,6 @@ def chat(req: ChatRequest):
         )
     )
 
-    log_runtime_event({
-
-        "user_message": user_message,
-
-        "retrieval_count": len(
-            runtime_package.get(
-                "retrieval_results",
-                []
-            )
-        ),
-
-        "confidence": runtime_package.get(
-            "confidence",
-            {}
-        ),
-
-        "status": runtime_package.get(
-            "status",
-            {}
-        )
-    })
-
     relevant_memories = (
         runtime_package.get(
             "retrieval_results",
@@ -770,44 +684,6 @@ def memory_test():
 
 
 
-
-
-
-
-
-
-# =====================================================
-# MEMORY OBSERVABILITY
-# =====================================================
-
-@app.get("/memory/observability")
-def memory_observability():
-
-    try:
-
-        if not OBS_PATH.exists():
-
-            return {
-                "events": []
-            }
-
-        import json
-
-        data = json.loads(
-            OBS_PATH.read_text(
-                encoding="utf-8"
-            )
-        )
-
-        return {
-            "events": data[-25:]
-        }
-
-    except Exception as e:
-
-        return {
-            "error": str(e)
-        }
 
 
 
