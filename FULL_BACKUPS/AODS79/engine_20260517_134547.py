@@ -161,7 +161,6 @@ def search_local_memory(
         limit=limit
     )
 
-
 def build_retrieval_context(
     query,
     limit=10
@@ -172,52 +171,22 @@ def build_retrieval_context(
         limit=limit
     )
 
-    context_lines = []
+    context = []
 
     for item in results:
 
-        try:
-
-            entry = item.get(
-                "entry",
-                {}
-            )
-
-            category = str(
-                entry.get(
-                    "category",
-                    "memory"
-                )
-            ).strip()
-
-            content = str(
-                entry.get(
-                    "content",
-                    ""
-                )
-            ).strip()
-
-            if not content:
-                continue
-
-            line = f"[{category}] {content}"
-
-            context_lines.append(line)
-
-        except Exception as e:
-
-            print(
-                "MEMORY CONTEXT FORMAT ERROR:",
-                e
-            )
-
-    if not context_lines:
-
-        return (
-            "No relevant memory context found."
+        entry = item.get(
+            "entry",
+            {}
         )
 
-    return "\n".join(context_lines)
+        context.append(str(entry))
+
+    return "\n".join(context)
+
+
+
+
 
 
 
