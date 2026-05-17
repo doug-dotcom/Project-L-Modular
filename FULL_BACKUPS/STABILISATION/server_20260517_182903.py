@@ -303,36 +303,6 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 # =====================================================
-# CONTINUITY SAFETY
-# =====================================================
-
-CONTINUITY_DIR = (
-    ROOT
-    / "memory"
-    / "continuity"
-)
-
-CONTINUITY_DIR.mkdir(
-    parents=True,
-    exist_ok=True
-)
-
-CONTINUITY_FILE = (
-    CONTINUITY_DIR
-    / "continuity_state.json"
-)
-
-if not CONTINUITY_FILE.exists():
-
-    CONTINUITY_FILE.write_text(
-        json.dumps({
-            "recent_topics": []
-        }),
-        encoding="utf-8"
-    )
-
-
-# =====================================================
 # MEMORY OBSERVABILITY
 # =====================================================
 
@@ -844,7 +814,6 @@ def memory_observability():
         return {
             "error": str(e)
         }
-
 
 
 
