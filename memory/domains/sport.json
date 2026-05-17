@@ -4,88 +4,117 @@
   "memories": [
     {
       "content": "User plays field hockey",
-      "importance": 0.7,
-      "category": "sport"
+      "importance": 0.76,
+      "category": "sport",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.151578"
     },
     {
       "content": "User does not play ice hockey",
-      "importance": 0.7,
-      "category": "sport"
+      "importance": 0.76,
+      "category": "sport",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.151587"
     },
     {
       "content": "The user plays division 7 hockey on Sundays.",
-      "importance": 0.7,
-      "category": "sport"
+      "importance": 0.76,
+      "category": "sport",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.151593"
     },
     {
       "content": "The user plays Masters 3 hockey on Tuesday nights.",
-      "importance": 0.7,
-      "category": "sport"
+      "importance": 0.76,
+      "category": "sport",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.151598"
     },
     {
       "content": "The user plays for Kedron Wavell Wolves hockey team.",
-      "importance": 0.7,
-      "category": "sport"
+      "importance": 0.76,
+      "category": "sport",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.151602"
     },
     {
       "content": "The user plays in Brisbane Masters hockey for age group 44-49.",
-      "importance": 0.7,
-      "category": "sport"
+      "importance": 0.76,
+      "category": "sport",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.151607"
+    },
+    {
+      "content": "User plays hockey",
+      "importance": 0.76,
+      "category": "sport",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.151618"
+    },
+    {
+      "content": "User plays division 7 hockey on Sundays and Masters 3 hockey on Tuesday nights for Kedron Wavell Wolves hockey team.",
+      "importance": 0.76,
+      "category": "sport",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.151624"
+    },
+    {
+      "content": "User plays in Brisbane Masters hockey for age group 44-49 and has been trying to make the Queensland team for the past 3 years.",
+      "importance": 0.76,
+      "category": "sport",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.151631"
+    },
+    {
+      "content": "User has an interest in hockey.",
+      "importance": 0.76,
+      "category": "sport",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.151636"
     },
     {
       "content": "User has a confirmed flight with Qantas Airways from Cairns (CNS) to Brisbane (BNE) on May 5, 2026.",
       "importance": 0.7,
-      "category": "sport"
+      "category": "sport",
+      "reinforcement": 0.0
     },
     {
-      "content": "User plays hockey",
-      "importance": 0.7,
-      "category": "sport"
-    },
-    {
-      "content": "User plays division 7 hockey on Sundays and Masters 3 hockey on Tuesday nights for Kedron Wavell Wolves hockey team.",
-      "importance": 0.7,
-      "category": "sport"
-    },
-    {
-      "content": "User plays in Brisbane Masters hockey for age group 44-49 and has been trying to make the Queensland team for the past 3 years.",
-      "importance": 0.7,
-      "category": "sport"
-    },
-    {
-      "content": "User has an interest in hockey.",
-      "importance": 0.7,
-      "category": "sport"
+      "content": "User has lived in various locations including Sunshine, Victoria and Albany Creek, Queensland.",
+      "importance": 0.56,
+      "category": "sport",
+      "reinforcement": 0.2,
+      "last_reinforced_at": "2026-05-17 22:21:52.151657"
     },
     {
       "content": "The user plays fullback in a sport that involves tackling near a circle.",
       "importance": 0.5,
-      "category": "sport"
+      "category": "sport",
+      "reinforcement": 0.0
     },
     {
       "content": "User does not play rugby",
       "importance": 0.5,
-      "category": "sport"
+      "category": "sport",
+      "reinforcement": 0.0
     },
     {
       "content": "The user is traveling from Brisbane (BNE) to Cairns (CNS)",
       "importance": 0.5,
-      "category": "sport"
+      "category": "sport",
+      "reinforcement": 0.0
     },
     {
       "content": "The user lives in Albany Creek, Queensland, a suburb of Brisbane.",
       "importance": 0.5,
-      "category": "sport"
-    },
-    {
-      "content": "User has lived in various locations including Sunshine, Victoria and Albany Creek, Queensland.",
-      "importance": 0.5,
-      "category": "sport"
+      "category": "sport",
+      "reinforcement": 0.0
     },
     {
       "content": "Mala is in grade 6, is 11 years old, and also plays netball.",
       "importance": 0.5,
-      "category": "sport"
+      "category": "sport",
+      "reinforcement": 0.0
     }
-  ]
+  ],
+  "reinforced_at": "2026-05-17 22:21:52.151671"
 }

@@ -1,0 +1,286 @@
+{
+  "domain": "family",
+  "memory_count": 56,
+  "memories": [
+    {
+      "content": "User has children who are the most important thing in their life.",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "User regularly plays PlayStation Fortnite, basketball, and watches movies with their kids.",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "User has 4 kids",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "User then moved to Ashland Street where the family rented a house",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "User's first house is at 102 Main Street, Alstonville, which is their family house",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "User has four children: Isla (17), Ashton (15), Luella (12), and Mala (11).",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "User currently does not care for their children full-time due to mental health issues, but their mental health is improving.",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "User hopes to care for their children 50% of the time in the future.",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "User spends time with their kids, especially Iyla and Luella.",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "User wants to transfer their memory to help write a book for their kids, grandchildren, and great-grandchildren.",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "User's first overseas trip was a family trip to Bali with parents (mum, dad) and siblings (Ken and Allison).",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "User went to Fiji again with family in 2015.",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "User was a Family Physician (FP) from April 2007 until December 2023.",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "User has children who are proud of their achievements.",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "Ashton has been diagnosed with ADHD.",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "User likes spending time with all their kids.",
+      "importance": 0.9,
+      "category": "family"
+    },
+    {
+      "content": "User refers to the life story as 'my Story' and prefers it saved in JSON format for future reference.",
+      "importance": 0.7,
+      "category": "family"
+    },
+    {
+      "content": "Luella is referred to as my favourite Alien due to her uniqueness.",
+      "importance": 0.7,
+      "category": "family"
+    },
+    {
+      "content": "Ashton is the user's favorite son.",
+      "importance": 0.7,
+      "category": "family"
+    },
+    {
+      "content": "User values personal boundaries in friendships.",
+      "importance": 0.7,
+      "category": "family"
+    },
+    {
+      "content": "Iyla is 17 years old and in Grade 12",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Ashton is 15 years old and in Grade 10",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Luella is 13 years old and will be graduating Grade 8 in June",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Mehlia is 11 years old and in Grade 6",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "User has equipped the assistant with a memory feature to maintain a life story JSON file.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "User has three siblings: David, a half brother 17 years older; Ken, a full brother 7 years older; and Allison, a sister 4 years older.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Lyndal Harris is your support person who helps you with life admin",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Ashton has just started playing basketball and has had a couple of girlfriends and one kiss.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Luella is turning 13 on June 13 this year and has been players player in netball year on year.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Luella plays Centre in netball and is considered an awesome player.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Mala looks up to her older sister Luella and is bigger in size than her.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Started with ANZ as a personal banker in December 2006",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Iyla is very smart and an A student.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Iyla owns her own car.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Iyla's best friends are Emma and Sienna.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Iyla is in year 12 at Albany Creek State High.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Iyla's boyfriend is Connor.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Ashton is in grade 10 at Albany Creek State High (ACSH).",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Ashton is highly intelligent and receives A's at school.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Ashton has started going to the gym and is getting fit.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Luella is in grade 8 at ACSH.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Luella's friends are Sophie and Mikala.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "The user is extremely close to Luella.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Luella plays Fortnite with the user.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Luella is a superstar at Netball.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Luella has received best and fairest for her netball team ACE 4 out of the last 5 years.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Luella plays the position of centre in netball.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Luella helps the user by washing and folding laundry.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Luella is described as having a very kind heart.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Mehlia is the youngest and wildest child of the user.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Mehlia has ADHD.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Mehlia is in grade 6 at All Saints Primary Albany Creek.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Mehlia loves her mother very much.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Mehlia plays Netball and is a great player.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Mehlia plays for ACE.",
+      "importance": 0.5,
+      "category": "family"
+    },
+    {
+      "content": "Mehlia likes to ride her scooter with her friends.",
+      "importance": 0.5,
+      "category": "family"
+    }
+  ]
+}
