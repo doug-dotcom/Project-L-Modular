@@ -683,25 +683,12 @@ def chat(req: ChatRequest):
         )
     )
 
-    retrieval_context = (
+    memory_context = (
         runtime_package.get(
             "context",
             ""
         )
     )
-
-    memory_context = f"""
-
-IDENTITY MEMORY:
-{identity_context}
-
-RUNTIME CONTINUITY:
-{runtime_continuity}
-
-RETRIEVAL MEMORY:
-{retrieval_context}
-
-""".strip()
 
     confidence_layer = (
         runtime_package.get(
@@ -725,11 +712,6 @@ CONFIDENCE RULES:
 - Prefer grounded synthesis over confident guessing.
 - If uncertain, say you are uncertain.
 - Prioritise continuity, accuracy and honesty.
-
-IMPORTANT:
-- Identity memory is considered high-confidence continuity memory.
-- Do NOT suppress identity continuity unless directly contradicted.
-- Family, core values, projects and known identity anchors should be treated as persistent memory.
 
 MEMORY:
 {memory_context}
@@ -867,7 +849,6 @@ def memory_observability():
         return {
             "error": str(e)
         }
-
 
 
 
