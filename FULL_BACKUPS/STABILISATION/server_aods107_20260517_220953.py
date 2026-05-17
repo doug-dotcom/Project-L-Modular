@@ -446,12 +446,6 @@ from memory.memory_classifier import (
     classifier_status
 )
 
-from memory.memory_compression import (
-    compress_pending_memories,
-    compression_status
-)
-
-
 
 
 
@@ -998,7 +992,6 @@ def memory_observability():
         return {
             "error": str(e)
         }
-
 
 
 
