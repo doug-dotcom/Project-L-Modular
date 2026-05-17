@@ -1,11 +1,10 @@
 # ============================================================
-# DEEP DOMAIN COGNITION RUNTIME
-# AODS-104
+# DOMAIN COGNITION RUNTIME
+# AODS-103
 # ============================================================
 
 import json
 from pathlib import Path
-from collections import defaultdict
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -16,7 +15,7 @@ DOMAIN_DIR = (
 )
 
 # ============================================================
-# LOAD DOMAINS
+# LOAD ALL DOMAINS
 # ============================================================
 
 def load_domains():
@@ -37,7 +36,9 @@ def load_domains():
                 )
             )
 
-            domains[file.stem] = data
+            domain_name = file.stem
+
+            domains[domain_name] = data
 
         except Exception as e:
 
@@ -50,14 +51,14 @@ def load_domains():
     return domains
 
 # ============================================================
-# SEMANTIC DOMAIN DETECTION
+# SIMPLE DOMAIN MATCHING
 # ============================================================
 
 def detect_relevant_domains(user_msg):
 
     text = str(user_msg).lower()
 
-    matches = set()
+    matches = []
 
     DOMAIN_KEYWORDS = {
 
@@ -65,50 +66,42 @@ def detect_relevant_domains(user_msg):
             "kids",
             "children",
             "family",
-            "daughter",
-            "son",
             "iyla",
             "ashton",
             "luella",
-            "mehlia",
-            "ages",
-            "old",
-            "grade"
+            "mehlia"
         ],
 
         "identity": [
             "who am i",
             "about me",
             "name",
-            "identity",
-            "values"
-        ],
-
-        "work": [
-            "work",
-            "career",
-            "job",
-            "tpd",
-            "insurance",
-            "zurich",
-            "claim",
-            "financial"
+            "values",
+            "identity"
         ],
 
         "health": [
             "health",
             "mental",
-            "adhd",
             "doctor",
             "therapy",
+            "adhd",
             "cptsd"
         ],
 
         "sport": [
-            "sport",
             "hockey",
-            "masters",
-            "fullback"
+            "sport",
+            "fullback",
+            "masters"
+        ],
+
+        "work": [
+            "tpd",
+            "insurance",
+            "zurich",
+            "claim",
+            "work"
         ]
     }
 
@@ -118,24 +111,18 @@ def detect_relevant_domains(user_msg):
 
             if keyword in text:
 
-                matches.add(domain)
+                matches.append(domain)
 
-    # ========================================================
-    # IMPORTANT:
-    # identity + general always loaded
-    # ========================================================
-
-    matches.add("identity")
-    matches.add("general")
+                break
 
     if not matches:
 
-        matches.add("general")
+        matches.append("general")
 
-    return list(matches)
+    return matches
 
 # ============================================================
-# BUILD COGNITION CONTEXT
+# BUILD MEMORY CONTEXT
 # ============================================================
 
 def build_domain_memory_context(user_msg):
@@ -146,11 +133,7 @@ def build_domain_memory_context(user_msg):
         user_msg
     )
 
-    grouped = defaultdict(list)
-
-    # ========================================================
-    # LOAD DOMAIN MEMORIES
-    # ========================================================
+    context_lines = []
 
     for domain_name in relevant_domains:
 
@@ -164,73 +147,21 @@ def build_domain_memory_context(user_msg):
             []
         )
 
-        for mem in memories:
-
-            try:
-
-                content = str(
-                    mem.get(
-                        "content",
-                        ""
-                    )
-                ).strip()
-
-                importance = float(
-                    mem.get(
-                        "importance",
-                        0
-                    ) or 0
-                )
-
-                if not content:
-                    continue
-
-                grouped[domain_name].append({
-
-                    "content": content,
-
-                    "importance": importance
-                })
-
-            except Exception:
-                pass
-
-    # ========================================================
-    # SORT BY IMPORTANCE
-    # ========================================================
-
-    for domain_name in grouped:
-
-        grouped[domain_name].sort(
-
-            key=lambda x: x.get(
-                "importance",
-                0
-            ),
-
-            reverse=True
-        )
-
-    # ========================================================
-    # BUILD PROMPT CONTEXT
-    # ========================================================
-
-    context_lines = []
-
-    for domain_name, memories in grouped.items():
+        if not memories:
+            continue
 
         context_lines.append(
             f"[{domain_name.upper()}]"
         )
 
-        count = 0
+        for mem in memories[:20]:
 
-        for mem in memories:
-
-            content = mem.get(
-                "content",
-                ""
-            )
+            content = str(
+                mem.get(
+                    "content",
+                    ""
+                )
+            ).strip()
 
             if not content:
                 continue
@@ -239,17 +170,10 @@ def build_domain_memory_context(user_msg):
                 f"- {content}"
             )
 
-            count += 1
-
-            if count >= 40:
-                break
-
-        context_lines.append("")
-
     if not context_lines:
 
         return (
-            "No cognition memory loaded."
+            "No cognition memory available."
         )
 
     return "\n".join(context_lines)
@@ -266,11 +190,11 @@ def cognition_runtime_status():
 
         "status": "online",
 
-        "domain_count": len(domains),
-
         "domains_loaded": list(
             domains.keys()
         ),
 
-        "operation": "AODS104"
+        "domain_count": len(domains),
+
+        "operation": "AODS103"
     }
