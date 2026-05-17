@@ -6,11 +6,7 @@
 import json
 from pathlib import Path
 
-ROOT = (
-    Path(__file__)
-    .resolve()
-    .parents[2]
-)
+ROOT = Path(r"C:\Shine_L")
 
 PATTERNS_FILE = ROOT / "memory" / "patterns" / "memory_patterns.json"
 OUTCOMES_FILE = ROOT / "memory" / "patterns" / "memory_outcomes.json"
@@ -88,4 +84,3 @@ def pattern_status():
         "patterns_type": type(patterns).__name__,
         "outcomes_type": type(outcomes).__name__
     }
-

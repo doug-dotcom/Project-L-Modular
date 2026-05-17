@@ -7,7 +7,11 @@ import json
 from pathlib import Path
 from datetime import datetime
 
-ROOT = Path(r"C:\Shine_L")
+ROOT = (
+    Path(__file__)
+    .resolve()
+    .parents[2]
+)
 
 STATE_FILE = (
     ROOT
@@ -98,3 +102,4 @@ def evolution_status():
 
         "operation": "AODS99"
     }
+

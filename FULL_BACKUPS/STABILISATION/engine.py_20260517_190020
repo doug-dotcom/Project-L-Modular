@@ -8,11 +8,7 @@ from pathlib import Path
 
 from supabase import create_client
 
-ROOT = (
-    Path(__file__)
-    .resolve()
-    .parents[2]
-)
+ROOT = Path(r"C:\Shine_L")
 
 IDENTITY_FILE = (
     ROOT
@@ -169,4 +165,3 @@ def sync_status():
             IDENTITY_FILE
         )
     }
-

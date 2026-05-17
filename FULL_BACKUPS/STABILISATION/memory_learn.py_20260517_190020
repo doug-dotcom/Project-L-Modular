@@ -7,11 +7,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 
-ROOT = (
-    Path(__file__)
-    .resolve()
-    .parents[2]
-)
+ROOT = Path(r"C:\Shine_L")
 
 LEARNING_FILE = (
     ROOT
@@ -148,4 +144,3 @@ def learning_status():
 
         "operation": "AODS96"
     }
-

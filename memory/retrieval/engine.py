@@ -57,7 +57,11 @@ from orchestration.lieutenants.retrieval_lieutenant import (
     RETRIEVAL_LIEUTENANT,
 )
 
-ROOT = Path(r"C:\Shine_L")
+ROOT = (
+    Path(__file__)
+    .resolve()
+    .parents[2]
+)
 
 PATTERNS_FILE = (
     ROOT
@@ -285,6 +289,7 @@ def build_retrieval_context(
         )
 
     return "\n".join(context_lines)
+
 
 
 
