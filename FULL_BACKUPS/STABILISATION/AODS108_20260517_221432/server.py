@@ -451,12 +451,6 @@ from memory.memory_compression import (
     compression_status
 )
 
-from memory.domain_updater import (
-    safe_update_domains,
-    domain_updater_status
-)
-
-
 
 
 
@@ -1004,7 +998,6 @@ def memory_observability():
         return {
             "error": str(e)
         }
-
 
 
 
