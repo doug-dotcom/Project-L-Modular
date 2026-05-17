@@ -437,11 +437,6 @@ from memory.domain_runtime import (
     cognition_runtime_status
 )
 
-from memory.memory_queue import (
-    queue_memory_candidate
-)
-
-
 
 
 
@@ -780,10 +775,6 @@ def chat(req: ChatRequest):
         user_message
     )
 
-    queue_memory_candidate(
-        user_message
-    )
-
     if importance >= 8:
 
         store_long_term_memory(
@@ -986,7 +977,6 @@ def memory_observability():
         return {
             "error": str(e)
         }
-
 
 
 
