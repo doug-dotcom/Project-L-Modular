@@ -808,24 +808,6 @@ def chat(req: ChatRequest):
         user_message
     )
 
-    print("QUEUE EXECUTED")
-
-    classify_pending_queue()
-
-    print("CLASSIFIER EXECUTED")
-
-    compress_pending_memories()
-
-    print("COMPRESSION EXECUTED")
-
-    safe_update_domains()
-
-    print("DOMAIN WRITEBACK EXECUTED")
-
-    reinforce_domains()
-
-    print("REINFORCEMENT EXECUTED")
-
     if importance >= 8:
 
         store_long_term_memory(
@@ -839,10 +821,6 @@ def chat(req: ChatRequest):
             user_message
         )
     )
-
-    print("MEMORY CONTEXT BUILT")
-
-    print(memory_context[:2000])
 
     log_runtime_event({
 
@@ -1182,6 +1160,5 @@ def memory_review():
 
             "error": str(e)
         }
-
 
 
