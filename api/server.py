@@ -371,6 +371,12 @@ from core.memory_engine import (
     memory_stats
 )
 
+from memory.local_runtime import (
+    process,
+    build_context
+)
+
+
 # =====================================================
 # OPENAI
 # =====================================================
@@ -808,6 +814,7 @@ def memory_observability():
         return {
             "error": str(e)
         }
+
 
 
 
