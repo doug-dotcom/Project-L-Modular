@@ -495,118 +495,42 @@ except Exception as e:
 # MEMORY RETRIEVAL
 # =====================================================
 
-def fetch_relevant_memories(user_message, limit=12):
+def fetch_relevant_memories(user_message, limit=5):
 
     if not supabase:
         return []
 
     try:
 
-        q = str(user_message or "").lower()
+        result = (
+            supabase
+            .table("memories")
+            .select("category, content")
+            .ilike("content", f"%{user_message}%")
+            .limit(limit)
+            .execute()
+        )
 
-        semantic_map = {
-            "family": [
-                "family", "children", "kids", "child", "son", "daughter",
-                "iyla", "ashton", "luella", "mehlia", "ages", "old", "grade"
-            ],
-            "insurance": [
-                "tpd", "insurance", "zurich", "claim", "policy", "ime",
-                "medical", "retired", "will"
-            ],
-            "sport": [
-                "sport", "hockey", "field hockey", "fullback", "masters"
-            ],
-            "project": [
-                "project l", "shine", "orchestration", "memory", "supabase",
-                "runtime", "captains", "tegan", "dynamic modular"
-            ],
-            "identity": [
-                "name", "doug", "values", "age", "single", "identity",
-                "who am i", "about me"
-            ]
-        }
+        if result.data:
+            return result.data
 
-        search_terms = set()
+        words = user_message.lower().split()
 
-        for word in q.replace("?", " ").replace(",", " ").split():
-            if len(word) > 2:
-                search_terms.add(word)
+        for word in words:
 
-        for domain, terms in semantic_map.items():
-            if domain in q or any(t in q for t in terms):
-                search_terms.update(terms)
-                search_terms.add(domain)
+            result = (
+                supabase
+                .table("memories")
+                .select("category, content")
+                .ilike("category", f"%{word}%")
+                .limit(limit)
+                .execute()
+            )
 
-        rows_by_id = {}
+            if result.data:
+                return result.data
 
-        def add_rows(rows):
-            for row in rows or []:
-                rid = str(row.get("id", row.get("content", "")))
-                if rid:
-                    clean = {
-                        "id": row.get("id"),
-                        "type": row.get("type"),
-                        "category": row.get("category", "memory"),
-                        "content": row.get("content", ""),
-                        "importance": row.get("importance", row.get("rank", 0)),
-                        "metadata": row.get("metadata", {})
-                    }
-                    rows_by_id[rid] = clean
-
-        # 1. Category match
-        for term in list(search_terms)[:30]:
-            try:
-                result = (
-                    supabase
-                    .table("memories")
-                    .select("id,type,category,content,importance,metadata")
-                    .ilike("category", f"%{term}%")
-                    .limit(limit)
-                    .execute()
-                )
-                add_rows(result.data)
-            except Exception:
-                pass
-
-        # 2. Content match
-        for term in list(search_terms)[:30]:
-            try:
-                result = (
-                    supabase
-                    .table("memories")
-                    .select("id,type,category,content,importance,metadata")
-                    .ilike("content", f"%{term}%")
-                    .limit(limit)
-                    .execute()
-                )
-                add_rows(result.data)
-            except Exception:
-                pass
-
-        rows = list(rows_by_id.values())
-
-        def score(row):
-            text = (
-                str(row.get("category", "")) + " " +
-                str(row.get("content", ""))
-            ).lower()
-
-            s = 0
-
-            for term in search_terms:
-                if term and term in text:
-                    s += 3
-
-            try:
-                s += int(row.get("importance") or 0)
-            except Exception:
-                pass
-
-            return s
-
-        rows.sort(key=score, reverse=True)
-
-        return rows[:limit]
+        return []
 
     except Exception as e:
 
@@ -623,35 +547,16 @@ def format_memory_context(memories):
     if not memories:
         return "No relevant long-term memories found."
 
-    grouped = {}
+    lines = []
 
     for mem in memories:
 
-        category = str(
-            mem.get("category", "memory")
-        ).strip()
+        content = mem.get("content", "")
+        category = mem.get("category", "general")
 
-        content = str(
-            mem.get("content", "")
-        ).strip()
-
-        if not content:
-            continue
-
-        if category not in grouped:
-            grouped[category] = []
-
-        if content not in grouped[category]:
-            grouped[category].append(content)
-
-    lines = []
-
-    for category, items in grouped.items():
-
-        lines.append(f"[{category}]")
-
-        for item in items[:8]:
-            lines.append(f"- {item}")
+        lines.append(
+            f"- ({category}) {content}"
+        )
 
     return "\n".join(lines)
 
@@ -993,7 +898,6 @@ def memory_observability():
         return {
             "error": str(e)
         }
-
 
 
 
