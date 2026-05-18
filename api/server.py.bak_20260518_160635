@@ -771,75 +771,6 @@ def health():
         "memory_stats": memory_stats()
     }
 
-
-# =====================================================
-# CANONICAL CATCHALL MEMORY WRITER
-# Source-truth raw conversation log
-# =====================================================
-
-def write_catchall_memory(role, content, source="chat"):
-
-    try:
-
-        from datetime import datetime
-        import json
-
-        catchall_path = ROOT / "memory" / "Catchall.json"
-
-        catchall_path.parent.mkdir(
-            parents=True,
-            exist_ok=True
-        )
-
-        data = []
-
-        if catchall_path.exists():
-
-            try:
-
-                data = json.loads(
-                    catchall_path.read_text(
-                        encoding="utf-8"
-                    )
-                )
-
-                if not isinstance(data, list):
-                    data = []
-
-            except Exception:
-                data = []
-
-        entry = {
-            "timestamp": datetime.now().isoformat(),
-            "source": source,
-            "role": str(role),
-            "content": str(content)
-        }
-
-        data.append(entry)
-
-        data = data[-20000:]
-
-        catchall_path.write_text(
-            json.dumps(
-                data,
-                indent=2,
-                ensure_ascii=False
-            ),
-            encoding="utf-8"
-        )
-
-        return True
-
-    except Exception as e:
-
-        try:
-            log_exception(f"CATCHALL WRITE FAILED: {e}")
-        except Exception:
-            print(f"CATCHALL WRITE FAILED: {e}")
-
-        return False
-
 # =====================================================
 # CHAT
 # =====================================================
@@ -850,11 +781,6 @@ def chat(req: ChatRequest):
     user_message = req.message.strip()
 
     log_info(f"CHAT REQUEST: {user_message[:80]}")
-
-    write_catchall_memory(
-        "user",
-        user_message
-    )
 
     save_memory(
         "session",
@@ -1297,5 +1223,4 @@ async def upload_file(file: UploadFile = File(...)):
             "success": False,
             "error": str(e)
         }
-
 
