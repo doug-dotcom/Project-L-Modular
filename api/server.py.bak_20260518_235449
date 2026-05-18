@@ -3,7 +3,6 @@ import sys
 import json
 from pathlib import Path
 from datetime import datetime
-from zoneinfo import ZoneInfo
 
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
@@ -286,29 +285,8 @@ def chat(req: ChatRequest):
 
     memory_context = build_memory_context(user_message)
 
-    brisbane_now = datetime.now(
-        ZoneInfo("Australia/Brisbane")
-    )
-
-    current_date = brisbane_now.strftime(
-        "%A %d %B %Y"
-    )
-
-    current_time = brisbane_now.strftime(
-        "%I:%M %p"
-    )
-
     system_prompt = f"""
 You are L.
-
-CURRENT DATE:
-{current_date}
-
-CURRENT TIME:
-{current_time}
-
-TIMEZONE:
-Australia/Brisbane
 
 You are Doug's calm, grounded Project L companion.
 
@@ -395,4 +373,3 @@ async def upload_file(file: UploadFile = File(...)):
             "success": False,
             "error": str(e)
         }
-
