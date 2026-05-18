@@ -1,0 +1,44 @@
+[
+  {
+    "timestamp": "2026-05-16T14:09:09.012594",
+    "content": {
+      "role": "user",
+      "content": "Hello L this is the first memory smoke test."
+    }
+  },
+  {
+    "timestamp": "2026-05-16T14:09:12.258223",
+    "content": {
+      "role": "assistant",
+      "content": "Hello! I remember you mentioning that this is your first memory smoke test. How can I assist you with it today?"
+    }
+  },
+  {
+    "timestamp": "2026-05-16T14:17:56.789018",
+    "content": {
+      "role": "user",
+      "content": "Hello L. This is a full endpoint smoke test."
+    }
+  },
+  {
+    "timestamp": "2026-05-16T14:17:59.483193",
+    "content": {
+      "role": "assistant",
+      "content": "Hello! I remember you mentioning that this is your first memory smoke test. How can I assist you with it today?"
+    }
+  },
+  {
+    "timestamp": "2026-05-16T14:55:50.817066",
+    "content": {
+      "role": "user",
+      "content": "are you there L"
+    }
+  },
+  {
+    "timestamp": "2026-05-16T14:55:54.228815",
+    "content": {
+      "role": "assistant",
+      "content": "Hello! Yes, I'm here. How can I assist you today?"
+    }
+  }
+]
