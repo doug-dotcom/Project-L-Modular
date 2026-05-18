@@ -473,12 +473,6 @@ from memory.memory_reinforcement import (
 
 
 
-
-from memory.memory_engine import (
-    save_to_catchall,
-    memory_engine_status
-)
-
 from memory.local_runtime import (
     process,
     build_context
@@ -769,12 +763,6 @@ def root():
 @app.get("/health")
 def health():
 
-    
-    save_to_catchall(
-        "assistant",
-        reply
-    )
-
     return {
         "status": "ok",
         "openai_ready": bool(client),
@@ -965,12 +953,6 @@ IDENTITY CONTEXT:
         }
     )
 
-    
-    save_to_catchall(
-        "assistant",
-        reply
-    )
-
     return {
         "reply": reply,
         "memory_wired": True,
@@ -990,13 +972,7 @@ def memory_test():
 
     if not supabase:
 
-        
-    save_to_catchall(
-        "assistant",
-        reply
-    )
-
-    return {
+        return {
             "connected": False
         }
 
@@ -1010,13 +986,7 @@ def memory_test():
             .execute()
         )
 
-        
-    save_to_catchall(
-        "assistant",
-        reply
-    )
-
-    return {
+        return {
             "connected": True,
             "rows": len(result.data),
             "sample": result.data
@@ -1024,13 +994,7 @@ def memory_test():
 
     except Exception as e:
 
-        
-    save_to_catchall(
-        "assistant",
-        reply
-    )
-
-    return {
+        return {
             "connected": False,
             "error": str(e)
         }
@@ -1054,13 +1018,7 @@ def memory_observability():
 
         if not OBS_PATH.exists():
 
-            
-    save_to_catchall(
-        "assistant",
-        reply
-    )
-
-    return {
+            return {
                 "events": []
             }
 
@@ -1072,25 +1030,13 @@ def memory_observability():
             )
         )
 
-        
-    save_to_catchall(
-        "assistant",
-        reply
-    )
-
-    return {
+        return {
             "events": data[-25:]
         }
 
     except Exception as e:
 
-        
-    save_to_catchall(
-        "assistant",
-        reply
-    )
-
-    return {
+        return {
             "error": str(e)
         }
 
@@ -1213,13 +1159,7 @@ def memory_review():
 
         recent = queue[-20:]
 
-        
-    save_to_catchall(
-        "assistant",
-        reply
-    )
-
-    return {
+        return {
 
             "status": "online",
 
@@ -1236,19 +1176,12 @@ def memory_review():
 
     except Exception as e:
 
-        
-    save_to_catchall(
-        "assistant",
-        reply
-    )
-
-    return {
+        return {
 
             "status": "error",
 
             "error": str(e)
         }
-
 
 
 
