@@ -840,50 +840,6 @@ def write_catchall_memory(role, content, source="chat"):
 
         return False
 
-
-# =====================================================
-# SUPABASE RAW CATCHALL MEMORY
-# Canonical source-truth memory layer
-# =====================================================
-
-def write_raw_catchall_supabase(role, content, source="chat"):
-
-    try:
-
-        if not supabase:
-            log_error("RAW CATCHALL SKIPPED: Supabase not connected")
-            return False
-
-        from datetime import datetime
-
-        payload = {
-            "timestamp": datetime.now().isoformat(),
-            "source": str(source),
-            "role": str(role),
-            "content": str(content)
-        }
-
-        supabase.table(
-            "raw_catchall"
-        ).insert(
-            payload
-        ).execute()
-
-        print(
-            f"RAW CATCHALL WRITE: {role} -> {str(content)[:80]}"
-        )
-
-        return True
-
-    except Exception as e:
-
-        try:
-            log_exception(f"RAW CATCHALL WRITE FAILED: {e}")
-        except Exception:
-            print(f"RAW CATCHALL WRITE FAILED: {e}")
-
-        return False
-
 # =====================================================
 # CHAT
 # =====================================================
@@ -894,11 +850,6 @@ def chat(req: ChatRequest):
     user_message = req.message.strip()
 
     log_info(f"CHAT REQUEST: {user_message[:80]}")
-
-    write_raw_catchall_supabase(
-        "user",
-        user_message
-    )
 
     write_catchall_memory(
         "user",
@@ -1351,7 +1302,6 @@ async def upload_file(file: UploadFile = File(...)):
             "success": False,
             "error": str(e)
         }
-
 
 
 
