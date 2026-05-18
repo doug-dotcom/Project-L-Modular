@@ -884,57 +884,6 @@ def write_raw_catchall_supabase(role, content, source="chat"):
 
         return False
 
-
-# =====================================================
-# RAW CATCHALL MEMORY WRITER
-# =====================================================
-
-def write_raw_catchall(
-    role,
-    content,
-    source="chat"
-):
-
-    try:
-
-        if not supabase:
-
-            print(
-                "RAW CATCHALL: SUPABASE NOT CONNECTED"
-            )
-
-            return False
-
-        payload = {
-
-            "role": str(role),
-
-            "source": str(source),
-
-            "content": str(content)
-
-        }
-
-        supabase.table(
-            "raw_catchall"
-        ).insert(
-            payload
-        ).execute()
-
-        print(
-            f"RAW CATCHALL WRITE: {role}"
-        )
-
-        return True
-
-    except Exception as e:
-
-        print(
-            f"RAW CATCHALL ERROR: {e}"
-        )
-
-        return False
-
 # =====================================================
 # CHAT
 # =====================================================
@@ -1407,7 +1356,6 @@ async def upload_file(file: UploadFile = File(...)):
             "success": False,
             "error": str(e)
         }
-
 
 
 
