@@ -102,7 +102,7 @@ def reinforce_memory(text):
 
             for trigger in triggers:
 
-                if trigger in text_lower and len(trigger) > 4:
+                if trigger in text_lower:
 
                     if domain not in data:
 
@@ -148,5 +148,4 @@ def learning_status():
 
         "operation": "AODS96"
     }
-
 
