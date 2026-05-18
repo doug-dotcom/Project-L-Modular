@@ -856,11 +856,6 @@ def chat(req: ChatRequest):
         user_message
     )
 
-    write_catchall_memory(
-        "user",
-        user_message
-    )
-
     save_memory(
         "session",
         {
@@ -1302,6 +1297,5 @@ async def upload_file(file: UploadFile = File(...)):
             "success": False,
             "error": str(e)
         }
-
 
 
