@@ -15,7 +15,6 @@ EPISODIC_FILE   = os.path.join(MEMORY_DIR, "episodic.json")
 EMOTIONAL_FILE  = os.path.join(MEMORY_DIR, "emotional.json")
 STRUCTURED_FILE = os.path.join(MEMORY_DIR, "structured.json")
 SESSION_FILE    = os.path.join(MEMORY_DIR, "session.json")
-CATCHALL_FILE   = os.path.join(MEMORY_DIR, "Catchall.json")
 
 # =========================================================
 # SAFE LOAD
@@ -125,42 +124,6 @@ def save_memory(memory_type, content):
 
     safe_save(path, existing)
 
-
-    # -----------------------------------------------------
-    # CANONICAL CATCHALL
-    # -----------------------------------------------------
-
-    try:
-
-        catchall = safe_load(
-            CATCHALL_FILE,
-            []
-        )
-
-        catchall_entry = {
-            "timestamp": timestamp,
-            "memory_type": memory_type,
-            "content": content
-        }
-
-        catchall.append(
-            catchall_entry
-        )
-
-        catchall = catchall[-20000:]
-
-        safe_save(
-            CATCHALL_FILE,
-            catchall
-        )
-
-    except Exception as e:
-
-        print(
-            f"[CATCHALL ERROR] {e}"
-        )
-
-
     return True
 
 # =========================================================
@@ -255,4 +218,3 @@ if __name__ == "__main__":
     print("")
     print("Memory engine ready.")
     print("")
-
