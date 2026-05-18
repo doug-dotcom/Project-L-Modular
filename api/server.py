@@ -965,6 +965,22 @@ def chat(req: ChatRequest):
         "user",
         user_message
     )
+    write_raw_catchall(
+        "assistant",
+        reply
+    )
+
+    write_raw_catchall_supabase(
+        "assistant",
+        reply
+    )
+
+    write_catchall_memory(
+        "assistant",
+        reply
+    )
+
+
 
     save_memory(
         "session",
