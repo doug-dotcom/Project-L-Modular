@@ -1139,21 +1139,6 @@ IDENTITY CONTEXT:
 
             reply = response.choices[0].message.content
 
-            write_raw_catchall(
-                "assistant",
-                reply
-            )
-
-            write_raw_catchall_supabase(
-                "assistant",
-                reply
-            )
-
-            write_catchall_memory(
-                "assistant",
-                reply
-            )
-
         except Exception as e:
 
             log_exception(f"CHAT FAILURE: {e}")
@@ -1438,7 +1423,6 @@ async def upload_file(file: UploadFile = File(...)):
             "success": False,
             "error": str(e)
         }
-
 
 
 
