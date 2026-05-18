@@ -200,7 +200,7 @@ def build_supabase_memory_context(
 
         result = (
             supabase
-            .table("raw_catchall")
+            .table("memories")
             .select("*")
             .limit(limit)
             .execute()
@@ -594,7 +594,7 @@ def fetch_relevant_memories(user_message, limit=12):
             try:
                 result = (
                     supabase
-                    .table("raw_catchall")
+                    .table("memories")
                     .select("id,type,category,content,importance,metadata")
                     .ilike("category", f"%{term}%")
                     .limit(limit)
@@ -609,7 +609,7 @@ def fetch_relevant_memories(user_message, limit=12):
             try:
                 result = (
                     supabase
-                    .table("raw_catchall")
+                    .table("memories")
                     .select("id,type,category,content,importance,metadata")
                     .ilike("content", f"%{term}%")
                     .limit(limit)
@@ -895,11 +895,6 @@ def chat(req: ChatRequest):
 
     log_info(f"CHAT REQUEST: {user_message[:80]}")
 
-    write_raw_catchall(
-        "user",
-        user_message
-    )
-
     write_raw_catchall_supabase(
         "user",
         user_message
@@ -1113,7 +1108,7 @@ def memory_test():
 
         result = (
             supabase
-            .table("raw_catchall")
+            .table("memories")
             .select("*")
             .limit(3)
             .execute()
@@ -1356,7 +1351,6 @@ async def upload_file(file: UploadFile = File(...)):
             "success": False,
             "error": str(e)
         }
-
 
 
 
