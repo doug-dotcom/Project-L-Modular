@@ -262,7 +262,7 @@ import os
 import sys
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -1184,4 +1184,43 @@ def memory_review():
         }
 
 
+
+
+
+
+# =====================================================
+# FILE UPLOAD
+# =====================================================
+
+@app.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+
+    try:
+
+        upload_dir = ROOT / "uploads"
+
+        upload_dir.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        file_path = upload_dir / file.filename
+
+        content = await file.read()
+
+        with open(file_path, "wb") as f:
+            f.write(content)
+
+        return {
+            "success": True,
+            "filename": file.filename,
+            "path": str(file_path)
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "error": str(e)
+        }
 
