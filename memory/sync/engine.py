@@ -1,172 +1,102 @@
-# ============================================================
-# MEMORY SYNC ENGINE
-# AODS-93
-# ============================================================
-
-import json
-from pathlib import Path
-
 from supabase import create_client
+from dotenv import load_dotenv
+from pathlib import Path
+import os
+import json
+from datetime import datetime
 
-ROOT = (
-    Path(__file__)
-    .resolve()
-    .parents[2]
+# ============================================
+# LOAD ENV
+# ============================================
+
+ROOT = Path("C:/Shine_L")
+
+load_dotenv(ROOT / ".env")
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    print("ERROR: Missing Supabase credentials")
+    exit()
+
+# ============================================
+# CONNECT
+# ============================================
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# ============================================
+# PATHS
+# ============================================
+
+pending_path = ROOT / "memory" / "pending" / "pending_memory_queue.json"
+
+if not pending_path.exists():
+    pending_path.write_text("[]", encoding="utf-8")
+
+# ============================================
+# LOAD EXISTING MEMORY
+# ============================================
+
+try:
+    existing = json.loads(pending_path.read_text(encoding="utf-8"))
+except:
+    existing = []
+
+existing_ids = set()
+
+for item in existing:
+    if "id" in item:
+        existing_ids.add(item["id"])
+
+# ============================================
+# PULL FROM SUPABASE
+# ============================================
+
+print("Pulling memories from Supabase...")
+
+response = (
+    supabase
+    .table("raw_catchall")
+    .select("*")
+    .order("created_at")
+    .execute()
 )
 
-IDENTITY_FILE = (
-    ROOT
-    / "memory"
-    / "identity.json"
-)
+rows = response.data
 
-def build_supabase():
+new_rows = []
 
-    try:
+for row in rows:
 
-        import os
+    row_id = row.get("id")
 
-        url = os.getenv(
-            "SUPABASE_URL",
-            ""
-        )
+    if row_id not in existing_ids:
+        new_rows.append(row)
 
-        key = os.getenv(
-            "SUPABASE_KEY",
-            ""
-        )
+# ============================================
+# APPEND NEW ROWS
+# ============================================
 
-        if not url or not key:
-            return None
+if new_rows:
 
-        return create_client(
-            url,
-            key
-        )
+    existing.extend(new_rows)
 
-    except Exception as e:
+    pending_path.write_text(
+        json.dumps(existing, indent=2, ensure_ascii=False),
+        encoding="utf-8"
+    )
 
-        print(
-            "SYNC SUPABASE ERROR:",
-            e
-        )
+    print(f"SUCCESS: Added {len(new_rows)} new memories.")
 
-        return None
+else:
+    print("No new memories found.")
 
-def load_identity():
+print(f"Total pending memories: {len(existing)}")
 
-    try:
+# ============================================
+# DONE
+# ============================================
 
-        if not IDENTITY_FILE.exists():
-            return {}
-
-        return json.loads(
-            IDENTITY_FILE.read_text(
-                encoding="utf-8"
-            )
-        )
-
-    except Exception as e:
-
-        print(
-            "IDENTITY LOAD ERROR:",
-            e
-        )
-
-        return {}
-
-def flatten_identity(data):
-
-    rows = []
-
-    try:
-
-        for category, value in data.items():
-
-            if isinstance(value, dict):
-
-                for subkey, subvalue in value.items():
-
-                    if isinstance(subvalue, list):
-
-                        for item in subvalue:
-
-                            rows.append({
-
-                                "category": category,
-
-                                "content": str(item),
-
-                                "importance": 10
-                            })
-
-                    else:
-
-                        rows.append({
-
-                            "category": category,
-
-                            "content": f"{subkey}: {subvalue}",
-
-                            "importance": 8
-                        })
-
-    except Exception as e:
-
-        print(
-            "FLATTEN ERROR:",
-            e
-        )
-
-    return rows
-
-def sync_identity_to_supabase():
-
-    supabase = build_supabase()
-
-    if not supabase:
-        return {
-            "status": "failed",
-            "reason": "no_supabase"
-        }
-
-    identity = load_identity()
-
-    rows = flatten_identity(identity)
-
-    synced = 0
-
-    for row in rows:
-
-        try:
-
-            supabase.table(
-                "memories"
-            ).insert(
-                row
-            ).execute()
-
-            synced += 1
-
-        except Exception as e:
-
-            print(
-                "SYNC ROW ERROR:",
-                e
-            )
-
-    return {
-        "status": "online",
-        "synced_rows": synced
-    }
-
-def sync_status():
-
-    return {
-        "status": "online",
-        "operation": "AODS93",
-        "identity_file": str(
-            IDENTITY_FILE
-        )
-    }
-
+print("Memory ingestion complete.")

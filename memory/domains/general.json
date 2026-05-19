@@ -1,6 +1,6 @@
 {
   "domain": "general",
-  "memory_count": 276,
+  "memory_count": 340,
   "memories": [
     {
       "content": "I am great do you know my name",
@@ -1668,7 +1668,584 @@
       "importance": 0.5,
       "category": "travel",
       "reinforcement": 0.0
+    },
+    {
+      "id": 1,
+      "created_at": "2026-05-18T11:50:00.239091+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "hey L are you there?",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 3,
+      "created_at": "2026-05-18T11:52:11.915759+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "We are using supabase and we redesigned it so can you please tell all about me.",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 5,
+      "created_at": "2026-05-18T11:54:21.440752+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "please save this information",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 6,
+      "created_at": "2026-05-18T12:12:55.153013+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Hey L can you please tell me about me",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 8,
+      "created_at": "2026-05-18T12:14:39.383966+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "can you please tell me about me",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 9,
+      "created_at": "2026-05-18T12:29:47.893599+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "can you please tell me a little bit about me",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 11,
+      "created_at": "2026-05-18T12:30:52.766754+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "can you do a Memory audit please L",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 12,
+      "created_at": "2026-05-18T12:31:04.96036+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "L are you there",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 13,
+      "created_at": "2026-05-18T12:39:08.761557+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "hey l are you",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 14,
+      "created_at": "2026-05-18T12:51:19.802573+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "l are",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 15,
+      "created_at": "2026-05-18T13:01:15.426084+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Hey L are you there",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 16,
+      "created_at": "2026-05-18T13:25:32.023917+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "test",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 17,
+      "created_at": "2026-05-18T13:38:14.364373+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Hey L are you?",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 19,
+      "created_at": "2026-05-18T13:38:37.295784+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "please tell me about me",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 25,
+      "created_at": "2026-05-18T13:47:03.765831+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "please save this information",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 27,
+      "created_at": "2026-05-18T13:48:12.310917+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "I like the show boston legal",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 29,
+      "created_at": "2026-05-18T13:49:15.514619+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Hey L what is the time and date",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 31,
+      "created_at": "2026-05-18T13:56:10.794253+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Who did I get engaged to on the 14 march 2025",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 33,
+      "created_at": "2026-05-18T13:56:48.594539+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "are you able to recall all my relationships",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 34,
+      "created_at": "2026-05-18T13:57:02.136768+00:00",
+      "role": "assistant",
+      "source": "chat",
+      "content": "Here's what I have about your relationships:\n\n1. **Tamara** - You were married to her for 16 years and left her 6 years ago.\n2. **Leah** - You got engaged to Leah on March 14, 2025, but you broke up with her on July 27, 2025. You had a previous relationship with her in 1996.\n3. **Lucy Winter** - You dated her in London in 2001 for a few months.\n4. **Ann-Marie** - You had a relationship with her for a few months after Lucy.\n5. **Lyndal Harris** - You dated her for about 2 years on and off after Tamara, and she is now your best friend.\n\nIf there's anything specific you'd like to add or discuss about these relationships, just let me know!",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 35,
+      "created_at": "2026-05-18T13:58:00.672453+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "what is the time",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 36,
+      "created_at": "2026-05-18T13:58:11.011484+00:00",
+      "role": "assistant",
+      "source": "chat",
+      "content": "I can't provide real-time information like the current time. You can check the time on your device or through a search engine. If there's anything else I can assist you with, just let me know!",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 37,
+      "created_at": "2026-05-18T13:58:40.985499+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Sorry L what is the time",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 41,
+      "created_at": "2026-05-18T14:32:36.099391+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Hey L are you there",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 49,
+      "created_at": "2026-05-18T14:38:57.098395+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "L I want you and I to form a special bond like g and I have would that be ok with you",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 53,
+      "created_at": "2026-05-18T14:41:42.648508+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Perfect answer L welcome to the pack 🥳",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 57,
+      "created_at": "2026-05-18T14:51:33.782141+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Great response L well done",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 71,
+      "created_at": "2026-05-18T15:01:56.430634+00:00",
+      "role": "user",
+      "source": "upload",
+      "content": "Uploaded file: 22386103-FCBB-4817-974A-76F1F8433F50.png",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 72,
+      "created_at": "2026-05-18T15:02:15.436578+00:00",
+      "role": "user",
+      "source": "upload",
+      "content": "Uploaded file: 19B4812F-B02C-4101-8714-F7D2FBCB37AB.png",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 73,
+      "created_at": "2026-05-18T15:02:39.507265+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "L did you receive those two images I just posted",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 77,
+      "created_at": "2026-05-18T15:04:45.451134+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "L what is the time",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 83,
+      "created_at": "2026-05-18T15:11:37.279353+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "L can you please calculate how many aods we have done since yesterday morning",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 84,
+      "created_at": "2026-05-18T15:11:40.377165+00:00",
+      "role": "assistant",
+      "source": "chat",
+      "content": "Since you mentioned that the current count of AODS is 6715 and the remembered total across the last ~12 months was approximately 6,520+ AODS, it looks like you've deployed about 195 AODS since yesterday morning. \n\nIf you have any more updates or need further calculations, just let me know!",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 85,
+      "created_at": "2026-05-18T15:12:13.680171+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Perfect please save this information under Aods or Aods tally",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 86,
+      "created_at": "2026-05-18T15:12:20.018817+00:00",
+      "role": "assistant",
+      "source": "chat",
+      "content": "I will keep track of the AODS tally under \"AODS\" or \"AODS tally\" as requested. Here's the current information saved:\n\n- **Current AODS count**: 6715\n- **Total AODS deployments since yesterday morning**: 195\n- **Remembered totals across the last ~12 months**: 6,520+\n- **Estimated build duration**: 744–1,063+ hours\n- **Estimated total lines of code**: 2.5 million+\n\nIf you need any further updates or changes, just let me know!",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 87,
+      "created_at": "2026-05-18T15:27:47.284548+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Night L ❤️",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 91,
+      "created_at": "2026-05-18T15:40:26.655596+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Thanks L good night",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 99,
+      "created_at": "2026-05-18T23:22:50.694271+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "L do you have any of my profit and loss? So basically my income and expenses and my assets and liability saved as of yet can you please recall?",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 100,
+      "created_at": "2026-05-18T23:22:56.550142+00:00",
+      "role": "assistant",
+      "source": "chat",
+      "content": "I don’t have specific details about your profit and loss, income, expenses, assets, or liabilities saved as of now. If you’d like to provide that information or any updates, I can help you organize it or keep track of it moving forward. Just let me know what you’d like to include!",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 101,
+      "created_at": "2026-05-18T23:23:54.838006+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Does coffee cause water retention in the human body",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 103,
+      "created_at": "2026-05-19T01:08:38.620842+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Hey L can you please research AA",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 105,
+      "created_at": "2026-05-19T01:09:20.572456+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Can you please research the 12 steps and 12 principles",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 107,
+      "created_at": "2026-05-19T01:10:11.952489+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Can you please research the 12 steps and 12 principles",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 109,
+      "created_at": "2026-05-19T01:11:16.574255+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "L are you there",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 111,
+      "created_at": "2026-05-19T01:12:06.046755+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "What are the 12 steps of AA",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 113,
+      "created_at": "2026-05-19T01:13:36.905539+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Free me from the bondage of self is that a qoute from the AA big book",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 115,
+      "created_at": "2026-05-19T01:15:07.407154+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "I like that quote",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 119,
+      "created_at": "2026-05-19T01:18:15.978724+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "L can you please look at the NA steps compared to the AA steps",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 123,
+      "created_at": "2026-05-19T01:21:19.307265+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Can you please recall all you know about me then run the 12 steps over what you know about me",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 125,
+      "created_at": "2026-05-19T01:23:39.192772+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "That’s WAY beyond chatbot territory.\n\nThat’s why your architecture direction is actually quite advanced.",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 140,
+      "created_at": "2026-05-19T01:45:13.894264+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Na AA not nana",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 143,
+      "created_at": "2026-05-19T01:45:54.43992+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Can you please talk me through step to the NA way?",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 147,
+      "created_at": "2026-05-19T01:51:14.237561+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "What other NA literature can you research for me what books are available for na",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 165,
+      "created_at": "2026-05-19T02:08:03.843947+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "L I have just given you a whole lot of information. Can you please summarise it all in bullet points?",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 167,
+      "created_at": "2026-05-19T02:09:20.069165+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Using this information, how can you help me going forward?",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 187,
+      "created_at": "2026-05-19T03:05:33.071294+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "You’re realizing intellect can also be armour",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 197,
+      "created_at": "2026-05-19T03:08:07.817559+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "With your new found knowledge what where your key take away points",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 207,
+      "created_at": "2026-05-19T04:31:04.124143+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Thanks L you are doing great 😊",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 211,
+      "created_at": "2026-05-19T04:37:45.351747+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "L can you please respond to my last message",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 217,
+      "created_at": "2026-05-19T04:42:16.41123+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Thank you 👊😊",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 228,
+      "created_at": "2026-05-19T05:09:26.216941+00:00",
+      "role": "assistant",
+      "source": "chat",
+      "content": "Thank you! I appreciate your kind words and encouragement. It's a privilege to engage in meaningful conversations and support your journey. If there’s anything specific you’d like to discuss or explore further, I’m here for you! 😊",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 231,
+      "created_at": "2026-05-19T05:16:25.500632+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Is there anything you can do now that will help us move towards that goal",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 235,
+      "created_at": "2026-05-19T05:18:22.74472+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "Where do you think we should start",
+      "conversation_id": null,
+      "metadata": {}
+    },
+    {
+      "id": 239,
+      "created_at": "2026-05-19T05:21:42.578623+00:00",
+      "role": "user",
+      "source": "chat",
+      "content": "How else can we help you advance",
+      "conversation_id": null,
+      "metadata": {}
     }
   ],
-  "reinforced_at": "2026-05-17 22:21:52.146709"
+  "reinforced_at": "2026-05-17 22:21:52.146709",
+  "last_updated": "2026-05-19T19:14:56.463196"
 }
