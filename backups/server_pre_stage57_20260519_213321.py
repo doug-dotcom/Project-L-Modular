@@ -12,8 +12,6 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from supabase import create_client
 from openai import OpenAI
-from core.memory_retriever import retrieve_memory_context
-
 
 try:
     from dotenv import load_dotenv
@@ -286,20 +284,7 @@ def chat(req: ChatRequest):
         user_message
     )
 
-    retrieved = retrieve_memory_context(
-    user_message,
-    limit=12
-)
-
-memory_context = retrieved.get(
-    "context",
-    "No memory context available."
-)
-
-domains = retrieved.get("domains", [])
-
-log(f"MEMORY DOMAINS: {domains}")
-log(f"MEMORY CONTEXT SIZE: {len(memory_context)}")
+    memory_context = build_memory_context(user_message)
 
     brisbane_now = datetime.now(
         ZoneInfo("Australia/Brisbane")
@@ -410,5 +395,4 @@ async def upload_file(file: UploadFile = File(...)):
             "success": False,
             "error": str(e)
         }
-
 
