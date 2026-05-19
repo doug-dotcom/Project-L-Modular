@@ -1,5 +1,3 @@
-
-from memory.retrieval.memory_retriever import retrieve_memory_context
 # =========================================================
 # APP FACTORY
 # Final server.py minimization
@@ -93,7 +91,6 @@ def create_app():
 '" + $HealthEndpoint + @'
 
     return app
-
 
 
 
