@@ -301,7 +301,7 @@ domains = retrieved.get("domains", [])
 log(f"MEMORY DOMAINS: {domains}")
 log(f"MEMORY CONTEXT SIZE: {len(memory_context)}")
 
-    brisbane_now = datetime.now(
+    	brisbane_now = datetime.now(
         ZoneInfo("Australia/Brisbane")
     )
 
