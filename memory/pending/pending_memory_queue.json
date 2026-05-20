@@ -3472,5 +3472,95 @@
     "content": "I appreciate your efforts in wanting to improve the memory system. Your insights and reflections are invaluable in shaping how I can assist you better. If you have specific adjustments or improvements in mind, please share them, and we can work through them together.",
     "conversation_id": null,
     "metadata": {}
+  },
+  {
+    "id": 387,
+    "created_at": "2026-05-20T07:22:39.425541+00:00",
+    "role": "user",
+    "source": "chat",
+    "content": "hey l are you there",
+    "conversation_id": null,
+    "metadata": {}
+  },
+  {
+    "id": 388,
+    "created_at": "2026-05-20T07:22:46.16314+00:00",
+    "role": "assistant",
+    "source": "chat",
+    "content": "Yes, I'm here! How can I assist you today?",
+    "conversation_id": null,
+    "metadata": {}
+  },
+  {
+    "id": 389,
+    "created_at": "2026-05-20T07:25:54.604855+00:00",
+    "role": "user",
+    "source": "chat",
+    "content": "L my favourite colour is blue 67% and red 33%",
+    "conversation_id": null,
+    "metadata": {}
+  },
+  {
+    "id": 390,
+    "created_at": "2026-05-20T07:25:59.214699+00:00",
+    "role": "assistant",
+    "source": "chat",
+    "content": "Got it! Your favorite colors are blue (67%) and red (33%). If there's anything else you want me to remember or update, just let me know!",
+    "conversation_id": null,
+    "metadata": {}
+  },
+  {
+    "id": 391,
+    "created_at": "2026-05-20T09:51:51.297691+00:00",
+    "role": "user",
+    "source": "chat",
+    "content": "hey L are you there",
+    "conversation_id": null,
+    "metadata": {}
+  },
+  {
+    "id": 392,
+    "created_at": "2026-05-20T09:51:58.271537+00:00",
+    "role": "assistant",
+    "source": "chat",
+    "content": "Yes, I'm here! How can I assist you today?",
+    "conversation_id": null,
+    "metadata": {}
+  },
+  {
+    "id": 393,
+    "created_at": "2026-05-20T10:09:36.309416+00:00",
+    "role": "user",
+    "source": "chat",
+    "content": "what is my favourite colour",
+    "conversation_id": null,
+    "metadata": {}
+  },
+  {
+    "id": 394,
+    "created_at": "2026-05-20T10:09:39.889808+00:00",
+    "role": "assistant",
+    "source": "chat",
+    "content": "Your favorite color is blue.",
+    "conversation_id": null,
+    "metadata": {}
+  },
+  {
+    "id": 395,
+    "created_at": "2026-05-20T10:09:51.149733+00:00",
+    "role": "user",
+    "source": "chat",
+    "content": "what percentage",
+    "conversation_id": null,
+    "metadata": {}
+  },
+  {
+    "id": 396,
+    "created_at": "2026-05-20T10:09:54.534649+00:00",
+    "role": "assistant",
+    "source": "chat",
+    "content": "It seems like you might be asking about a specific percentage, but I need a bit more context to provide a meaningful answer. Could you clarify what percentage you are referring to?",
+    "conversation_id": null,
+    "metadata": {}
   }
 ]
