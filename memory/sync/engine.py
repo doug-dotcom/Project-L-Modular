@@ -1,245 +1,199 @@
-# =====================================================
-# AODS — ENGINE.PY PROPER INSTALL + TEST
-# PURPOSE:
-# Install the Python bridge correctly into:
-#
-# C:\Shine_L\memory\sync\engine.py
-#
-# Then test the cognition bridge safely.
-# =====================================================
-
-cd C:\Shine_L
-
-# =====================================================
-# STEP 1 — OPEN ENGINE FILE
-# =====================================================
-
-notepad .\memory\sync\engine.py
-
-# =====================================================
-# STEP 2 — DELETE EVERYTHING
-# =====================================================
-
-# DELETE ALL EXISTING CONTENT
-# inside engine.py
-
-# =====================================================
-# STEP 3 — PASTE THIS FULL PYTHON CODE
-# =====================================================
-
 from supabase import create_client
 from dotenv import load_dotenv
 from pathlib import Path
 import os
 import json
-from datetime import datetime
 
 # =====================================================
-# RUNTIME SYNC
+# ROOT
+# =====================================================
+
+ROOT = Path("C:/Shine_L")
+
+# =====================================================
+# LOAD ENV
+# =====================================================
+
+load_dotenv(ROOT / ".env")
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+# =====================================================
+# MAIN SYNC FUNCTION
 # =====================================================
 
 def run_sync():
 
-    # ============================================
-    # LOAD ENV
-    # ============================================
-
-    ROOT = Path("C:/Shine_L")
-
-    load_dotenv(ROOT / ".env")
-
-    SUPABASE_URL = os.getenv("SUPABASE_URL")
-    SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-
-    if not SUPABASE_URL or not SUPABASE_KEY:
-
-        print("ERROR: Missing Supabase credentials")
-
-        return
-
-    # ============================================
-    # CONNECT
-    # ============================================
-
-    supabase = create_client(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    )
-
-    # ============================================
-    # PATHS
-    # ============================================
-
-    pending_path = (
-        ROOT
-        / "memory"
-        / "pending"
-        / "pending_memory_queue.json"
-    )
-
-    if not pending_path.exists():
-
-        pending_path.write_text(
-            "[]",
-            encoding="utf-8"
-        )
-
-    # ============================================
-    # LOAD EXISTING MEMORY
-    # ============================================
-
     try:
 
-        existing = json.loads(
-            pending_path.read_text(
+        # =================================================
+        # VALIDATE ENV
+        # =================================================
+
+        if not SUPABASE_URL or not SUPABASE_KEY:
+
+            print("ERROR: Missing Supabase credentials")
+
+            return False
+
+        # =================================================
+        # CONNECT
+        # =================================================
+
+        supabase = create_client(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        )
+
+        print("SUPABASE CONNECTED")
+
+        # =================================================
+        # PENDING PATH
+        # =================================================
+
+        pending_path = (
+            ROOT
+            / "memory"
+            / "pending"
+            / "pending_memory_queue.json"
+        )
+
+        pending_path.parent.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        # =================================================
+        # CREATE FILE IF MISSING
+        # =================================================
+
+        if not pending_path.exists():
+
+            pending_path.write_text(
+                "[]",
                 encoding="utf-8"
             )
-        )
 
-    except:
+        # =================================================
+        # LOAD EXISTING
+        # =================================================
 
-        existing = []
+        try:
 
-    existing_ids = set()
-
-    for item in existing:
-
-        if "id" in item:
-
-            existing_ids.add(
-                item["id"]
+            existing = json.loads(
+                pending_path.read_text(
+                    encoding="utf-8"
+                )
             )
 
-    # ============================================
-    # PULL FROM SUPABASE
-    # ============================================
+            if not isinstance(existing, list):
+                existing = []
 
-    print("Pulling memories from Supabase...")
+        except Exception:
 
-    response = (
-        supabase
-        .table("raw_catchall")
-        .select("*")
-        .order("created_at")
-        .execute()
-    )
+            existing = []
 
-    rows = response.data
+        existing_ids = set()
 
-    print(f"ROWS RETURNED: {len(rows)}")
+        for item in existing:
 
-    new_rows = []
+            try:
 
-    for row in rows:
+                if "id" in item:
 
-        row_id = row.get("id")
+                    existing_ids.add(
+                        item["id"]
+                    )
 
-        if row_id not in existing_ids:
+            except Exception:
+                pass
 
-            new_rows.append(row)
+        # =================================================
+        # PULL SUPABASE MEMORY
+        # =================================================
 
-    # ============================================
-    # APPEND NEW ROWS
-    # ============================================
+        print("Pulling memories from Supabase...")
 
-    if new_rows:
-
-        existing.extend(new_rows)
-
-        pending_path.write_text(
-            json.dumps(
-                existing,
-                indent=2,
-                ensure_ascii=False
-            ),
-            encoding="utf-8"
+        response = (
+            supabase
+            .table("raw_catchall")
+            .select("*")
+            .order("created_at")
+            .execute()
         )
+
+        rows = response.data or []
+
+        print(f"ROWS RETURNED: {len(rows)}")
+
+        # =================================================
+        # FILTER NEW ROWS
+        # =================================================
+
+        new_rows = []
+
+        for row in rows:
+
+            try:
+
+                row_id = row.get("id")
+
+                if row_id not in existing_ids:
+
+                    new_rows.append(row)
+
+            except Exception as e:
+
+                print(f"ROW PROCESS ERROR: {e}")
+
+        # =================================================
+        # APPEND NEW ROWS
+        # =================================================
+
+        if new_rows:
+
+            existing.extend(new_rows)
+
+            pending_path.write_text(
+                json.dumps(
+                    existing,
+                    indent=2,
+                    ensure_ascii=False
+                ),
+                encoding="utf-8"
+            )
+
+            print(
+                f"SUCCESS: Added {len(new_rows)} new memories."
+            )
+
+        else:
+
+            print("No new memories found.")
 
         print(
-            f"SUCCESS: Added {len(new_rows)} new memories."
+            f"Total pending memories: {len(existing)}"
         )
 
-    else:
+        print("Memory ingestion complete.")
 
-        print("No new memories found.")
+        return True
 
-    print(
-        f"Total pending memories: {len(existing)}"
-    )
+    except Exception as e:
 
-    print("Memory ingestion complete.")
+        import traceback
+
+        print(f"SYNC ERROR: {e}")
+
+        print(traceback.format_exc())
+
+        return False
 
 # =====================================================
-# DIRECT EXECUTION SUPPORT
+# DIRECT EXECUTION
 # =====================================================
 
-if name == "main":
+if __name__ == "__main__":
 
     run_sync()
-
-# =====================================================
-# STEP 4 — SAVE FILE
-# =====================================================
-
-# Press:
-#
-# CTRL + S
-
-# =====================================================
-# STEP 5 — TEST ENGINE DIRECTLY
-# =====================================================
-
-python .\memory\sync\engine.py
-
-# =====================================================
-# EXPECTED SUCCESS
-# =====================================================
-
-# Terminal should show:
-#
-# Pulling memories from Supabase...
-# ROWS RETURNED: XXX
-# SUCCESS: Added XXX new memories.
-# Memory ingestion complete.
-
-# =====================================================
-# STEP 6 — VERIFY
-# =====================================================
-
-# Open:
-#
-# C:\Shine_L\memory\pending\pending_memory_queue.json
-#
-# Expected:
-#
-# - NOT []
-# - contains memory rows
-# - ids/content visible
-
-# =====================================================
-# STEP 7 — ONLY AFTER SUCCESS
-# =====================================================
-
-# THEN wire into server.py:
-#
-# from memory.sync.engine import run_sync
-#
-# and:
-#
-# run_sync()
-
-# =====================================================
-# IMPORTANT
-# =====================================================
-
-# Python code goes INSIDE:
-#
-# engine.py
-#
-# NOT into PowerShell directly.
-#
-# Only this line goes into terminal:
-#
-# python .\memory\sync\engine.py
-#
-# =====================================================
