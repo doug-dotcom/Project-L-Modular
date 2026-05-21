@@ -15,6 +15,8 @@ from openai import OpenAI
 
 from core.memory_retriever import retrieve_memory_context
 from memory.sync.engine import run_sync
+from agents.brittany_browser import (should_handle,
+    investigate)
 
 # =====================================================
 # ENV
@@ -305,6 +307,27 @@ MEMORY DOMAINS:
 MEMORY CONTEXT:
 {memory_context}
 """
+
+# -------------------------------------------------
+# BRITTANY ROUTING
+# -------------------------------------------------
+
+if should_handle(user_message):
+
+    log("ROUTING TO BRITTANY")
+
+    try:
+
+        reply = investigate(user_message)
+
+    except Exception as e:
+
+        log(f"BRITTANY ERROR: {e}")
+
+        reply = f"BRITTANY ERROR: {str(e)}"
+
+else:
+
 
     # -------------------------------------------------
     # OPENAI
