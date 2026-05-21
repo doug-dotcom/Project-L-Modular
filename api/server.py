@@ -16,7 +16,7 @@ from openai import OpenAI
 from core.memory_retriever import retrieve_memory_context
 from memory.sync.engine import run_sync
 
-from agents.brittany_browser.main import (
+from agents.brittany_browser.brittany import (
     should_handle,
     investigate
 )
