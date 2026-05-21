@@ -308,25 +308,25 @@ MEMORY CONTEXT:
 {memory_context}
 """
 
-# -------------------------------------------------
-# BRITTANY ROUTING
-# -------------------------------------------------
+    # -------------------------------------------------
+    # BRITTANY ROUTING
+    # -------------------------------------------------
 
-if should_handle(user_message):
+    if should_handle(user_message):
 
-    log("ROUTING TO BRITTANY")
+        log("ROUTING TO BRITTANY")
 
-    try:
+        try:
 
-        reply = investigate(user_message)
+            reply = investigate(user_message)
 
-    except Exception as e:
+        except Exception as e:
 
-        log(f"BRITTANY ERROR: {e}")
+            log(f"BRITTANY ERROR: {e}")
 
-        reply = f"BRITTANY ERROR: {str(e)}"
+            reply = f"BRITTANY ERROR: {str(e)}"
 
-else:
+    else:
 
 
     # -------------------------------------------------
