@@ -15,8 +15,11 @@ from openai import OpenAI
 
 from core.memory_retriever import retrieve_memory_context
 from memory.sync.engine import run_sync
-from agents.brittany_browser import (should_handle,
-    investigate)
+
+from agents.brittany_browser import (
+    should_handle,
+    investigate
+)
 
 # =====================================================
 # ENV
@@ -186,7 +189,8 @@ def health():
         "status": "ok",
         "openai_ready": bool(client),
         "supabase_ready": bool(supabase),
-        "memory_retrieval": True
+        "memory_retrieval": True,
+        "brittany_ready": True
     }
 
 # =====================================================
@@ -328,41 +332,40 @@ MEMORY CONTEXT:
 
     else:
 
+        # -------------------------------------------------
+        # OPENAI
+        # -------------------------------------------------
 
-    # -------------------------------------------------
-    # OPENAI
-    # -------------------------------------------------
+        if not client:
 
-    if not client:
+            reply = "L is online, but OpenAI is not connected."
 
-        reply = "L is online, but OpenAI is not connected."
+        else:
 
-    else:
+            try:
 
-        try:
+                response = client.chat.completions.create(
+                    model=MODEL,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": system_prompt
+                        },
+                        {
+                            "role": "user",
+                            "content": user_message
+                        }
+                    ],
+                    temperature=0.6
+                )
 
-            response = client.chat.completions.create(
-                model=MODEL,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": system_prompt
-                    },
-                    {
-                        "role": "user",
-                        "content": user_message
-                    }
-                ],
-                temperature=0.6
-            )
+                reply = response.choices[0].message.content
 
-            reply = response.choices[0].message.content
+            except Exception as e:
 
-        except Exception as e:
+                log(f"OPENAI CHAT ERROR: {e}")
 
-            log(f"OPENAI CHAT ERROR: {e}")
-
-            reply = f"AI ERROR: {str(e)}"
+                reply = f"AI ERROR: {str(e)}"
 
     # -------------------------------------------------
     # SAVE ASSISTANT MEMORY
@@ -397,7 +400,8 @@ MEMORY CONTEXT:
         "memory_wired": bool(supabase),
         "memory_count": len(
             retrieved.get("memories", [])
-        )
+        ),
+        "brittany_enabled": True
     }
 
 # =====================================================
