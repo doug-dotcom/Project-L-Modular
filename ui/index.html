@@ -1,30 +1,3 @@
-
-<style>
-
-body {
-    font-size: 22px !important;
-    line-height: 1.6 !important;
-}
-
-.message,
-.chat-message,
-.bot-message,
-.user-message {
-    font-size: 26px !important;
-line-height: 1.8 !important;
-}
-
-textarea,
-input {
-    font-size: 18px !important;
-}
-
-button {
-    font-size: 20px !important;
-}
-
-</style>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -32,11 +5,18 @@ button {
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Project L</title>
 
-    <link rel="icon" type="image/png" href="/ui/icon.png">
+    <link
+        rel="icon"
+        type="image/png"
+        href="/ui/icon.png"
+    >
 
     <style>
 
@@ -72,11 +52,15 @@ button {
             flex-direction: column;
         }
 
+        /* =====================================================
+           HEADER
+        ===================================================== */
+
         header {
 
-            padding: 18px;
+            padding: 22px;
 
-            font-size: 30px;
+            font-size: 42px;
 
             font-weight: bold;
 
@@ -89,38 +73,48 @@ button {
             backdrop-filter: blur(6px);
         }
 
+        /* =====================================================
+           CHAT AREA
+        ===================================================== */
+
         #chat {
 
             flex: 1;
 
             overflow-y: auto;
 
-            padding: 20px;
+            padding: 24px;
 
             display: flex;
 
             flex-direction: column;
 
-            gap: 14px;
+            gap: 20px;
 
             scroll-behavior: smooth;
         }
 
+        /* =====================================================
+           MESSAGE BUBBLES
+        ===================================================== */
+
         .msg {
 
-            padding: 14px 18px;
+            padding: 22px 28px;
 
-            border-radius: 14px;
+            border-radius: 22px;
 
-            max-width: 90%;
+            max-width: 96%;
 
             width: fit-content;
 
-            line-height: 1.5;
+            line-height: 1.9;
 
-            font-size: 15px;
+            font-size: 30px;
 
             word-wrap: break-word;
+
+            white-space: pre-wrap;
 
             align-self: flex-start;
         }
@@ -142,13 +136,17 @@ button {
             background: #7f1d1d;
         }
 
+        /* =====================================================
+           INPUT BAR
+        ===================================================== */
+
         #inputBar {
 
             display: flex;
 
-            gap: 12px;
+            gap: 14px;
 
-            padding: 14px;
+            padding: 18px;
 
             background: rgba(0,0,0,0.20);
 
@@ -161,13 +159,17 @@ button {
             bottom: 0;
         }
 
+        /* =====================================================
+           TEXT INPUT
+        ===================================================== */
+
         #message {
 
             flex: 1;
 
-            padding: 14px;
+            padding: 20px;
 
-            border-radius: 14px;
+            border-radius: 18px;
 
             border: none;
 
@@ -175,13 +177,15 @@ button {
 
             resize: none;
 
-            min-height: 60px;
+            min-height: 80px;
 
-            max-height: 180px;
+            max-height: 240px;
 
             overflow-y: auto;
 
-            font-size: 16px;
+            font-size: 28px;
+
+            line-height: 1.6;
 
             background: rgba(255,255,255,0.08);
 
@@ -195,13 +199,17 @@ button {
             color: rgba(255,255,255,0.5);
         }
 
+        /* =====================================================
+           BUTTONS
+        ===================================================== */
+
         button {
 
-            min-width: 90px;
+            min-width: 120px;
 
             border: none;
 
-            border-radius: 14px;
+            border-radius: 18px;
 
             background: #22c55e;
 
@@ -209,7 +217,7 @@ button {
 
             font-weight: bold;
 
-            font-size: 15px;
+            font-size: 26px;
 
             cursor: pointer;
 
@@ -221,40 +229,52 @@ button {
             background: #16a34a;
         }
 
+        /* =====================================================
+           MOBILE
+        ===================================================== */
+
         @media (max-width: 768px) {
 
             header {
 
-                font-size: 24px;
+                font-size: 48px;
 
-                padding: 14px;
+                padding: 20px;
             }
 
             #chat {
 
-                padding: 14px;
+                padding: 18px;
             }
 
             .msg {
 
-                max-width: 96%;
+                max-width: 98%;
 
-                font-size: 14px;
+                font-size: 32px;
+
+                line-height: 1.9;
+
+                padding: 22px;
             }
 
             #inputBar {
 
-                padding-bottom: 22px;
+                padding-bottom: 28px;
             }
 
             #message {
 
-                min-height: 70px;
+                min-height: 90px;
+
+                font-size: 30px;
             }
 
             button {
 
-                min-width: 75px;
+                min-width: 90px;
+
+                font-size: 28px;
             }
         }
 
@@ -264,9 +284,17 @@ button {
 
 <body>
 
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
     <header>
         Project L
     </header>
+
+    <!-- =====================================================
+         CHAT
+    ====================================================== -->
 
     <div id="chat">
 
@@ -276,78 +304,51 @@ button {
 
     </div>
 
+    <!-- =====================================================
+         INPUT BAR
+    ====================================================== -->
+
     <div id="inputBar">
 
-        
-<button id="uploadBtn"
-style="
-width:60px;
-height:60px;
-border-radius:16px;
-font-size:34px;
-background:#2b6cff;
-color:white;
-border:none;
-cursor:pointer;
-margin-right:10px;
-flex-shrink:0;
-">
-+
-</button>
+        <!-- =====================================================
+             UPLOAD BUTTON
+        ====================================================== -->
 
-<input
-type="file"
-id="fileInput"
-style="display:none;"
-/>
+        <button
+            id="uploadBtn"
+            style="
+                width:80px;
+                height:80px;
+                border-radius:20px;
+                font-size:40px;
+                background:#2b6cff;
+                color:white;
+                border:none;
+                cursor:pointer;
+                flex-shrink:0;
+            "
+        >
+            +
+        </button>
 
-<script>
+        <input
+            type="file"
+            id="fileInput"
+            style="display:none;"
+        />
 
-const uploadBtn =
-document.getElementById("uploadBtn");
+        <!-- =====================================================
+             MESSAGE INPUT
+        ====================================================== -->
 
-const fileInput =
-document.getElementById("fileInput");
-
-uploadBtn.onclick = () => {
-    fileInput.click();
-};
-
-fileInput.onchange = async () => {
-
-    const file = fileInput.files[0];
-
-    if (!file) return;
-
-    const formData = new FormData();
-
-    formData.append("file", file);
-
-    try {
-
-        const res = await fetch("/upload", {
-            method: "POST",
-            body: formData
-        });
-
-        const data = await res.json();
-
-        alert(
-            "Uploaded: " + data.filename
-        );
-
-    } catch(err) {
-
-        alert("Upload failed");
-    }
-};
-
-</script>
-
-<textarea
+        <textarea
             id="message"
             placeholder="Talk to L..."
         ></textarea>
+
+        <!-- =====================================================
+             SEND BUTTON
+        ====================================================== -->
 
         <button onclick="sendMessage()">
             Send
@@ -355,23 +356,84 @@ fileInput.onchange = async () => {
 
     </div>
 
+    <!-- =====================================================
+         UPLOAD SCRIPT
+    ====================================================== -->
+
+    <script>
+
+        const uploadBtn =
+            document.getElementById("uploadBtn");
+
+        const fileInput =
+            document.getElementById("fileInput");
+
+        uploadBtn.onclick = () => {
+
+            fileInput.click();
+        };
+
+        fileInput.onchange = async () => {
+
+            const file = fileInput.files[0];
+
+            if (!file) return;
+
+            const formData = new FormData();
+
+            formData.append(
+                "file",
+                file
+            );
+
+            try {
+
+                const res = await fetch(
+                    "/upload",
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+                const data = await res.json();
+
+                alert(
+                    "Uploaded: " + data.filename
+                );
+
+            } catch(err) {
+
+                alert("Upload failed");
+            }
+        };
+
+    </script>
+
+    <!-- =====================================================
+         CHAT SCRIPT
+    ====================================================== -->
+
     <script>
 
         const API_URL = "/chat";
 
         async function sendMessage() {
 
-            const input = document.getElementById("message");
+            const input =
+                document.getElementById("message");
 
-            const chat = document.getElementById("chat");
+            const chat =
+                document.getElementById("chat");
 
-            const message = input.value.trim();
+            const message =
+                input.value.trim();
 
             if (!message) return;
 
-            // ---------------------------------
-            // USER MESSAGE
-            // ---------------------------------
+            /* =====================================================
+               USER MESSAGE
+            ====================================================== */
 
             chat.innerHTML += `
                 <div class="msg user">
@@ -381,11 +443,12 @@ fileInput.onchange = async () => {
 
             input.value = "";
 
-            // ---------------------------------
-            // THINKING
-            // ---------------------------------
+            /* =====================================================
+               THINKING MESSAGE
+            ====================================================== */
 
-            const thinkingId = "thinking-" + Date.now();
+            const thinkingId =
+                "thinking-" + Date.now();
 
             chat.innerHTML += `
                 <div class="msg assistant" id="${thinkingId}">
@@ -393,30 +456,41 @@ fileInput.onchange = async () => {
                 </div>
             `;
 
-            chat.scrollTop = chat.scrollHeight;
+            chat.scrollTop =
+                chat.scrollHeight;
 
             try {
 
-                const response = await fetch(API_URL, {
+                const response = await fetch(
+                    API_URL,
+                    {
+                        method: "POST",
 
-                    method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
 
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                        body: JSON.stringify({
+                            message: message
+                        })
+                    }
+                );
 
-                    body: JSON.stringify({
-                        message: message
-                    })
-                });
+                const data =
+                    await response.json();
 
-                const data = await response.json();
+                /* =====================================================
+                   REMOVE THINKING
+                ====================================================== */
 
-                // REMOVE THINKING
+                document
+                    .getElementById(thinkingId)
+                    .remove();
 
-                document.getElementById(thinkingId).remove();
-
-                // ASSISTANT RESPONSE
+                /* =====================================================
+                   ASSISTANT RESPONSE
+                ====================================================== */
 
                 chat.innerHTML += `
                     <div class="msg assistant">
@@ -426,7 +500,9 @@ fileInput.onchange = async () => {
 
             } catch (err) {
 
-                document.getElementById(thinkingId).remove();
+                document
+                    .getElementById(thinkingId)
+                    .remove();
 
                 chat.innerHTML += `
                     <div class="msg assistant error">
@@ -435,16 +511,12 @@ fileInput.onchange = async () => {
                 `;
             }
 
-            chat.scrollTop = chat.scrollHeight;
+            chat.scrollTop =
+                chat.scrollHeight;
         }
 
     </script>
 
-
-
-
 </body>
 
 </html>
-
-
