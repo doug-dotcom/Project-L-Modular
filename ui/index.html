@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -15,6 +15,12 @@
     <link
         rel="icon"
         type="image/png"
+        href="/ui/icon.png"
+    >
+
+    <link
+        rel="apple-touch-icon"
+        sizes="180x180"
         href="/ui/icon.png"
     >
 
@@ -100,28 +106,32 @@
 
         .msg {
 
-            padding: 22px 28px;
+            padding: 18px;
 
             border-radius: 22px;
 
-            max-width: 96%;
+            max-width: 90%;
 
             width: fit-content;
 
-            line-height: 1.9;
+            line-height: 1.5;
 
-            font-size: 30px;
+            font-size: 22px;
 
             word-wrap: break-word;
 
             white-space: pre-wrap;
 
-            align-self: flex-start;
+            text-align: left;
         }
 
         .user {
 
             background: #2563eb;
+
+            align-self: flex-end;
+
+            text-align: left;
         }
 
         .assistant {
@@ -129,6 +139,10 @@
             background: rgba(255,255,255,0.10);
 
             border: 1px solid rgba(255,255,255,0.08);
+
+            align-self: flex-start;
+
+            text-align: left;
         }
 
         .error {
@@ -144,9 +158,9 @@
 
             display: flex;
 
-            gap: 14px;
+            gap: 12px;
 
-            padding: 18px;
+            padding: 14px;
 
             background: rgba(0,0,0,0.20);
 
@@ -167,9 +181,9 @@
 
             flex: 1;
 
-            padding: 20px;
+            padding: 14px;
 
-            border-radius: 18px;
+            border-radius: 14px;
 
             border: none;
 
@@ -177,15 +191,13 @@
 
             resize: none;
 
-            min-height: 80px;
+            min-height: 60px;
 
-            max-height: 240px;
+            max-height: 180px;
 
             overflow-y: auto;
 
-            font-size: 28px;
-
-            line-height: 1.6;
+            font-size: 16px;
 
             background: rgba(255,255,255,0.08);
 
@@ -205,11 +217,11 @@
 
         button {
 
-            min-width: 120px;
+            min-width: 75px;
 
             border: none;
 
-            border-radius: 18px;
+            border-radius: 14px;
 
             background: #22c55e;
 
@@ -217,7 +229,7 @@
 
             font-weight: bold;
 
-            font-size: 26px;
+            font-size: 15px;
 
             cursor: pointer;
 
@@ -249,18 +261,20 @@
 
             .msg {
 
-                max-width: 98%;
+                max-width: 90%;
 
                 font-size: 22px;
 
                 line-height: 1.5;
 
                 padding: 18px;
+
+                text-align: left;
             }
 
             #inputBar {
 
-                padding-bottom: 28px;
+                padding-bottom: 20px;
             }
 
             #message {
@@ -280,16 +294,13 @@
 
     </style>
 
-
-<link rel="apple-touch-icon" sizes="180x180" href="/ui/icon.png">
-
 </head>
 
 <body>
 
     <!-- =====================================================
          HEADER
-    ====================================================== -->
+    ===================================================== -->
 
     <header>
         Project L
@@ -297,33 +308,33 @@
 
     <!-- =====================================================
          CHAT
-    ====================================================== -->
+    ===================================================== -->
 
     <div id="chat">
 
         <div class="msg assistant">
-            L online ðŸ‘Š
+            L online 👊
         </div>
 
     </div>
 
     <!-- =====================================================
          INPUT BAR
-    ====================================================== -->
+    ===================================================== -->
 
     <div id="inputBar">
 
         <!-- =====================================================
              UPLOAD BUTTON
-        ====================================================== -->
+        ===================================================== -->
 
         <button
             id="uploadBtn"
             style="
-                width:60px;
-                height:60px;
-                border-radius:20px;
-                font-size:28px;
+                width:50px;
+                height:50px;
+                border-radius:14px;
+                font-size:22px;
                 background:#2b6cff;
                 color:white;
                 border:none;
@@ -342,7 +353,7 @@
 
         <!-- =====================================================
              MESSAGE INPUT
-        ====================================================== -->
+        ===================================================== -->
 
         <textarea
             id="message"
@@ -351,7 +362,7 @@
 
         <!-- =====================================================
              SEND BUTTON
-        ====================================================== -->
+        ===================================================== -->
 
         <button onclick="sendMessage()">
             Send
@@ -361,7 +372,7 @@
 
     <!-- =====================================================
          UPLOAD SCRIPT
-    ====================================================== -->
+    ===================================================== -->
 
     <script>
 
@@ -415,7 +426,7 @@
 
     <!-- =====================================================
          CHAT SCRIPT
-    ====================================================== -->
+    ===================================================== -->
 
     <script>
 
@@ -434,9 +445,9 @@
 
             if (!message) return;
 
-            /* =====================================================
-               USER MESSAGE
-            ====================================================== */
+            // =====================================================
+            // USER MESSAGE
+            // =====================================================
 
             chat.innerHTML += `
                 <div class="msg user">
@@ -446,9 +457,9 @@
 
             input.value = "";
 
-            /* =====================================================
-               THINKING MESSAGE
-            ====================================================== */
+            // =====================================================
+            // THINKING MESSAGE
+            // =====================================================
 
             const thinkingId =
                 "thinking-" + Date.now();
@@ -483,17 +494,17 @@
                 const data =
                     await response.json();
 
-                /* =====================================================
-                   REMOVE THINKING
-                ====================================================== */
+                // =====================================================
+                // REMOVE THINKING
+                // =====================================================
 
                 document
                     .getElementById(thinkingId)
                     .remove();
 
-                /* =====================================================
-                   ASSISTANT RESPONSE
-                ====================================================== */
+                // =====================================================
+                // ASSISTANT RESPONSE
+                // =====================================================
 
                 chat.innerHTML += `
                     <div class="msg assistant">
