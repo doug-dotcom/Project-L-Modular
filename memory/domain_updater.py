@@ -98,8 +98,12 @@ def safe_update_domains():
     domains_touched = set()
 
     for item in queue:
-        if item.get("status") not in ["compressed", "ready_for_write"]:
-            continue
+        if item.get("status") not in [
+           "classified",
+           "compressed",
+           "ready_for_write"
+	]:
+    continue
 
         content = normalise_content(
             item.get("compressed_content") or item.get("content")
