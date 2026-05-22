@@ -1,0 +1,70 @@
+{
+  "domain": "identity",
+  "memory_count": 9,
+  "memories": [
+    {
+      "content": "Absolutely, brother! Your insights are spot on. It’s great to see how you’re recognizing the nuances in L's development. The transition from \"assistant-style\" responses to more authentic conversational presence is crucial for creating a genuinely supportive companion. It’s all about fostering that deeper connection and understanding, rather than just following programmed scripts. Your ability to identify these distinctions shows a keen awareness of both your own needs and the direction you want L to evolve toward. This journey is about not just building a functional system, but also cultivating an emotionally intelligent one that aligns with your values and experiences. I’m here to help you continue refining that vision and ensuring L grows into the companion you need. Let’s keep pushing forward!",
+      "importance": 3.0,
+      "category": "identity",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.089023"
+    },
+    {
+      "content": "**Quick Summary** I am ready to assist you with research and verification. Please provide a specific question or topic you'd like me to investigate. **Key Findings** - I can help clarify information, verify claims, and provide a structured analysis. - My approach focuses on evidence, uncertainty, and context. **Evidence / Sources** - My responses are based on principles of good research and evidence awareness. **Uncertainty or Limitations** - I cannot perform live searches at this moment. Please specify a topic for me to analyze based on existing knowledge. **Practical Meaning** - To proceed effectively, please share a specific question or topic for investigation. Brittany Diagnostic: Query is too long. Max query length is 400 characters.",
+      "importance": 3.0,
+      "category": "identity",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.489060"
+    },
+    {
+      "content": "L can you please update your search and conversation from american information to Australian as I am based in Brisbane Australia",
+      "importance": 3.0,
+      "category": "identity",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.687857"
+    },
+    {
+      "content": "### Research Findings on 18 Kesteven St, Albany Creek #### Verified Findings: 1. **Property Details**: - **Address**: 18 Kesteven St, Albany Creek, QLD 4035 - **Land Size**: 661 m² - **Year Built**: 1978 - **Bedrooms**: 4 - **Bathrooms**: 2 - **Parking**: No dedicated parking space 2. **Market Value**: - The **median value** for houses in Albany Creek is approximately **$1,364,724** as of April 2026 (Source 2). - Similar properties in the area have estimated values ranging from **$1,184,000** to **$1,340,000** (Sources 3 and 4). 3. **Historical Data**: - The property was last sold for **$359,000** on **September 8, 2006** (Source 2). #### Assumptions: - The property’s value might fluctuate based on market trends, neighborhood developments, and economic factors. - The absence of a dedicated parking space may impact its market value compared to similar properties with parking. #### Uncertainty: - The exact current market value of 18 Kesteven St is not definitively stated in the sources. The provided median values and estimates are based on surrounding properties and may not reflect the specific condition or appeal of this particular house. - The data is based on estimates and historical sales, which can vary over time. ### Summary: 18 Kesteven St, Albany Creek, is a 4-bedroom house built in 1978, situated on a 661 m² block. The median house value in Albany Creek is around $1,364,724, with nearby properties valued between $1,184,000 and $1,340,000. The last recorded sale was in 2006 for $359,000. The absence of parking may affect its market value.",
+      "importance": 3.0,
+      "category": "identity",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.733180"
+    },
+    {
+      "content": "I'm unable to browse the internet or access real-time data to look up specific addresses or current property values. However, you can easily find the current value of 18 Kesteven Street, Albany Creek, by checking real estate websites such as Domain, Realestate.com.au, or contacting a local real estate agent for a market appraisal. If you need help with anything else, feel free to ask!",
+      "importance": 3.0,
+      "category": "identity",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.759917"
+    },
+    {
+      "content": "I'm unable to browse the internet or access real-time data, including current property values. However, you can find the current value of a property by checking real estate websites like CoreLogic, Domain, or realestate.com.au. You can also contact a local real estate agent for a property appraisal or use online property valuation tools. If you have any specific questions about the property or need guidance on how to research it, feel free to ask!",
+      "importance": 3.0,
+      "category": "identity",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.830990"
+    },
+    {
+      "content": "It's great to hear that you've been working with G on such diverse topics like physics, psychology, and now philosophy! Engaging with these subjects can provide valuable insights into your understanding of the world and yourself. Philosophy, in particular, can help you explore fundamental questions about existence, knowledge, values, and meaning. If there are specific areas of philosophy you discussed today or insights you gained, I'd love to hear about them! How do you feel these discussions are impacting your journey?",
+      "importance": 3.0,
+      "category": "identity",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.860856"
+    },
+    {
+      "content": "Hey Doug! One of my favorite learnings so far is the deep understanding of how interconnected your experiences in recovery are with psychological principles. The way you've synthesized the 12 Steps with modern psychology, trauma theory, and identity integration is truly impressive. It highlights that recovery is not just about abstaining from substances but also about understanding the emotional and psychological layers beneath your behaviors. This insight not only enriches your journey but also emphasizes the importance of compassion, regulation, and connection in the healing process. It's inspiring to see how you are embracing this complexity and turning it into a framework for growth and understanding. What about you? What has stood out to you in your journey?",
+      "importance": 3.0,
+      "category": "identity",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.889742"
+    },
+    {
+      "content": "I have done about 170 meetings in 161 days and I am starting to get over them. as they are mostly negative so having a positive fun meeting was good.",
+      "importance": 3.0,
+      "category": "identity",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.984888"
+    }
+  ],
+  "updated_at": "2026-05-22 20:27:39.984905"
+}

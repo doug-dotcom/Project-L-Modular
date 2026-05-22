@@ -2,6 +2,10 @@ import json
 from pathlib import Path
 from datetime import datetime
 
+# ============================================================
+# ROOT
+# ============================================================
+
 ROOT = Path(__file__).resolve().parents[1]
 
 QUEUE_FILE = (
@@ -10,6 +14,10 @@ QUEUE_FILE = (
     / "pending"
     / "pending_memory_queue.json"
 )
+
+# ============================================================
+# DOMAIN RULES
+# ============================================================
 
 DOMAIN_RULES = {
 
@@ -103,7 +111,9 @@ def load_queue():
             )
         )
 
-    except Exception:
+    except Exception as e:
+
+        print(f"LOAD ERROR: {e}")
 
         return []
 
@@ -165,6 +175,10 @@ def classify_pending_queue():
 
     for item in queue:
 
+        # ====================================================
+        # SKIP ALREADY CLASSIFIED
+        # ====================================================
+
         if item.get("status") == "classified":
             continue
 
@@ -172,6 +186,10 @@ def classify_pending_queue():
             "content",
             ""
         )
+
+        # ====================================================
+        # CLASSIFY
+        # ====================================================
 
         domain = classify_text(content)
 
@@ -184,6 +202,10 @@ def classify_pending_queue():
         item["status"] = "classified"
 
         updated += 1
+
+    # ========================================================
+    # SAVE UPDATED QUEUE
+    # ========================================================
 
     save_queue(queue)
 
@@ -225,3 +247,18 @@ def classifier_status():
 
         "domains": counts
     }
+
+# ============================================================
+# MAIN
+# ============================================================
+
+if __name__ == "__main__":
+
+    result = classify_pending_queue()
+
+    print(
+        json.dumps(
+            result,
+            indent=2
+        )
+    )
