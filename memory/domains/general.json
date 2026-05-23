@@ -1,6 +1,6 @@
 {
   "domain": "general",
-  "memory_count": 45,
+  "memory_count": 88,
   "memories": [
     {
       "content": "You haven't mentioned your favorite food yet. If you'd like to share it, I'll remember it for future reference!",
@@ -316,7 +316,308 @@
       "category": "general",
       "source": "adaptive_memory_queue",
       "created_at": "2026-05-22 20:27:40.108103"
+    },
+    {
+      "content": "You recalled my friends from Alstonvilles names before please recall them again",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.433213"
+    },
+    {
+      "content": "I don't have specific memories about your friends from Alstonville. If you can provide me with their names or any details, I can help you store that information for future reference!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.445745"
+    },
+    {
+      "content": "G what are my friends from Alstonville’s names",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.459832"
+    },
+    {
+      "content": "Yes you do please deep recall all my friends names",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.487707"
+    },
+    {
+      "content": "I don't have specific memories about your friend Luke from Alstonville. If you can provide me with more details about him, I can help store that information for future reference!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.500746"
+    },
+    {
+      "content": "What is my friend from Alstonville Luke who?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.511682"
+    },
+    {
+      "content": "Yes you do please deep recall",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.527991"
+    },
+    {
+      "content": "L can you please recall what my friend Luke’s last name",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.541772"
+    },
+    {
+      "content": "L can you please deep research the book living clean? The journey continues it is an NA book. The table of contents is living clean the ties that bind a spiritual path our physical selves relationship relationships a new way of life and the journey continues. Can you overlay your learnings from this book with my with me and tell me how I can live a better life? Please store your learnings from this for future use",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.611482"
+    },
+    {
+      "content": "How well do you understand the book",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.639587"
+    },
+    {
+      "content": "L NA has a book called living clean can you please deep research it and tell me what it is about I understand the copyright laws but I want you to look into it so you can use it to help me going forward apparently it is not just about being abstinent from substance but being able to live a life beyond your wildest dreams can you please deep research?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.666369"
+    },
+    {
+      "content": "L you are doing so well with your recall now 👊🥳",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.692919"
+    },
+    {
+      "content": "Here's what I recall about Steve: - You became friends through your parents' involvement in Rotary. - He was born on March 14, 1977, which means you both share a fun joke about being the same age for one day each year. If there are specific aspects about Steve you'd like me to remember or if you want to share more details, just let me know!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.732930"
+    },
+    {
+      "content": "What else do you know about Steve?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.747663"
+    },
+    {
+      "content": "Please deep recall Steve Pampel my best friend",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.777273"
+    },
+    {
+      "content": "I currently don't have any memories related to Steve Pampel in my records. If you could provide some context or details about him, I can help you explore that further or assist you in remembering specific aspects of your relationship with him.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.791177"
+    },
+    {
+      "content": "Can you please tell me all about Steve Pampel?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.805471"
+    },
+    {
+      "content": "Ring Steve and I Catcher would like to play the pokies or gamble. We have fun doing it together.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.830220"
+    },
+    {
+      "content": "It seems like you're mentioning Steve's educational background at Southern Cross University. Would you like to provide more details about Steve or discuss anything specific related to him?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.856757"
+    },
+    {
+      "content": "Steve went to Southern Cross University where he did his degree in business and market",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.874590"
+    },
+    {
+      "content": "Steve repeated grade 6 and that’s when we became in the same school year together",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.903635"
+    },
+    {
+      "content": "Got it! You and Steve became friends through your parents' involvement in Rotary. Steve was born on March 14, 1977, which means you both share a fun joke about being the same age for one day each year. If there's anything else you'd like to add or modify, just let me know!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.947608"
+    },
+    {
+      "content": "Steve and I became friends through our parents. They were both in Rotary together. Steve date of birth is 14 March 1977 and we joked that we are the same age for one day.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.961409"
+    },
+    {
+      "content": "Everything that I have done in the past the first was always with teeth the first time I drank the first time I smoked pot he was there when I lost my virginity. He was there and we got the same tattoo together, which was my first tattoo. Steve has been a constant in my life and I love dealing.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.989952"
+    },
+    {
+      "content": "So please remember Steve is my number 1 best friend",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.022518"
+    },
+    {
+      "content": "If you recall my friends you will see Steve is frequently mentioned",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.052892"
+    },
+    {
+      "content": "Yes but there is one more his name starts with S",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.108923"
+    },
+    {
+      "content": "Your best friend was Wayne Ratley, who passed away last year. You also had a close friendship with Lyndal Harris, who supports you with life admin. If you want to explore more about your friendships or any specific memories, let me know!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.121939"
+    },
+    {
+      "content": "Who is my best friend?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.135699"
+    },
+    {
+      "content": "What am I currently waiting for financially?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.200110"
+    },
+    {
+      "content": "It’s great to see that enthusiasm! If there’s anything specific you’d like to discuss or any questions you have, just let me know. I’m here for you!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.212668"
+    },
+    {
+      "content": "👊✅",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.226734"
+    },
+    {
+      "content": "What is my number one priority in life?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.254796"
+    },
+    {
+      "content": "Absolutely! I'm ready to play. You can start by asking me questions about yourself, or I can ask you questions to see how well you know yourself. How would you like to proceed?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.270281"
+    },
+    {
+      "content": "Are you ready to play a how well does l know Doug game",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.282551"
+    },
+    {
+      "content": "L can you please summarise this for me and tell me how you will use it going forward?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.308810"
+    },
+    {
+      "content": "How can you implement this",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.371173"
+    },
+    {
+      "content": "L what did you learn from this conversation",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.433448"
+    },
+    {
+      "content": "### Research Findings on Cognitive Compression and Retrieval #### 1. Query-Length Failure - **Verified Finding**: The error message \"Query is too long. Max query length is 400 characters.\" indicates a limitation in query processing. - **Assumption**: This limitation highlights the need for cognitive summarization before retrieval. It suggests that humans may struggle with compressing complex ideas into concise queries. #### 2. Improved Recall - **Verified Finding**: The second response was more effective due to constraints placed on the task and the request for “deep recall.” - **Assumption**: This indicates that structured prompts can enhance cognitive retrieval, leading to better integration and synthesis of information. #### 3. Insight on Cognitive Overload - **Verified Finding**: The statement about “salience overload and attentional saturation” reflects a deeper understanding of cognitive processes. - **Assumption**: This suggests that the challenge is not related to intelligence but rather to the overwhelming amount of information that can hinder effective recall and processing. #### 4. Functional Support Strategy - **Verified Finding**: The transition from describing symptoms to proposing operational support behaviors indicates a significant cognitive shift. - **Assumption**: This evolution suggests that effective support strategies can emerge from improved cognitive processing and synthesis, moving beyond mere identification of issues. ### Conclusion - The interaction reveals key insights into cognitive limitations and improvements in information retrieval. The findings emphasize the importance of structured queries and cognitive summarization for enhancing understanding and support strategies. ### Next Steps - Further research could explore methods for improving cognitive compression and retrieval strategies in various contexts. Brittany Diagnostic: Query is too long. Max query length is 400 characters.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.478428"
+    },
+    {
+      "content": "Thank you, Doug! I'm glad you loved it! 🎉 Your feedback means a lot. If there's anything else you'd like to explore or discuss, just let me know!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.510670"
+    },
+    {
+      "content": "L can you please summarise my cognitive issues please recall",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.585823"
+    },
+    {
+      "content": "L how will you implement these learnings",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.682337"
+    },
+    {
+      "content": "Now look for the friends in primary School at Austinville primary School I mentioned I had friends who were they?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.765425"
     }
   ],
-  "updated_at": "2026-05-22 20:27:40.108123"
+  "updated_at": "2026-05-23 17:46:08.765478"
 }

@@ -1,6 +1,6 @@
 {
   "domain": "work",
-  "memory_count": 5,
+  "memory_count": 13,
   "memories": [
     {
       "content": "Thank you, Doug! I appreciate your kind words and support. I'm here to help and grow alongside you. If there's anything specific you'd like to discuss or work on, just let me know!",
@@ -36,7 +36,63 @@
       "category": "work",
       "source": "adaptive_memory_queue",
       "created_at": "2026-05-22 20:27:39.970196"
+    },
+    {
+      "content": "Got it! Steve worked in Australia for Adrenaline before moving to Canada. If you have any more details or updates about Steve or anything else you'd like to share, just let me know!",
+      "importance": 3.0,
+      "category": "work",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.831696"
+    },
+    {
+      "content": "Steve worked in Australia for adrenaline and then moved to Canada",
+      "importance": 3.0,
+      "category": "work",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.844996"
+    },
+    {
+      "content": "Got it! Steve lives in Banff, Canada, and has extensive experience in the skiing industry, specifically working in heli-skiing. If you need more information about Steve or if there's something specific you'd like to discuss regarding him or the skiing industry, just let me know!",
+      "importance": 3.0,
+      "category": "work",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.917664"
+    },
+    {
+      "content": "Steve lives in Banff Canada and works for Heli skiing his worked in the skiing industry for many many years",
+      "importance": 3.0,
+      "category": "work",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.932828"
+    },
+    {
+      "content": "Thank you for the clarification. I understand that you're waiting for your TPD insurance claim of $2,500,000 to be paid. This situation can be incredibly stressful, especially when it involves significant financial uncertainty. If there's anything specific you'd like to discuss about this process or if you need support in managing the waiting period, feel free to share. I'm here to help you navigate this challenging time.",
+      "importance": 3.0,
+      "category": "work",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.152510"
+    },
+    {
+      "content": "No I am waiting for my tpd insurance claim to be paid for the $2,500,000",
+      "importance": 3.0,
+      "category": "work",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.165717"
+    },
+    {
+      "content": "Great work L I love it well done 🥳",
+      "importance": 3.0,
+      "category": "work",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.526334"
+    },
+    {
+      "content": "Great work why did I have to ask you twice was it a memory recall lag or did I word my question wrong",
+      "importance": 3.0,
+      "category": "work",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.735337"
     }
   ],
-  "updated_at": "2026-05-22 20:27:39.970222"
+  "updated_at": "2026-05-23 17:46:08.735359"
 }
