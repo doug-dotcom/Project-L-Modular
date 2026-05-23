@@ -1,3 +1,12 @@
+﻿
+# =====================================================
+# ACTIVE COGNITION
+# =====================================================
+
+from core.cognition.working_memory import (
+    update_working_memory,
+    build_working_context
+)
 import os
 import sys
 from pathlib import Path
@@ -283,7 +292,31 @@ def chat(req: ChatRequest):
     # SYSTEM PROMPT
     # -------------------------------------------------
 
-    system_prompt = f"""
+    system_
+# ============================================
+# ACTIVE WORKING MEMORY
+# ============================================
+
+try:
+
+    update_working_memory(user_input)
+
+    working_context = build_working_context()
+
+    try:
+        memory_context = (
+            working_context
+            + "\n\n"
+            + str(memory_context)
+        )
+    except:
+        pass
+
+except Exception as e:
+
+    print("WORKING MEMORY ERROR:", e)
+
+prompt = f"""
 You are L.
 
 CURRENT DATE:
@@ -420,3 +453,4 @@ async def upload_file(
             "success": False,
             "error": str(e)
         }
+
