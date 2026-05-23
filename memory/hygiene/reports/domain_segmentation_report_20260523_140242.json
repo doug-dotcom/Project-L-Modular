@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-05-23 14:02:42.839330",
+  "total_memories": 35255,
+  "domains": {
+    "recovery": 6379,
+    "project_l": 9486,
+    "unclassified": 16540,
+    "family": 1772,
+    "military": 138,
+    "psychology": 119,
+    "identity": 769,
+    "sport": 50,
+    "philosophy": 2
+  }
+}

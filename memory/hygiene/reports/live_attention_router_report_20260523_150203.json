@@ -1,0 +1,124 @@
+{
+  "created_at": "2026-05-23 15:02:03.204163",
+  "router_name": "Live Attention Router",
+  "purpose": "Route live input toward the most relevant cognition and memory pathway.",
+  "available_routes": [
+    "project_l_route",
+    "recovery_route",
+    "identity_route",
+    "family_route",
+    "stress_route",
+    "general_route"
+  ],
+  "routing_rules": {
+    "project_l_route": [
+      "project l",
+      "aods",
+      "engine",
+      "runtime",
+      "memory",
+      "server",
+      "architecture"
+    ],
+    "recovery_route": [
+      "recovery",
+      "meeting",
+      "step",
+      "regulation",
+      "addiction",
+      "hps"
+    ],
+    "identity_route": [
+      "identity",
+      "mask",
+      "doug",
+      "dougie",
+      "douglas",
+      "self worth",
+      "who i am"
+    ],
+    "family_route": [
+      "family",
+      "kids",
+      "iyla",
+      "ashton",
+      "luella",
+      "mehlia",
+      "father"
+    ],
+    "stress_route": [
+      "fear",
+      "money",
+      "stress",
+      "unsafe",
+      "panic",
+      "pressure"
+    ]
+  },
+  "default_route": "general_route",
+  "route_tests": [
+    {
+      "sample": "continue Project L AODS runtime memory work",
+      "selected_route": "project_l_route",
+      "scores": {
+        "project_l_route": 4,
+        "recovery_route": 0,
+        "identity_route": 0,
+        "family_route": 0,
+        "stress_route": 0
+      }
+    },
+    {
+      "sample": "I feel stressed and unsafe about money",
+      "selected_route": "stress_route",
+      "scores": {
+        "project_l_route": 0,
+        "recovery_route": 0,
+        "identity_route": 0,
+        "family_route": 0,
+        "stress_route": 3
+      }
+    },
+    {
+      "sample": "talk about identity and masks",
+      "selected_route": "identity_route",
+      "scores": {
+        "project_l_route": 0,
+        "recovery_route": 0,
+        "identity_route": 2,
+        "family_route": 0,
+        "stress_route": 0
+      }
+    },
+    {
+      "sample": "family and kids matter",
+      "selected_route": "family_route",
+      "scores": {
+        "project_l_route": 0,
+        "recovery_route": 0,
+        "identity_route": 0,
+        "family_route": 2,
+        "stress_route": 0
+      }
+    },
+    {
+      "sample": "recovery meeting regulation",
+      "selected_route": "recovery_route",
+      "scores": {
+        "project_l_route": 0,
+        "recovery_route": 3,
+        "identity_route": 0,
+        "family_route": 0,
+        "stress_route": 0
+      }
+    }
+  ],
+  "runtime_behavior": [
+    "classify incoming user text",
+    "select strongest attention route",
+    "activate matching memory layer",
+    "preserve continuity if route is unclear",
+    "fall back to general context safely"
+  ],
+  "next_evolutionary_goal": "Context Window Compression Engine"
+}

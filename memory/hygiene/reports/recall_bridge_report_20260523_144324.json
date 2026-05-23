@@ -1,0 +1,41 @@
+{
+  "created_at": "2026-05-23 14:43:24.468982",
+  "resume_identity": {
+    "system_name": "Project L",
+    "current_role": "Cognitive memory orchestration system",
+    "current_focus": "Continuity-aware cognition"
+  },
+  "resume_state": {
+    "dominant_state": {
+      "state": "project_execution",
+      "activation": 2671
+    },
+    "dominant_attention": {
+      "attention_type": "project_attention",
+      "strength": 5980
+    },
+    "dominant_reinforcement_loop": {
+      "loop": "project_l_core",
+      "strength": 4143
+    }
+  },
+  "resume_context": {
+    "what_is_happening": "Project L is evolving from memory storage into active cognition architecture.",
+    "current_phase": "Attention, meta-cognition, continuity, and recall orchestration.",
+    "primary_focus": "Building human-like contextual retrieval and continuity.",
+    "active_pathway": "Project L architecture remains dominant reinforced cognition pathway."
+  },
+  "live_resume_prompt": [
+    "Reconnect continuity anchors.",
+    "Load dominant cognition state.",
+    "Restore active attention pathways.",
+    "Hydrate active project context.",
+    "Resume prior cognitive direction safely."
+  ],
+  "active_observations": [
+    "Cognition currently biased toward execution and system building.",
+    "Attention heavily focused on Project L architecture.",
+    "Project L is currently the strongest reinforced cognition pathway."
+  ],
+  "next_evolutionary_layer": "Adaptive Runtime Cognition Engine"
+}

@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-05-23T21:11:11.900024",
+  "mode": "SAFE_AUDIT_ONLY",
+  "note": "This report does not modify memory files.",
+  "memories_collected": 0,
+  "exact_duplicate_clusters": 0,
+  "near_duplicate_clusters": 0,
+  "estimated_exact_duplicate_items": 0,
+  "estimated_near_duplicate_items": 0,
+  "exact_clusters": [],
+  "near_clusters": [],
+  "cluster_report_limit_note": "Only first 200 clusters of each type are included to keep report readable."
+}

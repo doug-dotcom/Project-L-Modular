@@ -1,0 +1,26 @@
+{
+  "created_at": "2026-05-23 14:13:04.911968",
+  "relationships": {
+    "project_l <-> recovery": 1332,
+    "doug <-> project_l": 587,
+    "identity <-> project_l": 544,
+    "identity <-> recovery": 424,
+    "doug <-> recovery": 419,
+    "doug <-> identity": 406,
+    "nervous_system <-> project_l": 318,
+    "nervous_system <-> recovery": 302,
+    "identity <-> nervous_system": 252,
+    "doug <-> nervous_system": 215,
+    "future_fear <-> project_l": 148,
+    "future_fear <-> recovery": 125,
+    "family <-> project_l": 97,
+    "family <-> recovery": 81,
+    "future_fear <-> identity": 69,
+    "doug <-> family": 64,
+    "family <-> identity": 62,
+    "doug <-> future_fear": 61,
+    "future_fear <-> nervous_system": 59,
+    "family <-> future_fear": 39,
+    "family <-> nervous_system": 39
+  }
+}
