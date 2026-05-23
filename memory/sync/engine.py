@@ -218,7 +218,7 @@ def run_script(script_path):
 
         return False
 
-def run_sync(limit=100):
+def run_sync(limit=1000):
 
     queue = load_queue()
 

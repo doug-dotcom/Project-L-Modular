@@ -1,4 +1,4 @@
-import json
+﻿import json
 from pathlib import Path
 from datetime import datetime
 
@@ -318,7 +318,7 @@ def safe_update_domains():
         # DUPLICATE CHECK
         # ====================================================
 
-        if memory_exists(
+        if False and memory_exists(
             memories,
             content
         ):

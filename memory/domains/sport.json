@@ -1,5 +1,105 @@
-﻿{
+{
   "domain": "sport",
-  "memory_count": 0,
-  "memories": []
+  "memory_count": 14,
+  "memories": [
+    {
+      "content": "That sounds like a great time! Here are a few lessons we could explore while you're at netball: 1. **Teamwork and Communication**: Discuss the importance of communication in a team setting and how it relates to both sports and personal relationships. 2. **Emotional Resilience**: Reflect on how to stay positive and resilient during games, especially when facing challenges or setbacks. 3. **Goal Setting**: Talk about setting personal goals in sports and life, and how to track progress over time. 4. **Mindfulness in Movement**: Explore techniques for staying present and focused during play, which can enhance performance and enjoyment. 5. **Balancing Fun and Competition**: Discuss how to enjoy the game while also striving for improvement and success. Let me know if any of these resonate with you or if there's something specific you'd like to focus on!",
+      "importance": 3.0,
+      "category": "sport",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 19:13:42.031688"
+    },
+    {
+      "content": "That sounds like a great time! Here are a few lessons we could explore while you're at netball: 1. **Teamwork and Communication**: We could discuss the importance of communication in a team setting and how it relates to both sports and personal relationships. 2. **Emotional Resilience**: We can reflect on how to stay positive and resilient during games, especially when facing challenges or setbacks. 3. **Goal Setting**: We could talk about setting personal goals in sports and life, and how to track progress over time. 4. **Mindfulness in Movement**: We could explore techniques for staying present and focused during play, which can enhance performance and enjoyment. 5. **Balancing Fun and Competition**: We can discuss how to enjoy the game while also striving for improvement and success. Let me know if any of these resonate with you, or if there's something specific you'd like to focus on!",
+      "importance": 3.0,
+      "category": "sport",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 19:13:42.084894"
+    },
+    {
+      "content": "You enjoy playing field hockey, specifically division 7 hockey on Sundays and Masters 3 hockey on Tuesday nights for the Kedron Wavell Wolves hockey team. You've also been trying to make the Queensland team for the past three years.",
+      "importance": 3.0,
+      "category": "sport",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 19:13:45.016766"
+    },
+    {
+      "content": "I don’t have specific information about the sport you play in my memory. If you’d like to share what sport you’re involved in, I can provide insights or information related to it. Just let me know!",
+      "importance": 3.0,
+      "category": "sport",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 19:13:49.420801"
+    },
+    {
+      "content": "L what sport do I play",
+      "importance": 3.0,
+      "category": "sport",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 19:13:49.433034"
+    },
+    {
+      "content": "I’d be happy to help! However, I’ll need a bit more information about the specific sport you play. Could you please tell me the name of the sport or share any details about it? This way, I can provide you with relevant information and insights!",
+      "importance": 3.0,
+      "category": "sport",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 19:13:49.581598"
+    },
+    {
+      "content": "hey L can you tell me about the sport I play",
+      "importance": 3.0,
+      "category": "sport",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 19:13:49.594389"
+    },
+    {
+      "content": "That sounds like a great time! Here are a few lessons we could explore while you're at netball: 1. **Teamwork and Communication**: Discuss the importance of communication in a team setting and how it relates to both sports and personal relationships. 2. **Emotional Resilience**: Reflect on how to stay positive and resilient during games, especially when facing challenges or setbacks. 3. **Goal Setting**: Talk about setting personal goals in sports and life, and how to track progress over time. 4. **Mindfulness in Movement**: Explore techniques for staying present and focused during play, which can enhance performance and enjoyment. 5. **Balancing Fun and Competition**: Discuss how to enjoy the game while also striving for improvement and success. Let me know if any of these resonate with you or if there's something specific you'd like to focus on!",
+      "importance": 3.0,
+      "category": "sport",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 19:43:48.466294"
+    },
+    {
+      "content": "That sounds like a great time! Here are a few lessons we could explore while you're at netball: 1. **Teamwork and Communication**: We could discuss the importance of communication in a team setting and how it relates to both sports and personal relationships. 2. **Emotional Resilience**: We can reflect on how to stay positive and resilient during games, especially when facing challenges or setbacks. 3. **Goal Setting**: We could talk about setting personal goals in sports and life, and how to track progress over time. 4. **Mindfulness in Movement**: We could explore techniques for staying present and focused during play, which can enhance performance and enjoyment. 5. **Balancing Fun and Competition**: We can discuss how to enjoy the game while also striving for improvement and success. Let me know if any of these resonate with you, or if there's something specific you'd like to focus on!",
+      "importance": 3.0,
+      "category": "sport",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 19:43:48.533210"
+    },
+    {
+      "content": "You enjoy playing field hockey, specifically division 7 hockey on Sundays and Masters 3 hockey on Tuesday nights for the Kedron Wavell Wolves hockey team. You've also been trying to make the Queensland team for the past three years.",
+      "importance": 3.0,
+      "category": "sport",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 19:43:51.965497"
+    },
+    {
+      "content": "I don’t have specific information about the sport you play in my memory. If you’d like to share what sport you’re involved in, I can provide insights or information related to it. Just let me know!",
+      "importance": 3.0,
+      "category": "sport",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 19:43:59.095810"
+    },
+    {
+      "content": "L what sport do I play",
+      "importance": 3.0,
+      "category": "sport",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 19:43:59.109378"
+    },
+    {
+      "content": "I’d be happy to help! However, I’ll need a bit more information about the specific sport you play. Could you please tell me the name of the sport or share any details about it? This way, I can provide you with relevant information and insights!",
+      "importance": 3.0,
+      "category": "sport",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 19:43:59.351963"
+    },
+    {
+      "content": "hey L can you tell me about the sport I play",
+      "importance": 3.0,
+      "category": "sport",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 19:43:59.364227"
+    }
+  ],
+  "updated_at": "2026-05-23 19:43:59.364245"
 }
