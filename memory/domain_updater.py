@@ -243,6 +243,10 @@ def safe_update_domains():
 
     domains_touched = set()
 
+    # ========================================================
+    # PROCESS QUEUE
+    # ========================================================
+
     for item in queue:
 
         # ====================================================
@@ -382,6 +386,23 @@ def safe_update_domains():
         written += 1
 
         domains_touched.add(domain)
+
+    # ========================================================
+    # CLEAN PROCESSED ITEMS
+    # ========================================================
+
+    queue = [
+
+        item for item in queue
+
+        if item.get("status") not in [
+
+            "written",
+            "duplicate",
+            "skipped"
+
+        ]
+    ]
 
     # ========================================================
     # SAVE QUEUE
