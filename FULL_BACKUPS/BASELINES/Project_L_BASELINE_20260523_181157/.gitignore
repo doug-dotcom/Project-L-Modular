@@ -1,0 +1,50 @@
+# =====================================================
+# PROJECT L GITIGNORE
+# =====================================================
+
+# ENV
+.env
+
+# PYTHON
+__pycache__/
+*.pyc
+*.pyo
+
+# VENV
+.venv/
+venv/
+
+# NODE
+node_modules/
+
+# LOGS
+logs/
+*.log
+
+# TEMP
+*.tmp
+*.bak
+
+# BUILD
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+*.env
+configs/token.json
+configs/credentials.json
+configs/openai_key.txt
+**/token.json
+**/credentials.json
+**/openai_key.txt
+**/*secret*
+**/*token*
+**/*credential*
+
+OpenAI Key.txt
+
+.env
+
+.env.local

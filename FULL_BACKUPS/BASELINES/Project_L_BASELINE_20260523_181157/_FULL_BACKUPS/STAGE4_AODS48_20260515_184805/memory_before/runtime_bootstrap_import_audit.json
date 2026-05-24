@@ -1,0 +1,50 @@
+{
+  "file": "C:\\Shine_L\\orchestration\\runtime_bootstrap.py",
+  "compile_status": "OK",
+  "compile_error": "",
+  "import_count": 10,
+  "duplicate_count": 0,
+  "imports": [
+    {
+      "LineNumber": 1,
+      "Import": "import json"
+    },
+    {
+      "LineNumber": 2,
+      "Import": "import os"
+    },
+    {
+      "LineNumber": 3,
+      "Import": "from datetime import datetime"
+    },
+    {
+      "LineNumber": 10,
+      "Import": "from orchestration.runtime_engine import ("
+    },
+    {
+      "LineNumber": 14,
+      "Import": "from orchestration.tegan_runtime import ("
+    },
+    {
+      "LineNumber": 18,
+      "Import": "from memory.orchestrator import ("
+    },
+    {
+      "LineNumber": 22,
+      "Import": "from orchestration.active_registry import ("
+    },
+    {
+      "LineNumber": 26,
+      "Import": "from core.config import *"
+    },
+    {
+      "LineNumber": 27,
+      "Import": "from core.paths import *"
+    },
+    {
+      "LineNumber": 29,
+      "Import": "from openai import OpenAI"
+    }
+  ],
+  "duplicate_imports": []
+}

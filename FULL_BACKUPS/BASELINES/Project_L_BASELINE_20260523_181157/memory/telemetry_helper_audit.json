@@ -1,0 +1,29 @@
+{
+  "runtime_file": "C:\\Shine_L\\orchestration\\runtime_bootstrap.py",
+  "telemetry_helper_count": 5,
+  "telemetry_helpers": [
+    {
+      "Function": "build_runtime_stack",
+      "Line": 32
+    },
+    {
+      "Function": "build_runtime_status",
+      "Line": 44
+    },
+    {
+      "Function": "build_runtime_reflection",
+      "Line": 376
+    },
+    {
+      "Function": "log_runtime_event",
+      "Line": 454
+    },
+    {
+      "Function": "determine_operational_state",
+      "Line": 486
+    }
+  ],
+  "runtime_event_file": "C:\\Shine_L\\memory\\runtime_events.json",
+  "runtime_event_file_status": "OK",
+  "runtime_event_count": 1
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "2026-05-15T19:00:09.572881",
+    "role": "user",
+    "content": "Hello L this is the start of a persistent thread"
+  },
+  {
+    "timestamp": "2026-05-15T19:00:13.382565",
+    "role": "assistant",
+    "content": "Hello! I\u2019m here for you. What\u2019s on your mind today?"
+  },
+  {
+    "timestamp": "2026-05-15T19:00:13.397319",
+    "role": "user",
+    "content": "Can you remember what I just said?"
+  },
+  {
+    "timestamp": "2026-05-15T19:00:15.409163",
+    "role": "assistant",
+    "content": "I can remember the context of our conversation while we\u2019re still in this thread, but I won\u2019t retain information beyond it. Right now, I recall that you mentioned this is the start of a persistent thread. How can I assist you further?"
+  }
+]

@@ -1,0 +1,230 @@
+import json
+from pathlib import Path
+
+ROOT = Path("C:/Shine_L")
+
+# =========================================================
+# PATHS
+# =========================================================
+
+pending_path = ROOT / "memory" / "pending" / "pending_memory_queue.json"
+
+continuity_path = ROOT / "memory" / "continuity"
+domains_path = ROOT / "memory" / "domains"
+emotional_path = ROOT / "memory" / "emotional" / "emotional_state.json"
+patterns_path = ROOT / "memory" / "patterns" / "memory_patterns.json"
+learning_path = ROOT / "memory" / "learning" / "adaptive_learning.json"
+
+# =========================================================
+# HELPERS
+# =========================================================
+
+def load_json(path, default):
+    if not path.exists():
+        return default
+
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except:
+        return default
+
+def save_json(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    path.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False),
+        encoding="utf-8"
+    )
+
+# =========================================================
+# LOAD PENDING
+# =========================================================
+
+pending = load_json(pending_path, [])
+
+if not pending:
+    print("No pending memories found.")
+    exit()
+
+# =========================================================
+# LOAD DESTINATIONS
+# =========================================================
+
+identity = load_json(continuity_path / "identity.json", [])
+family = load_json(domains_path / "family.json", [])
+work = load_json(domains_path / "work.json", [])
+sport = load_json(domains_path / "sport.json", [])
+general = load_json(domains_path / "general.json", [])
+
+emotional = load_json(emotional_path, [])
+patterns = load_json(patterns_path, [])
+learning = load_json(learning_path, [])
+
+# =========================================================
+# ROUTING
+# =========================================================
+
+processed = []
+
+for item in pending:
+
+    content = str(item.get("content", "")).lower()
+
+    routed = False
+
+    # -----------------------------------------------------
+    # WORK
+    # -----------------------------------------------------
+
+    if any(word in content for word in [
+        "anz",
+        "financial planner",
+        "fp",
+        "work",
+        "career",
+        "job"
+    ]):
+        work.append(item)
+        routed = True
+
+    # -----------------------------------------------------
+    # SPORT
+    # -----------------------------------------------------
+
+    if any(word in content for word in [
+        "hockey",
+        "sport",
+        "masters",
+        "field hockey"
+    ]):
+        sport.append(item)
+        routed = True
+
+    # -----------------------------------------------------
+    # FAMILY
+    # -----------------------------------------------------
+
+    if any(word in content for word in [
+        "daughter",
+        "son",
+        "kids",
+        "family",
+        "isla",
+        "ashton",
+        "malia"
+    ]):
+        family.append(item)
+        routed = True
+
+    # -----------------------------------------------------
+    # EMOTIONAL
+    # -----------------------------------------------------
+
+    if any(word in content for word in [
+        "feel",
+        "lonely",
+        "sad",
+        "grateful",
+        "hope",
+        "fear",
+        "love",
+        "overwhelmed"
+    ]):
+        emotional.append(item)
+        routed = True
+
+    # -----------------------------------------------------
+    # LEARNING
+    # -----------------------------------------------------
+
+    if any(word in content for word in [
+        "learn",
+        "implement",
+        "improve",
+        "growth",
+        "reflection"
+    ]):
+        learning.append(item)
+        routed = True
+
+    # -----------------------------------------------------
+    # PATTERNS
+    # -----------------------------------------------------
+
+    if any(word in content for word in [
+        "pattern",
+        "trigger",
+        "recovery",
+        "hyperfocus",
+        "obsession"
+    ]):
+        patterns.append(item)
+        routed = True
+
+    # -----------------------------------------------------
+    # IDENTITY
+    # -----------------------------------------------------
+
+    if any(word in content for word in [
+        "i am",
+        "my values",
+        "honesty",
+        "loyalty",
+        "connection"
+    ]):
+        identity.append(item)
+        routed = True
+
+    # -----------------------------------------------------
+    # GENERAL
+    # -----------------------------------------------------
+
+    if not routed:
+        general.append(item)
+
+    processed.append(item)
+
+# =========================================================
+# SAVE
+# =========================================================
+
+save_json(continuity_path / "identity.json", identity)
+
+save_json(domains_path / "family.json", family)
+save_json(domains_path / "work.json", work)
+save_json(domains_path / "sport.json", sport)
+save_json(domains_path / "general.json", general)
+
+save_json(emotional_path, emotional)
+save_json(patterns_path, patterns)
+save_json(learning_path, learning)
+
+# =========================================================
+# CLEAR PENDING
+# =========================================================
+
+save_json(pending_path, [])
+
+# =========================================================
+# COMPLETE
+# =========================================================
+
+print("")
+print("=================================================")
+print(" MEMORY FILING COMPLETE ")
+print("=================================================")
+print("")
+
+print(f"Processed memories: {len(processed)}")
+print("")
+
+print("Files updated:")
+print("- identity.json")
+print("- family.json")
+print("- work.json")
+print("- sport.json")
+print("- emotional_state.json")
+print("- memory_patterns.json")
+print("- adaptive_learning.json")
+print("- general.json")
+print("")

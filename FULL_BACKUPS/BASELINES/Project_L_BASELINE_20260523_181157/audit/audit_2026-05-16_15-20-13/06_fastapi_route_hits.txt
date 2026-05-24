@@ -1,0 +1,1907 @@
+
+C:\Shine_L\api\app_factory.py:6:from fastapi import FastAPI
+C:\Shine_L\api\app_factory.py:7:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\app_factory.py:30:    app = FastAPI()
+C:\Shine_L\api\app_factory.py:64:    @app.get("/runtime/status")
+C:\Shine_L\api\app_factory.py:73:    @app.get("/compatibility/status")
+C:\Shine_L\api\app_factory.py:82:    @app.get("/health")
+C:\Shine_L\api\server.py:5:from fastapi import FastAPI
+C:\Shine_L\api\server.py:6:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\server.py:48:app = FastAPI(
+C:\Shine_L\api\server.py:63:@app.get("/")
+C:\Shine_L\api\server.py:72:@app.get("/health")
+C:\Shine_L\api\server.py:83:@app.post("/chat")
+C:\Shine_L\api\server.py:156:@app.get("/routes")
+C:\Shine_L\backups\server_stable_core_2026-05-16_15-00-10.py:5:from fastapi import FastAPI
+C:\Shine_L\backups\server_stable_core_2026-05-16_15-00-10.py:6:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\backups\server_stable_core_2026-05-16_15-00-10.py:48:app = FastAPI(
+C:\Shine_L\backups\server_stable_core_2026-05-16_15-00-10.py:63:@app.get("/")
+C:\Shine_L\backups\server_stable_core_2026-05-16_15-00-10.py:72:@app.get("/health")
+C:\Shine_L\backups\server_stable_core_2026-05-16_15-00-10.py:83:@app.post("/chat")
+C:\Shine_L\backups\server_stable_core_2026-05-16_15-00-10.py:156:@app.get("/routes")
+C:\Shine_L\services\runtime_endpoints.py:11:from fastapi import APIRouter
+C:\Shine_L\services\runtime_endpoints.py:41:router = APIRouter()
+C:\Shine_L\services\runtime_endpoints.py:47:@router.get("/runtime/status")
+C:\Shine_L\services\runtime_endpoints.py:64:@router.get("/runtime/health")
+C:\Shine_L\services\runtime_endpoints.py:81:@router.post("/runtime/chat")
+C:\Shine_L\services\runtime_endpoints.py:143:@router.get("/runtime/captains")
+C:\Shine_L\services\runtime_endpoints.py:151:@router.get("/runtime/assign/{category}")
+C:\Shine_L\services\runtime_endpoints.py:161:@router.post("/runtime/triage")
+C:\Shine_L\services\runtime_endpoints.py:178:@router.get("/runtime/memory-context")
+C:\Shine_L\services\runtime_endpoints.py:188:@router.get("/runtime/thread/{thread_id}")
+C:\Shine_L\services\runtime_endpoints.py:198:@router.get("/runtime/mission/summary")
+C:\Shine_L\services\runtime_endpoints.py:214:@router.get("/runtime/guardian/status")
+C:\Shine_L\services\runtime_endpoints.py:229:@router.get("/runtime/operator/brief")
+C:\Shine_L\services\runtime_endpoints.py:243:@router.get("/runtime/seal/status")
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:80:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:86:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:88:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:2381:@app.get("/")
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:2392:@app.get("/memory/audit")
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:2398:@app.get("/memory/audit-v2")
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:2404:@app.get("/system/stability")
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:2409:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:3463:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:3577:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:3595:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:3624:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:3645:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:3671:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:3684:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:3698:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS01_20260514_104211\server.py:3739:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:26:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:98:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:104:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:106:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:2389:@app.get("/")
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:2400:@app.get("/memory/audit")
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:2406:@app.get("/memory/audit-v2")
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:2412:@app.get("/system/stability")
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:2417:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:3471:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:3585:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:3603:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:3632:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:3653:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:3679:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:3692:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:3706:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS02_20260514_104333\server.py:3747:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:32:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:104:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:110:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:112:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:2386:@app.get("/")
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:2397:@app.get("/memory/audit")
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:2403:@app.get("/memory/audit-v2")
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:2409:@app.get("/system/stability")
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:2414:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:3468:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:3582:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:3600:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:3629:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:3650:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:3676:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:3689:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:3703:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS03_20260514_104436\server.py:3744:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:37:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:109:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:115:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:117:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:2391:@app.get("/")
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:2402:@app.get("/memory/audit")
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:2408:@app.get("/memory/audit-v2")
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:2414:@app.get("/system/stability")
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:2419:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:3459:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:3573:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:3591:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:3620:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:3641:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:3667:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:3680:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:3694:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS04_20260514_104550\server.py:3735:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:42:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:114:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:120:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:122:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:148:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:2393:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:3433:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:3547:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:3565:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:3594:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:3615:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:3641:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:3654:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:3668:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS05_20260514_104735\server.py:3709:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:48:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:120:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:126:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:128:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:154:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:2346:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:3386:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:3500:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:3518:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:3547:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:3568:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:3594:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:3607:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:3621:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS06_20260514_104912\server.py:3662:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:57:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:129:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:135:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:137:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:163:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:2156:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:3196:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:3310:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:3328:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:3357:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:3378:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:3404:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:3417:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:3431:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS07_20260514_105025\server.py:3472:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:65:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:137:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:143:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:145:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:171:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:1920:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:2960:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:3074:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:3092:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:3121:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:3142:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:3168:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:3181:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:3195:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS08_20260514_105147\server.py:3236:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:72:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:144:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:150:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:152:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:178:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:1478:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:2518:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:2632:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:2650:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:2679:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:2700:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:2726:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:2739:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:2753:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS11_20260514_105726\server.py:2794:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:78:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:150:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:156:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:158:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:184:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:1370:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:2410:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:2524:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:2542:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:2571:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:2592:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:2618:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:2631:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:2645:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS12_20260514_105900\server.py:2686:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:83:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:155:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:161:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:163:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:189:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:1332:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:2372:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:2486:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:2504:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:2533:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:2554:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:2580:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:2593:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:2607:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_110907\server.py:2648:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:89:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:161:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:167:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:169:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:195:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:1227:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:2267:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:2381:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:2399:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:2428:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:2449:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:2475:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:2488:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:2502:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS13_20260514_111255\server.py:2543:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:95:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:167:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:173:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:175:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:201:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:1233:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:2273:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:2387:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:2405:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:2434:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:2455:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:2481:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:2494:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:2508:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111340\server.py:2549:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:111:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:183:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:189:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:191:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:217:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:962:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:2002:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:2116:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:2134:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:2163:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:2184:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:2210:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:2223:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:2237:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS14_20260514_111512\server.py:2278:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:127:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:199:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:205:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:207:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:233:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:978:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:2018:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:2132:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:2150:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:2179:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:2200:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:2226:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:2239:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:2253:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111752\server.py:2294:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:127:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:199:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:205:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:207:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:233:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:978:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:2018:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:2132:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:2150:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:2179:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:2200:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:2226:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:2239:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:2253:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS15_20260514_111842\server.py:2294:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:127:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:199:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:205:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:207:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:233:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:978:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:2018:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:2132:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:2150:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:2179:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:2200:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:2226:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:2239:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:2253:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_111857\server.py:2294:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:127:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:199:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:205:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:207:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:233:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:978:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:2018:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:2132:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:2150:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:2179:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:2200:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:2226:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:2239:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:2253:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS16_20260514_112234\server.py:2294:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:127:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:199:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:205:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:207:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:233:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:978:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:2018:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:2132:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:2150:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:2179:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:2200:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:2226:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:2239:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:2253:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112302\server.py:2294:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:151:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:223:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:229:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:231:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:257:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:906:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:1946:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:2060:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:2078:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:2107:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:2128:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:2154:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:2167:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:2181:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS17_20260514_112458\server.py:2222:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:175:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:247:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:253:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:255:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:281:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:930:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:1970:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:2084:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:2102:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:2131:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:2152:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:2178:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:2191:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:2205:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS18_20260514_112511\server.py:2246:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:215:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:287:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:293:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:295:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:321:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:970:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:2010:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:2124:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:2142:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:2171:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:2192:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:2218:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:2231:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:2245:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_112751\server.py:2286:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:279:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:351:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:357:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:359:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:385:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:894:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:1934:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:2048:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:2066:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:2095:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:2116:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:2142:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:2155:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:2169:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS19_20260514_113209\server.py:2210:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:343:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:415:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:421:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:423:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:449:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:958:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:1998:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:2112:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:2130:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:2159:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:2180:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:2206:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:2219:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:2233:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS20_20260514_113231\server.py:2274:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:423:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:495:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:501:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:503:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:529:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:1038:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:2020:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:2134:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:2152:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:2181:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:2202:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:2228:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:2241:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:2255:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS21_20260514_113554\server.py:2296:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:423:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:495:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:501:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:503:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:529:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:1038:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:2044:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:2158:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:2176:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:2205:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:2226:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:2252:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:2265:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:2279:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS22_20260514_113723\server.py:2320:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:423:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:495:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:501:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:503:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:529:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:1038:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:2069:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:2183:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:2201:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:2230:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:2251:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:2277:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:2290:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:2304:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_113942\server.py:2345:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:423:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:495:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:501:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:503:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:529:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:1038:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:2094:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:2208:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:2226:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:2255:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:2276:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:2302:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:2315:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:2329:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS23_20260514_114157\server.py:2370:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:423:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:495:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:501:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:503:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:529:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:1038:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:2119:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:2233:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:2251:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:2280:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:2301:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:2327:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:2340:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:2354:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS24_20260514_114238\server.py:2395:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:423:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:495:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:501:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:503:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:529:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:1038:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:2163:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:2277:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:2295:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:2324:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:2345:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:2371:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:2384:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:2398:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_114530\server.py:2439:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:423:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:495:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:501:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:503:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:529:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:1038:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:2197:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:2311:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:2329:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:2358:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:2379:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:2405:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:2418:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:2432:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS25_20260514_115113\server.py:2473:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:423:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:495:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:501:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:503:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:529:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:1038:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:2231:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:2345:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:2363:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:2392:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:2413:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:2439:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:2452:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:2466:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS26_20260514_115135\server.py:2507:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:429:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:504:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:510:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:512:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:538:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:540:app.include_router(chat_router)
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:2243:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:2357:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:2375:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:2404:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:2425:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:2451:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:2464:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:2478:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS27_20260514_115304\server.py:2519:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:435:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:511:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:517:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:519:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:545:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:547:app.include_router(chat_router)
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:548:app.include_router(upload_router)
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:2365:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:2383:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:2412:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:2433:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:2459:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:2472:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:2486:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\AODS28_20260514_115433\server.py:2527:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:441:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:525:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:531:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:533:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:559:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:561:app.include_router(chat_router)
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:562:app.include_router(upload_router)
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:563:app.include_router(google_router)
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:2380:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:2398:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:2427:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS29_20260514_115706\server.py:2448:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS30_20260514_115938\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS30_20260514_115938\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS30_20260514_115938\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS30_20260514_115938\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS30_20260514_115938\server.py:447:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS30_20260514_115938\server.py:539:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS30_20260514_115938\server.py:545:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS30_20260514_115938\server.py:547:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS30_20260514_115938\server.py:573:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS30_20260514_115938\server.py:575:app.include_router(chat_router)
+C:\Shine_L\_FULL_BACKUPS\AODS30_20260514_115938\server.py:576:app.include_router(upload_router)
+C:\Shine_L\_FULL_BACKUPS\AODS30_20260514_115938\server.py:577:app.include_router(google_router)
+C:\Shine_L\_FULL_BACKUPS\AODS30_20260514_115938\server.py:578:app.include_router(memory_router)
+C:\Shine_L\_FULL_BACKUPS\AODS30_20260514_115938\server.py:2442:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\AODS30_20260514_115938\server.py:2463:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121533\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121533\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121533\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121533\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121533\server.py:453:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121533\server.py:551:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121533\server.py:557:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121533\server.py:559:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121533\server.py:585:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121533\server.py:587:app.include_router(chat_router)
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121533\server.py:588:app.include_router(upload_router)
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121533\server.py:589:app.include_router(google_router)
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121533\server.py:590:app.include_router(memory_router)
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121533\server.py:591:app.include_router(direct_agents_router)
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121957\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121957\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121957\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121957\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121957\server.py:453:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121957\server.py:555:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121957\server.py:561:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121957\server.py:563:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121957\server.py:589:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121957\server.py:591:app.include_router(chat_router)
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121957\server.py:592:app.include_router(upload_router)
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121957\server.py:593:app.include_router(google_router)
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121957\server.py:594:app.include_router(memory_router)
+C:\Shine_L\_FULL_BACKUPS\AODS34_RUNTIME_CUTOVER_20260514_121957\server.py:595:app.include_router(direct_agents_router)
+C:\Shine_L\_FULL_BACKUPS\AODS35_FINAL_SHIM_20260514_122044\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS35_FINAL_SHIM_20260514_122044\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS35_FINAL_SHIM_20260514_122044\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS35_FINAL_SHIM_20260514_122044\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS35_FINAL_SHIM_20260514_122044\server.py:453:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS35_FINAL_SHIM_20260514_122044\server.py:559:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS35_FINAL_SHIM_20260514_122044\server.py:565:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS35_FINAL_SHIM_20260514_122044\server.py:567:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS35_FINAL_SHIM_20260514_122044\server.py:593:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS35_FINAL_SHIM_20260514_122044\server.py:595:app.include_router(chat_router)
+C:\Shine_L\_FULL_BACKUPS\AODS35_FINAL_SHIM_20260514_122044\server.py:596:app.include_router(upload_router)
+C:\Shine_L\_FULL_BACKUPS\AODS35_FINAL_SHIM_20260514_122044\server.py:597:app.include_router(google_router)
+C:\Shine_L\_FULL_BACKUPS\AODS35_FINAL_SHIM_20260514_122044\server.py:598:app.include_router(memory_router)
+C:\Shine_L\_FULL_BACKUPS\AODS35_FINAL_SHIM_20260514_122044\server.py:599:app.include_router(direct_agents_router)
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132557\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132557\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132557\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132557\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132557\server.py:453:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132557\server.py:559:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132557\server.py:565:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132557\server.py:567:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132557\server.py:593:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132557\server.py:595:app.include_router(chat_router)
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132557\server.py:596:app.include_router(upload_router)
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132557\server.py:597:app.include_router(google_router)
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132557\server.py:598:app.include_router(memory_router)
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132557\server.py:599:app.include_router(direct_agents_router)
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132825\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132825\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132825\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132825\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132825\server.py:453:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132825\server.py:559:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132825\server.py:565:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132825\server.py:567:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132825\server.py:596:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132825\server.py:598:app.include_router(chat_router)
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132825\server.py:599:app.include_router(upload_router)
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132825\server.py:600:app.include_router(google_router)
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132825\server.py:601:app.include_router(memory_router)
+C:\Shine_L\_FULL_BACKUPS\AODS44_20260514_132825\server.py:602:app.include_router(direct_agents_router)
+C:\Shine_L\_FULL_BACKUPS\AODS45_20260514_132842\server.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS45_20260514_132842\server.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS45_20260514_132842\server.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS45_20260514_132842\server.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS45_20260514_132842\server.py:453:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS45_20260514_132842\server.py:559:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS45_20260514_132842\server.py:565:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS45_20260514_132842\server.py:567:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS45_20260514_132842\server.py:599:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS45_20260514_132842\server.py:601:app.include_router(chat_router)
+C:\Shine_L\_FULL_BACKUPS\AODS45_20260514_132842\server.py:602:app.include_router(upload_router)
+C:\Shine_L\_FULL_BACKUPS\AODS45_20260514_132842\server.py:603:app.include_router(google_router)
+C:\Shine_L\_FULL_BACKUPS\AODS45_20260514_132842\server.py:604:app.include_router(memory_router)
+C:\Shine_L\_FULL_BACKUPS\AODS45_20260514_132842\server.py:605:app.include_router(direct_agents_router)
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163533\server_before.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163533\server_before.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163533\server_before.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163533\server_before.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163533\server_before.py:453:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163533\server_before.py:559:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163533\server_before.py:565:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163533\server_before.py:567:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163533\server_before.py:599:app.include_router(system_router)
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163533\server_before.py:601:app.include_router(chat_router)
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163533\server_before.py:602:app.include_router(upload_router)
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163533\server_before.py:603:app.include_router(google_router)
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163533\server_before.py:604:app.include_router(memory_router)
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163533\server_before.py:605:app.include_router(direct_agents_router)
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163814\server_before.py:12:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163814\server_before.py:13:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163814\server_before.py:14:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163814\server_before.py:15:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163814\server_before.py:463:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163814\server_before.py:569:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163814\server_before.py:577:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS53_20260514_163814\server_before.py:579:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS54_20260514_163834\server_before.py:12:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS54_20260514_163834\server_before.py:13:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS54_20260514_163834\server_before.py:14:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS54_20260514_163834\server_before.py:15:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS54_20260514_163834\server_before.py:463:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS54_20260514_163834\server_before.py:569:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS54_20260514_163834\server_before.py:577:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS54_20260514_163834\server_before.py:579:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_163938\server_before.py:12:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_163938\server_before.py:13:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_163938\server_before.py:14:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_163938\server_before.py:15:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_163938\server_before.py:463:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_163938\server_before.py:569:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_163938\server_before.py:587:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_163938\server_before.py:589:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_163938\server_before.py:2889:@app.get("/runtime/status")
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_164132\server_before.py:23:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_164132\server_before.py:24:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_164132\server_before.py:25:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_164132\server_before.py:26:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_164132\server_before.py:474:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_164132\server_before.py:580:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_164132\server_before.py:598:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_164132\server_before.py:600:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_164132\server_before.py:2900:@app.get("/runtime/status")
+C:\Shine_L\_FULL_BACKUPS\AODS55_20260514_164132\server_before.py:2911:@app.get("/compatibility/status")
+C:\Shine_L\_FULL_BACKUPS\AODS56_20260514_164157\server_before.py:23:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\AODS56_20260514_164157\server_before.py:24:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS56_20260514_164157\server_before.py:25:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\AODS56_20260514_164157\server_before.py:26:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\AODS56_20260514_164157\server_before.py:474:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\AODS56_20260514_164157\server_before.py:580:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\AODS56_20260514_164157\server_before.py:598:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\AODS56_20260514_164157\server_before.py:600:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\AODS56_20260514_164157\server_before.py:2900:@app.get("/runtime/status")
+C:\Shine_L\_FULL_BACKUPS\AODS56_20260514_164157\server_before.py:2911:@app.get("/compatibility/status")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:71:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:77:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:79:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:1710:@app.get("/")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:1721:@app.get("/memory/audit")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:1727:@app.get("/memory/audit-v2")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:1733:@app.get("/system/stability")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:1738:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:2570:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:2683:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:2701:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:2730:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:2751:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:2777:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:2790:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:2804:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_modes_fix.py:2845:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:71:app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:77:from fastapi.responses import Response
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:79:@app.middleware("http")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:1710:@app.get("/")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:1721:@app.get("/memory/audit")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:1727:@app.get("/memory/audit-v2")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:1733:@app.get("/system/stability")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:1738:@app.post("/chat")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:2584:@app.post("/upload")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:2697:@app.post("/recall")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:2715:@app.get("/stories")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:2744:@app.post("/brittany")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:2765:@app.post("/emily")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:2791:@app.get("/google/status")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:2804:@app.get("/google/auth/start")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:2818:@app.get("/google/auth/callback")
+C:\Shine_L\_FULL_BACKUPS\backups\server_pre_tail_fix_v2.py:2859:@app.get("/google/auth/reset")
+C:\Shine_L\_FULL_BACKUPS\STAGE3_AODS41_20260515_182900\app_factory_before.py:6:from fastapi import FastAPI
+C:\Shine_L\_FULL_BACKUPS\STAGE3_AODS41_20260515_182900\app_factory_before.py:7:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\_FULL_BACKUPS\STAGE3_AODS41_20260515_182900\app_factory_before.py:30:    app = FastAPI()
+C:\Shine_L\_FULL_BACKUPS\STAGE3_AODS41_20260515_182900\app_factory_before.py:64:    @app.get("/runtime/status")
+C:\Shine_L\_FULL_BACKUPS\STAGE3_AODS41_20260515_182900\app_factory_before.py:73:    @app.get("/compatibility/status")
+C:\Shine_L\_FULL_BACKUPS\STAGE3_AODS41_20260515_182900\app_factory_before.py:82:    @app.get("/health")
+C:\Shine_L\_LOCKED_RELEASE\memory_api\server.py:1:from fastapi import FastAPI
+C:\Shine_L\_LOCKED_RELEASE\memory_api\server.py:4:app = FastAPI()
+C:\Shine_L\_LOCKED_RELEASE\memory_api\server.py:20:@app.get("/memory/{file}")
+C:\Shine_L\_LOCKED_RELEASE\memory_api\server.py:24:@app.post("/memory/{file}")
+C:\Shine_L\_LOCKED_RELEASE\memory_api\server.py:31:@app.get("/")
+C:\Shine_L\api\Backups\broken .py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\broken .py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\broken .py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\broken .py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\broken .py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\broken .py:72:app = FastAPI()
+C:\Shine_L\api\Backups\broken .py:78:from fastapi.responses import Response
+C:\Shine_L\api\Backups\broken .py:80:@app.middleware("http")
+C:\Shine_L\api\Backups\broken .py:1003:@app.get("/")
+C:\Shine_L\api\Backups\broken .py:1063:@app.post("/chat")
+C:\Shine_L\api\Backups\broken .py:1864:@app.post("/upload")
+C:\Shine_L\api\Backups\broken .py:1977:@app.post("/recall")
+C:\Shine_L\api\Backups\broken .py:1995:@app.get("/stories")
+C:\Shine_L\api\Backups\broken .py:2024:@app.post("/brittany")
+C:\Shine_L\api\Backups\broken .py:2045:@app.post("/emily")
+C:\Shine_L\api\Backups\broken .py:2071:@app.get("/google/status")
+C:\Shine_L\api\Backups\broken .py:2084:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\broken .py:2098:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\broken .py:2139:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:605:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:615:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:945:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:1058:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:1076:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:1105:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:1126:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:1152:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:1165:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:1179:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_162102.py:1220:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:627:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:637:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:995:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:1108:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:1126:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:1155:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:1176:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:1202:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:1215:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:1229:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_addie_20260509_163042.py:1270:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_brittanyroute_20260508_172823.py:2:from fastapi import FastAPI, UploadFile, File
+C:\Shine_L\api\Backups\server_backup_brittanyroute_20260508_172823.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_brittanyroute_20260508_172823.py:26:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_brittanyroute_20260508_172823.py:401:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_brittanyroute_20260508_172823.py:411:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_brittanyroute_20260508_172823.py:518:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_brittanyroute_20260508_172823.py:631:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_brittanyroute_20260508_172823.py:649:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_brittanyroute_20260508_172823.py:678:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_callie_tania_20260508_184451.py:2:from fastapi import FastAPI, UploadFile, File
+C:\Shine_L\api\Backups\server_backup_callie_tania_20260508_184451.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_callie_tania_20260508_184451.py:26:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_callie_tania_20260508_184451.py:423:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_callie_tania_20260508_184451.py:433:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_callie_tania_20260508_184451.py:596:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_callie_tania_20260508_184451.py:709:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_callie_tania_20260508_184451.py:727:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_callie_tania_20260508_184451.py:756:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_callie_tania_20260508_184451.py:777:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:1002:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:1012:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:1761:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:1874:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:1892:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:1921:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:1942:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:1968:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:1981:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:1995:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_cognition_v1_20260510_004239.py:2036:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:1268:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:1279:@app.get("/memory/audit")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:1285:@app.get("/memory/audit-v2")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:1290:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:2084:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:2197:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:2215:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:2244:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:2265:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:2291:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:2304:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:2318:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_192112.py:2359:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:1304:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:1315:@app.get("/memory/audit")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:1321:@app.get("/memory/audit-v2")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:1327:@app.get("/system/stability")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:1332:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:2132:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:2245:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:2263:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:2292:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:2313:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:2339:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:2352:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:2366:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_core_stabilization_20260510_203117.py:2407:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:523:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:533:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:807:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:920:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:938:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:967:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:988:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:1014:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:1027:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:1041:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_cors_20260509_132506.py:1082:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_drift_20260507_233906.py:2:from fastapi import FastAPI
+C:\Shine_L\api\Backups\server_backup_drift_20260507_233906.py:5:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_drift_20260507_233906.py:7:from fastapi import UploadFile, File
+C:\Shine_L\api\Backups\server_backup_drift_20260507_233906.py:22:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_drift_20260507_233906.py:48:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_drift_20260507_233906.py:117:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_drift_20260507_233906.py:270:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_drift_20260507_233906.py:408:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_emily_20260508_183637.py:2:from fastapi import FastAPI, UploadFile, File
+C:\Shine_L\api\Backups\server_backup_emily_20260508_183637.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_emily_20260508_183637.py:26:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_emily_20260508_183637.py:401:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_emily_20260508_183637.py:411:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_emily_20260508_183637.py:546:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_emily_20260508_183637.py:659:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_emily_20260508_183637.py:677:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_emily_20260508_183637.py:706:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_emily_20260508_184421.py:2:from fastapi import FastAPI, UploadFile, File
+C:\Shine_L\api\Backups\server_backup_emily_20260508_184421.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_emily_20260508_184421.py:26:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_emily_20260508_184421.py:423:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_emily_20260508_184421.py:433:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_emily_20260508_184421.py:596:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_emily_20260508_184421.py:709:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_emily_20260508_184421.py:727:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_emily_20260508_184421.py:756:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_emily_20260508_184421.py:777:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_emily_live_20260508_192137.py:2:from fastapi import FastAPI, UploadFile, File
+C:\Shine_L\api\Backups\server_backup_emily_live_20260508_192137.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_emily_live_20260508_192137.py:26:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_emily_live_20260508_192137.py:467:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_emily_live_20260508_192137.py:477:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_emily_live_20260508_192137.py:696:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_emily_live_20260508_192137.py:809:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_emily_live_20260508_192137.py:827:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_emily_live_20260508_192137.py:856:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_emily_live_20260508_192137.py:877:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:583:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:593:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:895:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:1008:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:1026:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:1055:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:1076:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:1102:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:1115:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:1129:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_161604.py:1170:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:605:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:615:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:945:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:1058:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:1076:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:1105:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:1126:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:1152:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:1165:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:1179:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_emme_20260509_162029.py:1220:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:1351:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:1362:@app.get("/memory/audit")
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:1368:@app.get("/memory/audit-v2")
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:1374:@app.get("/system/stability")
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:1379:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:2165:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:2278:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:2296:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:2325:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:2346:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:2372:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:2385:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:2399:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_emotional_confidence_20260510_212048.py:2440:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:4:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:7:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:48:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:490:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:500:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:719:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:832:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:850:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:879:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:900:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:926:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:939:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:953:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_execution_20260508_235130.py:994:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:737:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:747:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:1245:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:1358:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:1376:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:1405:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:1426:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:1452:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:1465:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:1479:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_fiona_20260509_182407.py:1520:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:561:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:571:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:873:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:986:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:1004:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:1033:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:1054:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:1080:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:1093:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:1107:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_fix_millie_import_20260509_161107.py:1148:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_fullrecall_20260507_235052.py:2:from fastapi import FastAPI
+C:\Shine_L\api\Backups\server_backup_fullrecall_20260507_235052.py:5:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_fullrecall_20260507_235052.py:7:from fastapi import UploadFile, File
+C:\Shine_L\api\Backups\server_backup_fullrecall_20260507_235052.py:61:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_fullrecall_20260507_235052.py:87:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_fullrecall_20260507_235052.py:164:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_fullrecall_20260507_235052.py:330:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_fullrecall_20260507_235052.py:468:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_google_oauth_20260508_194430.py:2:from fastapi import FastAPI, UploadFile, File
+C:\Shine_L\api\Backups\server_backup_google_oauth_20260508_194430.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_google_oauth_20260508_194430.py:26:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_google_oauth_20260508_194430.py:467:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_google_oauth_20260508_194430.py:477:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_google_oauth_20260508_194430.py:696:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_google_oauth_20260508_194430.py:809:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_google_oauth_20260508_194430.py:827:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_google_oauth_20260508_194430.py:856:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_google_oauth_20260508_194430.py:877:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:627:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:637:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:995:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:1108:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:1126:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:1155:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:1176:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:1202:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:1215:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:1229:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_gracie_20260509_163126.py:1270:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:1451:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:1462:@app.get("/memory/audit")
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:1468:@app.get("/memory/audit-v2")
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:1474:@app.get("/system/stability")
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:1479:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:2275:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:2388:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:2406:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:2435:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:2456:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:2482:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:2495:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:2509:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_grounded_cognition_20260511_001339.py:2550:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:759:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:769:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:1295:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:1408:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:1426:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:1455:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:1476:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:1502:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:1515:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:1529:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_invisible_orchestra_v1_20260509_201415.py:1570:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:1002:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:1012:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:1761:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:1874:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:1892:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:1921:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:1942:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:1968:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:1981:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:1995:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_live_web_v1_20260510_005624.py:2036:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:1150:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:1161:@app.get("/memory/audit")
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:1166:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:1937:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:2050:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:2068:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:2097:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:2118:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:2144:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:2157:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:2171:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_memory_audit_v2_20260510_185317.py:2212:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:1002:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:1012:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:1761:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:1874:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:1892:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:1921:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:1942:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:1968:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:1981:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:1995:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_memory_observability_20260510_174454.py:2036:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_memscore_20260507_233124.py:2:from fastapi import FastAPI
+C:\Shine_L\api\Backups\server_backup_memscore_20260507_233124.py:5:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_memscore_20260507_233124.py:7:from fastapi import UploadFile, File
+C:\Shine_L\api\Backups\server_backup_memscore_20260507_233124.py:22:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_memscore_20260507_233124.py:48:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_memscore_20260507_233124.py:117:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_memscore_20260507_233124.py:245:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_memscore_20260507_233124.py:383:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:1304:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:1315:@app.get("/memory/audit")
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:1321:@app.get("/memory/audit-v2")
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:1327:@app.get("/system/stability")
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:1332:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:2132:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:2245:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:2263:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:2292:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:2313:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:2339:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:2352:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:2366:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_meta_hotfix_20260510_200124.py:2407:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:1304:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:1315:@app.get("/memory/audit")
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:1321:@app.get("/memory/audit-v2")
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:1327:@app.get("/system/stability")
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:1332:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:2128:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:2241:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:2259:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:2288:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:2309:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:2335:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:2348:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:2362:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_meta_routing_20260510_194642.py:2403:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:561:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:571:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:845:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:958:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:976:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:1005:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:1026:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:1052:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:1065:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:1079:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_millie_20260509_160524.py:1120:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_mystory_20260507_230357.py:2:from fastapi import FastAPI
+C:\Shine_L\api\Backups\server_backup_mystory_20260507_230357.py:5:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_mystory_20260507_230357.py:7:from fastapi import UploadFile, File
+C:\Shine_L\api\Backups\server_backup_mystory_20260507_230357.py:21:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_mystory_20260507_230357.py:47:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_mystory_20260507_230357.py:97:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_mystory_20260507_230357.py:116:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_mystory_20260507_231128.py:2:from fastapi import FastAPI
+C:\Shine_L\api\Backups\server_backup_mystory_20260507_231128.py:5:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_mystory_20260507_231128.py:7:from fastapi import UploadFile, File
+C:\Shine_L\api\Backups\server_backup_mystory_20260507_231128.py:22:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_mystory_20260507_231128.py:48:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_mystory_20260507_231128.py:98:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_mystory_20260507_231128.py:164:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:649:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:659:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:1045:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:1158:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:1176:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:1205:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:1226:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:1252:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:1265:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:1279:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_noelie_20260509_163743.py:1320:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:759:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:769:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:1508:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:1621:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:1639:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:1668:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:1689:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:1715:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:1728:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:1742:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_orchestra_hotfix_20260509_203318.py:1783:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:876:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:886:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:1625:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:1738:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:1756:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:1785:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:1806:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:1832:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:1845:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:1859:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_20260509_205807.py:1900:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:876:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:886:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:1635:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:1748:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:1766:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:1795:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:1816:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:1842:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:1855:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:1869:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_orchestra_v2_hotfix_20260509_210802.py:1910:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_persist_20260508_005821.py:2:from fastapi import FastAPI, UploadFile, File
+C:\Shine_L\api\Backups\server_backup_persist_20260508_005821.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_persist_20260508_005821.py:24:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_persist_20260508_005821.py:308:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_persist_20260508_005821.py:318:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_persist_20260508_005821.py:395:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_persist_20260508_005821.py:508:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_persist_20260508_005821.py:526:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:4:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:7:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:48:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:490:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:500:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:719:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:832:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:850:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:879:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:900:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:926:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:939:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:953:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_pixie_20260509_113132.py:994:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:523:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:533:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:752:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:865:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:883:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:912:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:933:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:959:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:972:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:986:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_pixie_fix_20260509_114336.py:1027:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:523:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:533:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:779:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:892:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:910:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:939:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:960:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:986:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:999:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:1013:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_pixie_indent_20260509_123854.py:1054:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:523:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:533:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:752:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:865:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:883:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:912:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:933:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:959:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:972:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:986:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_pixie_priority_20260509_120759.py:1027:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:523:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:533:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:809:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:922:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:940:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:969:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:990:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:1016:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:1029:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:1043:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_pixie_result_20260509_125416.py:1084:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:4:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:7:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:48:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:490:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:500:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:719:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:832:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:850:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:879:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:900:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:926:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:939:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:953:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_priority_20260509_001753.py:994:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_profileauth_20260508_001049.py:2:from fastapi import FastAPI
+C:\Shine_L\api\Backups\server_backup_profileauth_20260508_001049.py:5:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_profileauth_20260508_001049.py:7:from fastapi import UploadFile, File
+C:\Shine_L\api\Backups\server_backup_profileauth_20260508_001049.py:61:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_profileauth_20260508_001049.py:87:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_profileauth_20260508_001049.py:220:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_profileauth_20260508_001049.py:427:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_profileauth_20260508_001049.py:565:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_profileauth_20260508_001049.py:604:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:671:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:681:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:1095:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:1208:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:1226:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:1255:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:1276:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:1302:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:1315:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:1329:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_richie_20260509_164221.py:1370:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_router_20260507_235807.py:2:from fastapi import FastAPI
+C:\Shine_L\api\Backups\server_backup_router_20260507_235807.py:5:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_router_20260507_235807.py:7:from fastapi import UploadFile, File
+C:\Shine_L\api\Backups\server_backup_router_20260507_235807.py:61:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_router_20260507_235807.py:87:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_router_20260507_235807.py:164:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_router_20260507_235807.py:333:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_router_20260507_235807.py:471:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:4:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:7:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:48:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:490:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:500:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:719:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:832:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:850:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:879:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:900:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:926:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:939:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:953:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_router_20260509_000952.py:994:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_semantic_20260507_231211.py:2:from fastapi import FastAPI
+C:\Shine_L\api\Backups\server_backup_semantic_20260507_231211.py:5:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_semantic_20260507_231211.py:7:from fastapi import UploadFile, File
+C:\Shine_L\api\Backups\server_backup_semantic_20260507_231211.py:22:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_semantic_20260507_231211.py:48:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_semantic_20260507_231211.py:98:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_semantic_20260507_231211.py:164:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_semanticv2_20260507_232115.py:2:from fastapi import FastAPI
+C:\Shine_L\api\Backups\server_backup_semanticv2_20260507_232115.py:5:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_semanticv2_20260507_232115.py:7:from fastapi import UploadFile, File
+C:\Shine_L\api\Backups\server_backup_semanticv2_20260507_232115.py:22:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_semanticv2_20260507_232115.py:48:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_semanticv2_20260507_232115.py:117:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_semanticv2_20260507_232115.py:222:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_semanticv2_20260507_232115.py:360:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:1002:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:1012:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:1761:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:1874:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:1892:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:1921:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:1942:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:1968:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:1981:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:1995:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_smart_web_routing_v1_20260510_010554.py:2036:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_storylib_20260508_000523.py:2:from fastapi import FastAPI
+C:\Shine_L\api\Backups\server_backup_storylib_20260508_000523.py:5:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_storylib_20260508_000523.py:7:from fastapi import UploadFile, File
+C:\Shine_L\api\Backups\server_backup_storylib_20260508_000523.py:61:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_storylib_20260508_000523.py:87:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_storylib_20260508_000523.py:220:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_storylib_20260508_000523.py:427:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_storylib_20260508_000523.py:565:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:693:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:703:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:1145:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:1258:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:1276:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:1305:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:1326:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:1352:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:1365:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:1379:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_tegan_20260509_164707.py:1420:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_timefix_20260508_010248.py:2:from fastapi import FastAPI, UploadFile, File
+C:\Shine_L\api\Backups\server_backup_timefix_20260508_010248.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_timefix_20260508_010248.py:25:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_timefix_20260508_010248.py:388:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_timefix_20260508_010248.py:398:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_timefix_20260508_010248.py:484:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_timefix_20260508_010248.py:597:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_timefix_20260508_010248.py:615:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_uploadv1_20260507_213852.py:2:from fastapi import FastAPI
+C:\Shine_L\api\Backups\server_backup_uploadv1_20260507_213852.py:5:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_uploadv1_20260507_213852.py:14:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_uploadv1_20260507_213852.py:40:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_uploadv1_20260507_213852.py:90:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_visionv1_20260507_221521.py:2:from fastapi import FastAPI
+C:\Shine_L\api\Backups\server_backup_visionv1_20260507_221521.py:5:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_visionv1_20260507_221521.py:7:from fastapi import UploadFile, File
+C:\Shine_L\api\Backups\server_backup_visionv1_20260507_221521.py:20:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_visionv1_20260507_221521.py:46:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_visionv1_20260507_221521.py:96:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_visionv1_20260507_221521.py:115:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:72:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:78:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:80:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:1003:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:1063:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:1812:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:1925:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:1943:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:1972:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:1993:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:2019:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:2032:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:2046:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_web_context_fix_20260510_021532.py:2087:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:72:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:78:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:80:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:1003:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:1063:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:1822:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:1935:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:1953:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:1982:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:2003:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:2029:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:2042:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:2056:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_webfix_20260510_022430.py:2097:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:715:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:725:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:1195:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:1308:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:1326:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:1355:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:1376:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:1402:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:1415:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:1429:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_winnie_20260509_181845.py:1470:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_backup_wire_brittany_20260508_170007.py:2:from fastapi import FastAPI, UploadFile, File
+C:\Shine_L\api\Backups\server_backup_wire_brittany_20260508_170007.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_wire_brittany_20260508_170007.py:26:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_wire_brittany_20260508_170007.py:389:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_wire_brittany_20260508_170007.py:399:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_wire_brittany_20260508_170007.py:506:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_wire_brittany_20260508_170007.py:619:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_wire_brittany_20260508_170007.py:637:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:523:@app.get("/")
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:533:@app.post("/chat")
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:752:@app.post("/upload")
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:865:@app.post("/recall")
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:883:@app.get("/stories")
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:912:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:933:@app.post("/emily")
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:959:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:972:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:986:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_backup_wire_pixie_20260509_115355.py:1027:@app.get("/google/auth/reset")
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:2:from fastapi import FastAPI, UploadFile, File, Request
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:3:from fastapi.middleware.cors import CORSMiddleware
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:4:from fastapi.staticfiles import StaticFiles
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:5:from fastapi.responses import RedirectResponse, HTMLResponse
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:8:from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:71:app = FastAPI()
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:77:from fastapi.responses import Response
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:79:@app.middleware("http")
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:1002:@app.get("/")
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:1012:@app.post("/chat")
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:1761:@app.post("/upload")
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:1874:@app.post("/recall")
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:1892:@app.get("/stories")
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:1921:@app.post("/brittany")
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:1942:@app.post("/emily")
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:1968:@app.get("/google/status")
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:1981:@app.get("/google/auth/start")
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:1995:@app.get("/google/auth/callback")
+C:\Shine_L\api\Backups\server_broken_backup_20260510_144935.py:2036:@app.get("/google/auth/reset")
+C:\Shine_L\api\routes\__init__.py:37:        app.include_router(system_router)
+C:\Shine_L\api\routes\__init__.py:39:    app.include_router(chat_router)
+C:\Shine_L\api\routes\__init__.py:40:    app.include_router(upload_router)
+C:\Shine_L\api\routes\__init__.py:41:    app.include_router(google_router)
+C:\Shine_L\api\routes\__init__.py:42:    app.include_router(memory_router)
+C:\Shine_L\api\routes\__init__.py:43:    app.include_router(direct_agents_router)
+C:\Shine_L\api\routes\chat.py:1:from fastapi import APIRouter
+C:\Shine_L\api\routes\chat.py:7:router = APIRouter()
+C:\Shine_L\api\routes\chat.py:24:@router.post("/chat")
+C:\Shine_L\api\routes\direct_agents.py:1:from fastapi import APIRouter
+C:\Shine_L\api\routes\direct_agents.py:7:router = APIRouter()
+C:\Shine_L\api\routes\direct_agents.py:26:@router.post("/emily")
+C:\Shine_L\api\routes\direct_agents.py:32:@router.post("/brittany")
+C:\Shine_L\api\routes\google.py:1:from fastapi import (
+C:\Shine_L\api\routes\google.py:2:    APIRouter,
+C:\Shine_L\api\routes\google.py:6:from fastapi.responses import (
+C:\Shine_L\api\routes\google.py:11:router = APIRouter()
+C:\Shine_L\api\routes\google.py:38:@router.get("/google/status")
+C:\Shine_L\api\routes\google.py:44:@router.get("/google/auth/start")
+C:\Shine_L\api\routes\google.py:50:@router.get("/google/auth/callback")
+C:\Shine_L\api\routes\google.py:58:@router.get("/google/auth/reset")
+C:\Shine_L\api\routes\memory.py:1:from fastapi import APIRouter
+C:\Shine_L\api\routes\memory.py:7:router = APIRouter()
+C:\Shine_L\api\routes\memory.py:34:@router.get("/memory/audit")
+C:\Shine_L\api\routes\memory.py:40:@router.get("/memory/audit-v2")
+C:\Shine_L\api\routes\memory.py:46:@router.post("/recall")
+C:\Shine_L\api\routes\memory.py:52:@router.get("/stories")
+C:\Shine_L\api\routes\system.py:1:from fastapi import APIRouter
+C:\Shine_L\api\routes\system.py:8:router = APIRouter()
+C:\Shine_L\api\routes\system.py:20:@router.get("/")
+C:\Shine_L\api\routes\system.py:31:@router.get("/system/stability")
+C:\Shine_L\api\routes\system.py:37:@router.get("/memory/audit")
+C:\Shine_L\api\routes\system.py:43:@router.get("/memory/audit-v2")
+C:\Shine_L\api\routes\upload.py:1:from fastapi import (
+C:\Shine_L\api\routes\upload.py:2:    APIRouter,
+C:\Shine_L\api\routes\upload.py:7:router = APIRouter()
+C:\Shine_L\api\routes\upload.py:20:@router.post("/upload")
+C:\Shine_L\tests\api\test_server_route_cleanup.py:12:from fastapi import FastAPI
+C:\Shine_L\tests\api\test_server_route_cleanup.py:15:app = FastAPI()
+

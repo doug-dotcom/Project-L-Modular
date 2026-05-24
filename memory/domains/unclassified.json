@@ -1,0 +1,2006 @@
+{
+  "domain": "unclassified",
+  "memory_count": 16540,
+  "memories": [
+    {
+      "source": "C:\\Shine_L\\memory\\conversations.json",
+      "content": "{\"timestamp\": \"2026-05-15T15:12:05.323558\", \"user\": \"what is the capital of Australia\", \"l_reply\": \"The capital of Australia is **Canberra**.\"}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_is_suppressed\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\sally\\\\sally.py\", \"Line\": 108}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_is_suppressed\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\sally\\\\sally.py\", \"Line\": 108}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_is_suppressed\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\sally\\\\sally.py\", \"Line\": 108}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_is_suppressed\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\calm_sally_20260512_225508\\\\sally_backup.py\", \"Line\": 115}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\emme\\\\emme.py\", \"Line\": 28}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\gracie\\\\gracie_backup_20260510_192937.py\", \"Line\": 28}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\noelie\\\\noelie_backup_live_web_v1_20260510_005624.py\", \"Line\": 28}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\noelie\\\\noelie_backup_v1_20260510_004239.py\", \"Line\": 28}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\noelie\\\\noelie.py\", \"Line\": 28}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\richie\\\\richie.py\", \"Line\": 29}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\winnie\\\\winnie.py\", \"Line\": 29}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\emme\\\\emme.py\", \"Line\": 28}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\gracie\\\\gracie_backup_20260510_192937.py\", \"Line\": 28}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\noelie\\\\noelie_backup_live_web_v1_20260510_005624.py\", \"Line\": 28}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\noelie\\\\noelie_backup_v1_20260510_004239.py\", \"Line\": 28}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\noelie\\\\noelie.py\", \"Line\": 28}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\richie\\\\richie.py\", \"Line\": 29}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\winnie\\\\winnie.py\", \"Line\": 29}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\emme\\\\emme.py\", \"Line\": 28}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\gracie\\\\gracie_backup_20260510_192937.py\", \"Line\": 28}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\noelie\\\\noelie_backup_live_web_v1_20260510_005624.py\", \"Line\": 28}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\noelie\\\\noelie_backup_v1_20260510_004239.py\", \"Line\": 28}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\noelie\\\\noelie.py\", \"Line\": 28}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\richie\\\\richie.py\", \"Line\": 29}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\winnie\\\\winnie.py\", \"Line\": 29}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load_activation_log\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\sally\\\\sally.py\", \"Line\": 58}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load_activation_log\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\sally\\\\sally.py\", \"Line\": 58}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load_activation_log\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\sally\\\\sally.py\", \"Line\": 58}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load_activation_log\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\calm_sally_20260512_225508\\\\sally_backup.py\", \"Line\": 58}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load_skills\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\sally\\\\sally.py\", \"Line\": 37}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load_skills\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\sally\\\\sally.py\", \"Line\": 37}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load_skills\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\sally\\\\sally.py\", \"Line\": 37}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load_skills\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\calm_sally_20260512_225508\\\\sally_backup.py\", \"Line\": 37}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_load_skills\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\sally_skill_activation\\\\sally_backup.py\", \"Line\": 25}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\emme\\\\emme.py\", \"Line\": 57}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\gracie\\\\gracie_backup_20260510_192937.py\", \"Line\": 57}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\noelie\\\\noelie_backup_live_web_v1_20260510_005624.py\", \"Line\": 57}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\noelie\\\\noelie_backup_v1_20260510_004239.py\", \"Line\": 57}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\noelie\\\\noelie.py\", \"Line\": 57}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\richie\\\\richie.py\", \"Line\": 58}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\winnie\\\\winnie.py\", \"Line\": 58}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\emme\\\\emme.py\", \"Line\": 57}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\gracie\\\\gracie_backup_20260510_192937.py\", \"Line\": 57}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\noelie\\\\noelie_backup_live_web_v1_20260510_005624.py\", \"Line\": 57}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\noelie\\\\noelie_backup_v1_20260510_004239.py\", \"Line\": 57}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\noelie\\\\noelie.py\", \"Line\": 57}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\richie\\\\richie.py\", \"Line\": 58}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\winnie\\\\winnie.py\", \"Line\": 58}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\emme\\\\emme.py\", \"Line\": 57}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\gracie\\\\gracie_backup_20260510_192937.py\", \"Line\": 57}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\noelie\\\\noelie_backup_live_web_v1_20260510_005624.py\", \"Line\": 57}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\noelie\\\\noelie_backup_v1_20260510_004239.py\", \"Line\": 57}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\noelie\\\\noelie.py\", \"Line\": 57}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\richie\\\\richie.py\", \"Line\": 58}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\winnie\\\\winnie.py\", \"Line\": 58}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save_activation_log\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\sally\\\\sally.py\", \"Line\": 74}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save_activation_log\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\sally\\\\sally.py\", \"Line\": 74}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save_activation_log\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\sally\\\\sally.py\", \"Line\": 74}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save_activation_log\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\calm_sally_20260512_225508\\\\sally_backup.py\", \"Line\": 74}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_save_skills\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\sally_skill_activation\\\\sally_backup.py\", \"Line\": 42}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_score_skill\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\sally\\\\sally.py\", \"Line\": 92}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_score_skill\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\sally\\\\sally.py\", \"Line\": 92}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_score_skill\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\sally\\\\sally.py\", \"Line\": 92}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"_score_skill\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\calm_sally_20260512_225508\\\\sally_backup.py\", \"Line\": 99}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"activation_audit\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\sally\\\\sally.py\", \"Line\": 219}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"activation_audit\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\sally\\\\sally.py\", \"Line\": 219}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"activation_audit\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\sally\\\\sally.py\", \"Line\": 219}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"activation_audit\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\calm_sally_20260512_225508\\\\sally_backup.py\", \"Line\": 226}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\broken .py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_addie_20260509_162102.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_addie_20260509_163042.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_core_stabilization_20260510_192112.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_core_stabilization_20260510_203117.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_emme_20260509_161604.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_emme_20260509_162029.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_fix_millie_import_20260509_161107.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_gracie_20260509_163126.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_invisible_orchestra_v1_20260509_201415.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_live_web_v1_20260510_005624.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_meta_hotfix_20260510_200124.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_meta_routing_20260510_194642.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_millie_20260509_160524.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_noelie_20260509_163743.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_orchestra_hotfix_20260509_203318.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_orchestra_v2_20260509_205807.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_orchestra_v2_hotfix_20260509_210802.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_richie_20260509_164221.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_smart_web_routing_v1_20260510_010554.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_tegan_20260509_164707.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_web_context_fix_20260510_021532.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_webfix_20260510_022430.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_winnie_20260509_181845.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_broken_backup_20260510_144935.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\broken .py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_addie_20260509_162102.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_addie_20260509_163042.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_core_stabilization_20260510_192112.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_core_stabilization_20260510_203117.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_emme_20260509_161604.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_emme_20260509_162029.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_fix_millie_import_20260509_161107.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_gracie_20260509_163126.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_invisible_orchestra_v1_20260509_201415.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_live_web_v1_20260510_005624.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_meta_hotfix_20260510_200124.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_meta_routing_20260510_194642.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_millie_20260509_160524.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_noelie_20260509_163743.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_orchestra_hotfix_20260509_203318.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_orchestra_v2_20260509_205807.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_orchestra_v2_hotfix_20260509_210802.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_richie_20260509_164221.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_smart_web_routing_v1_20260510_010554.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_tegan_20260509_164707.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_web_context_fix_20260510_021532.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_webfix_20260510_022430.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_winnie_20260509_181845.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_broken_backup_20260510_144935.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS01_20260514_104211\\\\server.py\", \"Line\": 89}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS02_20260514_104333\\\\server.py\", \"Line\": 107}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS03_20260514_104436\\\\server.py\", \"Line\": 113}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS04_20260514_104550\\\\server.py\", \"Line\": 118}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS05_20260514_104735\\\\server.py\", \"Line\": 123}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS06_20260514_104912\\\\server.py\", \"Line\": 129}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS07_20260514_105025\\\\server.py\", \"Line\": 138}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS08_20260514_105147\\\\server.py\", \"Line\": 146}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS11_20260514_105726\\\\server.py\", \"Line\": 153}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS12_20260514_105900\\\\server.py\", \"Line\": 159}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS13_20260514_110907\\\\server.py\", \"Line\": 164}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS13_20260514_111255\\\\server.py\", \"Line\": 170}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS14_20260514_111340\\\\server.py\", \"Line\": 176}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS14_20260514_111512\\\\server.py\", \"Line\": 192}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS15_20260514_111752\\\\server.py\", \"Line\": 208}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS15_20260514_111842\\\\server.py\", \"Line\": 208}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS16_20260514_111857\\\\server.py\", \"Line\": 208}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS16_20260514_112234\\\\server.py\", \"Line\": 208}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS17_20260514_112302\\\\server.py\", \"Line\": 208}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS17_20260514_112458\\\\server.py\", \"Line\": 232}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS18_20260514_112511\\\\server.py\", \"Line\": 256}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS19_20260514_112751\\\\server.py\", \"Line\": 296}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS19_20260514_113209\\\\server.py\", \"Line\": 360}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS20_20260514_113231\\\\server.py\", \"Line\": 424}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS21_20260514_113554\\\\server.py\", \"Line\": 504}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS22_20260514_113723\\\\server.py\", \"Line\": 504}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS23_20260514_113942\\\\server.py\", \"Line\": 504}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS23_20260514_114157\\\\server.py\", \"Line\": 504}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS24_20260514_114238\\\\server.py\", \"Line\": 504}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS25_20260514_114530\\\\server.py\", \"Line\": 504}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS25_20260514_115113\\\\server.py\", \"Line\": 504}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS26_20260514_115135\\\\server.py\", \"Line\": 504}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS27_20260514_115304\\\\server.py\", \"Line\": 513}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS28_20260514_115433\\\\server.py\", \"Line\": 520}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS29_20260514_115706\\\\server.py\", \"Line\": 534}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS30_20260514_115938\\\\server.py\", \"Line\": 548}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS34_RUNTIME_CUTOVER_20260514_121533\\\\server.py\", \"Line\": 560}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS34_RUNTIME_CUTOVER_20260514_121957\\\\server.py\", \"Line\": 564}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS44_20260514_132557\\\\server.py\", \"Line\": 568}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS44_20260514_132825\\\\server.py\", \"Line\": 568}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS45_20260514_132842\\\\server.py\", \"Line\": 568}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\server.py\", \"Line\": 568}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\broken .py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_162102.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_163042.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_192112.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_203117.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_161604.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_162029.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_fix_millie_import_20260509_161107.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_gracie_20260509_163126.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_invisible_orchestra_v1_20260509_201415.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_live_web_v1_20260510_005624.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_meta_hotfix_20260510_200124.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_meta_routing_20260510_194642.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_millie_20260509_160524.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_noelie_20260509_163743.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_orchestra_hotfix_20260509_203318.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_20260509_205807.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_hotfix_20260509_210802.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_richie_20260509_164221.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_smart_web_routing_v1_20260510_010554.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_tegan_20260509_164707.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_web_context_fix_20260510_021532.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_webfix_20260510_022430.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_backup_winnie_20260509_181845.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS47_20260514_161724\\\\api_before\\\\Backups\\\\server_broken_backup_20260510_144935.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\server.py\", \"Line\": 568}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\broken .py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_162102.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_163042.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_192112.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_203117.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_161604.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_162029.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_fix_millie_import_20260509_161107.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_gracie_20260509_163126.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_invisible_orchestra_v1_20260509_201415.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_live_web_v1_20260510_005624.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_meta_hotfix_20260510_200124.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_meta_routing_20260510_194642.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_millie_20260509_160524.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_noelie_20260509_163743.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_orchestra_hotfix_20260509_203318.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_20260509_205807.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_hotfix_20260509_210802.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_richie_20260509_164221.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_smart_web_routing_v1_20260510_010554.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_tegan_20260509_164707.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_web_context_fix_20260510_021532.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_webfix_20260510_022430.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_backup_winnie_20260509_181845.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS50_20260514_162546\\\\api_before\\\\Backups\\\\server_broken_backup_20260510_144935.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\server_before.py\", \"Line\": 568}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\server.py\", \"Line\": 568}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\broken .py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_162102.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_163042.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_192112.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_203117.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_161604.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_162029.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_fix_millie_import_20260509_161107.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_gracie_20260509_163126.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_invisible_orchestra_v1_20260509_201415.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_live_web_v1_20260510_005624.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_meta_hotfix_20260510_200124.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_meta_routing_20260510_194642.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_millie_20260509_160524.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_noelie_20260509_163743.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_orchestra_hotfix_20260509_203318.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_20260509_205807.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_hotfix_20260509_210802.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_richie_20260509_164221.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_smart_web_routing_v1_20260510_010554.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_tegan_20260509_164707.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_web_context_fix_20260510_021532.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_webfix_20260510_022430.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_backup_winnie_20260509_181845.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163533\\\\api_before\\\\Backups\\\\server_broken_backup_20260510_144935.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\server_before.py\", \"Line\": 580}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\server.py\", \"Line\": 580}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\broken .py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_162102.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_163042.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_192112.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_203117.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_161604.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_162029.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_fix_millie_import_20260509_161107.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_gracie_20260509_163126.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_invisible_orchestra_v1_20260509_201415.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_live_web_v1_20260510_005624.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_meta_hotfix_20260510_200124.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_meta_routing_20260510_194642.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_millie_20260509_160524.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_noelie_20260509_163743.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_orchestra_hotfix_20260509_203318.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_20260509_205807.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_hotfix_20260509_210802.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_richie_20260509_164221.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_smart_web_routing_v1_20260510_010554.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_tegan_20260509_164707.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_web_context_fix_20260510_021532.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_webfix_20260510_022430.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_backup_winnie_20260509_181845.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS53_20260514_163814\\\\api_before\\\\Backups\\\\server_broken_backup_20260510_144935.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS54_20260514_163834\\\\server_before.py\", \"Line\": 580}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\server_before.py\", \"Line\": 590}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\server.py\", \"Line\": 590}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\broken .py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_162102.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_163042.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_192112.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_203117.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_161604.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_162029.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_fix_millie_import_20260509_161107.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_gracie_20260509_163126.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_invisible_orchestra_v1_20260509_201415.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_live_web_v1_20260510_005624.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_meta_hotfix_20260510_200124.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_meta_routing_20260510_194642.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_millie_20260509_160524.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_noelie_20260509_163743.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_orchestra_hotfix_20260509_203318.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_20260509_205807.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_hotfix_20260509_210802.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_richie_20260509_164221.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_smart_web_routing_v1_20260510_010554.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_tegan_20260509_164707.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_web_context_fix_20260510_021532.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_webfix_20260510_022430.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_backup_winnie_20260509_181845.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_163938\\\\api_before\\\\Backups\\\\server_broken_backup_20260510_144935.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\server_before.py\", \"Line\": 601}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\server.py\", \"Line\": 601}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\broken .py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_162102.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_163042.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_192112.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_203117.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_161604.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_162029.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_fix_millie_import_20260509_161107.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_gracie_20260509_163126.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_invisible_orchestra_v1_20260509_201415.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_live_web_v1_20260510_005624.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_meta_hotfix_20260510_200124.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_meta_routing_20260510_194642.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_millie_20260509_160524.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_noelie_20260509_163743.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_orchestra_hotfix_20260509_203318.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_20260509_205807.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_hotfix_20260509_210802.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_richie_20260509_164221.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_smart_web_routing_v1_20260510_010554.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_tegan_20260509_164707.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_web_context_fix_20260510_021532.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_webfix_20260510_022430.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_backup_winnie_20260509_181845.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS55_20260514_164132\\\\api_before\\\\Backups\\\\server_broken_backup_20260510_144935.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\server_before.py\", \"Line\": 601}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\server.py\", \"Line\": 601}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\broken .py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_162102.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_163042.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_192112.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_203117.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_161604.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_162029.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_fix_millie_import_20260509_161107.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_gracie_20260509_163126.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_invisible_orchestra_v1_20260509_201415.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_live_web_v1_20260510_005624.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_meta_hotfix_20260510_200124.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_meta_routing_20260510_194642.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_millie_20260509_160524.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_noelie_20260509_163743.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_orchestra_hotfix_20260509_203318.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_20260509_205807.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_hotfix_20260509_210802.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_richie_20260509_164221.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_smart_web_routing_v1_20260510_010554.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_tegan_20260509_164707.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_web_context_fix_20260510_021532.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_webfix_20260510_022430.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_backup_winnie_20260509_181845.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164157\\\\api_before\\\\Backups\\\\server_broken_backup_20260510_144935.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\broken .py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_162102.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_addie_20260509_163042.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_192112.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_core_stabilization_20260510_203117.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_161604.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_emme_20260509_162029.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_fix_millie_import_20260509_161107.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_gracie_20260509_163126.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_invisible_orchestra_v1_20260509_201415.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_live_web_v1_20260510_005624.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_meta_hotfix_20260510_200124.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_meta_routing_20260510_194642.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_millie_20260509_160524.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_noelie_20260509_163743.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_orchestra_hotfix_20260509_203318.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_20260509_205807.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_orchestra_v2_hotfix_20260509_210802.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_richie_20260509_164221.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_smart_web_routing_v1_20260510_010554.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_tegan_20260509_164707.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_web_context_fix_20260510_021532.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_webfix_20260510_022430.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_backup_winnie_20260509_181845.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS56_20260514_164259\\\\api_before\\\\Backups\\\\server_broken_backup_20260510_144935.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\server_pre_modes_fix.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\server_pre_tail_fix_v2.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\aods1_tail_20260513_000310\\\\server_backup.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\aods2_coaching_20260513_001152\\\\server_backup.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\aods3_silence_20260513_002832\\\\server_backup.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\aods4_synthesis_20260513_003346\\\\server_backup.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\aods5_decay_20260513_003758\\\\server_backup.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\aods6_hotfix_20260513_010932\\\\server_backup.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\calm_sally_20260512_225508\\\\server_backup.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\calm_tegan_20260512_231649\\\\server_backup.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\nuclear_prompt_fix_20260513_200300\\\\server_backup.py\", \"Line\": 89}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\phase1_7_8_hotfix_20260513_012033\\\\server_backup.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\phase1_combo_7_8_20260513_011450\\\\server_backup.py\", \"Line\": 81}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\phase2_aods1_20260513_182208\\\\server_backup.py\", \"Line\": 83}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\phase2_aods2_20260513_184451\\\\server_backup.py\", \"Line\": 85}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\phase2_aods3_20260513_185551\\\\server_backup.py\", \"Line\": 87}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\phase2_aods4_20260513_191645\\\\server_backup.py\", \"Line\": 88}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\phase2_aods4_hotfix_20260513_194147\\\\server_backup.py\", \"Line\": 89}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\phase2_aods4_paren_hotfix_20260513_194958\\\\server_backup.py\", \"Line\": 89}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\safe_execution_hotfix\\\\server_backup.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\sally_skills_library\\\\server_backup.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\sally_skill_activation\\\\server_backup.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\single_turn_routing\\\\server_backup.py\", \"Line\": 80}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_cors_headers\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\MODULAR_FRAMEWORK_20260514_101142\\\\api\\\\server.py\", \"Line\": 89}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_event\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\callie_backup_live_20260508_224046.py\", \"Line\": 72}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_event\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\callie_backup_live_20260508_224046.py\", \"Line\": 72}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_event\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\callie_backup_live_20260508_224046.py\", \"Line\": 72}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"add_or_update_skill\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\sally_skill_activation\\\\sally_backup.py\", \"Line\": 160}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"apply_label\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\emily\\\\emily.py\", \"Line\": 352}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"apply_label\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\emily\\\\emily.py\", \"Line\": 352}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"apply_label\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\emily\\\\emily.py\", \"Line\": 352}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"apply_label\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\emily_executive\\\\emily_backup.py\", \"Line\": 352}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"auto_triage_emails\", \"File\": \"C:\\\\Shine_L\\\\agents\\\\emily\\\\emily.py\", \"Line\": 494}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"auto_triage_emails\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\agents\\\\emily\\\\emily.py\", \"Line\": 494}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"auto_triage_emails\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS46_20260514_155207\\\\agents_before\\\\emily\\\\emily.py\", \"Line\": 494}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"auto_triage_emails\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\backups\\\\emily_executive\\\\emily_backup.py\", \"Line\": 494}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"blob\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS31_CLASSIFICATION_20260514_120156\\\\classified_output\\\\classify_memories.py\", \"Line\": 15}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"blob\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS31_CLASSIFICATION_20260514_120512\\\\classified_output\\\\classify_memories.py\", \"Line\": 15}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\broken .py\", \"Line\": 2025}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_addie_20260509_162102.py\", \"Line\": 1106}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_addie_20260509_163042.py\", \"Line\": 1156}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_brittanyroute_20260508_172823.py\", \"Line\": 679}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_callie_tania_20260508_184451.py\", \"Line\": 757}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_core_stabilization_20260510_192112.py\", \"Line\": 2245}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_core_stabilization_20260510_203117.py\", \"Line\": 2293}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_cors_20260509_132506.py\", \"Line\": 968}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_emily_20260508_183637.py\", \"Line\": 707}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_emily_20260508_184421.py\", \"Line\": 757}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_emily_live_20260508_192137.py\", \"Line\": 857}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_emme_20260509_161604.py\", \"Line\": 1056}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_emme_20260509_162029.py\", \"Line\": 1106}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_execution_20260508_235130.py\", \"Line\": 880}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_fix_millie_import_20260509_161107.py\", \"Line\": 1034}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_google_oauth_20260508_194430.py\", \"Line\": 857}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_gracie_20260509_163126.py\", \"Line\": 1156}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_invisible_orchestra_v1_20260509_201415.py\", \"Line\": 1456}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_live_web_v1_20260510_005624.py\", \"Line\": 1922}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_meta_hotfix_20260510_200124.py\", \"Line\": 2293}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_meta_routing_20260510_194642.py\", \"Line\": 2289}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_millie_20260509_160524.py\", \"Line\": 1006}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_noelie_20260509_163743.py\", \"Line\": 1206}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_orchestra_hotfix_20260509_203318.py\", \"Line\": 1669}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_orchestra_v2_20260509_205807.py\", \"Line\": 1786}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_orchestra_v2_hotfix_20260509_210802.py\", \"Line\": 1796}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_pixie_20260509_113132.py\", \"Line\": 880}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_pixie_fix_20260509_114336.py\", \"Line\": 913}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_pixie_indent_20260509_123854.py\", \"Line\": 940}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_pixie_priority_20260509_120759.py\", \"Line\": 913}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_pixie_result_20260509_125416.py\", \"Line\": 970}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_priority_20260509_001753.py\", \"Line\": 880}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_richie_20260509_164221.py\", \"Line\": 1256}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_router_20260509_000952.py\", \"Line\": 880}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_smart_web_routing_v1_20260510_010554.py\", \"Line\": 1922}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_tegan_20260509_164707.py\", \"Line\": 1306}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_web_context_fix_20260510_021532.py\", \"Line\": 1973}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_webfix_20260510_022430.py\", \"Line\": 1983}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_winnie_20260509_181845.py\", \"Line\": 1356}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_wire_pixie_20260509_115355.py\", \"Line\": 913}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\Backups\\\\server_broken_backup_20260510_144935.py\", \"Line\": 1922}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\api\\\\routes\\\\direct_agents.py\", \"Line\": 33}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\broken .py\", \"Line\": 2025}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_addie_20260509_162102.py\", \"Line\": 1106}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_addie_20260509_163042.py\", \"Line\": 1156}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_brittanyroute_20260508_172823.py\", \"Line\": 679}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_callie_tania_20260508_184451.py\", \"Line\": 757}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_core_stabilization_20260510_192112.py\", \"Line\": 2245}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_core_stabilization_20260510_203117.py\", \"Line\": 2293}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_cors_20260509_132506.py\", \"Line\": 968}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_emily_20260508_183637.py\", \"Line\": 707}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_emily_20260508_184421.py\", \"Line\": 757}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_emily_live_20260508_192137.py\", \"Line\": 857}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_emme_20260509_161604.py\", \"Line\": 1056}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_emme_20260509_162029.py\", \"Line\": 1106}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_execution_20260508_235130.py\", \"Line\": 880}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_fix_millie_import_20260509_161107.py\", \"Line\": 1034}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_google_oauth_20260508_194430.py\", \"Line\": 857}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_gracie_20260509_163126.py\", \"Line\": 1156}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_invisible_orchestra_v1_20260509_201415.py\", \"Line\": 1456}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_live_web_v1_20260510_005624.py\", \"Line\": 1922}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_meta_hotfix_20260510_200124.py\", \"Line\": 2293}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_meta_routing_20260510_194642.py\", \"Line\": 2289}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_millie_20260509_160524.py\", \"Line\": 1006}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_noelie_20260509_163743.py\", \"Line\": 1206}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_orchestra_hotfix_20260509_203318.py\", \"Line\": 1669}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_orchestra_v2_20260509_205807.py\", \"Line\": 1786}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_orchestra_v2_hotfix_20260509_210802.py\", \"Line\": 1796}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_pixie_20260509_113132.py\", \"Line\": 880}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_pixie_fix_20260509_114336.py\", \"Line\": 913}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_pixie_indent_20260509_123854.py\", \"Line\": 940}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_pixie_priority_20260509_120759.py\", \"Line\": 913}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_pixie_result_20260509_125416.py\", \"Line\": 970}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_priority_20260509_001753.py\", \"Line\": 880}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_richie_20260509_164221.py\", \"Line\": 1256}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_router_20260509_000952.py\", \"Line\": 880}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_smart_web_routing_v1_20260510_010554.py\", \"Line\": 1922}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_tegan_20260509_164707.py\", \"Line\": 1306}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_web_context_fix_20260510_021532.py\", \"Line\": 1973}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_webfix_20260510_022430.py\", \"Line\": 1983}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_winnie_20260509_181845.py\", \"Line\": 1356}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_backup_wire_pixie_20260509_115355.py\", \"Line\": 913}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\Backups\\\\server_broken_backup_20260510_144935.py\", \"Line\": 1922}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\backups\\\\chat_fix_20260514_233401\\\\Shine_L\\\\api\\\\routes\\\\direct_agents.py\", \"Line\": 33}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS01_20260514_104211\\\\server.py\", \"Line\": 3625}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS02_20260514_104333\\\\server.py\", \"Line\": 3633}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS03_20260514_104436\\\\server.py\", \"Line\": 3630}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS04_20260514_104550\\\\server.py\", \"Line\": 3621}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+      "content": "{\"Function\": \"brittany_direct\", \"File\": \"C:\\\\Shine_L\\\\_FULL_BACKUPS\\\\AODS05_20260514_104735\\\\server.py\", \"Line\": 3595}"
+    }
+  ]
+}

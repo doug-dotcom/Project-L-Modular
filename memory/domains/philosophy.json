@@ -1,0 +1,14 @@
+{
+  "domain": "philosophy",
+  "memory_count": 2,
+  "memories": [
+    {
+      "source": "C:\\Shine_L\\memory\\pending\\backups\\pending_backup_20260522_022307.json",
+      "content": "{\"raw_id\": \"453\", \"created_at\": \"2026-05-21T12:44:09.644423+00:00\", \"role\": \"user\", \"source\": \"chat\", \"content\": \"L are you able to research philosophy on the internet. I just added agent brittany browser so you have access to the internet\", \"metadata\": {}, \"status\": \"pending\", \"added_at\": \"2026-05-22T02:05:32.201205\"}"
+    },
+    {
+      "source": "C:\\Shine_L\\memory\\pending\\backups\\pending_backup_20260522_022307.json",
+      "content": "{\"raw_id\": \"451\", \"created_at\": \"2026-05-21T12:41:51.182319+00:00\", \"role\": \"user\", \"source\": \"chat\", \"content\": \"I have been working with G in the past on physics and psycology and today we worked on philosophy\", \"metadata\": {}, \"status\": \"pending\", \"added_at\": \"2026-05-22T02:05:32.201218\"}"
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+[
+  {
+    "index_id": "2ab51f0d-ba02-4a63-bb26-64bb20248861",
+    "timestamp": "2026-05-15T20:10:18.951213",
+    "label": "drift_control",
+    "source_type": "learning",
+    "tokens": [
+      "architecture",
+      "carefully",
+      "drift",
+      "expansion",
+      "modular",
+      "reduced",
+      "runtime",
+      "slowing",
+      "validating"
+    ],
+    "preview": "\n    Runtime drift reduced by slowing expansion\n    and validating modular architecture carefully.\n    "
+  },
+  {
+    "index_id": "328cc03d-6480-43fd-be20-88afd26727b1",
+    "timestamp": "2026-05-15T20:10:18.962672",
+    "label": "guardian_runtime",
+    "source_type": "guardian",
+    "tokens": [
+      "alignment",
+      "confidence",
+      "guardian",
+      "loop",
+      "monitors",
+      "runtime",
+      "stability"
+    ],
+    "preview": "\n    Guardian loop monitors alignment,\n    confidence and runtime stability.\n    "
+  },
+  {
+    "index_id": "9d9701f7-c4e3-4b2f-848f-ad2b0df35785",
+    "timestamp": "2026-05-15T20:11:33.639142",
+    "label": "drift_control",
+    "source_type": "learning",
+    "tokens": [
+      "architecture",
+      "carefully",
+      "drift",
+      "expansion",
+      "modular",
+      "reduced",
+      "runtime",
+      "slowing",
+      "validating"
+    ],
+    "preview": "\n    Runtime drift reduced by slowing expansion\n    and validating modular architecture carefully.\n    "
+  },
+  {
+    "index_id": "7e830ce3-f6d6-42a5-8b30-6405e6cf1fcd",
+    "timestamp": "2026-05-15T20:11:33.652297",
+    "label": "guardian_runtime",
+    "source_type": "guardian",
+    "tokens": [
+      "alignment",
+      "confidence",
+      "guardian",
+      "loop",
+      "monitors",
+      "runtime",
+      "stability"
+    ],
+    "preview": "\n    Guardian loop monitors alignment,\n    confidence and runtime stability.\n    "
+  },
+  {
+    "index_id": "1ea1feeb-3060-4f0e-9778-1fd5e4ddbd14",
+    "timestamp": "2026-05-16T16:03:03.810728",
+    "label": "audit_runtime",
+    "source_type": "general",
+    "intent": {
+      "intent": "build",
+      "score": 1,
+      "matched_keywords": [
+        "runtime"
+      ]
+    },
+    "tokens": [
+      "after",
+      "audit",
+      "detection",
+      "drift",
+      "project",
+      "recovery",
+      "runtime"
+    ],
+    "preview": "Project L runtime recovery after audit drift detection."
+  },
+  {
+    "index_id": "c1048cc4-0f70-40a2-b277-004b6b8885a2",
+    "timestamp": "2026-05-16T16:13:56.414900",
+    "label": "drift_control",
+    "source_type": "learning",
+    "intent": {
+      "intent": "build",
+      "score": 2,
+      "matched_keywords": [
+        "runtime",
+        "architecture"
+      ]
+    },
+    "tokens": [
+      "architecture",
+      "carefully",
+      "drift",
+      "expansion",
+      "modular",
+      "reduced",
+      "runtime",
+      "slowing",
+      "validating"
+    ],
+    "preview": "\n    Runtime drift reduced by slowing expansion\n    and validating modular architecture carefully.\n    "
+  },
+  {
+    "index_id": "6a889038-fe33-4ff8-ab73-cbc05141cda1",
+    "timestamp": "2026-05-16T16:13:56.428672",
+    "label": "guardian_runtime",
+    "source_type": "guardian",
+    "intent": {
+      "intent": "build",
+      "score": 1,
+      "matched_keywords": [
+        "runtime"
+      ]
+    },
+    "tokens": [
+      "alignment",
+      "confidence",
+      "guardian",
+      "loop",
+      "monitors",
+      "runtime",
+      "stability"
+    ],
+    "preview": "\n    Guardian loop monitors alignment,\n    confidence and runtime stability.\n    "
+  }
+]

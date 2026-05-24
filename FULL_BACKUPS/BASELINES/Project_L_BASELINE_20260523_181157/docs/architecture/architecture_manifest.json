@@ -1,0 +1,33 @@
+{
+  "platform_name": "Shine L",
+  "baseline_tag": "STAGE1_BASELINE_LOCKED",
+  "architecture_type": "MODULAR_DYNAMIC_RUNTIME",
+  "runtime_engine": "tegan_runtime",
+  "ui_layer": "browser_operator_console",
+  "cognition_layer": "openai_live",
+  "orchestration_model": "captain_dispatch",
+  "memory_model": "persistent_runtime_memory",
+  "telemetry_model": "runtime_reflection",
+  "protection_model": "graceful_degradation",
+  "recovery_model": "checkpoint_restore",
+  "startup_flow": [
+    "server.py",
+    "app_factory.py",
+    "runtime_bootstrap.py",
+    "route_registration",
+    "ui_connection"
+  ],
+  "active_layers": [
+    "runtime",
+    "cognition",
+    "memory",
+    "telemetry",
+    "protection",
+    "recovery",
+    "captain_dispatch",
+    "ui"
+  ],
+  "stabilization_status": "LOCKED",
+  "roadmap_position": "STAGE_1_COMPLETE",
+  "manifest_created_at": "2026-05-15T16:48:46"
+}

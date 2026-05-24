@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Project L</title>
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="/ui/icon.png"
+    >
+
+    <link
+        rel="apple-touch-icon"
+        sizes="180x180"
+        href="/ui/icon.png"
+    >
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+
+            margin: 0;
+            padding: 0;
+
+            width: 100%;
+            height: 100%;
+
+            overflow: hidden;
+
+            background: linear-gradient(
+                180deg,
+                #0f172a,
+                #172554
+            );
+
+            font-family: Arial, sans-serif;
+
+            color: white;
+        }
+
+        body {
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* =====================================================
+           HEADER
+        ===================================================== */
+
+        header {
+
+            padding: 22px;
+
+            font-size: 42px;
+
+            font-weight: bold;
+
+            color: #22c55e;
+
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+
+            background: rgba(0,0,0,0.15);
+
+            backdrop-filter: blur(6px);
+        }
+
+        /* =====================================================
+           CHAT AREA
+        ===================================================== */
+
+        #chat {
+
+            flex: 1;
+
+            overflow-y: auto;
+
+            padding: 24px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 20px;
+
+            scroll-behavior: smooth;
+        }
+
+        /* =====================================================
+           MESSAGE BUBBLES
+        ===================================================== */
+
+        .msg {
+
+            padding: 18px;
+
+            border-radius: 22px;
+
+            max-width: 90%;
+
+            width: fit-content;
+
+            line-height: 1.5;
+
+            font-size: 22px;
+
+            word-wrap: break-word;
+
+            white-space: pre-wrap;
+
+            text-align: left;
+        }
+
+        .user {
+
+            background: #2563eb;
+
+            align-self: flex-end;
+
+            text-align: left;
+        }
+
+        .assistant {
+
+            background: rgba(255,255,255,0.10);
+
+            border: 1px solid rgba(255,255,255,0.08);
+
+            align-self: flex-start;
+
+            text-align: left;
+        }
+
+        .error {
+
+            background: #7f1d1d;
+        }
+
+        /* =====================================================
+           INPUT BAR
+        ===================================================== */
+
+        #inputBar {
+
+            display: flex;
+
+            gap: 12px;
+
+            padding: 14px;
+
+            background: rgba(0,0,0,0.20);
+
+            border-top: 1px solid rgba(255,255,255,0.08);
+
+            backdrop-filter: blur(8px);
+
+            position: sticky;
+
+            bottom: 0;
+        }
+
+        /* =====================================================
+           TEXT INPUT
+        ===================================================== */
+
+        #message {
+
+            flex: 1;
+
+            padding: 14px;
+
+            border-radius: 14px;
+
+            border: none;
+
+            outline: none;
+
+            resize: none;
+
+            min-height: 60px;
+
+            max-height: 180px;
+
+            overflow-y: auto;
+
+            font-size: 16px;
+
+            background: rgba(255,255,255,0.08);
+
+            color: white;
+
+            font-family: Arial, sans-serif;
+        }
+
+        #message::placeholder {
+
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* =====================================================
+           BUTTONS
+        ===================================================== */
+
+        button {
+
+            min-width: 75px;
+
+            border: none;
+
+            border-radius: 14px;
+
+            background: #22c55e;
+
+            color: black;
+
+            font-weight: bold;
+
+            font-size: 15px;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        button:hover {
+
+            background: #16a34a;
+        }
+
+        /* =====================================================
+           MOBILE
+        ===================================================== */
+
+        @media (max-width: 768px) {
+
+            header {
+
+                font-size: 30px;
+
+                padding: 20px;
+            }
+
+            #chat {
+
+                padding: 18px;
+            }
+
+            .msg {
+
+                max-width: 90%;
+
+                font-size: 22px;
+
+                line-height: 1.5;
+
+                padding: 18px;
+
+                text-align: left;
+            }
+
+            #inputBar {
+
+                padding-bottom: 20px;
+            }
+
+            #message {
+
+                min-height: 60px;
+
+                font-size: 16px;
+            }
+
+            button {
+
+                min-width: 75px;
+
+                font-size: 15px;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- =====================================================
+         HEADER
+    ===================================================== -->
+
+    <header>
+        Project L
+    </header>
+
+    <!-- =====================================================
+         CHAT
+    ===================================================== -->
+
+    <div id="chat">
+
+        <div class="msg assistant">
+            L online 👊
+        </div>
+
+    </div>
+
+    <!-- =====================================================
+         INPUT BAR
+    ===================================================== -->
+
+    <div id="inputBar">
+
+        <!-- =====================================================
+             UPLOAD BUTTON
+        ===================================================== -->
+
+        <button
+            id="uploadBtn"
+            style="
+                width:50px;
+                height:50px;
+                border-radius:14px;
+                font-size:22px;
+                background:#2b6cff;
+                color:white;
+                border:none;
+                cursor:pointer;
+                flex-shrink:0;
+            "
+        >
+            +
+        </button>
+
+        <input
+            type="file"
+            id="fileInput"
+            style="display:none;"
+        />
+
+        <!-- =====================================================
+             MESSAGE INPUT
+        ===================================================== -->
+
+        <textarea
+            id="message"
+            placeholder="Talk to L..."
+        ></textarea>
+
+        <!-- =====================================================
+             SEND BUTTON
+        ===================================================== -->
+
+        <button onclick="sendMessage()">
+            Send
+        </button>
+
+    </div>
+
+    <!-- =====================================================
+         UPLOAD SCRIPT
+    ===================================================== -->
+
+    <script>
+
+        const uploadBtn =
+            document.getElementById("uploadBtn");
+
+        const fileInput =
+            document.getElementById("fileInput");
+
+        uploadBtn.onclick = () => {
+
+            fileInput.click();
+        };
+
+        fileInput.onchange = async () => {
+
+            const file = fileInput.files[0];
+
+            if (!file) return;
+
+            const formData = new FormData();
+
+            formData.append(
+                "file",
+                file
+            );
+
+            try {
+
+                const res = await fetch(
+                    "/upload",
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+                const data = await res.json();
+
+                alert(
+                    "Uploaded: " + data.filename
+                );
+
+            } catch(err) {
+
+                alert("Upload failed");
+            }
+        };
+
+    </script>
+
+    <!-- =====================================================
+         CHAT SCRIPT
+    ===================================================== -->
+
+    <script>
+
+        const API_URL = "/chat";
+
+        async function sendMessage() {
+
+            const input =
+                document.getElementById("message");
+
+            const chat =
+                document.getElementById("chat");
+
+            const message =
+                input.value.trim();
+
+            if (!message) return;
+
+            // =====================================================
+            // USER MESSAGE
+            // =====================================================
+
+            chat.innerHTML += `
+                <div class="msg user">
+                    ${message}
+                </div>
+            `;
+
+            input.value = "";
+
+            // =====================================================
+            // THINKING MESSAGE
+            // =====================================================
+
+            const thinkingId =
+                "thinking-" + Date.now();
+
+            chat.innerHTML += `
+                <div class="msg assistant" id="${thinkingId}">
+                    L is thinking...
+                </div>
+            `;
+
+            chat.scrollTop =
+                chat.scrollHeight;
+
+            try {
+
+                const response = await fetch(
+                    API_URL,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            message: message
+                        })
+                    }
+                );
+
+                const data =
+                    await response.json();
+
+                // =====================================================
+                // REMOVE THINKING
+                // =====================================================
+
+                document
+                    .getElementById(thinkingId)
+                    .remove();
+
+                // =====================================================
+                // ASSISTANT RESPONSE
+                // =====================================================
+
+                chat.innerHTML += `
+                    <div class="msg assistant">
+                        ${data.reply}
+                    </div>
+                `;
+
+            } catch (err) {
+
+                document
+                    .getElementById(thinkingId)
+                    .remove();
+
+                chat.innerHTML += `
+                    <div class="msg assistant error">
+                        Connection error.
+                    </div>
+                `;
+            }
+
+            chat.scrollTop =
+                chat.scrollHeight;
+        }
+
+    </script>
+
+</body>
+
+</html>

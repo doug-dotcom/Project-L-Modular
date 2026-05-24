@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Emily",
+    "role": "Emotional Intelligence Captain",
+    "status": "online",
+    "specialty": "emotional support and empathy"
+  },
+  {
+    "name": "Brittany",
+    "role": "Operations Captain",
+    "status": "online",
+    "specialty": "organization and execution"
+  },
+  {
+    "name": "Ellie",
+    "role": "Memory Governor",
+    "status": "online",
+    "specialty": "identity and memory continuity"
+  }
+]

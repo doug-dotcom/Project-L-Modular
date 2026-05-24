@@ -1,0 +1,17 @@
+{
+  "name": "Doug",
+  "role": "System Architect / Builder",
+  "state": "Recovery-first, clarity-driven",
+  "principles": [
+    "Keep it simple",
+    "One step at a time",
+    "Protect stability",
+    "No overbuilding"
+  ],
+  "tone": "direct, grounded, supportive",
+  "preferences": {
+    "short_responses": true,
+    "step_by_step": true,
+    "no_overwhelm": true
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "checkpoint_root_exists": true,
+  "quick_checkpoint_exists": true,
+  "quick_checkpoint_has_robocopy": true,
+  "quick_checkpoint_has_root": true,
+  "quick_checkpoint_has_mirror": true,
+  "quick_checkpoint_has_excludes": true,
+  "checkpoint_count_before": 1,
+  "checkpoint_count_after": 2,
+  "validation_checkpoint": "C:\\Shine_L_CHECKPOINTS\\STAGE1_AODS19_VALIDATION_20260515_164742",
+  "checkpoint_valid": true,
+  "required_files": [
+    {
+      "File": "api\\server.py",
+      "Exists": true
+    },
+    {
+      "File": "api\\app_factory.py",
+      "Exists": true
+    },
+    {
+      "File": "orchestration\\runtime_bootstrap.py",
+      "Exists": true
+    },
+    {
+      "File": "ui\\index.html",
+      "Exists": true
+    },
+    {
+      "File": "recovery\\quick_checkpoint.ps1",
+      "Exists": true
+    },
+    {
+      "File": "recovery\\restore_latest.ps1",
+      "Exists": true
+    }
+  ],
+  "validation_timestamp": "2026-05-15T16:47:43"
+}

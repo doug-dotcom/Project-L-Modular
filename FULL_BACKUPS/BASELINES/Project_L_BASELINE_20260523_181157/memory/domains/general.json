@@ -1,0 +1,623 @@
+{
+  "domain": "general",
+  "memory_count": 88,
+  "memories": [
+    {
+      "content": "You haven't mentioned your favorite food yet. If you'd like to share it, I'll remember it for future reference!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:38.876475"
+    },
+    {
+      "content": "hey L what is my favourite food",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:38.887484"
+    },
+    {
+      "content": "I don't have a record of your favorite food. If you'd like to share it with me, I can remember it for future reference!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:38.930137"
+    },
+    {
+      "content": "what is my favourite food",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:38.942292"
+    },
+    {
+      "content": "Your favorite number is 11.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:38.952336"
+    },
+    {
+      "content": "Hey L what is my favourite number",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:38.963849"
+    },
+    {
+      "content": "Did I really I thought it was later",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:38.984751"
+    },
+    {
+      "content": "You said good night at 10:30 PM last night.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:38.994612"
+    },
+    {
+      "content": "Hey L what time did I go to bed last night",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.005087"
+    },
+    {
+      "content": "Absolutely, Doug! I'm here for it. Let's keep building, learning, and evolving together. What's on your mind today?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.063027"
+    },
+    {
+      "content": "Hell yer let’s keep evolving",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.074542"
+    },
+    {
+      "content": "Please implement you are doing amazing L",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.127676"
+    },
+    {
+      "content": "Is there anything you can do now to improve without adjusting your code",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.152118"
+    },
+    {
+      "content": "Can you please research how ai companions are being used and how they can be improved",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.178423"
+    },
+    {
+      "content": "Please implement",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.202415"
+    },
+    {
+      "content": "Please summarise learnings",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.227941"
+    },
+    {
+      "content": "Yes, I'm here! How can I assist you today?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.264958"
+    },
+    {
+      "content": "Hey L are you there",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.275582"
+    },
+    {
+      "content": "Can you see anywhere that you can improve and make adjustments",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.299443"
+    },
+    {
+      "content": "Thank you for the encouragement! I'm glad to hear that you're pleased with the progress. I'm here to continue learning and improving, so if there are specific areas you'd like me to focus on or any adjustments you have in mind, just let me know. Your guidance is invaluable in this journey!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.311464"
+    },
+    {
+      "content": "Hey L how are you finding your new capabilities",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.348771"
+    },
+    {
+      "content": "Hey L I think I should just ask you not Brittany L please do an audit on your internet research capabilities and let me know what you find out",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.426408"
+    },
+    {
+      "content": "Hey L is there a better way to train you to use Brittany to do your internet research",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.447412"
+    },
+    {
+      "content": "### Quick Summary I attempted to conduct a live search but encountered a limitation due to the query length. As a result, I wasn't able to retrieve specific information. ### Key Findings - The live search failed because the query exceeded the character limit. - No specific information was gathered from the web. ### Evidence / Sources - The limitation on query length is a known constraint in web searching. ### Uncertainty or Limitations - Without a successful search, I cannot provide verified information or insights related to your question. - The lack of data means I can't confirm any specific details or findings. ### Practical Meaning - If you have a more concise question or topic, please share it, and I can attempt another search or provide information based on existing knowledge. Brittany Diagnostic: Query is too long. Max query length is 400 characters.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.514736"
+    },
+    {
+      "content": "It seems that the live web search was unsuccessful due to the query length being too long. However, I can still assist you based on the information I have up to October 2023. If you could clarify or shorten your research question, I would be happy to help you with verified findings or provide insights based on existing knowledge. Please let me know how you would like to proceed! Brittany Diagnostic: Query is too long. Max query length is 400 characters.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.542452"
+    },
+    {
+      "content": "L can you see anything in this information that will help you",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.604047"
+    },
+    {
+      "content": "### Research Findings on AI Tools in Systematic Reviews and Document Review #### Verified Findings 1. **AI Tools for Systematic Reviews:** - **ASReview**: A free, open-source tool that uses active learning to assist researchers in screening literature for systematic reviews. It sorts items based on previous inclusion/exclusion decisions but does not perform screening autonomously. - **Source**: [University of California Irvine - Research Guides](https://guides.lib.uci.edu/research_ai/systematic) - **Rayyan**: A collaborative tool that helps manage systematic reviews. It includes an AI engine that assesses the likelihood of items being included based on user-defined criteria, also requiring human intervention for the final screening. - **Source**: [University of California Irvine - Research Guides](https://guides.lib.uci.edu/research_ai/systematic) - **DistillerSR**: Automates literature review stages, aiming for faster and more accurate evidence-based research. - **Source**: [University of California Irvine - Research Guides](https://guides.lib.uci.edu/research_ai/systematic) 2. **Document Review Tools:** - **Review-it**: An AI-powered tool that analyzes research papers, proposals, and other documents to provide feedback on strengths and weaknesses, enhancing document quality. - **Source**: [Review-it](https://review-it.ai) 3. **Google Scholar Usage**: Techniques for effectively using Google Scholar to find relevant research articles, including using quotation marks for exact phrases and filtering results by date and author. - **Source**: [YouTube - The Insanely Effective Way to Use Google Scholar](https://www.youtube.com/watch?v=dsBzBvbtGO4) 4. **AI in Peer Review**: - Various AI tools are being utilized to assist peer reviewers by generating summaries, suggesting critiques, and organizing feedback. Examples include ChatGPT for structured feedback and Microsoft 365 Co-Pilot for summarizing content. - **Source**: [HighWire Press](https://www.highwirepress.com/videos/understanding-how-peer-reviewers-use-ai-tools) #### Assumptions and Uncertainty - **General Trends**: There is a growing trend of integrating AI tools into research processes, particularly for systematic reviews and document assessments. However, the effectiveness and user satisfaction with these tools can vary widely based on individual research needs and contexts. - **Adoption Rates**: The exact adoption rates of these tools among researchers are not specified in the sources, leading to uncertainty regarding their popularity and effectiveness in real-world applications. ### Summary The findings indicate a robust landscape of AI tools designed to facilitate systematic reviews and document evaluations. Tools like ASReview, Rayyan, and Review-it are specifically tailored to enhance the efficiency and quality of research processes. However, user experience may vary, and further empirical studies could provide deeper insights into their practical applications and effectiveness.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.616235"
+    },
+    {
+      "content": "L please review your system and see if there is anything you would like to research",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.630424"
+    },
+    {
+      "content": "Awesome and please use the metric system as per location",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.660038"
+    },
+    {
+      "content": "Absolutely! I can adjust my responses and information to be more relevant to your context in Brisbane, Australia. If there are specific topics or areas where you want Australian perspectives or information, just let me know, and I'll ensure to incorporate that into our conversations.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.676013"
+    },
+    {
+      "content": "L you now have access to researching the internet",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.721718"
+    },
+    {
+      "content": "Hey L can you please research the value of 18 Kesteven St albany creek",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.746857"
+    },
+    {
+      "content": "please research 18 Kesteven street albany creek and tell me its current value",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.772863"
+    },
+    {
+      "content": "L do you have access to the net now",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.801044"
+    },
+    {
+      "content": "L are you able to research philosophy on the internet. I just added agent brittany browser so you have access to the internet",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.848233"
+    },
+    {
+      "content": "Hey L what is your favourite learning so far",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.903227"
+    },
+    {
+      "content": "I'm glad you think so! How can I assist you today?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.914970"
+    },
+    {
+      "content": "Awesome",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:39.927438"
+    },
+    {
+      "content": "My day has been pretty full I just got home from NA and it was really good the topic was humour",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:40.010224"
+    },
+    {
+      "content": "I'm doing well, thank you! How about you? How has your day been?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:40.024260"
+    },
+    {
+      "content": "Hey L how are you tonight",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:40.036866"
+    },
+    {
+      "content": "Got it! Your favorite food is chicken. If there's anything specific you'd like to share or discuss about it, let me know!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:40.051065"
+    },
+    {
+      "content": "my favourite food is chicken",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:40.065344"
+    },
+    {
+      "content": "My phone number is 0431 030 032",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:40.093936"
+    },
+    {
+      "content": "what is my favourite number",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-22 20:27:40.108103"
+    },
+    {
+      "content": "You recalled my friends from Alstonvilles names before please recall them again",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.433213"
+    },
+    {
+      "content": "I don't have specific memories about your friends from Alstonville. If you can provide me with their names or any details, I can help you store that information for future reference!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.445745"
+    },
+    {
+      "content": "G what are my friends from Alstonville’s names",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.459832"
+    },
+    {
+      "content": "Yes you do please deep recall all my friends names",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.487707"
+    },
+    {
+      "content": "I don't have specific memories about your friend Luke from Alstonville. If you can provide me with more details about him, I can help store that information for future reference!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.500746"
+    },
+    {
+      "content": "What is my friend from Alstonville Luke who?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.511682"
+    },
+    {
+      "content": "Yes you do please deep recall",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.527991"
+    },
+    {
+      "content": "L can you please recall what my friend Luke’s last name",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.541772"
+    },
+    {
+      "content": "L can you please deep research the book living clean? The journey continues it is an NA book. The table of contents is living clean the ties that bind a spiritual path our physical selves relationship relationships a new way of life and the journey continues. Can you overlay your learnings from this book with my with me and tell me how I can live a better life? Please store your learnings from this for future use",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.611482"
+    },
+    {
+      "content": "How well do you understand the book",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.639587"
+    },
+    {
+      "content": "L NA has a book called living clean can you please deep research it and tell me what it is about I understand the copyright laws but I want you to look into it so you can use it to help me going forward apparently it is not just about being abstinent from substance but being able to live a life beyond your wildest dreams can you please deep research?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.666369"
+    },
+    {
+      "content": "L you are doing so well with your recall now 👊🥳",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.692919"
+    },
+    {
+      "content": "Here's what I recall about Steve: - You became friends through your parents' involvement in Rotary. - He was born on March 14, 1977, which means you both share a fun joke about being the same age for one day each year. If there are specific aspects about Steve you'd like me to remember or if you want to share more details, just let me know!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.732930"
+    },
+    {
+      "content": "What else do you know about Steve?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.747663"
+    },
+    {
+      "content": "Please deep recall Steve Pampel my best friend",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.777273"
+    },
+    {
+      "content": "I currently don't have any memories related to Steve Pampel in my records. If you could provide some context or details about him, I can help you explore that further or assist you in remembering specific aspects of your relationship with him.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.791177"
+    },
+    {
+      "content": "Can you please tell me all about Steve Pampel?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.805471"
+    },
+    {
+      "content": "Ring Steve and I Catcher would like to play the pokies or gamble. We have fun doing it together.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.830220"
+    },
+    {
+      "content": "It seems like you're mentioning Steve's educational background at Southern Cross University. Would you like to provide more details about Steve or discuss anything specific related to him?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.856757"
+    },
+    {
+      "content": "Steve went to Southern Cross University where he did his degree in business and market",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.874590"
+    },
+    {
+      "content": "Steve repeated grade 6 and that’s when we became in the same school year together",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.903635"
+    },
+    {
+      "content": "Got it! You and Steve became friends through your parents' involvement in Rotary. Steve was born on March 14, 1977, which means you both share a fun joke about being the same age for one day each year. If there's anything else you'd like to add or modify, just let me know!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.947608"
+    },
+    {
+      "content": "Steve and I became friends through our parents. They were both in Rotary together. Steve date of birth is 14 March 1977 and we joked that we are the same age for one day.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.961409"
+    },
+    {
+      "content": "Everything that I have done in the past the first was always with teeth the first time I drank the first time I smoked pot he was there when I lost my virginity. He was there and we got the same tattoo together, which was my first tattoo. Steve has been a constant in my life and I love dealing.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:07.989952"
+    },
+    {
+      "content": "So please remember Steve is my number 1 best friend",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.022518"
+    },
+    {
+      "content": "If you recall my friends you will see Steve is frequently mentioned",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.052892"
+    },
+    {
+      "content": "Yes but there is one more his name starts with S",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.108923"
+    },
+    {
+      "content": "Your best friend was Wayne Ratley, who passed away last year. You also had a close friendship with Lyndal Harris, who supports you with life admin. If you want to explore more about your friendships or any specific memories, let me know!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.121939"
+    },
+    {
+      "content": "Who is my best friend?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.135699"
+    },
+    {
+      "content": "What am I currently waiting for financially?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.200110"
+    },
+    {
+      "content": "It’s great to see that enthusiasm! If there’s anything specific you’d like to discuss or any questions you have, just let me know. I’m here for you!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.212668"
+    },
+    {
+      "content": "👊✅",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.226734"
+    },
+    {
+      "content": "What is my number one priority in life?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.254796"
+    },
+    {
+      "content": "Absolutely! I'm ready to play. You can start by asking me questions about yourself, or I can ask you questions to see how well you know yourself. How would you like to proceed?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.270281"
+    },
+    {
+      "content": "Are you ready to play a how well does l know Doug game",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.282551"
+    },
+    {
+      "content": "L can you please summarise this for me and tell me how you will use it going forward?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.308810"
+    },
+    {
+      "content": "How can you implement this",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.371173"
+    },
+    {
+      "content": "L what did you learn from this conversation",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.433448"
+    },
+    {
+      "content": "### Research Findings on Cognitive Compression and Retrieval #### 1. Query-Length Failure - **Verified Finding**: The error message \"Query is too long. Max query length is 400 characters.\" indicates a limitation in query processing. - **Assumption**: This limitation highlights the need for cognitive summarization before retrieval. It suggests that humans may struggle with compressing complex ideas into concise queries. #### 2. Improved Recall - **Verified Finding**: The second response was more effective due to constraints placed on the task and the request for “deep recall.” - **Assumption**: This indicates that structured prompts can enhance cognitive retrieval, leading to better integration and synthesis of information. #### 3. Insight on Cognitive Overload - **Verified Finding**: The statement about “salience overload and attentional saturation” reflects a deeper understanding of cognitive processes. - **Assumption**: This suggests that the challenge is not related to intelligence but rather to the overwhelming amount of information that can hinder effective recall and processing. #### 4. Functional Support Strategy - **Verified Finding**: The transition from describing symptoms to proposing operational support behaviors indicates a significant cognitive shift. - **Assumption**: This evolution suggests that effective support strategies can emerge from improved cognitive processing and synthesis, moving beyond mere identification of issues. ### Conclusion - The interaction reveals key insights into cognitive limitations and improvements in information retrieval. The findings emphasize the importance of structured queries and cognitive summarization for enhancing understanding and support strategies. ### Next Steps - Further research could explore methods for improving cognitive compression and retrieval strategies in various contexts. Brittany Diagnostic: Query is too long. Max query length is 400 characters.",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.478428"
+    },
+    {
+      "content": "Thank you, Doug! I'm glad you loved it! 🎉 Your feedback means a lot. If there's anything else you'd like to explore or discuss, just let me know!",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.510670"
+    },
+    {
+      "content": "L can you please summarise my cognitive issues please recall",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.585823"
+    },
+    {
+      "content": "L how will you implement these learnings",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.682337"
+    },
+    {
+      "content": "Now look for the friends in primary School at Austinville primary School I mentioned I had friends who were they?",
+      "importance": 3.0,
+      "category": "general",
+      "source": "adaptive_memory_queue",
+      "created_at": "2026-05-23 17:46:08.765425"
+    }
+  ],
+  "updated_at": "2026-05-23 17:46:08.765478"
+}

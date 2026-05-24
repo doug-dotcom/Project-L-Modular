@@ -1,0 +1,108 @@
+{
+  "file": "C:\\Shine_L\\orchestration\\runtime_bootstrap.py",
+  "section_count": 1,
+  "function_count": 19,
+  "sections": [
+    {
+      "Line": 4,
+      "Section": "RUNTIME BOOTSTRAP"
+    }
+  ],
+  "functions": [
+    {
+      "Type": "sync",
+      "Function": "build_runtime_stack",
+      "Line": 32
+    },
+    {
+      "Type": "sync",
+      "Function": "build_runtime_status",
+      "Line": 44
+    },
+    {
+      "Type": "async",
+      "Function": "handle_chat",
+      "Line": 62
+    },
+    {
+      "Type": "sync",
+      "Function": "save_memory",
+      "Line": 193
+    },
+    {
+      "Type": "sync",
+      "Function": "get_recent_memories",
+      "Line": 225
+    },
+    {
+      "Type": "sync",
+      "Function": "classify_request",
+      "Line": 247
+    },
+    {
+      "Type": "sync",
+      "Function": "generate_session_title",
+      "Line": 297
+    },
+    {
+      "Type": "sync",
+      "Function": "save_session_memory",
+      "Line": 308
+    },
+    {
+      "Type": "sync",
+      "Function": "load_captains",
+      "Line": 347
+    },
+    {
+      "Type": "sync",
+      "Function": "get_active_captains",
+      "Line": 360
+    },
+    {
+      "Type": "sync",
+      "Function": "build_runtime_reflection",
+      "Line": 376
+    },
+    {
+      "Type": "sync",
+      "Function": "search_memories",
+      "Line": 412
+    },
+    {
+      "Type": "sync",
+      "Function": "log_runtime_event",
+      "Line": 454
+    },
+    {
+      "Type": "sync",
+      "Function": "determine_operational_state",
+      "Line": 486
+    },
+    {
+      "Type": "sync",
+      "Function": "dispatch_captain",
+      "Line": 526
+    },
+    {
+      "Type": "sync",
+      "Function": "build_memory_summary",
+      "Line": 565
+    },
+    {
+      "Type": "sync",
+      "Function": "get_latest_summary",
+      "Line": 622
+    },
+    {
+      "Type": "sync",
+      "Function": "safe_json_load",
+      "Line": 647
+    },
+    {
+      "Type": "sync",
+      "Function": "protected_openai_call",
+      "Line": 671
+    }
+  ]
+}

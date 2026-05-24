@@ -1,0 +1,114 @@
+[
+  {
+    "File": "__init__.py",
+    "RegisteredRouter": true,
+    "RouteCount": 0,
+    "Routes": []
+  },
+  {
+    "File": "chat.py",
+    "RegisteredRouter": true,
+    "RouteCount": 1,
+    "Routes": [
+      {
+        "Method": "POST",
+        "Path": "/chat"
+      }
+    ]
+  },
+  {
+    "File": "direct_agents.py",
+    "RegisteredRouter": true,
+    "RouteCount": 2,
+    "Routes": [
+      {
+        "Method": "POST",
+        "Path": "/emily"
+      },
+      {
+        "Method": "POST",
+        "Path": "/brittany"
+      }
+    ]
+  },
+  {
+    "File": "google.py",
+    "RegisteredRouter": true,
+    "RouteCount": 4,
+    "Routes": [
+      {
+        "Method": "GET",
+        "Path": "/google/status"
+      },
+      {
+        "Method": "GET",
+        "Path": "/google/auth/start"
+      },
+      {
+        "Method": "GET",
+        "Path": "/google/auth/callback"
+      },
+      {
+        "Method": "GET",
+        "Path": "/google/auth/reset"
+      }
+    ]
+  },
+  {
+    "File": "memory.py",
+    "RegisteredRouter": true,
+    "RouteCount": 4,
+    "Routes": [
+      {
+        "Method": "GET",
+        "Path": "/memory/audit"
+      },
+      {
+        "Method": "GET",
+        "Path": "/memory/audit-v2"
+      },
+      {
+        "Method": "POST",
+        "Path": "/recall"
+      },
+      {
+        "Method": "GET",
+        "Path": "/stories"
+      }
+    ]
+  },
+  {
+    "File": "system.py",
+    "RegisteredRouter": true,
+    "RouteCount": 4,
+    "Routes": [
+      {
+        "Method": "GET",
+        "Path": "/"
+      },
+      {
+        "Method": "GET",
+        "Path": "/system/stability"
+      },
+      {
+        "Method": "GET",
+        "Path": "/memory/audit"
+      },
+      {
+        "Method": "GET",
+        "Path": "/memory/audit-v2"
+      }
+    ]
+  },
+  {
+    "File": "upload.py",
+    "RegisteredRouter": true,
+    "RouteCount": 1,
+    "Routes": [
+      {
+        "Method": "POST",
+        "Path": "/upload"
+      }
+    ]
+  }
+]

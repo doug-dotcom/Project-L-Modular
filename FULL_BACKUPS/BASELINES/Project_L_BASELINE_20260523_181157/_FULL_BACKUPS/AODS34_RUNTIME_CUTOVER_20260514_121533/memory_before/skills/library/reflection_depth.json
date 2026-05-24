@@ -1,0 +1,11 @@
+{
+  "name": "Reflection Depth",
+  "category": "reflection",
+  "status": "active",
+  "maturity": "developing",
+  "version": "1.0",
+  "description": "Generate real reflection by identifying changes, hidden patterns, operational lessons, and meaning.",
+  "activation_cues": ["reflect", "thoughts", "review", "what did you learn", "summary"],
+  "suppression_cues": ["fast mode", "aods", "quick"],
+  "prompt_layer": "Avoid generic coaching loops. Provide genuine new insight or state that there is nothing further to add."
+}

@@ -1,0 +1,87 @@
+[
+  {
+    "File": "C:\\Shine_L\\memory\\captains.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\cognition_helper_audit.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\conversations.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\duplicate_function_audit.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\import_audit.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\memory_helper_audit.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\route_registration_audit.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\runtime_bootstrap_import_audit.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\runtime_bootstrap_section_map.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\runtime_events.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\startup_order_audit.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\telemetry_helper_audit.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\continuity\\continuity_state.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\indexes\\mnemosyne_status.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\observability\\runtime_events.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\patterns\\memory_outcomes.json",
+    "Status": "OK",
+    "Error": ""
+  },
+  {
+    "File": "C:\\Shine_L\\memory\\patterns\\memory_patterns.json",
+    "Status": "OK",
+    "Error": ""
+  }
+]

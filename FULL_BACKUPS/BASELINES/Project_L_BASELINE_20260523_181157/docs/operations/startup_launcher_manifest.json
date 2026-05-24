@@ -1,0 +1,15 @@
+{
+  "stage": "STAGE_3",
+  "operation": "STARTUP_LAUNCHER_NORMALIZATION",
+  "launcher_path": "C:\\Shine_L\\launchers\\START_L.ps1",
+  "startup_sequence": [
+    "stop_old_python",
+    "start_runtime",
+    "start_ui",
+    "open_browser"
+  ],
+  "runtime_port": 8000,
+  "ui_port": 5050,
+  "beta_ready": true,
+  "generated_at": "2026-05-15T18:26:58"
+}

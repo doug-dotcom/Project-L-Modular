@@ -1,0 +1,39 @@
+[
+  {
+    "task_id": "30b32576-8ee7-47b7-9d70-ca93ae5a86dc",
+    "timestamp": "2026-05-15T19:24:53.945429",
+    "captain": "Captain Builder",
+    "task_type": "build",
+    "priority": "high",
+    "thread_id": "aods65",
+    "payload": {
+      "message": "AODS validation build task"
+    },
+    "status": "completed",
+    "completed_at": "2026-05-15T19:24:53.972642"
+  },
+  {
+    "task_id": "91cd8dc3-3da4-4046-8aed-5d438900165d",
+    "timestamp": "2026-05-15T19:24:53.956826",
+    "captain": "Captain Memory",
+    "task_type": "memory",
+    "priority": "normal",
+    "thread_id": "aods65",
+    "payload": {
+      "message": "remember this validation"
+    },
+    "status": "queued"
+  },
+  {
+    "task_id": "2193fd95-c568-4dc5-a6ef-fcbd3d617c6a",
+    "timestamp": "2026-05-15T19:27:03.834996",
+    "captain": "Captain Builder",
+    "task_type": "build",
+    "priority": "high",
+    "thread_id": "aods66",
+    "payload": {
+      "message": "scheduled validation task"
+    },
+    "status": "queued"
+  }
+]

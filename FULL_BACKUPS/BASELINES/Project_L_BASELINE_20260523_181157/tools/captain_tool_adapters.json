@@ -1,0 +1,72 @@
+{
+  "version": "AODS64",
+  "tool_adapters": {
+
+    "Captain Memory": {
+      "allowed_tools": [
+        "memory_store",
+        "memory_recall",
+        "memory_summary",
+        "thread_lookup"
+      ],
+      "blocked_tools": [
+        "email_send",
+        "calendar_create"
+      ]
+    },
+
+    "Captain Builder": {
+      "allowed_tools": [
+        "runtime_patch",
+        "runtime_validation",
+        "backup_create",
+        "workflow_debug"
+      ],
+      "blocked_tools": [
+        "memory_delete"
+      ]
+    },
+
+    "Captain Emme": {
+      "allowed_tools": [
+        "grounding_prompt",
+        "reflection_builder",
+        "state_check"
+      ],
+      "blocked_tools": [
+        "medical_diagnosis"
+      ]
+    },
+
+    "Captain Emily": {
+      "allowed_tools": [
+        "email_draft",
+        "thread_summary",
+        "reply_prepare"
+      ],
+      "blocked_tools": [
+        "email_send_without_confirmation"
+      ]
+    },
+
+    "Captain Callie": {
+      "allowed_tools": [
+        "calendar_prepare",
+        "availability_check",
+        "event_draft"
+      ],
+      "blocked_tools": [
+        "event_create_without_confirmation"
+      ]
+    },
+
+    "L": {
+      "allowed_tools": [
+        "general_reasoning",
+        "conversation",
+        "triage_review"
+      ],
+      "blocked_tools": []
+    }
+  }
+}

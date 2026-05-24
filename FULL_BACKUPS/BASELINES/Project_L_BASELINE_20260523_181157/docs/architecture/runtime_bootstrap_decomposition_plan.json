@@ -1,0 +1,169 @@
+{
+  "runtime_file": "C:\\Shine_L\\orchestration\\runtime_bootstrap.py",
+  "decomposition_strategy": [
+    "extract_memory_layer",
+    "extract_telemetry_layer",
+    "extract_cognition_layer",
+    "extract_orchestration_layer",
+    "extract_protection_layer"
+  ],
+  "planned_modules": [
+    "memory_runtime.py",
+    "telemetry_runtime.py",
+    "cognition_runtime.py",
+    "orchestration_runtime.py",
+    "protection_runtime.py"
+  ],
+  "detected_sections": [
+    {
+      "Layer": "memory_layer",
+      "Functions": [
+        {
+          "Function": "save_memory",
+          "Line": 233
+        },
+        {
+          "Function": "generate_session_title",
+          "Line": 362
+        },
+        {
+          "Function": "save_session_memory",
+          "Line": 373
+        },
+        {
+          "Function": "load_captains",
+          "Line": 437
+        },
+        {
+          "Function": "search_memories",
+          "Line": 502
+        },
+        {
+          "Function": "build_memory_summary",
+          "Line": 655
+        },
+        {
+          "Function": "get_latest_summary",
+          "Line": 716
+        },
+        {
+          "Function": "safe_json_load",
+          "Line": 741
+        },
+        {
+          "Function": "safe_memory_load",
+          "Line": 829
+        }
+      ]
+    },
+    {
+      "Layer": "telemetry_layer",
+      "Functions": [
+        {
+          "Function": "build_runtime_status",
+          "Line": 44
+        },
+        {
+          "Function": "build_runtime_reflection",
+          "Line": 466
+        },
+        {
+          "Function": "log_runtime_event",
+          "Line": 544
+        }
+      ]
+    },
+    {
+      "Layer": "cognition_layer",
+      "Functions": [
+        {
+          "Function": "handle_chat",
+          "Line": 62
+        },
+        {
+          "Function": "protected_openai_call",
+          "Line": 769
+        },
+        {
+          "Function": "build_openai_failure_response",
+          "Line": 877
+        },
+        {
+          "Function": "validate_response_schema",
+          "Line": 913
+        }
+      ]
+    },
+    {
+      "Layer": "orchestration_layer",
+      "Functions": [
+        {
+          "Function": "build_runtime_stack",
+          "Line": 32
+        },
+        {
+          "Function": "build_runtime_status",
+          "Line": 44
+        },
+        {
+          "Function": "classify_request",
+          "Line": 312
+        },
+        {
+          "Function": "load_captains",
+          "Line": 437
+        },
+        {
+          "Function": "get_active_captains",
+          "Line": 450
+        },
+        {
+          "Function": "build_runtime_reflection",
+          "Line": 466
+        },
+        {
+          "Function": "log_runtime_event",
+          "Line": 544
+        },
+        {
+          "Function": "determine_operational_state",
+          "Line": 576
+        },
+        {
+          "Function": "dispatch_captain",
+          "Line": 616
+        },
+        {
+          "Function": "normalize_runtime_exception",
+          "Line": 954
+        }
+      ]
+    },
+    {
+      "Layer": "protection_layer",
+      "Functions": [
+        {
+          "Function": "safe_json_load",
+          "Line": 741
+        },
+        {
+          "Function": "safe_memory_load",
+          "Line": 829
+        },
+        {
+          "Function": "build_openai_failure_response",
+          "Line": 877
+        },
+        {
+          "Function": "validate_response_schema",
+          "Line": 913
+        },
+        {
+          "Function": "normalize_runtime_exception",
+          "Line": 954
+        }
+      ]
+    }
+  ],
+  "generated_at": "2026-05-15T18:16:44"
+}

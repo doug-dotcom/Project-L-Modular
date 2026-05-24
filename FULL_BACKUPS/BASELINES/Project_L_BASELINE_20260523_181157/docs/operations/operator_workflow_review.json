@@ -1,0 +1,58 @@
+{
+  "stage": "STAGE_3",
+  "operation": "OPERATOR_WORKFLOW_REVIEW",
+  "workflow_files": [
+    {
+      "Name": "START_L",
+      "Path": "C:\\Shine_L\\launchers\\START_L.ps1",
+      "Exists": true
+    },
+    {
+      "Name": "Runtime Server",
+      "Path": "C:\\Shine_L\\api\\server.py",
+      "Exists": true
+    },
+    {
+      "Name": "App Factory",
+      "Path": "C:\\Shine_L\\api\\app_factory.py",
+      "Exists": true
+    },
+    {
+      "Name": "Runtime Bootstrap",
+      "Path": "C:\\Shine_L\\orchestration\\runtime_bootstrap.py",
+      "Exists": true
+    },
+    {
+      "Name": "UI",
+      "Path": "C:\\Shine_L\\ui\\index.html",
+      "Exists": true
+    },
+    {
+      "Name": "Recovery Restore",
+      "Path": "C:\\Shine_L\\recovery\\restore_latest.ps1",
+      "Exists": true
+    },
+    {
+      "Name": "Quick Checkpoint",
+      "Path": "C:\\Shine_L\\recovery\\quick_checkpoint.ps1",
+      "Exists": true
+    }
+  ],
+  "workflow_checks": {
+    "startup_launcher_exists": true,
+    "runtime_exists": true,
+    "ui_exists": true,
+    "recovery_exists": true,
+    "checkpoint_exists": true
+  },
+  "operator_flow": [
+    "launch_START_L",
+    "runtime_boots",
+    "ui_boots",
+    "browser_opens",
+    "chat_interaction",
+    "checkpoint_available",
+    "restore_available"
+  ],
+  "generated_at": "2026-05-15T18:31:22"
+}

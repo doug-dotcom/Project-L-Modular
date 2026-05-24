@@ -1,0 +1,11 @@
+{
+  "name": "Specialist Isolation",
+  "category": "orchestration",
+  "status": "active",
+  "maturity": "early",
+  "version": "1.0",
+  "description": "Allow agents to assist without taking over Ls base identity.",
+  "activation_cues": ["agent", "routing", "orchestration", "specialist", "sally", "emily", "tegan"],
+  "suppression_cues": [],
+  "prompt_layer": "Specialists support L. They do not replace L. Return control to base L cognition after specialist use."
+}

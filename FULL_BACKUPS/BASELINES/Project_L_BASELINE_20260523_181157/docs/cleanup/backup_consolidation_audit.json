@@ -1,0 +1,281 @@
+{
+  "backup_targets": [
+    {
+      "Path": "C:\\Shine_L\\_FULL_BACKUPS",
+      "Exists": true,
+      "FolderCount": 628,
+      "FileCount": 2631,
+      "SizeMB": 762.47
+    },
+    {
+      "Path": "C:\\Shine_L_CHECKPOINTS",
+      "Exists": true,
+      "FolderCount": 211,
+      "FileCount": 932,
+      "SizeMB": 321.29
+    },
+    {
+      "Path": "C:\\Shine_L\\backups",
+      "Exists": true,
+      "FolderCount": 282,
+      "FileCount": 1093,
+      "SizeMB": 7.22
+    }
+  ],
+  "duplicate_backup_name_count": 63,
+  "duplicate_backup_names": [
+    {
+      "Name": "addie",
+      "Count": 9
+    },
+    {
+      "Name": "agents",
+      "Count": 2
+    },
+    {
+      "Name": "api",
+      "Count": 3
+    },
+    {
+      "Name": "api_before",
+      "Count": 9
+    },
+    {
+      "Name": "backups",
+      "Count": 14
+    },
+    {
+      "Name": "brittany",
+      "Count": 6
+    },
+    {
+      "Name": "brittany_browser",
+      "Count": 3
+    },
+    {
+      "Name": "callie",
+      "Count": 9
+    },
+    {
+      "Name": "captains",
+      "Count": 26
+    },
+    {
+      "Name": "classified_20260514_120156",
+      "Count": 3
+    },
+    {
+      "Name": "classified_20260514_120512",
+      "Count": 3
+    },
+    {
+      "Name": "classified_output",
+      "Count": 2
+    },
+    {
+      "Name": "communications",
+      "Count": 19
+    },
+    {
+      "Name": "compatibility",
+      "Count": 11
+    },
+    {
+      "Name": "confidence",
+      "Count": 11
+    },
+    {
+      "Name": "continuity",
+      "Count": 2
+    },
+    {
+      "Name": "core_before",
+      "Count": 8
+    },
+    {
+      "Name": "data",
+      "Count": 3
+    },
+    {
+      "Name": "emily",
+      "Count": 9
+    },
+    {
+      "Name": "emme",
+      "Count": 9
+    },
+    {
+      "Name": "engine",
+      "Count": 11
+    },
+    {
+      "Name": "execution_visual",
+      "Count": 16
+    },
+    {
+      "Name": "exports",
+      "Count": 3
+    },
+    {
+      "Name": "fiona",
+      "Count": 9
+    },
+    {
+      "Name": "gracie",
+      "Count": 9
+    },
+    {
+      "Name": "heads",
+      "Count": 2
+    },
+    {
+      "Name": "imports",
+      "Count": 3
+    },
+    {
+      "Name": "indexes",
+      "Count": 11
+    },
+    {
+      "Name": "intelligence",
+      "Count": 18
+    },
+    {
+      "Name": "learning",
+      "Count": 11
+    },
+    {
+      "Name": "library",
+      "Count": 6
+    },
+    {
+      "Name": "lieutenants",
+      "Count": 22
+    },
+    {
+      "Name": "memory",
+      "Count": 3
+    },
+    {
+      "Name": "memory_before",
+      "Count": 14
+    },
+    {
+      "Name": "middleware",
+      "Count": 10
+    },
+    {
+      "Name": "millie",
+      "Count": 9
+    },
+    {
+      "Name": "models",
+      "Count": 10
+    },
+    {
+      "Name": "noelie",
+      "Count": 9
+    },
+    {
+      "Name": "orchestration_before",
+      "Count": 22
+    },
+    {
+      "Name": "origin",
+      "Count": 2
+    },
+    {
+      "Name": "patterns",
+      "Count": 11
+    },
+    {
+      "Name": "pixie",
+      "Count": 9
+    },
+    {
+      "Name": "quarantine",
+      "Count": 3
+    },
+    {
+      "Name": "refs",
+      "Count": 2
+    },
+    {
+      "Name": "remotes",
+      "Count": 2
+    },
+    {
+      "Name": "research_finance",
+      "Count": 17
+    },
+    {
+      "Name": "resources",
+      "Count": 22
+    },
+    {
+      "Name": "retrieval",
+      "Count": 11
+    },
+    {
+      "Name": "richie",
+      "Count": 9
+    },
+    {
+      "Name": "routes",
+      "Count": 10
+    },
+    {
+      "Name": "runtime",
+      "Count": 11
+    },
+    {
+      "Name": "sally",
+      "Count": 3
+    },
+    {
+      "Name": "services",
+      "Count": 10
+    },
+    {
+      "Name": "skills",
+      "Count": 6
+    },
+    {
+      "Name": "source_export",
+      "Count": 2
+    },
+    {
+      "Name": "supabase_memories_20260514_105452",
+      "Count": 3
+    },
+    {
+      "Name": "supabase_sync",
+      "Count": 4
+    },
+    {
+      "Name": "sync",
+      "Count": 11
+    },
+    {
+      "Name": "sync_snapshot_20260514_121217",
+      "Count": 3
+    },
+    {
+      "Name": "tania",
+      "Count": 9
+    },
+    {
+      "Name": "tegan",
+      "Count": 3
+    },
+    {
+      "Name": "whatsapp",
+      "Count": 6
+    },
+    {
+      "Name": "winnie",
+      "Count": 3
+    }
+  ],
+  "generated_at": "2026-05-15T17:04:01"
+}

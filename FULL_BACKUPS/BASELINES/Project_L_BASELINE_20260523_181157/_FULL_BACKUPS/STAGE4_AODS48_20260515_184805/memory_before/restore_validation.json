@@ -1,0 +1,10 @@
+{
+  "restore_script_exists": true,
+  "checkpoint_root_exists": true,
+  "checkpoint_count": 1,
+  "latest_checkpoint": "C:\\Shine_L_CHECKPOINTS\\L_RUNTIME_STABLE_20260515_005957",
+  "robocopy_detected": true,
+  "runtime_restart_detected": true,
+  "ui_restart_detected": true,
+  "browser_launch_detected": true
+}

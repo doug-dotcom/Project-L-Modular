@@ -1,0 +1,21 @@
+{
+  "purpose": "Captain-level memory domain registry",
+  "doctrine": {
+    "L": "Strategic/front-facing command",
+    "Tegan": "Operational triage and orchestration",
+    "Captains": "Named human-facing specialist agents",
+    "Lieutenants": "Invisible infrastructure modules",
+    "Engines": "Functional cognitive organs, not personalities"
+  },
+  "captains": [
+    "tegan",
+    "emily",
+    "callie",
+    "ellie",
+    "fiona",
+    "millie",
+    "winnie",
+    "sally"
+  ],
+  "routing_rule": "Captain memories remain domain-specific and are escalated through Tegan when cross-domain orchestration is required."
+}

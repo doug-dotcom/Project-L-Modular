@@ -1,0 +1,239 @@
+[
+  {
+    "timestamp": "2026-05-15T19:05:01.242876",
+    "sender": "Doug",
+    "recipient": "Captain Memory",
+    "message_type": "memory",
+    "priority": "high",
+    "thread_id": "aods57",
+    "content": "remember this conversation for later",
+    "metadata": {
+      "triage": {
+        "triage_by": "Major Tegan Triage",
+        "timestamp": "2026-05-15T19:05:01.241048",
+        "category": "memory",
+        "priority": "high",
+        "status": "classified",
+        "assigned_to": "Captain Memory",
+        "assigned_rank": "Captain",
+        "assigned_role": "Memory recall, saving, persistence, and context retrieval",
+        "service_key": "memory"
+      }
+    },
+    "status": "published"
+  },
+  {
+    "timestamp": "2026-05-15T19:05:01.255433",
+    "sender": "Captain Memory",
+    "recipient": "Doug",
+    "message_type": "action_result",
+    "priority": "high",
+    "thread_id": "aods57",
+    "content": "{'timestamp': '2026-05-15T19:05:01.243772', 'captain': 'Captain Memory', 'payload': {'message': 'remember this conversation for later', 'thread_id': 'aods57', 'triage': {'triage_by': 'Major Tegan Triage', 'timestamp': '2026-05-15T19:05:01.241048', 'category': 'memory', 'priority': 'high', 'status': 'classified', 'assigned_to': 'Captain Memory', 'assigned_rank': 'Captain', 'assigned_role': 'Memory recall, saving, persistence, and context retrieval', 'service_key': 'memory'}}, 'result': {'action': 'memory_process', 'summary': 'Memory workflow prepared', 'input': {'message': 'remember this conversation for later', 'thread_id': 'aods57', 'triage': {'triage_by': 'Major Tegan Triage', 'timestamp': '2026-05-15T19:05:01.241048', 'category': 'memory', 'priority': 'high', 'status': 'classified', 'assigned_to': 'Captain Memory', 'assigned_rank': 'Captain', 'assigned_role': 'Memory recall, saving, persistence, and context retrieval', 'service_key': 'memory'}}}, 'status': 'executed'}",
+    "metadata": {},
+    "status": "published"
+  },
+  {
+    "timestamp": "2026-05-15T19:05:01.273015",
+    "sender": "Doug",
+    "recipient": "Captain Emily",
+    "message_type": "email",
+    "priority": "medium",
+    "thread_id": "aods57",
+    "content": "send an email to Lyndal",
+    "metadata": {
+      "triage": {
+        "triage_by": "Major Tegan Triage",
+        "timestamp": "2026-05-15T19:05:01.258525",
+        "category": "email",
+        "priority": "medium",
+        "status": "classified",
+        "assigned_to": "Captain Emily",
+        "assigned_rank": "Captain",
+        "assigned_role": "Email drafting, inbox review, and message handling",
+        "service_key": "email"
+      }
+    },
+    "status": "published"
+  },
+  {
+    "timestamp": "2026-05-15T19:05:01.286748",
+    "sender": "Captain Emily",
+    "recipient": "Doug",
+    "message_type": "action_result",
+    "priority": "medium",
+    "thread_id": "aods57",
+    "content": "{'timestamp': '2026-05-15T19:05:01.273912', 'captain': 'Captain Emily', 'payload': {'message': 'send an email to Lyndal', 'thread_id': 'aods57', 'triage': {'triage_by': 'Major Tegan Triage', 'timestamp': '2026-05-15T19:05:01.258525', 'category': 'email', 'priority': 'medium', 'status': 'classified', 'assigned_to': 'Captain Emily', 'assigned_rank': 'Captain', 'assigned_role': 'Email drafting, inbox review, and message handling', 'service_key': 'email'}}, 'result': {'action': 'email_process', 'summary': 'Email workflow prepared', 'input': {'message': 'send an email to Lyndal', 'thread_id': 'aods57', 'triage': {'triage_by': 'Major Tegan Triage', 'timestamp': '2026-05-15T19:05:01.258525', 'category': 'email', 'priority': 'medium', 'status': 'classified', 'assigned_to': 'Captain Emily', 'assigned_rank': 'Captain', 'assigned_role': 'Email drafting, inbox review, and message handling', 'service_key': 'email'}}}, 'status': 'executed'}",
+    "metadata": {},
+    "status": "published"
+  },
+  {
+    "timestamp": "2026-05-15T19:05:01.304274",
+    "sender": "Doug",
+    "recipient": "Captain Callie",
+    "message_type": "calendar",
+    "priority": "medium",
+    "thread_id": "aods57",
+    "content": "book a calendar meeting",
+    "metadata": {
+      "triage": {
+        "triage_by": "Major Tegan Triage",
+        "timestamp": "2026-05-15T19:05:01.290042",
+        "category": "calendar",
+        "priority": "medium",
+        "status": "classified",
+        "assigned_to": "Captain Callie",
+        "assigned_rank": "Captain",
+        "assigned_role": "Calendar, appointments, scheduling, and reminders",
+        "service_key": "calendar"
+      }
+    },
+    "status": "published"
+  },
+  {
+    "timestamp": "2026-05-15T19:05:01.320618",
+    "sender": "Captain Callie",
+    "recipient": "Doug",
+    "message_type": "action_result",
+    "priority": "medium",
+    "thread_id": "aods57",
+    "content": "{'timestamp': '2026-05-15T19:05:01.305184', 'captain': 'Captain Callie', 'payload': {'message': 'book a calendar meeting', 'thread_id': 'aods57', 'triage': {'triage_by': 'Major Tegan Triage', 'timestamp': '2026-05-15T19:05:01.290042', 'category': 'calendar', 'priority': 'medium', 'status': 'classified', 'assigned_to': 'Captain Callie', 'assigned_rank': 'Captain', 'assigned_role': 'Calendar, appointments, scheduling, and reminders', 'service_key': 'calendar'}}, 'result': {'action': 'calendar_process', 'summary': 'Calendar workflow prepared', 'input': {'message': 'book a calendar meeting', 'thread_id': 'aods57', 'triage': {'triage_by': 'Major Tegan Triage', 'timestamp': '2026-05-15T19:05:01.290042', 'category': 'calendar', 'priority': 'medium', 'status': 'classified', 'assigned_to': 'Captain Callie', 'assigned_rank': 'Captain', 'assigned_role': 'Calendar, appointments, scheduling, and reminders', 'service_key': 'calendar'}}}, 'status': 'executed'}",
+    "metadata": {},
+    "status": "published"
+  },
+  {
+    "timestamp": "2026-05-15T19:05:01.337817",
+    "sender": "Doug",
+    "recipient": "Captain Emme",
+    "message_type": "care",
+    "priority": "high",
+    "thread_id": "aods57",
+    "content": "I feel overwhelmed and anxious",
+    "metadata": {
+      "triage": {
+        "triage_by": "Major Tegan Triage",
+        "timestamp": "2026-05-15T19:05:01.324460",
+        "category": "care",
+        "priority": "high",
+        "status": "classified",
+        "assigned_to": "Captain Emme",
+        "assigned_rank": "Captain",
+        "assigned_role": "Emotional support, grounding, Shine Care, and nervous-system guidance",
+        "service_key": "care"
+      }
+    },
+    "status": "published"
+  },
+  {
+    "timestamp": "2026-05-15T19:05:01.352389",
+    "sender": "Captain Emme",
+    "recipient": "Doug",
+    "message_type": "action_result",
+    "priority": "high",
+    "thread_id": "aods57",
+    "content": "{'timestamp': '2026-05-15T19:05:01.338956', 'captain': 'Captain Emme', 'payload': {'message': 'I feel overwhelmed and anxious', 'thread_id': 'aods57', 'triage': {'triage_by': 'Major Tegan Triage', 'timestamp': '2026-05-15T19:05:01.324460', 'category': 'care', 'priority': 'high', 'status': 'classified', 'assigned_to': 'Captain Emme', 'assigned_rank': 'Captain', 'assigned_role': 'Emotional support, grounding, Shine Care, and nervous-system guidance', 'service_key': 'care'}}, 'result': {'action': 'care_process', 'summary': 'Care workflow prepared', 'input': {'message': 'I feel overwhelmed and anxious', 'thread_id': 'aods57', 'triage': {'triage_by': 'Major Tegan Triage', 'timestamp': '2026-05-15T19:05:01.324460', 'category': 'care', 'priority': 'high', 'status': 'classified', 'assigned_to': 'Captain Emme', 'assigned_rank': 'Captain', 'assigned_role': 'Emotional support, grounding, Shine Care, and nervous-system guidance', 'service_key': 'care'}}}, 'status': 'executed'}",
+    "metadata": {},
+    "status": "published"
+  },
+  {
+    "timestamp": "2026-05-15T19:05:01.369322",
+    "sender": "Doug",
+    "recipient": "Captain Builder",
+    "message_type": "build",
+    "priority": "high",
+    "thread_id": "aods57",
+    "content": "AODS build runtime deploy",
+    "metadata": {
+      "triage": {
+        "triage_by": "Major Tegan Triage",
+        "timestamp": "2026-05-15T19:05:01.355720",
+        "category": "build",
+        "priority": "high",
+        "status": "classified",
+        "assigned_to": "Captain Builder",
+        "assigned_rank": "Captain",
+        "assigned_role": "AODS builds, runtime repair, deployment, and technical implementation",
+        "service_key": "build"
+      }
+    },
+    "status": "published"
+  },
+  {
+    "timestamp": "2026-05-15T19:05:01.381532",
+    "sender": "Captain Builder",
+    "recipient": "Doug",
+    "message_type": "action_result",
+    "priority": "high",
+    "thread_id": "aods57",
+    "content": "{'timestamp': '2026-05-15T19:05:01.370556', 'captain': 'Captain Builder', 'payload': {'message': 'AODS build runtime deploy', 'thread_id': 'aods57', 'triage': {'triage_by': 'Major Tegan Triage', 'timestamp': '2026-05-15T19:05:01.355720', 'category': 'build', 'priority': 'high', 'status': 'classified', 'assigned_to': 'Captain Builder', 'assigned_rank': 'Captain', 'assigned_role': 'AODS builds, runtime repair, deployment, and technical implementation', 'service_key': 'build'}}, 'result': {'action': 'build_process', 'summary': 'Build workflow prepared', 'input': {'message': 'AODS build runtime deploy', 'thread_id': 'aods57', 'triage': {'triage_by': 'Major Tegan Triage', 'timestamp': '2026-05-15T19:05:01.355720', 'category': 'build', 'priority': 'high', 'status': 'classified', 'assigned_to': 'Captain Builder', 'assigned_rank': 'Captain', 'assigned_role': 'AODS builds, runtime repair, deployment, and technical implementation', 'service_key': 'build'}}}, 'status': 'executed'}",
+    "metadata": {},
+    "status": "published"
+  },
+  {
+    "timestamp": "2026-05-15T19:05:01.398829",
+    "sender": "Doug",
+    "recipient": "L",
+    "message_type": "general",
+    "priority": "normal",
+    "thread_id": "aods57",
+    "content": "hello L",
+    "metadata": {
+      "triage": {
+        "triage_by": "Major Tegan Triage",
+        "timestamp": "2026-05-15T19:05:01.384730",
+        "category": "general",
+        "priority": "normal",
+        "status": "classified",
+        "assigned_to": "L",
+        "assigned_rank": "Lieutenant Colonel",
+        "assigned_role": "Front-facing strategic command",
+        "service_key": "general"
+      }
+    },
+    "status": "published"
+  },
+  {
+    "timestamp": "2026-05-15T19:05:01.414437",
+    "sender": "L",
+    "recipient": "Doug",
+    "message_type": "action_result",
+    "priority": "normal",
+    "thread_id": "aods57",
+    "content": "{'timestamp': '2026-05-15T19:05:01.399837', 'captain': 'L', 'payload': {'message': 'hello L', 'thread_id': 'aods57', 'triage': {'triage_by': 'Major Tegan Triage', 'timestamp': '2026-05-15T19:05:01.384730', 'category': 'general', 'priority': 'normal', 'status': 'classified', 'assigned_to': 'L', 'assigned_rank': 'Lieutenant Colonel', 'assigned_role': 'Front-facing strategic command', 'service_key': 'general'}}, 'result': {'action': 'general_process', 'summary': 'General workflow prepared', 'input': {'message': 'hello L', 'thread_id': 'aods57', 'triage': {'triage_by': 'Major Tegan Triage', 'timestamp': '2026-05-15T19:05:01.384730', 'category': 'general', 'priority': 'normal', 'status': 'classified', 'assigned_to': 'L', 'assigned_rank': 'Lieutenant Colonel', 'assigned_role': 'Front-facing strategic command', 'service_key': 'general'}}}, 'status': 'executed'}",
+    "metadata": {},
+    "status": "published"
+  },
+  {
+    "timestamp": "2026-05-15T19:24:53.973511",
+    "sender": "Captain Builder",
+    "recipient": "Doug",
+    "message_type": "task_complete",
+    "priority": "high",
+    "thread_id": "aods65",
+    "content": "{'timestamp': '2026-05-15T19:24:53.972394', 'captain': 'Captain Builder', 'payload': {'message': 'AODS validation build task'}, 'result': {'action': 'build_process', 'summary': 'Build workflow prepared', 'input': {'message': 'AODS validation build task'}}, 'status': 'executed'}",
+    "metadata": {},
+    "status": "published"
+  },
+  {
+    "timestamp": "2026-05-15T19:27:03.849600",
+    "sender": "Scheduler",
+    "recipient": "Captain Builder",
+    "message_type": "scheduled_task",
+    "priority": "high",
+    "thread_id": "aods66",
+    "content": "{'schedule_id': 'b6f25350-d563-45b8-9ca9-2a777a10b00b', 'timestamp': '2026-05-15T19:27:03.819006', 'captain': 'Captain Builder', 'task_type': 'build', 'payload': {'message': 'scheduled validation task'}, 'priority': 'high', 'thread_id': 'aods66', 'run_at': '2026-05-15T19:27:02.818573', 'recurrence': 'once', 'status': 'scheduled'}",
+    "metadata": {},
+    "status": "published"
+  },
+  {
+    "timestamp": "2026-05-16T16:01:58.693998",
+    "sender": "Doug",
+    "recipient": "L",
+    "message_type": "chat",
+    "priority": "normal",
+    "thread_id": "audit",
+    "content": "Hello L, is Tegan online?",
+    "metadata": {},
+    "status": "published"
+  }
+]

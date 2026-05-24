@@ -1,0 +1,146 @@
+{
+  "orchestration_directory": "C:\\Shine_L\\orchestration",
+  "folder_count": 8,
+  "file_count": 40,
+  "python_file_count": 39,
+  "missing_init_count": 4,
+  "folder_structure": [
+    {
+      "Folder": "C:\\Shine_L\\orchestration\\__pycache__",
+      "FileCount": 1,
+      "PythonCount": 0,
+      "HasInit": false
+    },
+    {
+      "Folder": "C:\\Shine_L\\orchestration\\captains",
+      "FileCount": 7,
+      "PythonCount": 7,
+      "HasInit": true
+    },
+    {
+      "Folder": "C:\\Shine_L\\orchestration\\lieutenants",
+      "FileCount": 7,
+      "PythonCount": 7,
+      "HasInit": true
+    },
+    {
+      "Folder": "C:\\Shine_L\\orchestration\\resources",
+      "FileCount": 1,
+      "PythonCount": 1,
+      "HasInit": true
+    },
+    {
+      "Folder": "C:\\Shine_L\\orchestration\\captains\\communications",
+      "FileCount": 3,
+      "PythonCount": 3,
+      "HasInit": false
+    },
+    {
+      "Folder": "C:\\Shine_L\\orchestration\\captains\\execution_visual",
+      "FileCount": 3,
+      "PythonCount": 3,
+      "HasInit": false
+    },
+    {
+      "Folder": "C:\\Shine_L\\orchestration\\captains\\intelligence",
+      "FileCount": 3,
+      "PythonCount": 3,
+      "HasInit": false
+    },
+    {
+      "Folder": "C:\\Shine_L\\orchestration\\captains\\research_finance",
+      "FileCount": 3,
+      "PythonCount": 3,
+      "HasInit": false
+    }
+  ],
+  "root_files": [
+    {
+      "File": "C:\\Shine_L\\orchestration\\__init__.py",
+      "Name": "__init__.py",
+      "SizeKB": 0.0
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\active_registry.py",
+      "Name": "active_registry.py",
+      "SizeKB": 1.76
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\agent_registry.py",
+      "Name": "agent_registry.py",
+      "SizeKB": 3.45
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\invisible_orchestra.py",
+      "Name": "invisible_orchestra.py",
+      "SizeKB": 2.48
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\meta_suppression.py",
+      "Name": "meta_suppression.py",
+      "SizeKB": 0.67
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\runtime_bootstrap.py",
+      "Name": "runtime_bootstrap.py",
+      "SizeKB": 18.98
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\runtime_dispatch.py",
+      "Name": "runtime_dispatch.py",
+      "SizeKB": 1.69
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\runtime_engine.py",
+      "Name": "runtime_engine.py",
+      "SizeKB": 4.17
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\specialist_state.py",
+      "Name": "specialist_state.py",
+      "SizeKB": 1.85
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\tegan_runtime.py",
+      "Name": "tegan_runtime.py",
+      "SizeKB": 3.31
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\tegan_triage.py",
+      "Name": "tegan_triage.py",
+      "SizeKB": 2.99
+    },
+    {
+      "File": "C:\\Shine_L\\orchestration\\weighted_scoring.py",
+      "Name": "weighted_scoring.py",
+      "SizeKB": 3.77
+    }
+  ],
+  "missing_init_folders": [
+    {
+      "Folder": "C:\\Shine_L\\orchestration\\captains\\communications",
+      "FileCount": 3,
+      "PythonCount": 3,
+      "HasInit": false
+    },
+    {
+      "Folder": "C:\\Shine_L\\orchestration\\captains\\execution_visual",
+      "FileCount": 3,
+      "PythonCount": 3,
+      "HasInit": false
+    },
+    {
+      "Folder": "C:\\Shine_L\\orchestration\\captains\\intelligence",
+      "FileCount": 3,
+      "PythonCount": 3,
+      "HasInit": false
+    },
+    {
+      "Folder": "C:\\Shine_L\\orchestration\\captains\\research_finance",
+      "FileCount": 3,
+      "PythonCount": 3,
+      "HasInit": false
+    }
+  ],
+  "generated_at": "2026-05-15T18:18:29"
+}

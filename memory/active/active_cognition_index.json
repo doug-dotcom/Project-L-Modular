@@ -1,0 +1,1544 @@
+{
+  "generated_at": "2026-05-24T00:02:12.223113",
+  "critical_memories": [],
+  "high_memories": [],
+  "identity_core": [
+    {
+      "file": "memory\\captains.json",
+      "index": 2,
+      "preview": "{\"name\": \"ellie\", \"role\": \"memory governor\", \"status\": \"online\", \"specialty\": \"identity and memory continuity\"}"
+    }
+  ],
+  "relationship_core": [
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 435,
+      "preview": "{\"function\": \"_load_json_file\", \"file\": \"c:\\\\shine_l\\\\agents\\\\sally\\\\sally.py\", \"line\": 29}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 436,
+      "preview": "{\"function\": \"_load_json_file\", \"file\": \"c:\\\\shine_l\\\\backups\\\\chat_fix_20260514_233401\\\\shine_l\\\\agents\\\\sally\\\\sally.py\", \"line\": 29}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 437,
+      "preview": "{\"function\": \"_load_json_file\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods46_20260514_155207\\\\agents_before\\\\sally\\\\sally.py\", \"line\": 29}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 438,
+      "preview": "{\"function\": \"_load_json_file\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\calm_sally_20260512_225508\\\\sally_backup.py\", \"line\": 29}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1322,
+      "preview": "{\"function\": \"blob\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods32_local_json_20260514_120537\\\\classified_source\\\\classify_memories.py\", \"line\": 15}"
+    }
+  ],
+  "recovery_core": [
+    {
+      "file": "memory\\captains.json",
+      "index": 0,
+      "preview": "{\"name\": \"emily\", \"role\": \"emotional intelligence captain\", \"status\": \"online\", \"specialty\": \"emotional support and empathy\"}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 15,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\lieutenants\\\\confidence_lieutenant.py\", \"line\": 11}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 16,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\lieutenants\\\\continuity_lieutenant.py\", \"line\": 23}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 17,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\lieutenants\\\\observability_lieutenant.py\", \"line\": 23}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 19,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\lieutenants\\\\routing_lieutenant.py\", \"line\": 11}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 20,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\lieutenants\\\\suppression_lieutenant.py\", \"line\": 11}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 232,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods63_20260514_212915\\\\orchestration_before\\\\lieutenants\\\\confidence_lieutenant.py\", \"line\": 11}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 249,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods64_20260514_213119\\\\orchestration_before\\\\lieutenants\\\\confidence_lieutenant.py\", \"line\": 11}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 251,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods64_20260514_213119\\\\orchestration_before\\\\lieutenants\\\\routing_lieutenant.py\", \"line\": 11}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 267,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods65_20260514_213217\\\\orchestration_before\\\\lieutenants\\\\confidence_lieutenant.py\", \"line\": 11}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 269,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods65_20260514_213217\\\\orchestration_before\\\\lieutenants\\\\routing_lieutenant.py\", \"line\": 11}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 270,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods65_20260514_213217\\\\orchestration_before\\\\lieutenants\\\\suppression_lieutenant.py\", \"line\": 11}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 286,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods66_20260514_213318\\\\orchestration_before\\\\lieutenants\\\\confidence_lieutenant.py\", \"line\": 11}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 287,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods66_20260514_213318\\\\orchestration_before\\\\lieutenants\\\\continuity_lieutenant.py\", \"line\": 23}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 289,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods66_20260514_213318\\\\orchestration_before\\\\lieutenants\\\\routing_lieutenant.py\", \"line\": 11}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 290,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods66_20260514_213318\\\\orchestration_before\\\\lieutenants\\\\suppression_lieutenant.py\", \"line\": 11}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 396,
+      "preview": "{\"function\": \"_load\", \"file\": \"c:\\\\shine_l\\\\agents\\\\fiona\\\\fiona_backup_20260510_182249.py\", \"line\": 29}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 404,
+      "preview": "{\"function\": \"_load\", \"file\": \"c:\\\\shine_l\\\\backups\\\\chat_fix_20260514_233401\\\\shine_l\\\\agents\\\\fiona\\\\fiona_backup_20260510_182249.py\", \"line\": 29}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 412,
+      "preview": "{\"function\": \"_load\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods46_20260514_155207\\\\agents_before\\\\fiona\\\\fiona_backup_20260510_182249.py\", \"line\": 29}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 433,
+      "preview": "{\"function\": \"_load_activation_log\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\sally_external_skill_library_20260512_220951\\\\sally_backup.py\", \"line\": 216}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 444,
+      "preview": "{\"function\": \"_load_skills\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\sally_external_skill_library_20260512_220951\\\\sally_backup.py\", \"line\": 25}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 474,
+      "preview": "{\"function\": \"_save\", \"file\": \"c:\\\\shine_l\\\\agents\\\\fiona\\\\fiona_backup_20260510_182249.py\", \"line\": 58}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 482,
+      "preview": "{\"function\": \"_save\", \"file\": \"c:\\\\shine_l\\\\backups\\\\chat_fix_20260514_233401\\\\shine_l\\\\agents\\\\fiona\\\\fiona_backup_20260510_182249.py\", \"line\": 58}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 490,
+      "preview": "{\"function\": \"_save\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods46_20260514_155207\\\\agents_before\\\\fiona\\\\fiona_backup_20260510_182249.py\", \"line\": 58}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 511,
+      "preview": "{\"function\": \"_save_activation_log\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\sally_external_skill_library_20260512_220951\\\\sally_backup.py\", \"line\": 233}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 513,
+      "preview": "{\"function\": \"_save_skills\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\sally_external_skill_library_20260512_220951\\\\sally_backup.py\", \"line\": 42}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 524,
+      "preview": "{\"function\": \"activation_audit\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\sally_external_skill_library_20260512_220951\\\\sally_backup.py\", \"line\": 425}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 534,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\api\\\\backups\\\\server_backup_emotional_confidence_20260510_212048.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 535,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\api\\\\backups\\\\server_backup_fiona_20260509_182407.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 565,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\backups\\\\chat_fix_20260514_233401\\\\shine_l\\\\api\\\\backups\\\\server_backup_emotional_confidence_20260510_212048.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 566,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\backups\\\\chat_fix_20260514_233401\\\\shine_l\\\\api\\\\backups\\\\server_backup_fiona_20260509_182407.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 626,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\server.py\", \"line\": 568}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 627,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\server.py\", \"line\": 568}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 628,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\broken .py\", \"line\": 81}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 629,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_addie_20260509_162102.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 630,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_addie_20260509_163042.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 632,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_core_stabilization_20260510_192112.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 633,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_core_stabilization_20260510_203117.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 634,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_emme_20260509_161604.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 635,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_emme_20260509_162029.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 636,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_emotional_confidence_20260510_212048.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 637,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_fiona_20260509_182407.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 638,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_fix_millie_import_20260509_161107.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 639,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_gracie_20260509_163126.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 641,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_invisible_orchestra_v1_20260509_201415.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 642,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_live_web_v1_20260510_005624.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 645,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_meta_hotfix_20260510_200124.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 646,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_meta_routing_20260510_194642.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 647,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_millie_20260509_160524.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 648,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_noelie_20260509_163743.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 649,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_orchestra_hotfix_20260509_203318.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 650,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_orchestra_v2_20260509_205807.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 651,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_orchestra_v2_hotfix_20260509_210802.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 652,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_richie_20260509_164221.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 653,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_smart_web_routing_v1_20260510_010554.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 654,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_tegan_20260509_164707.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 655,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_web_context_fix_20260510_021532.py\", \"line\": 81}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 656,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_webfix_20260510_022430.py\", \"line\": 81}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 657,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_backup_winnie_20260509_181845.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 658,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\server_broken_backup_20260510_144935.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 671,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\api_before\\\\backups\\\\server_backup_emotional_confidence_20260510_212048.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 672,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\api_before\\\\backups\\\\server_backup_fiona_20260509_182407.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 703,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\api_before\\\\backups\\\\server_backup_emotional_confidence_20260510_212048.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 704,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\api_before\\\\backups\\\\server_backup_fiona_20260509_182407.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 736,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods53_20260514_163533\\\\api_before\\\\backups\\\\server_backup_emotional_confidence_20260510_212048.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 737,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods53_20260514_163533\\\\api_before\\\\backups\\\\server_backup_fiona_20260509_182407.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 769,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods53_20260514_163814\\\\api_before\\\\backups\\\\server_backup_emotional_confidence_20260510_212048.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 770,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods53_20260514_163814\\\\api_before\\\\backups\\\\server_backup_fiona_20260509_182407.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 803,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods55_20260514_163938\\\\api_before\\\\backups\\\\server_backup_emotional_confidence_20260510_212048.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 804,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods55_20260514_163938\\\\api_before\\\\backups\\\\server_backup_fiona_20260509_182407.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 836,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods55_20260514_164132\\\\api_before\\\\backups\\\\server_backup_emotional_confidence_20260510_212048.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 837,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods55_20260514_164132\\\\api_before\\\\backups\\\\server_backup_fiona_20260509_182407.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 869,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods56_20260514_164157\\\\api_before\\\\backups\\\\server_backup_emotional_confidence_20260510_212048.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 870,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods56_20260514_164157\\\\api_before\\\\backups\\\\server_backup_fiona_20260509_182407.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 900,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods56_20260514_164259\\\\api_before\\\\backups\\\\server_backup_emotional_confidence_20260510_212048.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 901,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods56_20260514_164259\\\\api_before\\\\backups\\\\server_backup_fiona_20260509_182407.py\", \"line\": 80}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 934,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\final_indent_fix_20260513_224510\\\\server_backup.py\", \"line\": 89}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 938,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase1_final_20260513_012915\\\\server_backup.py\", \"line\": 81}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 939,
+      "preview": "{\"function\": \"add_cors_headers\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase1_final_hotfix_20260513_013516\\\\server_backup.py\", \"line\": 81}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 993,
+      "preview": "{\"function\": \"add_or_update_skill\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\sally_external_skill_library_20260512_220951\\\\sally_backup.py\", \"line\": 160}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 995,
+      "preview": "{\"function\": \"analyse_spending\", \"file\": \"c:\\\\shine_l\\\\agents\\\\fee.py\", \"line\": 51}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 996,
+      "preview": "{\"function\": \"analyse_spending\", \"file\": \"c:\\\\shine_l\\\\backups\\\\chat_fix_20260514_233401\\\\shine_l\\\\agents\\\\fee.py\", \"line\": 51}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 997,
+      "preview": "{\"function\": \"analyse_spending\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods46_20260514_155207\\\\agents_before\\\\fee.py\", \"line\": 51}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 999,
+      "preview": "{\"function\": \"analyse_whatsapp\", \"file\": \"c:\\\\shine_l\\\\agents\\\\winnie.py\", \"line\": 40}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1000,
+      "preview": "{\"function\": \"analyse_whatsapp\", \"file\": \"c:\\\\shine_l\\\\backups\\\\chat_fix_20260514_233401\\\\shine_l\\\\agents\\\\winnie.py\", \"line\": 40}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1001,
+      "preview": "{\"function\": \"analyse_whatsapp\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods46_20260514_155207\\\\agents_before\\\\winnie.py\", \"line\": 40}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1027,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\core\\\\conversational_maturity.py\", \"line\": 83}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1028,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods01_20260514_104211\\\\server.py\", \"line\": 1572}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1029,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods02_20260514_104333\\\\server.py\", \"line\": 1580}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1030,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods03_20260514_104436\\\\server.py\", \"line\": 1577}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1031,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods04_20260514_104550\\\\server.py\", \"line\": 1582}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1032,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods05_20260514_104735\\\\server.py\", \"line\": 1590}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1033,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods06_20260514_104912\\\\server.py\", \"line\": 1543}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1034,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods07_20260514_105025\\\\server.py\", \"line\": 1353}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1035,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods08_20260514_105147\\\\server.py\", \"line\": 1361}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1036,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\core_before\\\\conversational_maturity.py\", \"line\": 83}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1037,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods48_20260514_162104\\\\core_before\\\\conversational_maturity.py\", \"line\": 83}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1038,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods49_20260514_162352\\\\core_before\\\\conversational_maturity.py\", \"line\": 83}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1039,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\core_before\\\\conversational_maturity.py\", \"line\": 83}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1040,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\core_before\\\\conversational_maturity.py\", \"line\": 83}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1041,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods52_20260514_162850\\\\core_before\\\\conversational_maturity.py\", \"line\": 83}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1042,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods55_20260514_163938\\\\core_before\\\\conversational_maturity.py\", \"line\": 83}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1043,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods55_20260514_164132\\\\core_before\\\\conversational_maturity.py\", \"line\": 83}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1044,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\final_indent_fix_20260513_224510\\\\server_backup.py\", \"line\": 1572}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1045,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\nuclear_prompt_fix_20260513_200300\\\\server_backup.py\", \"line\": 1572}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1046,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase1_final_20260513_012915\\\\server_backup.py\", \"line\": 1423}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1047,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase1_final_hotfix_20260513_013516\\\\server_backup.py\", \"line\": 1423}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1048,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase2_aods1_20260513_182208\\\\server_backup.py\", \"line\": 1566}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1049,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase2_aods2_20260513_184451\\\\server_backup.py\", \"line\": 1568}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1050,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase2_aods3_20260513_185551\\\\server_backup.py\", \"line\": 1570}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1051,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase2_aods4_20260513_191645\\\\server_backup.py\", \"line\": 1571}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1052,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase2_aods4_hotfix_20260513_194147\\\\server_backup.py\", \"line\": 1572}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1053,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase2_aods4_paren_hotfix_20260513_194958\\\\server_backup.py\", \"line\": 1572}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1055,
+      "preview": "{\"function\": \"apply_conversational_maturity\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\modular_framework_20260514_101142\\\\api\\\\server.py\", \"line\": 1572}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1057,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\core\\\\response_stabilizer.py\", \"line\": 131}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1058,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods01_20260514_104211\\\\server.py\", \"line\": 1549}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1059,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods02_20260514_104333\\\\server.py\", \"line\": 1557}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1060,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods03_20260514_104436\\\\server.py\", \"line\": 1554}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1061,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods04_20260514_104550\\\\server.py\", \"line\": 1559}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1062,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods05_20260514_104735\\\\server.py\", \"line\": 1567}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1063,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods06_20260514_104912\\\\server.py\", \"line\": 1520}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1064,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods07_20260514_105025\\\\server.py\", \"line\": 1330}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1065,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods08_20260514_105147\\\\server.py\", \"line\": 1338}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1066,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\core_before\\\\response_stabilizer.py\", \"line\": 131}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1067,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods48_20260514_162104\\\\core_before\\\\response_stabilizer.py\", \"line\": 131}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1068,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods49_20260514_162352\\\\core_before\\\\response_stabilizer.py\", \"line\": 131}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1069,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\core_before\\\\response_stabilizer.py\", \"line\": 131}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1070,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\core_before\\\\response_stabilizer.py\", \"line\": 131}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1071,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods52_20260514_162850\\\\core_before\\\\response_stabilizer.py\", \"line\": 131}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1072,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods55_20260514_163938\\\\core_before\\\\response_stabilizer.py\", \"line\": 131}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1073,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods55_20260514_164132\\\\core_before\\\\response_stabilizer.py\", \"line\": 131}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1074,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\final_indent_fix_20260513_224510\\\\server_backup.py\", \"line\": 1549}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1075,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\nuclear_prompt_fix_20260513_200300\\\\server_backup.py\", \"line\": 1549}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1076,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase2_aods1_20260513_182208\\\\server_backup.py\", \"line\": 1543}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1077,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase2_aods2_20260513_184451\\\\server_backup.py\", \"line\": 1545}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1078,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase2_aods3_20260513_185551\\\\server_backup.py\", \"line\": 1547}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1079,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase2_aods4_20260513_191645\\\\server_backup.py\", \"line\": 1548}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1080,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase2_aods4_hotfix_20260513_194147\\\\server_backup.py\", \"line\": 1549}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1081,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\phase2_aods4_paren_hotfix_20260513_194958\\\\server_backup.py\", \"line\": 1549}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1083,
+      "preview": "{\"function\": \"apply_final_stabilization\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\modular_framework_20260514_101142\\\\api\\\\server.py\", \"line\": 1549}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1137,
+      "preview": "{\"function\": \"apply_orchestration_smoothing\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\backups\\\\final_indent_fix_20260513_224510\\\\server_backup.py\", \"line\": 1531}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1154,
+      "preview": "{\"function\": \"assess_urgency\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\orchestration_before\\\\tegan_triage.py\", \"line\": 20}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1980,
+      "preview": "{\"function\": \"build_auth_url\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\google_auth.py\", \"line\": 149}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1981,
+      "preview": "{\"function\": \"build_auth_url\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods35_final_shim_20260514_122044\\\\api_before\\\\backups\\\\google_auth_backup_supabase_20260508_214747.py\", \"line\": 98}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 2093,
+      "preview": "{\"function\": \"build_confidence_prompt_layer\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\lieutenants\\\\confidence_lieutenant.py\", \"line\": 120}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 2094,
+      "preview": "{\"function\": \"build_confidence_prompt_layer\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods63_20260514_212915\\\\orchestration_before\\\\lieutenants\\\\confidence_lieutenant.py\", \"line\": 120}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 2095,
+      "preview": "{\"function\": \"build_confidence_prompt_layer\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods64_20260514_213119\\\\orchestration_before\\\\lieutenants\\\\confidence_lieutenant.py\", \"line\": 120}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 2096,
+      "preview": "{\"function\": \"build_confidence_prompt_layer\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods65_20260514_213217\\\\orchestration_before\\\\lieutenants\\\\confidence_lieutenant.py\", \"line\": 120}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 2097,
+      "preview": "{\"function\": \"build_confidence_prompt_layer\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods66_20260514_213318\\\\orchestration_before\\\\lieutenants\\\\confidence_lieutenant.py\", \"line\": 120}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 2169,
+      "preview": "{\"function\": \"build_continuity_layer\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\lieutenants\\\\continuity_lieutenant.py\", \"line\": 161}"
+    }
+  ],
+  "project_l_core": [
+    {
+      "file": "memory\\captains.json",
+      "index": 1,
+      "preview": "{\"name\": \"brittany\", \"role\": \"operations captain\", \"status\": \"online\", \"specialty\": \"organization and execution\"}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 0,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\runtime_engine.py\", \"line\": 47}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 1,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\tegan_runtime.py\", \"line\": 27}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 2,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\captains\\\\base_captain.py\", \"line\": 8}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 3,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\captains\\\\communications\\\\captain_callie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 4,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\captains\\\\communications\\\\captain_emily.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 5,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\captains\\\\communications\\\\captain_winnie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 6,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\captains\\\\execution_visual\\\\captain_addie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 7,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\captains\\\\execution_visual\\\\captain_pixie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 8,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\captains\\\\execution_visual\\\\captain_tania.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 9,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\captains\\\\intelligence\\\\captain_gracie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 10,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\captains\\\\intelligence\\\\captain_millie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 11,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\captains\\\\intelligence\\\\captain_richie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 12,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\captains\\\\research_finance\\\\captain_brittany.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 13,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\captains\\\\research_finance\\\\captain_fiona.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 14,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\captains\\\\research_finance\\\\captain_noelie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 18,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\orchestration\\\\lieutenants\\\\retrieval_lieutenant.py\", \"line\": 11}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 21,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods37_20260514_131403\\\\orchestration_before\\\\captains\\\\base_captain.py\", \"line\": 8}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 22,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods38_20260514_131517\\\\orchestration_before\\\\captains\\\\base_captain.py\", \"line\": 8}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 23,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods38_20260514_131517\\\\orchestration_before\\\\captains\\\\communications\\\\captain_callie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 24,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods38_20260514_131517\\\\orchestration_before\\\\captains\\\\communications\\\\captain_emily.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 25,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods38_20260514_131517\\\\orchestration_before\\\\captains\\\\communications\\\\captain_winnie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 26,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods39_20260514_131722\\\\orchestration_before\\\\captains\\\\base_captain.py\", \"line\": 8}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 27,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods39_20260514_131722\\\\orchestration_before\\\\captains\\\\communications\\\\captain_callie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 28,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods39_20260514_131722\\\\orchestration_before\\\\captains\\\\communications\\\\captain_emily.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 29,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods39_20260514_131722\\\\orchestration_before\\\\captains\\\\communications\\\\captain_winnie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 30,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods39_20260514_131722\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_gracie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 31,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods39_20260514_131722\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_millie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 32,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods39_20260514_131722\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_richie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 33,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods40_20260514_131851\\\\orchestration_before\\\\captains\\\\base_captain.py\", \"line\": 8}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 34,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods40_20260514_131851\\\\orchestration_before\\\\captains\\\\communications\\\\captain_callie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 35,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods40_20260514_131851\\\\orchestration_before\\\\captains\\\\communications\\\\captain_emily.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 36,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods40_20260514_131851\\\\orchestration_before\\\\captains\\\\communications\\\\captain_winnie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 37,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods40_20260514_131851\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_gracie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 38,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods40_20260514_131851\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_millie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 39,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods40_20260514_131851\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_richie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 40,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods40_20260514_131851\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_brittany.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 41,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods40_20260514_131851\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_fiona.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 42,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods40_20260514_131851\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_noelie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 43,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods41_20260514_132038\\\\orchestration_before\\\\captains\\\\base_captain.py\", \"line\": 8}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 44,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods41_20260514_132038\\\\orchestration_before\\\\captains\\\\communications\\\\captain_callie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 45,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods41_20260514_132038\\\\orchestration_before\\\\captains\\\\communications\\\\captain_emily.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 46,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods41_20260514_132038\\\\orchestration_before\\\\captains\\\\communications\\\\captain_winnie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 47,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods41_20260514_132038\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_addie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 48,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods41_20260514_132038\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_pixie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 49,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods41_20260514_132038\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_tania.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 50,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods41_20260514_132038\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_gracie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 51,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods41_20260514_132038\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_millie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 52,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods41_20260514_132038\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_richie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 53,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods41_20260514_132038\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_brittany.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 54,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods41_20260514_132038\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_fiona.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 55,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods41_20260514_132038\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_noelie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 56,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods42_20260514_132209\\\\orchestration_before\\\\captains\\\\base_captain.py\", \"line\": 8}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 57,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods42_20260514_132209\\\\orchestration_before\\\\captains\\\\communications\\\\captain_callie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 58,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods42_20260514_132209\\\\orchestration_before\\\\captains\\\\communications\\\\captain_emily.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 59,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods42_20260514_132209\\\\orchestration_before\\\\captains\\\\communications\\\\captain_winnie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 60,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods42_20260514_132209\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_addie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 61,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods42_20260514_132209\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_pixie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 62,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods42_20260514_132209\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_tania.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 63,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods42_20260514_132209\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_gracie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 64,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods42_20260514_132209\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_millie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 65,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods42_20260514_132209\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_richie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 66,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods42_20260514_132209\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_brittany.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 67,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods42_20260514_132209\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_fiona.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 68,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods42_20260514_132209\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_noelie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 69,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods43_20260514_132423\\\\orchestration_before\\\\captains\\\\base_captain.py\", \"line\": 8}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 70,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods43_20260514_132423\\\\orchestration_before\\\\captains\\\\communications\\\\captain_callie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 71,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods43_20260514_132423\\\\orchestration_before\\\\captains\\\\communications\\\\captain_emily.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 72,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods43_20260514_132423\\\\orchestration_before\\\\captains\\\\communications\\\\captain_winnie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 73,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods43_20260514_132423\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_addie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 74,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods43_20260514_132423\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_pixie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 75,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods43_20260514_132423\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_tania.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 76,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods43_20260514_132423\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_gracie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 77,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods43_20260514_132423\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_millie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 78,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods43_20260514_132423\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_richie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 79,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods43_20260514_132423\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_brittany.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 80,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods43_20260514_132423\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_fiona.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 81,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods43_20260514_132423\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_noelie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 82,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods45_20260514_132842\\\\orchestration_before\\\\tegan_runtime.py\", \"line\": 21}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 83,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods45_20260514_132842\\\\orchestration_before\\\\captains\\\\base_captain.py\", \"line\": 8}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 84,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods45_20260514_132842\\\\orchestration_before\\\\captains\\\\communications\\\\captain_callie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 85,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods45_20260514_132842\\\\orchestration_before\\\\captains\\\\communications\\\\captain_emily.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 86,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods45_20260514_132842\\\\orchestration_before\\\\captains\\\\communications\\\\captain_winnie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 87,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods45_20260514_132842\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_addie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 88,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods45_20260514_132842\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_pixie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 89,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods45_20260514_132842\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_tania.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 90,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods45_20260514_132842\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_gracie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 91,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods45_20260514_132842\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_millie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 92,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods45_20260514_132842\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_richie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 93,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods45_20260514_132842\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_brittany.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 94,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods45_20260514_132842\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_fiona.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 95,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods45_20260514_132842\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_noelie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 96,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\orchestration_before\\\\runtime_engine.py\", \"line\": 47}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 97,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\orchestration_before\\\\tegan_runtime.py\", \"line\": 21}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 98,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\orchestration_before\\\\captains\\\\base_captain.py\", \"line\": 8}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 99,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\orchestration_before\\\\captains\\\\communications\\\\captain_callie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 100,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\orchestration_before\\\\captains\\\\communications\\\\captain_emily.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 101,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\orchestration_before\\\\captains\\\\communications\\\\captain_winnie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 102,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_addie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 103,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_pixie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 104,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_tania.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 105,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_gracie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 106,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_millie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 107,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_richie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 108,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_brittany.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 109,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_fiona.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 110,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods47_20260514_161724\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_noelie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 111,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\orchestration_before\\\\runtime_engine.py\", \"line\": 47}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 112,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\orchestration_before\\\\tegan_runtime.py\", \"line\": 21}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 113,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\orchestration_before\\\\captains\\\\base_captain.py\", \"line\": 8}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 114,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\orchestration_before\\\\captains\\\\communications\\\\captain_callie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 115,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\orchestration_before\\\\captains\\\\communications\\\\captain_emily.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 116,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\orchestration_before\\\\captains\\\\communications\\\\captain_winnie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 117,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_addie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 118,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_pixie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 119,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_tania.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 120,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_gracie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 121,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_millie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 122,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_richie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 123,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_brittany.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 124,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_fiona.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 125,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods50_20260514_162546\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_noelie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 126,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\orchestration_before\\\\runtime_engine.py\", \"line\": 47}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 127,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\orchestration_before\\\\tegan_runtime.py\", \"line\": 21}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 128,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\orchestration_before\\\\captains\\\\base_captain.py\", \"line\": 8}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 129,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\orchestration_before\\\\captains\\\\communications\\\\captain_callie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 130,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\orchestration_before\\\\captains\\\\communications\\\\captain_emily.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 131,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\orchestration_before\\\\captains\\\\communications\\\\captain_winnie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 132,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_addie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 133,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_pixie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 134,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_tania.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 135,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_gracie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 136,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_millie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 137,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_richie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 138,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_brittany.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 139,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_fiona.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 140,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods51_20260514_162717\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_noelie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 141,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods54_20260514_163834\\\\orchestration_before\\\\runtime_engine.py\", \"line\": 47}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 142,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods54_20260514_163834\\\\orchestration_before\\\\tegan_runtime.py\", \"line\": 21}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 143,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods54_20260514_163834\\\\orchestration_before\\\\captains\\\\base_captain.py\", \"line\": 8}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 144,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods54_20260514_163834\\\\orchestration_before\\\\captains\\\\communications\\\\captain_callie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 145,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods54_20260514_163834\\\\orchestration_before\\\\captains\\\\communications\\\\captain_emily.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 146,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods54_20260514_163834\\\\orchestration_before\\\\captains\\\\communications\\\\captain_winnie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 147,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods54_20260514_163834\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_addie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 148,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods54_20260514_163834\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_pixie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 149,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods54_20260514_163834\\\\orchestration_before\\\\captains\\\\execution_visual\\\\captain_tania.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 150,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods54_20260514_163834\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_gracie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 151,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods54_20260514_163834\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_millie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 152,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods54_20260514_163834\\\\orchestration_before\\\\captains\\\\intelligence\\\\captain_richie.py\", \"line\": 7}"
+    },
+    {
+      "file": "memory\\duplicate_function_audit.json",
+      "index": 153,
+      "preview": "{\"function\": \"__init__\", \"file\": \"c:\\\\shine_l\\\\_full_backups\\\\aods54_20260514_163834\\\\orchestration_before\\\\captains\\\\research_finance\\\\captain_brittany.py\", \"line\": 7}"
+    }
+  ],
+  "active_working_set": []
+}

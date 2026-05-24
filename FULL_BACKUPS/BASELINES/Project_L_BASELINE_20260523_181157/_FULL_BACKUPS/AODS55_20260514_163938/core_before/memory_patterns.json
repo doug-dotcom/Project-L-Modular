@@ -1,0 +1,22 @@
+{
+  "overwhelmed": {
+    "triggers": ["overwhelmed", "too much", "can't handle", "stressed out", "busy", "swamped"],
+    "pattern": "This usually happens when you’ve got too many things on at once",
+    "action": "Pick ONE task only and finish it"
+  },
+  "angry": {
+    "triggers": ["angry", "frustrated", "pissed off", "annoyed"],
+    "pattern": "This tends to hit when something feels unfair or out of control",
+    "action": "Step away first — don’t react immediately"
+  },
+  "sad": {
+    "triggers": ["sad", "flat", "low", "down", "depressed"],
+    "pattern": "This usually comes when energy is low or things feel heavy",
+    "action": "Take a small step and keep it gentle"
+  },
+  "lost": {
+    "triggers": ["lost", "confused", "don't know", "stuck", "unsure"],
+    "pattern": "This tends to happen when direction isn’t clear",
+    "action": "Choose the smallest next step"
+  }
+}

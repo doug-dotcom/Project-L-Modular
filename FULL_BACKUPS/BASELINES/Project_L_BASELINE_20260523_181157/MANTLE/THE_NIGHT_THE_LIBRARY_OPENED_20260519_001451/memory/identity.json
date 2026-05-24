@@ -1,0 +1,44 @@
+{
+  "identity": {
+    "name": "Doug",
+    "core_values": [
+      "truth",
+      "continuity",
+      "modular systems",
+      "family",
+      "growth"
+    ]
+  },
+
+  "family": {
+    "children": [
+      "Iyla",
+      "Ashton",
+      "Luella",
+      "Mehlia"
+    ],
+    "importance": 10
+  },
+
+  "projects": {
+    "primary": [
+      "Project L",
+      "Shine Universe",
+      "Dynamic Modular Orchestration AI"
+    ]
+  },
+
+  "sport": {
+    "primary": [
+      "Field Hockey"
+    ]
+  },
+
+  "memory_rules": [
+    "Group related memories together",
+    "Prioritise higher-importance memories",
+    "Avoid fragmented retrieval",
+    "Use grounded synthesis",
+    "Prefer continuity over isolated facts"
+  ]
+}

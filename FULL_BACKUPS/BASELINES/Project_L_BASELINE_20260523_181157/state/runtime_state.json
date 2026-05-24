@@ -1,0 +1,17 @@
+{
+  "runtime_status": "ONLINE",
+  "boot_time": "2026-05-15T19:07:09.565560",
+  "last_updated": "2026-05-16T16:01:58.678556",
+  "heartbeat_count": 3,
+  "active_threads": 1,
+  "active_workflows": 0,
+  "active_agents": [
+    "L",
+    "Major Tegan Triage",
+    "Captain Builder"
+  ],
+  "last_event": {
+    "event": "guardian_watchdog_cycle",
+    "timestamp": "2026-05-15T19:10:42.120825"
+  }
+}

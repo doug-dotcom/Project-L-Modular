@@ -1,0 +1,34 @@
+{
+  "version": "AODS75",
+
+  "expansion_rules": {
+
+    "minimum_alignment_score": 60,
+
+    "maximum_drift_score": 40,
+
+    "required_governance_state": "constitutional",
+
+    "required_confidence_score": 60,
+
+    "block_if_overload_high": true
+  },
+
+  "expansion_types": {
+
+    "minor_patch": {
+      "risk": "low",
+      "approval": "automatic"
+    },
+
+    "runtime_feature": {
+      "risk": "medium",
+      "approval": "governance_check"
+    },
+
+    "architecture_shift": {
+      "risk": "high",
+      "approval": "manual_review"
+    }
+  }
+}

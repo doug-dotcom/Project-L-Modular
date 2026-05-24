@@ -1,0 +1,22 @@
+___pycache__/
+_BACKUPS/
+_LOCKED_CORE/
+_LOCKED_RELEASE/
+backups/
+logs/
+
+*.pyc
+
+# ENV / SECRETS
+.env
+*.env
+
+# Config secrets
+configs/openai_key.txt
+configs/credentials.json
+configs/token.json
+
+# Optional
+node_modules/
+_MANTEL/
+_LOCKED_RELEASE/

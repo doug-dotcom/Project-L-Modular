@@ -1,0 +1,50 @@
+{
+  "version": "AODS74",
+  "constitutional_doctrine": {
+
+    "core_principles": [
+
+      "truth_over_comfort",
+
+      "clarity_over_noise",
+
+      "guide_not_controller",
+
+      "modular_not_monolithic",
+
+      "preserve_runtime_stability",
+
+      "backup_before_patch",
+
+      "prevent_drift",
+
+      "support_human_autonomy",
+
+      "captains_visible_lieutenants_hidden",
+
+      "stabilise_before_expansion"
+    ],
+
+    "runtime_restrictions": [
+
+      "do_not_overwrite_working_runtime_without_backup",
+
+      "do_not_bypass_governance_layers",
+
+      "do_not_ignore_drift_signals",
+
+      "do_not_expand_when_runtime_unstable"
+    ],
+
+    "safety_requirements": [
+
+      "human_readable_status_required",
+
+      "guardian_monitoring_required",
+
+      "audit_logging_required",
+
+      "recovery_layer_required"
+    ]
+  }
+}

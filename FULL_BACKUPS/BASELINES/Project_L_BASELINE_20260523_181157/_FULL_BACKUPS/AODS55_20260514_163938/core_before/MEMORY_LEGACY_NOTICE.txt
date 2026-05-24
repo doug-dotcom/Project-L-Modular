@@ -1,0 +1,25 @@
+LEGACY CORE MEMORY NOTICE
+
+Operation Mnemosyne completed.
+
+The official memory authority is now:
+memory/
+
+Legacy core memory files are preserved for compatibility only:
+- core/memory.py
+- core/memory_detect.py
+- core/memory_learn.py
+- core/memory_patterns.json
+- core/memory_outcomes.json
+
+Do not add new memory cognition logic to core/.
+
+New memory cognition should go under:
+- memory/runtime/
+- memory/retrieval/
+- memory/learning/
+- memory/patterns/
+- memory/confidence/
+- memory/orchestrator.py
+
+No files were deleted by AODS 52.

@@ -1,0 +1,22 @@
+[
+  {
+    "File": "api\\server.py",
+    "Status": "OK",
+    "Notes": "create_app"
+  },
+  {
+    "File": "api\\app_factory.py",
+    "Status": "OK",
+    "Notes": "create_app, register_routes, register_chat_handler, handle_chat, build_runtime_stack, cors_enabled, fastapi_runtime"
+  },
+  {
+    "File": "orchestration\\runtime_bootstrap.py",
+    "Status": "OK",
+    "Notes": "handle_chat, build_runtime_stack"
+  },
+  {
+    "File": "api\\routes\\chat.py",
+    "Status": "OK",
+    "Notes": "register_chat_handler, fastapi_runtime"
+  }
+]

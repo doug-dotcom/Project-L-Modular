@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AIRAM</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            color: white;
+            text-align: center;
+            padding-top: 80px;
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #cbd5f5;
+            margin-bottom: 30px;
+        }
+
+        input {
+            padding: 14px;
+            width: 320px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 14px 30px;
+            font-size: 18px;
+            background: #22c55e;
+            color: black;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #16a34a;
+        }
+
+        #output {
+            margin-top: 40px;
+            width: 420px;
+            margin-left: auto;
+            margin-right: auto;
+            background: rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: left;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .step {
+            margin-bottom: 10px;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #38bdf8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>AIRAM</h1>
+    <div class="subtitle">Feel → Stop → Breathe → One Thing</div>
+
+    <input id="userInput" placeholder="What are you feeling?" />
+    <br>
+    <button onclick="runAiram()">Run AIRAM</button>
+
+    <div id="output"></div>
+
+    <script>
+        async function runAiram() {
+            const message = document.getElementById("userInput").value;
+
+            const res = await fetch("http://127.0.0.1:8001/airam", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ message: message })
+            });
+
+            const data = await res.json();
+
+            // Split response into lines
+            const lines = data.response.trim().split("\n");
+
+            let formatted = "";
+
+            lines.forEach(line => {
+                if (line.trim() !== "") {
+                    const parts = line.split("—");
+                    formatted += `
+                        <div class="step">
+                            <span class="label">${parts[0]}</span> — ${parts[1]}
+                        </div>
+                    `;
+                }
+            });
+
+            document.getElementById("output").innerHTML = formatted;
+        }
+    </script>
+
+</body>
+</html>

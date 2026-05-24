@@ -1,0 +1,30 @@
+[
+  {
+    "time": "2026-04-22 21:47:03.464298",
+    "pattern": null,
+    "input": "I feel amazing",
+    "action": "Pick ONE simple next step. Forward, not perfect.",
+    "outcome": "pending"
+  },
+  {
+    "time": "2026-04-22 21:47:13.654325",
+    "pattern": null,
+    "input": "I feel happy",
+    "action": "Pick ONE simple next step. Forward, not perfect.",
+    "outcome": "pending"
+  },
+  {
+    "time": "2026-04-22 21:47:20.937815",
+    "pattern": "sad",
+    "input": "I feel sad",
+    "action": "Take a small step and keep it gentle",
+    "outcome": "pending"
+  },
+  {
+    "time": "2026-04-22 21:47:27.481616",
+    "pattern": null,
+    "input": "I feel tired",
+    "action": "Pick ONE simple next step. Forward, not perfect.",
+    "outcome": "pending"
+  }
+]

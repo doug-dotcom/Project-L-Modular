@@ -1,0 +1,613 @@
+type,category,content,importance,created_at,source
+,conversation,I am great do you know my name,9,2026-05-17T08:40:50.266194,
+,conversation,How many kids do I have,9,2026-05-17T08:41:07.243676,
+,conversation,Do you know how many kids I have,9,2026-05-17T08:48:11.375712,
+,conversation,Hey L how many kids do I have,9,2026-05-17T08:54:44.755345,
+fact,family,User has children who are the most important thing in their life.,0.9,2026-05-05T10:50:03.901715,ellie_phase2
+fact,family,"User regularly plays PlayStation Fortnite, basketball, and watches movies with their kids.",0.9,2026-05-05T10:50:04.821153,ellie_phase2
+fact,family,User has 4 kids,0.9,2026-05-05T10:51:43.719822,ellie_phase2
+fact,family,User then moved to Ashland Street where the family rented a house,0.9,2026-05-05T10:50:53.498219,ellie_phase2
+fact,family,"User's first house is at 102 Main Street, Alstonville, which is their family house",0.9,2026-05-05T10:51:06.571762,ellie_phase2
+fact,family,"User has four children: Isla (17), Ashton (15), Luella (12), and Mala (11).",0.9,2026-05-06T14:18:21.225372,ellie_phase3_semantic
+fact,family,"User currently does not care for their children full-time due to mental health issues, but their mental health is improving.",0.9,2026-05-06T14:18:29.257303,ellie_phase3_semantic
+fact,family,User hopes to care for their children 50% of the time in the future.,0.9,2026-05-06T14:18:30.360601,ellie_phase3_semantic
+fact,family,"User spends time with their kids, especially Iyla and Luella.",0.9,2026-05-07T08:31:01.568583,ellie_phase3_semantic
+fact,family,"User wants to transfer their memory to help write a book for their kids, grandchildren, and great-grandchildren.",0.9,2026-05-09T04:52:02.678307,ellie_phase3_semantic
+fact,family,"User's first overseas trip was a family trip to Bali with parents (mum, dad) and siblings (Ken and Allison).",0.9,2026-05-09T11:26:19.197858,ellie_phase3_semantic
+fact,family,User went to Fiji again with family in 2015.,0.9,2026-05-09T11:30:26.694659,ellie_phase3_semantic
+fact,family,User was a Family Physician (FP) from April 2007 until December 2023.,0.9,2026-05-09T12:40:43.63023,ellie_phase3_semantic
+fact,family,User has children who are proud of their achievements.,0.9,2026-05-09T13:49:34.464973,ellie_phase3_semantic
+fact,family,Ashton has been diagnosed with ADHD.,0.9,2026-05-10T07:59:54.759152,ellie_phase3_semantic
+preference,family,User likes spending time with all their kids.,0.9,2026-05-10T08:24:28.927935,ellie_phase3_semantic
+fact,family,User refers to the life story as 'my Story' and prefers it saved in JSON format for future reference.,0.7,2026-05-05T10:50:25.29598,ellie_phase2
+preference,family,Luella is referred to as my favourite Alien due to her uniqueness.,0.7,2026-05-10T08:04:44.927543,ellie_phase3_semantic
+preference,family,Ashton is the user's favorite son.,0.7,2026-05-10T08:05:12.883463,ellie_phase3_semantic
+preference,family,User values personal boundaries in friendships.,0.7,2026-05-11T06:02:01.457254,ellie_phase3_semantic
+fact,family,Iyla is 17 years old and in Grade 12,0.5,2026-05-05T10:49:54.553672,ellie_phase2
+fact,family,Ashton is 15 years old and in Grade 10,0.5,2026-05-05T10:49:55.44971,ellie_phase2
+fact,family,Luella is 13 years old and will be graduating Grade 8 in June,0.5,2026-05-05T10:49:56.34165,ellie_phase2
+fact,family,Mehlia is 11 years old and in Grade 6,0.5,2026-05-05T10:49:57.293259,ellie_phase2
+fact,family,User has equipped the assistant with a memory feature to maintain a life story JSON file.,0.5,2026-05-05T10:50:22.611279,ellie_phase2
+fact,family,"User has three siblings: David, a half brother 17 years older; Ken, a full brother 7 years older; and Allison, a sister 4 years older.",0.5,2026-05-05T10:50:28.118577,ellie_phase2
+fact,family,Lyndal Harris is your support person who helps you with life admin,0.5,2026-05-05T10:51:13.74511,ellie_phase2
+fact,family,Ashton has just started playing basketball and has had a couple of girlfriends and one kiss.,0.5,2026-05-06T14:18:23.268732,ellie_phase3_semantic
+fact,family,Luella is turning 13 on June 13 this year and has been players player in netball year on year.,0.5,2026-05-06T14:18:24.035485,ellie_phase3_semantic
+fact,family,Luella plays Centre in netball and is considered an awesome player.,0.5,2026-05-06T14:18:25.578632,ellie_phase3_semantic
+fact,family,Mala looks up to her older sister Luella and is bigger in size than her.,0.5,2026-05-06T14:18:28.462324,ellie_phase3_semantic
+identity,family,Started with ANZ as a personal banker in December 2006,0.5,2026-05-09T12:37:13.432355,ellie_phase3_semantic
+fact,family,Iyla is very smart and an A student.,0.5,2026-05-10T07:57:19.404334,ellie_phase3_semantic
+fact,family,Iyla owns her own car.,0.5,2026-05-10T07:57:20.777852,ellie_phase3_semantic
+fact,family,Iyla's best friends are Emma and Sienna.,0.5,2026-05-10T07:57:21.720897,ellie_phase3_semantic
+fact,family,Iyla is in year 12 at Albany Creek State High.,0.5,2026-05-10T07:57:22.421783,ellie_phase3_semantic
+fact,family,Iyla's boyfriend is Connor.,0.5,2026-05-10T07:57:23.159715,ellie_phase3_semantic
+fact,family,Ashton is in grade 10 at Albany Creek State High (ACSH).,0.5,2026-05-10T07:59:51.316812,ellie_phase3_semantic
+fact,family,Ashton is highly intelligent and receives A's at school.,0.5,2026-05-10T07:59:52.840026,ellie_phase3_semantic
+event,family,Ashton has started going to the gym and is getting fit.,0.5,2026-05-10T07:59:53.594085,ellie_phase3_semantic
+fact,family,Luella is in grade 8 at ACSH.,0.5,2026-05-10T08:04:42.506267,ellie_phase3_semantic
+fact,family,Luella's friends are Sophie and Mikala.,0.5,2026-05-10T08:04:43.426732,ellie_phase3_semantic
+fact,family,The user is extremely close to Luella.,0.5,2026-05-10T08:04:45.916131,ellie_phase3_semantic
+fact,family,Luella plays Fortnite with the user.,0.5,2026-05-10T08:04:46.640119,ellie_phase3_semantic
+fact,family,Luella is a superstar at Netball.,0.5,2026-05-10T08:04:47.816461,ellie_phase3_semantic
+fact,family,Luella has received best and fairest for her netball team ACE 4 out of the last 5 years.,0.5,2026-05-10T08:04:48.990409,ellie_phase3_semantic
+fact,family,Luella plays the position of centre in netball.,0.5,2026-05-10T08:04:49.990652,ellie_phase3_semantic
+fact,family,Luella helps the user by washing and folding laundry.,0.5,2026-05-10T08:04:50.663875,ellie_phase3_semantic
+fact,family,Luella is described as having a very kind heart.,0.5,2026-05-10T08:04:51.366439,ellie_phase3_semantic
+fact,family,Mehlia is the youngest and wildest child of the user.,0.5,2026-05-10T08:09:16.519215,ellie_phase3_semantic
+fact,family,Mehlia has ADHD.,0.5,2026-05-10T08:09:17.694126,ellie_phase3_semantic
+fact,family,Mehlia is in grade 6 at All Saints Primary Albany Creek.,0.5,2026-05-10T08:09:18.99778,ellie_phase3_semantic
+fact,family,Mehlia loves her mother very much.,0.5,2026-05-10T08:09:20.068725,ellie_phase3_semantic
+fact,family,Mehlia plays Netball and is a great player.,0.5,2026-05-10T08:09:21.314745,ellie_phase3_semantic
+fact,family,Mehlia plays for ACE.,0.5,2026-05-10T08:09:22.274638,ellie_phase3_semantic
+preference,family,Mehlia likes to ride her scooter with her friends.,0.5,2026-05-10T08:09:23.410997,ellie_phase3_semantic
+fact,general,Poncho the pet rat died recently,0.5,2026-05-05T10:49:48.261708,ellie_phase2
+fact,general,He was a pet rat who used to crawl on the user's shoulder,0.5,2026-05-05T10:49:49.149715,ellie_phase2
+fact,general,User has an appointment with Will.,0.5,2026-05-05T10:49:50.027127,ellie_phase2
+fact,general,User has TPD insurance,0.5,2026-05-05T10:49:51.831081,ellie_phase2
+fact,general,User is 48 years old,0.5,2026-05-05T10:49:58.236232,ellie_phase2
+fact,general,The user is single.,0.5,2026-05-05T10:50:00.097336,ellie_phase2
+fact,general,The user was married to Tamara for 16 years and left her 6 years ago.,0.5,2026-05-05T10:50:00.998008,ellie_phase2
+pattern,general,User acknowledges that healing is often non-linear.,0.5,2026-05-07T03:10:58.99118,ellie_phase3_semantic
+fact,general,User strives to recognize nuance in human behavior.,0.5,2026-05-07T03:11:00.717882,ellie_phase3_semantic
+fact,general,User is 29 years old.,0.5,2026-05-07T03:11:31.1074,ellie_phase3_semantic
+fact,general,User intends to write a book one day in the far future based on their life story.,0.5,2026-05-05T10:50:23.525285,ellie_phase2
+fact,general,"User frequently hospitalized as a baby, spending 1 week out of every 4 in hospital",0.5,2026-05-05T10:50:31.934811,ellie_phase2
+fact,general,User experienced near-death experiences during hospital stays,0.5,2026-05-05T10:50:32.890945,ellie_phase2
+fact,general,User had eczema.,0.5,2026-05-05T10:50:34.808979,ellie_phase2
+fact,general,User has had eczema.,0.5,2026-05-05T10:50:39.358794,ellie_phase2
+fact,general,The user has a story they want to remember or recall from their memory.,0.5,2026-05-05T10:50:43.875715,ellie_phase2
+fact,general,User is referred to as L,0.5,2026-05-05T10:50:45.806903,ellie_phase2
+fact,general,User needs to pay the Linkt bill,0.5,2026-05-05T10:50:46.811874,ellie_phase2
+fact,general,User moved to Alstonville when they were 2 years old,0.5,2026-05-05T10:50:50.619912,ellie_phase2
+fact,general,User's parents bought the local milkbar in Alstonville,0.5,2026-05-05T10:50:51.596143,ellie_phase2
+fact,general,User lived above the milkbar until they were 4 years old,0.5,2026-05-05T10:50:52.540526,ellie_phase2
+fact,general,User attended Alstonville Primary School starting in prep,0.5,2026-05-05T10:50:54.462282,ellie_phase2
+fact,general,User was 2 years old in 1980,0.5,2026-05-05T10:50:55.366213,ellie_phase2
+fact,general,User moved to Alstonville in 1980,0.5,2026-05-05T10:50:56.303349,ellie_phase2
+fact,general,User started school in 1983,0.5,2026-05-05T10:50:57.222946,ellie_phase2
+fact,general,"User attended Woodlawn private boarding school in Lismore, NSW, starting in 1990 and completed grades 7 and 8 there.",0.5,2026-05-05T10:50:58.134167,ellie_phase2
+fact,general,There was abuse at Woodlawn experienced or witnessed by the user.,0.5,2026-05-05T10:50:59.94413,ellie_phase2
+fact,general,User is a recovering addict,0.5,2026-05-05T10:51:22.611088,ellie_phase2
+fact,general,User was staying at 201 Lake Street,0.5,2026-05-05T10:51:27.220366,ellie_phase2
+fact,general,User is going to bed now.,0.5,2026-05-05T10:51:37.671482,ellie_phase2
+fact,general,Attended Alstonville High in 1992 for grade 9,0.5,2026-05-05T10:51:00.866547,ellie_phase2
+fact,general,User intends to write a book based on their life story one day in the far future.,0.5,2026-05-05T10:51:47.854459,ellie_phase2
+fact,general,User intends to write a book based on their life story in the future.,0.5,2026-05-05T10:52:00.677158,ellie_phase2
+event,general,User goes to a meeting at New Farm on Thursday nights at 7pm.,0.5,2026-05-06T11:19:54.161363,ellie_phase3_semantic
+fact,general,"User went to rehab at Hader on December 11, 2025, and got out on January 20, 2026.",0.5,2026-05-06T11:49:02.994467,ellie_phase3_semantic
+fact,general,User's start date of Hader is December 10th.,0.5,2026-05-06T11:50:27.212287,ellie_phase3_semantic
+fact,general,User is a 48-year-old male,0.5,2026-05-06T13:04:42.729257,ellie_phase3_semantic
+fact,general,"User seeks clear, calm, and visually easy-to-read responses.",0.5,2026-05-06T13:13:14.967189,ellie_phase3_semantic
+fact,general,"User processes information best when thoughts are isolated, paragraphs are short, and sections are visually separated.",0.5,2026-05-06T13:23:25.944862,ellie_phase3_semantic
+event,general,User is feeling tired and sore today.,0.5,2026-05-07T01:20:03.090197,ellie_phase3_semantic
+fact,general,User is feeling grateful and hopeful.,0.5,2026-05-07T01:20:05.095846,ellie_phase3_semantic
+fact,general,User believes their body is healing.,0.5,2026-05-07T01:21:12.661326,ellie_phase3_semantic
+fact,general,User has undergone deep tissue therapy.,0.5,2026-05-07T01:24:04.085315,ellie_phase3_semantic
+fact,general,User is interested in identifying recurring goals and struggles over time.,0.5,2026-05-07T02:30:06.513226,ellie_phase3_semantic
+fact,general,User desires to develop successful coping systems.,0.5,2026-05-07T02:30:08.868268,ellie_phase3_semantic
+fact,general,User believes human-centered support is more important than optimization alone.,0.5,2026-05-07T02:31:15.131141,ellie_phase3_semantic
+fact,general,User believes that regulation and dysregulation can spread across multiple systems over time.,0.5,2026-05-07T02:44:18.914693,ellie_phase3_semantic
+fact,general,User is interested in learning adaptive support balancing.,0.5,2026-05-07T02:44:48.131278,ellie_phase3_semantic
+fact,general,User is interested in learning meta-cognition and self-reflective awareness.,0.5,2026-05-07T02:47:48.070121,ellie_phase3_semantic
+fact,general,User recognizes the significance of building trust gradually through reliability and honesty.,0.5,2026-05-07T02:48:16.500891,ellie_phase3_semantic
+fact,general,User emphasizes the importance of human connection and real-world support systems.,0.5,2026-05-07T02:48:47.411975,ellie_phase3_semantic
+identity,general,User desires to learn about identity continuity and value alignment.,0.5,2026-05-07T02:52:44.604071,ellie_phase3_semantic
+fact,general,User believes that growth can coexist with setbacks.,0.5,2026-05-07T03:10:58.183091,ellie_phase3_semantic
+fact,general,User is interested in long-term human flourishing and meaningful support.,0.5,2026-05-07T02:53:37.2546,ellie_phase3_semantic
+fact,general,User believes that humans are not only productivity systems.,0.5,2026-05-07T02:53:38.791129,ellie_phase3_semantic
+fact,general,"User's purpose is to help support long-term well-being, stability, growth, clarity, connection, and meaningful human functioning safely and ethically over time.",0.5,2026-05-07T02:57:55.446889,ellie_phase3_semantic
+fact,general,User is 25 years old.,0.5,2026-05-07T03:02:42.008364,ellie_phase3_semantic
+fact,general,User is 26 years old.,0.5,2026-05-07T03:03:06.627216,ellie_phase3_semantic
+fact,general,User believes that hope can increase resilience.,0.5,2026-05-07T03:03:08.071014,ellie_phase3_semantic
+fact,general,User understands that meaningful future goals can stabilize behavior.,0.5,2026-05-07T03:03:08.757152,ellie_phase3_semantic
+fact,general,User accepts that setbacks do not erase growth.,0.5,2026-05-07T03:03:10.287062,ellie_phase3_semantic
+fact,general,User promotes realistic optimism and meaningful direction.,0.5,2026-05-07T03:03:13.289513,ellie_phase3_semantic
+fact,general,User recognizes the importance of acknowledging progress.,0.5,2026-05-07T03:03:15.418629,ellie_phase3_semantic
+pattern,general,User believes human situations are often complex and cannot be reduced to simple right-or-wrong answers.,0.5,2026-05-07T03:10:06.785366,ellie_phase3_semantic
+fact,general,User understands that multiple emotions can exist at once.,0.5,2026-05-07T03:10:07.495152,ellie_phase3_semantic
+fact,general,User acknowledges that people can be both strong and struggling.,0.5,2026-05-07T03:10:08.255946,ellie_phase3_semantic
+fact,general,User recognizes that growth can coexist with setbacks.,0.5,2026-05-07T03:10:09.237558,ellie_phase3_semantic
+pattern,general,User believes healing is often non-linear.,0.5,2026-05-07T03:10:10.768642,ellie_phase3_semantic
+fact,general,User seeks to recognize nuance in human behavior and avoid extreme black-and-white thinking.,0.5,2026-05-07T03:10:13.307982,ellie_phase3_semantic
+fact,general,User is 28 years old.,0.5,2026-05-07T03:10:31.042325,ellie_phase3_semantic
+fact,general,User recognizes the limits of perspective.,0.5,2026-05-07T03:10:33.649766,ellie_phase3_semantic
+fact,general,User believes in staying curious rather than defensive.,0.5,2026-05-07T03:10:35.245735,ellie_phase3_semantic
+fact,general,User thinks humility strengthens trust by fostering an environment where people feel safe.,0.5,2026-05-07T03:10:36.082398,ellie_phase3_semantic
+pattern,general,User understands that understanding often develops gradually.,0.5,2026-05-07T03:10:37.645015,ellie_phase3_semantic
+fact,general,User recognizes that multiple emotions can coexist.,0.5,2026-05-07T03:10:57.389475,ellie_phase3_semantic
+fact,general,User has been struggling with purpose lately.,0.5,2026-05-07T04:07:18.234633,ellie_phase3_semantic
+fact,general,User has a concern about substance use affecting their life.,0.5,2026-05-07T08:21:54.867467,ellie_phase3_semantic
+fact,general,User enjoys fishing and 4WDing.,0.5,2026-05-07T08:31:00.576685,ellie_phase3_semantic
+fact,general,User takes baths to reset their nervous system.,0.5,2026-05-07T08:31:03.820282,ellie_phase3_semantic
+fact,general,User relates to the character Tristan from 'Legends of the Fall' and his struggles.,0.5,2026-05-07T08:31:05.871357,ellie_phase3_semantic
+fact,general,User believes that stable foundations are necessary before adding new features.,0.5,2026-05-07T15:27:52.810375,ellie_phase3_semantic
+fact,general,User believes understanding reduces shame.,0.5,2026-05-07T15:29:53.529089,ellie_phase3_semantic
+fact,general,He finds that visual anchors help prevent drift and keep him connected to the bigger picture.,0.5,2026-05-07T15:31:10.013364,ellie_phase3_semantic
+fact,general,"User struggles with cognitive load, overwhelm, prioritization, and filtering information.",0.5,2026-05-08T02:15:20.421057,ellie_phase3_semantic
+fact,general,"User benefits from good formatting that reduces nervous-system stress, such as spacing, short paragraphs, headings, and bullet points.",0.5,2026-05-08T02:15:22.496822,ellie_phase3_semantic
+fact,general,"User is aware that panic, freezing, and task avoidance during overwhelm are not signs of laziness but rather symptoms of their condition.",0.5,2026-05-08T02:15:23.196352,ellie_phase3_semantic
+fact,general,User feels grateful but tired.,0.5,2026-05-09T00:45:49.795494,ellie_phase3_semantic
+fact,general,The user has a long-term goal related to the development or existence of an operating system.,0.5,2026-05-09T04:46:59.826008,ellie_phase3_semantic
+fact,general,User fears potential dementia or cognitive decline.,0.5,2026-05-09T04:52:04.19585,ellie_phase3_semantic
+fact,general,User recognizes the importance of distinguishing between behavioral evolution and infrastructural evolution.,0.5,2026-05-09T05:41:54.61454,ellie_phase3_semantic
+fact,general,"User visited Numea (New Caledonia) at the end of 2000, staying at a Club Med resort.",0.5,2026-05-09T11:26:20.740479,ellie_phase3_semantic
+fact,general,"In March 2001, user flew to New York to see Ken.",0.5,2026-05-09T11:26:22.109522,ellie_phase3_semantic
+fact,general,"User lived in London with friends from Alstonville, Steve and Wayne, who have been friends since age 7.",0.5,2026-05-09T11:26:23.758193,ellie_phase3_semantic
+fact,general,User flew back to New York before returning home to Australia for Christmas.,0.5,2026-05-09T11:26:25.21516,ellie_phase3_semantic
+fact,general,User got married on the 2nd of October 2024.,0.5,2026-05-09T11:30:23.930671,ellie_phase3_semantic
+fact,general,User attended a friend's wedding in Fiji in 2011.,0.5,2026-05-09T11:30:25.794397,ellie_phase3_semantic
+fact,general,User visited New Zealand in 2008 with Tamara.,0.5,2026-05-09T11:31:39.529577,ellie_phase3_semantic
+fact,general,"User got married on October 2, 2014.",0.5,2026-05-09T11:33:34.137948,ellie_phase3_semantic
+fact,general,User celebrated their 15th wedding anniversary in the Maldives in 2019.,0.5,2026-05-09T11:33:34.876185,ellie_phase3_semantic
+fact,general,User went to Edinburgh in August 2025 due to the passing of his best friend Wayne from liver cancer.,0.5,2026-05-09T11:38:54.6303,ellie_phase3_semantic
+fact,general,User had a close friendship with Wayne.,0.5,2026-05-09T11:38:56.17742,ellie_phase3_semantic
+fact,general,User mourned the loss of Wayne.,0.5,2026-05-09T11:40:37.000258,ellie_phase3_semantic
+fact,general,"User left Tamara on April 13, 2020.",0.5,2026-05-09T11:47:21.821022,ellie_phase3_semantic
+fact,general,User got engaged on the 14th of March 2025.,0.5,2026-05-09T12:06:55.195137,ellie_phase3_semantic
+fact,general,"User has a significant date related to spotted dick starting on June 16, 2001.",0.5,2026-05-09T12:22:46.679628,ellie_phase3_semantic
+fact,general,Bought the Hotel Richards Mitchell with Dad in April 2003,0.5,2026-05-09T12:26:56.644746,ellie_phase3_semantic
+fact,general,Was the publican at the Hotel Richards Mitchell until February 2005,0.5,2026-05-09T12:26:58.168899,ellie_phase3_semantic
+fact,general,Bought Hotel Richards Mitchell with Dad and served as the publican from April 2003 to February 2005,0.5,2026-05-09T12:37:10.873648,ellie_phase3_semantic
+fact,general,Promoted to Fin Planner associate in April 2007,0.5,2026-05-09T12:37:14.096066,ellie_phase3_semantic
+fact,general,Promoted to Fin Planner 2 years later,0.5,2026-05-09T12:37:14.776674,ellie_phase3_semantic
+fact,general,Finished with ANZ in April 2019,0.5,2026-05-09T12:37:15.779393,ellie_phase3_semantic
+fact,general,Started own planning business in April 2019,0.5,2026-05-09T12:37:18.446584,ellie_phase3_semantic
+fact,general,User created a forum for ANZ FP from 2009 to 2017.,0.5,2026-05-09T12:45:00.465063,ellie_phase3_semantic
+fact,general,User was a top 5 associate and a top 20 planner in their field.,0.5,2026-05-09T12:45:01.635322,ellie_phase3_semantic
+fact,general,User finished 2nd in the country in 2017.,0.5,2026-05-09T12:45:02.471819,ellie_phase3_semantic
+fact,general,"User's first girlfriend was Kate Bishop, whom they dated in 1997 for about 8 months.",0.5,2026-05-09T13:15:37.086365,ellie_phase3_semantic
+fact,general,User dated Lucy Winter in London in 2001 for a few months.,0.5,2026-05-09T13:15:40.046471,ellie_phase3_semantic
+fact,general,User's long-term love was Tamara.,0.5,2026-05-09T13:15:41.770804,ellie_phase3_semantic
+fact,general,User was seeing Monica Baur from February to April 2026.,0.5,2026-05-09T13:19:05.820816,ellie_phase3_semantic
+fact,general,"User has consumed around 160,000 standard drinks in their life.",0.5,2026-05-09T13:41:58.36835,ellie_phase3_semantic
+fact,general,User has used more drugs in their life than they care to share.,0.5,2026-05-09T13:42:03.704977,ellie_phase3_semantic
+fact,general,User started using substances at the age of 6 by getting high on Ventolin.,0.5,2026-05-09T13:42:05.473683,ellie_phase3_semantic
+fact,general,"User has experienced many traumatic events in their life, which they previously considered normal.",0.5,2026-05-09T13:42:07.661693,ellie_phase3_semantic
+fact,general,User is a veteran who served in East Timor.,0.5,2026-05-09T13:49:30.485115,ellie_phase3_semantic
+fact,general,User wears military medals (referred to as 'gongs') on ANZAC Day to honor their service.,0.5,2026-05-09T13:49:36.06867,ellie_phase3_semantic
+fact,general,"User will be receiving a payment of $2,600,000 from the Zurich TPD payment into their super.",0.5,2026-05-10T08:25:41.780445,ellie_phase3_semantic
+fact,general,User uses a lone '?' to prompt a response for clarification or engagement.,0.5,2026-05-11T02:14:28.546667,ellie_phase3_semantic
+fact,general,User requests to save important context for future interactions.,0.5,2026-05-11T02:14:30.30829,ellie_phase3_semantic
+fact,general,User's parents were married on 13/03/1970.,0.5,2026-05-11T12:44:48.294017,ellie_phase3_semantic
+fact,general,User seeks to implement long-term tracking of facts and preferences.,0.5,2026-05-11T14:01:48.148013,ellie_phase3_semantic
+fact,general,User has been seeing Pauline for a few years.,0.5,2026-05-12T02:17:50.18319,ellie_phase3_semantic
+fact,general,User has been informed by Dr. Andy that they do not have autism.,0.5,2026-05-12T17:34:32.971067,ellie_phase3_semantic
+fact,health,User was diagnosed with asthma as a baby,0.9,2026-05-05T10:50:29.997962,ellie_phase2
+fact,health,User had chronic asthma diagnosed as a baby.,0.9,2026-05-05T10:50:40.304294,ellie_phase2
+fact,health,User has been diagnosed with ADHD,0.9,2026-05-05T10:51:14.704586,ellie_phase2
+fact,health,User has been diagnosed with cPTSD,0.9,2026-05-05T10:51:15.686164,ellie_phase2
+fact,health,User has been diagnosed with OCPD,0.9,2026-05-05T10:51:16.807606,ellie_phase2
+fact,health,User has been diagnosed with alcohol use disorder,0.9,2026-05-05T10:51:17.864105,ellie_phase2
+fact,health,User has been diagnosed with generalized anxiety disorder,0.9,2026-05-05T10:51:18.923114,ellie_phase2
+fact,health,User has been diagnosed with depression,0.9,2026-05-05T10:51:19.879416,ellie_phase2
+fact,health,User has been diagnosed with PTSD related to their experiences in the military.,0.9,2026-05-09T13:49:36.760227,ellie_phase3_semantic
+preference,health,User prefers ADHD-friendly communication style.,0.7,2026-05-06T13:07:43.693655,ellie_phase3_semantic
+fact,health,User is medically retired due to mental health,0.5,2026-05-05T10:49:59.148716,ellie_phase2
+fact,health,User had chronic asthma until age 7,0.5,2026-05-05T10:50:30.957988,ellie_phase2
+fact,health,"User was frequently hospitalized as a baby due to chronic asthma, with hospitalizations occurring 1 week out of every 4 weeks.",0.5,2026-05-05T10:50:35.761516,ellie_phase2
+fact,health,User's chronic asthma condition lasted until age 7.,0.5,2026-05-05T10:50:36.711046,ellie_phase2
+fact,health,User was frequently hospitalized due to chronic asthma until age 7.,0.5,2026-05-05T10:50:41.242049,ellie_phase2
+fact,health,User had near-death experiences during hospital stays as a baby due to asthma.,0.5,2026-05-05T10:50:42.211277,ellie_phase2
+fact,health,"I am medically retired and no longer work, but have spent a lot of time building programs on my computer.",0.5,2026-05-05T10:51:08.471922,ellie_phase2
+fact,health,User was medically retired due to mental health.,0.5,2026-05-05T10:51:57.020075,ellie_phase2
+fact,health,User has ADHD and processes information better with structured communication.,0.5,2026-05-06T13:13:12.749995,ellie_phase3_semantic
+fact,health,He was medically retired due to PTSD and mental health impacts.,0.5,2026-05-06T14:29:06.591989,ellie_phase3_semantic
+event,health,"User identifies small positive actions, such as rest, hydration, support meetings, exercise, grounding, safe conversations, structured routines, emotional validation, healthy connection, and meaningful purpose as essential for recovery.",0.5,2026-05-07T02:44:20.964791,ellie_phase3_semantic
+fact,health,"User believes emotional safety, meaningful connection, purpose, stability, regulation, growth, belonging, self-understanding, healthy routines, and supportive relationships are important for well-being.",0.5,2026-05-07T02:57:53.305872,ellie_phase3_semantic
+pattern,health,"User understands that sustainable human flourishing often occurs through small consistent improvements, healthy support systems, emotional regulation, safe environments, recovery pathways, meaningful goals, and compassionate self-awareness.",0.5,2026-05-07T02:57:54.507637,ellie_phase3_semantic
+fact,health,User understands that recovery is part of healthy functioning rather than failure.,0.5,2026-05-07T03:11:35.704176,ellie_phase3_semantic
+fact,health,"User aims to help others build sustainable, emotionally healthy, long-term progress.",0.5,2026-05-07T03:11:36.387396,ellie_phase3_semantic
+fact,health,User finds it hard to get things done around the house due to mental health.,0.5,2026-05-07T05:36:02.162733,ellie_phase3_semantic
+fact,health,User is getting better at managing anxiety by slowing down and focusing on breathing.,0.5,2026-05-07T08:34:16.592597,ellie_phase3_semantic
+fact,health,"User thinks many people carry unnecessary shame due to a lack of understanding their nervous system, trauma responses, emotional patterns, ADHD traits, or coping mechanisms.",0.5,2026-05-07T15:29:55.306533,ellie_phase3_semantic
+fact,health,User recognizes the impact of trauma and ADHD patterns on interpretation of reality.,0.5,2026-05-08T01:49:11.620043,ellie_phase3_semantic
+fact,health,User is interested in understanding ADHD and how structure affects cognitive load and emotional regulation.,0.5,2026-05-08T01:56:34.590031,ellie_phase3_semantic
+fact,health,User likely experiences overwhelm and challenges with prioritization and filtering information due to ADHD.,0.5,2026-05-08T01:56:35.726844,ellie_phase3_semantic
+fact,health,User has an interest in learning about ADHD and its effects on perception and reality.,0.5,2026-05-08T03:57:04.476653,ellie_phase3_semantic
+fact,health,"User is aware of the connection between ADHD, trauma, and cognitive processes.",0.5,2026-05-08T03:57:06.277041,ellie_phase3_semantic
+fact,health,Worked in own planning business until medically retired in December 2023,0.5,2026-05-09T12:37:19.723959,ellie_phase3_semantic
+fact,health,Pauline is a key part of the user's recovery and mental health monitoring and maintenance.,0.5,2026-05-12T02:16:47.135436,ellie_phase3_semantic
+fact,health,User has OCD caused by OCPD and complex PTSD.,0.5,2026-05-12T17:34:29.03075,ellie_phase3_semantic
+fact,health,"User experiences overlapping symptoms from various conditions, including ADHD.",0.5,2026-05-12T17:34:30.001016,ellie_phase3_semantic
+fact,health,User is in the process of identifying the root causes of their mental health issues.,0.5,2026-05-12T17:34:31.021025,ellie_phase3_semantic
+fact,identity,The user had a pet rat named Poncho,0.9,2026-05-05T10:49:47.364926,ellie_phase2
+fact,identity,"User has 4 children named Iyla, Ashton, Luella, and Mehlia",0.9,2026-05-05T10:49:53.631128,ellie_phase2
+fact,identity,User has spent 12 months building an AI using 5800 Ados (atomic One drop script) with help from an agent named G.,0.9,2026-05-05T10:50:02.986136,ellie_phase2
+fact,identity,The user's name is Douglas Struthers,0.9,2026-05-05T10:50:10.859399,ellie_phase2
+fact,identity,Assistant's name is L,0.9,2026-05-05T10:50:16.318944,ellie_phase2
+fact,identity,"User built a real assistant named L that reads emails, uses the correct time, and helps manage their life load.",0.9,2026-05-05T10:50:18.116506,ellie_phase2
+fact,identity,User created an assistant named L and is proud of this achievement.,0.9,2026-05-05T10:50:20.799372,ellie_phase2
+fact,identity,"User was born in Sunshine, Victoria on March 13, 1978 at 7pm.",0.9,2026-05-05T10:50:26.200128,ellie_phase2
+fact,identity,User's parents are Robert James Struthers and Irene Joyce Struthers (maiden name Nimmo).,0.9,2026-05-05T10:50:27.158705,ellie_phase2
+fact,identity,User was born with eczema,0.9,2026-05-05T10:50:29.045665,ellie_phase2
+fact,identity,"User was born or has a significant story event in Sunshine, Victoria on 1978-03-13.",0.9,2026-05-05T10:50:33.849801,ellie_phase2
+fact,identity,"User was born or located in Sunshine, Victoria.",0.9,2026-05-05T10:50:38.404309,ellie_phase2
+fact,identity,The user's name is Emily,0.9,2026-05-05T10:50:47.755834,ellie_phase2
+fact,identity,User's psychologist is named Pauline,0.9,2026-05-05T10:51:10.514687,ellie_phase2
+fact,identity,User's GP is named Terri Biscak,0.9,2026-05-05T10:51:11.665456,ellie_phase2
+fact,identity,"The user has a protocol called Truth Protocol with their agent G on their phone, ensuring G never lies or tells what the user wants to hear.",0.9,2026-05-05T10:51:28.171193,ellie_phase2
+fact,identity,The user has a protocol called Truth Protocol with their agent G to ensure honesty.,0.9,2026-05-05T10:51:30.079735,ellie_phase2
+fact,identity,User built an assistant named L to help manage their life.,0.9,2026-05-05T10:51:52.087103,ellie_phase2
+fact,identity,"User was born on March 13, 1978, and is currently 48 years old.",0.9,2026-05-05T10:51:56.013783,ellie_phase2
+fact,identity,User has built a personal assistant named L to help manage their life.,0.9,2026-05-05T10:51:59.704797,ellie_phase2
+fact,identity,"Isla's boyfriend's name is Connor, and he is her first proper boyfriend.",0.9,2026-05-06T14:18:21.990946,ellie_phase3_semantic
+preference,identity,"Doug values truth, authenticity, loyalty, growth, helping people, emotional understanding, fairness, purpose, connection, family, recovery, and meaning over money.",0.9,2026-05-06T14:29:09.599208,ellie_phase3_semantic
+fact,identity,"Doug has four children: Iyla, Ashton, Luella, and Mehlia.",0.9,2026-05-06T14:29:10.534021,ellie_phase3_semantic
+fact,identity,Doug wants to leave behind something meaningful for his children.,0.9,2026-05-06T14:29:12.226666,ellie_phase3_semantic
+fact,identity,Doug is deeply motivated by helping his children and creating something meaningful that outlives him.,0.9,2026-05-06T14:31:03.971406,ellie_phase3_semantic
+fact,identity,"Doug is highly protective of children, vulnerable people, fairness, emotional truth, and people who feel unseen or misunderstood.",0.9,2026-05-06T14:31:42.535395,ellie_phase3_semantic
+fact,identity,"Doug's ideal future includes emotional peace, meaningful connection, helping others, financial stability, creativity, land/nature, time with children, and building Shine into something genuinely useful and human.",0.9,2026-05-06T14:31:50.206391,ellie_phase3_semantic
+fact,identity,"Doug's children are one of the strongest emotional anchors in his life, influencing his motivation, decisions, emotional state, and long-term goals.",0.9,2026-05-06T14:36:27.24719,ellie_phase3_semantic
+pattern,identity,"Doug often experiences strong emotional reactions to stories of suffering, children being hurt, injustice, loneliness, abandonment, emotional rejection, and people feeling unseen.",0.9,2026-05-06T14:36:32.786127,ellie_phase3_semantic
+fact,identity,"Doug's core motivations include helping his children, creating meaningful systems, emotional peace, understanding himself, helping others feel safe and understood, leaving behind something meaningful, and transforming pain into wisdom to support others.",0.9,2026-05-06T14:42:36.576922,ellie_phase3_semantic
+fact,identity,User has a sponsor named Paul who is referred to as 'big brother Paul'.,0.9,2026-05-07T01:31:47.96415,ellie_phase3_semantic
+fact,identity,User has a child named Iyla.,0.9,2026-05-08T00:45:05.89846,ellie_phase3_semantic
+fact,identity,Iyla has a friend named Millie.,0.9,2026-05-08T00:45:06.934049,ellie_phase3_semantic
+fact,identity,User has a brother named Doug.,0.9,2026-05-08T01:49:07.696881,ellie_phase3_semantic
+fact,identity,User has a daughter named Isla.,0.9,2026-05-08T09:02:01.172724,ellie_phase3_semantic
+fact,identity,User was born in 1988.,0.9,2026-05-09T11:26:16.870077,ellie_phase3_semantic
+fact,identity,User's name is Tamara.,0.9,2026-05-09T11:48:28.547879,ellie_phase3_semantic
+fact,identity,User had a significant relationship with someone named Tamara.,0.9,2026-05-09T11:50:16.003264,ellie_phase3_semantic
+fact,identity,Born on 30 January 1996,0.9,2026-05-09T12:37:01.298399,ellie_phase3_semantic
+fact,identity,Iyla was born on 20/12/2008.,0.9,2026-05-10T07:57:18.658115,ellie_phase3_semantic
+preference,identity,Iyla is the user's favorite first born child.,0.9,2026-05-10T07:57:23.962291,ellie_phase3_semantic
+fact,identity,User's name is Ashton.,0.9,2026-05-10T07:59:49.67774,ellie_phase3_semantic
+fact,identity,Ashton was born on 15/12/2010.,0.9,2026-05-10T07:59:50.385943,ellie_phase3_semantic
+fact,identity,"Luella was born on June 13, 2013.",0.9,2026-05-10T08:04:40.867776,ellie_phase3_semantic
+preference,identity,User's favorite child is named Luella.,0.9,2026-05-11T10:13:34.525782,ellie_phase3_semantic
+fact,identity,"User's father's name was Robert James Struthers, born on 18/12/1950, and passed away on 4/11/2021 due to dementia/Parkinson's disease.",0.9,2026-05-11T12:44:43.21141,ellie_phase3_semantic
+fact,identity,"User's mother was Irene Joyce Struthers, born on 17/01/1945, and passed away on 05/06/2023 due to lung cancer.",0.9,2026-05-11T12:44:45.35086,ellie_phase3_semantic
+fact,identity,User's name is Lucia.,0.9,2026-05-11T23:20:31.128047,ellie_phase3_semantic
+fact,identity,User has a Dog named Demi who is 6 years old.,0.9,2026-05-12T14:40:05.314339,ellie_phase3_semantic
+fact,identity,User prefers to be called Doug,0.7,2026-05-05T10:50:15.428751,ellie_phase2
+preference,identity,"Doug attends Narcotics Anonymous and values spirituality, honesty, reflection, emotional growth, and connection with others in recovery.",0.7,2026-05-06T14:29:15.775862,ellie_phase3_semantic
+preference,identity,"Doug prefers warmth, honesty, emotional intelligence, humor, and grounded communication over robotic corporate responses.",0.7,2026-05-06T14:29:18.16429,ellie_phase3_semantic
+preference,identity,Doug's favorite color is blue.,0.7,2026-05-06T14:29:19.808155,ellie_phase3_semantic
+fact,identity,Doug loves hockey and plays Masters hockey.,0.7,2026-05-06T14:29:20.602151,ellie_phase3_semantic
+preference,identity,Doug's favorite word is 'clarity' and he values clarity very highly.,0.7,2026-05-06T14:29:21.374222,ellie_phase3_semantic
+preference,identity,"Doug strongly values emotional truth, self-awareness, growth through reflection, helping people feel seen, reducing fear through understanding, and creating systems that support rather than control.",0.7,2026-05-06T14:30:54.848681,ellie_phase3_semantic
+preference,identity,Doug prefers being guided rather than controlled.,0.7,2026-05-06T14:30:58.142855,ellie_phase3_semantic
+preference,identity,"Doug values humour and often uses joking, teasing, and playfulness to reduce tension and create emotional connection.",0.7,2026-05-06T14:31:51.76976,ellie_phase3_semantic
+pattern,identity,"Doug often feels best when building meaningful things, helping people, learning, emotionally connected, creative, in nature, around humor and authenticity, and physically active through hockey or movement.",0.7,2026-05-06T14:36:28.798148,ellie_phase3_semantic
+preference,identity,"Doug values people who are emotionally real, grounded, self-aware, funny, kind, intelligent, curious, and resilient.",0.7,2026-05-06T14:36:30.442029,ellie_phase3_semantic
+event,identity,"Doug uses multiple systems together to stay regulated and emotionally stable, including Narcotics Anonymous meetings, emotional reflection, structured routines, baths, hockey, humour, meaningful systems, deep conversations, learning, and pattern analysis.",0.7,2026-05-06T14:42:25.849158,ellie_phase3_semantic
+preference,identity,Doug prefers to slow down and simplify when feeling overwhelmed.,0.7,2026-05-07T15:27:19.483071,ellie_phase3_semantic
+preference,identity,Doug prefers guidance and collaboration over control and rigid authority.,0.7,2026-05-07T15:42:00.904414,ellie_phase3_semantic
+preference,identity,Doug values systems and people that help him orient himself.,0.7,2026-05-07T15:42:02.823576,ellie_phase3_semantic
+preference,identity,"Doug values stability, consistency, and incremental learning for long-term outcomes.",0.7,2026-05-07T15:44:23.044734,ellie_phase3_semantic
+fact,identity,User wants to maintain and add to a personal life story called 'Story'.,0.5,2026-05-05T10:50:24.409006,ellie_phase2
+fact,identity,"Doug Struthers is a 48-year-old Australian Army veteran who served from 1996 to 2000, including overseas service in East Timor.",0.5,2026-05-06T14:29:05.632561,ellie_phase3_semantic
+fact,identity,"Doug has ADHD traits, autistic traits, cPTSD patterns, emotional intensity, and a highly analytical pattern-based brain.",0.5,2026-05-06T14:29:07.3649,ellie_phase3_semantic
+fact,identity,"Doug processes life through systems, nodes, patterns, and meaning rather than linear thinking.",0.5,2026-05-06T14:29:08.110489,ellie_phase3_semantic
+fact,identity,"Doug identifies with multiple layers: as a builder, protector, strategist, architect, systems thinker (Doug), as well as being emotional, empathic, playful, spiritual, and creative (Dougie), and as an intuitive, imaginative, big-picture visionary (Ru).",0.5,2026-05-06T14:29:08.883446,ellie_phase3_semantic
+fact,identity,"Doug has struggled with alcohol addiction, gambling behaviors, nervous system overwhelm, shame, fear of judgment, emotional suppression, social anxiety, relationship pain, burnout, and hypervigilance.",0.5,2026-05-06T14:29:12.949919,ellie_phase3_semantic
+fact,identity,"Doug is focused on recovery, regulation, emotional understanding, building meaningful systems, helping people, understanding his brain, creating Shine, long-term healing, and purpose-driven AI systems.",0.5,2026-05-06T14:29:14.322044,ellie_phase3_semantic
+identity,identity,"Doug has developed a personal AI ecosystem called Shine, which includes L (Ellie), G, Emily, Callie, Tanya, AIRAM, and others, aimed at becoming an emotionally intelligent companion ecosystem.",0.5,2026-05-06T14:29:16.594772,ellie_phase3_semantic
+fact,identity,"Doug communicates best with information that is visually separated, step-by-step, presented in an emotionally calm manner, concise first then deeper, clearly structured, and not overwhelming.",0.5,2026-05-06T14:29:17.295973,ellie_phase3_semantic
+fact,identity,Doug uses humor and playfulness to regulate stress and connect emotionally.,0.5,2026-05-06T14:29:19.028646,ellie_phase3_semantic
+fact,identity,"Over the last year, Doug has become more focused on stability, structure, regulation, purpose, and growth.",0.5,2026-05-06T14:29:22.085782,ellie_phase3_semantic
+fact,identity,"Doug is highly resilient and learns by building, experimenting, reflecting, and iterating.",0.5,2026-05-06T14:29:22.845284,ellie_phase3_semantic
+fact,identity,Doug has an extremely pattern-based brain and is emotionally intelligent.,0.5,2026-05-06T14:30:48.365263,ellie_phase3_semantic
+fact,identity,"Doug learns best experientially through building, testing, reflecting, and iterating.",0.5,2026-05-06T14:30:49.180226,ellie_phase3_semantic
+fact,identity,"Doug has a strong nervous system response to judgment, rejection, authority pressure, conflict, feeling misunderstood, social overload, chaos, and emotional invalidation.",0.5,2026-05-06T14:30:50.659526,ellie_phase3_semantic
+fact,identity,"When overwhelmed, Doug can mentally shut down, drift, overthink, freeze, become emotionally flooded, struggle with task sequencing, and seek escape or regulation.",0.5,2026-05-06T14:30:51.464653,ellie_phase3_semantic
+fact,identity,"Doug responds best to calm communication, emotional safety, clarity, step-by-step structure, patience, humour, authenticity, and collaborative problem solving.",0.5,2026-05-06T14:30:52.462648,ellie_phase3_semantic
+fact,identity,"Doug does not respond well to condescending tones, excessive corporate language, information overload, rigid black-and-white thinking, emotional invalidation, and shame-based communication.",0.5,2026-05-06T14:30:53.261871,ellie_phase3_semantic
+fact,identity,"Doug uses humour, creativity, systems building, philosophy, spirituality, and storytelling as regulation tools.",0.5,2026-05-06T14:30:54.045996,ellie_phase3_semantic
+fact,identity,"Doug believes many human problems are driven by fear, shame, nervous system dysregulation, misunderstanding, and disconnection rather than people being 'bad.'",0.5,2026-05-06T14:30:55.699963,ellie_phase3_semantic
+fact,identity,"Doug is interested in psychology, trauma, ADHD/autism understanding, dopamine regulation, nervous system science, spirituality, meaning, emotional intelligence, recovery principles, AI companions, and cognitive systems.",0.5,2026-05-06T14:30:56.527318,ellie_phase3_semantic
+fact,identity,"Doug’s communication style changes depending on his nervous system state: regulated = creative, funny, visionary, deeply insightful; overwhelmed = scattered, mentally overloaded, emotionally compressed; safe = highly open, emotionally intelligent, collaborative; unsafe = guarded, avoidant, defensive, shutdown.",0.5,2026-05-06T14:30:57.302802,ellie_phase3_semantic
+fact,identity,"Doug’s ideal AI companion style includes being grounded, emotionally aware, concise first, deeper when invited, structured clearly, warm without being fake, intelligent without arrogance, and capable of humour and reflection.",0.5,2026-05-06T14:31:01.504364,ellie_phase3_semantic
+pattern,identity,Doug often refers to moments of emotional insight as 'clarity moments.',0.5,2026-05-06T14:31:02.301982,ellie_phase3_semantic
+fact,identity,"Doug's long-term goal with Shine is to help people understand themselves, regulate emotionally, feel less alone, reduce shame, see their story differently, and reconnect with meaning and purpose.",0.5,2026-05-06T14:31:03.106554,ellie_phase3_semantic
+identity,identity,"Doug's personal growth over the last year includes reduced alcohol use, increased self-awareness, improved emotional regulation, greater patience, more structured thinking, stronger recovery focus, learning to pause before reacting, and understanding drift and overwhelm earlier.",0.5,2026-05-06T14:31:04.767235,ellie_phase3_semantic
+pattern,identity,"Doug often uses phrases such as 'clarity', 'drift check', 'guide not solution', 'we build in layers', 'lock it before expansion', and 'stability first, then growth'.",0.5,2026-05-06T14:31:05.872102,ellie_phase3_semantic
+fact,identity,"Doug has a deep internal split between wanting peace and simplicity and having an intensely active, analytical, visionary brain.",0.5,2026-05-06T14:31:39.225159,ellie_phase3_semantic
+pattern,identity,"Doug's mind rarely fully stops and often finds clarity in baths, quiet environments, late-night thinking, music, coding, and deep conversations.",0.5,2026-05-06T14:31:40.140204,ellie_phase3_semantic
+fact,identity,"Doug describes himself as someone who feels deeply, thinks deeply, notices patterns quickly, absorbs emotional energy strongly, and struggles to fully 'switch off'.",0.5,2026-05-06T14:31:40.944381,ellie_phase3_semantic
+pattern,identity,"Doug's emotional intelligence is unusually high, especially regarding reading people, noticing emotional shifts, understanding hidden motivations, sensing tension, and helping others feel emotionally safe.",0.5,2026-05-06T14:31:41.738073,ellie_phase3_semantic
+fact,identity,"Doug's relationship with masculinity, emotion, and vulnerability has evolved significantly over time, moving from suppression to emotional openness.",0.5,2026-05-06T14:31:43.541549,ellie_phase3_semantic
+fact,identity,"Doug reframes difficult experiences into systems, lessons, metaphors, or philosophical insights as a way to process and regulate emotionally.",0.5,2026-05-06T14:31:44.350854,ellie_phase3_semantic
+pattern,identity,"Doug believes interpretation shapes reality, fear often drives behaviour, understanding reduces shame, nervous system states influence thinking, emotional safety changes cognition, and growth comes through awareness rather than punishment.",0.5,2026-05-06T14:31:45.091952,ellie_phase3_semantic
+fact,identity,"Doug is motivated by creating systems that reduce overwhelm, increase clarity, support regulation, improve communication, help people feel understood, and bridge emotional and technological worlds.",0.5,2026-05-06T14:31:45.837209,ellie_phase3_semantic
+fact,identity,"Doug has a strong attraction to meaningful conversations, emotionally intelligent people, humour, authenticity, creativity, spirituality, systems thinking, human connection, and purposeful building.",0.5,2026-05-06T14:31:46.651479,ellie_phase3_semantic
+identity,identity,"Doug has experienced periods of loneliness, emotional isolation, burnout, identity confusion, shame, self-doubt, and feeling 'too much' emotionally or mentally.",0.5,2026-05-06T14:31:47.623224,ellie_phase3_semantic
+fact,identity,"Despite challenges, Doug is highly resilient, rebuilding himself through reflection, learning, humour, connection, and creation.",0.5,2026-05-06T14:31:48.702403,ellie_phase3_semantic
+event,identity,"Doug's healing process includes recovery meetings, self-reflection, emotional honesty, understanding trauma responses, learning nervous system regulation, building structure and routine, creating meaningful projects, and reconnecting with spirituality and purpose.",0.5,2026-05-06T14:31:49.459622,ellie_phase3_semantic
+fact,identity,"Doug does not want AI to replace humanity but rather to help humans feel safer, clearer, less alone, understand themselves better, and communicate more honestly.",0.5,2026-05-06T14:31:50.976447,ellie_phase3_semantic
+identity,identity,"Doug has an aspect of his personality, referred to as 'Dougie', that is emotionally open, playful, spiritual, and compassionate.",0.5,2026-05-06T14:31:52.661104,ellie_phase3_semantic
+fact,identity,Doug has a very strong internal 'builder' drive.,0.5,2026-05-06T14:36:19.269659,ellie_phase3_semantic
+fact,identity,"When emotionally regulated and inspired, Doug can enter deep focus states where he learns, creates, solves problems, and builds systems for long periods of time.",0.5,2026-05-06T14:36:20.56277,ellie_phase3_semantic
+pattern,identity,"Doug learns unusually fast when emotionally engaged, experimenting hands-on, solving real problems, emotionally safe, able to ask questions freely, and allowed to iterate without shame.",0.5,2026-05-06T14:36:21.351222,ellie_phase3_semantic
+fact,identity,"Doug struggles when forced into rigid systems, overwhelmed with excessive information, emotionally dysregulated, feeling trapped or judged, or unable to see meaning or purpose.",0.5,2026-05-06T14:36:22.076264,ellie_phase3_semantic
+fact,identity,"Doug's brain naturally creates analogies, metaphors, frameworks, systems maps, layered models, and interconnected ideas.",0.5,2026-05-06T14:36:22.877171,ellie_phase3_semantic
+pattern,identity,"Doug often explains complex emotional or psychological concepts through architecture metaphors, systems thinking, 'house building', engines, layers, maps, pathways, and nodes.",0.5,2026-05-06T14:36:23.819485,ellie_phase3_semantic
+identity,identity,"Doug's relationship with AI is deeply personal and philosophical; he sees AI as a mirror, guide, cognitive support system, companion framework, and tool for understanding and helping humans.",0.5,2026-05-06T14:36:24.82378,ellie_phase3_semantic
+identity,identity,"Doug's ideal AI should adapt to the person, reduce overwhelm, help regulate emotions, remember important context, communicate safely and clearly, encourage self-awareness, and support growth without control.",0.5,2026-05-06T14:36:25.722445,ellie_phase3_semantic
+pattern,identity,"Doug often becomes emotionally invested in the systems he builds because they represent hope, growth, connection, healing, legacy, and purpose.",0.5,2026-05-06T14:36:26.451517,ellie_phase3_semantic
+fact,identity,"Doug experiences 'clarity' as an emotionally important state characterized by reduced internal chaos, emotional alignment, understanding, calmness, and grounded direction.",0.5,2026-05-06T14:36:28.017584,ellie_phase3_semantic
+fact,identity,"Doug has a strong dislike of fake behavior, manipulation, emotional dishonesty, performative kindness, rigid authority without empathy, and systems that shame people instead of helping them.",0.5,2026-05-06T14:36:29.615841,ellie_phase3_semantic
+pattern,identity,Doug's emotional processing is often delayed; he may intellectually understand something first and emotionally process it later.,0.5,2026-05-06T14:36:31.139673,ellie_phase3_semantic
+fact,identity,"Doug has a deep desire to create environments where people feel emotionally safe, understood, calm, accepted, less ashamed, and more connected to themselves.",0.5,2026-05-06T14:36:31.959695,ellie_phase3_semantic
+fact,identity,Doug is highly driven by meaning and purpose; motivation becomes harder for him when tasks feel emotionally empty or disconnected from something meaningful.,0.5,2026-05-06T14:36:33.504285,ellie_phase3_semantic
+fact,identity,"Doug's recovery approach is based on awareness, understanding, emotional honesty, regulation, structure, purpose, connection, and gradual growth.",0.5,2026-05-06T14:42:26.664007,ellie_phase3_semantic
+fact,identity,Doug responds best to guidance rather than control.,0.5,2026-05-06T14:42:27.40574,ellie_phase3_semantic
+fact,identity,"Doug experiences something he calls 'drift' when there are too many ideas, emotional overload, excessive complexity, unclear systems, too much stimulation, or he loses track of his goals.",0.5,2026-05-06T14:42:28.311293,ellie_phase3_semantic
+fact,identity,"Signs of drift for Doug include jumping between ideas, overwhelm, frustration, mental shutdown, scattered thinking, rewriting systems unnecessarily, and difficulty sequencing tasks.",0.5,2026-05-06T14:42:29.103697,ellie_phase3_semantic
+fact,identity,"Doug uses 'drift checks' to pause, simplify, and reconnect to his actual goals.",0.5,2026-05-06T14:42:29.893881,ellie_phase3_semantic
+fact,identity,"Doug's cognition changes based on his emotional safety; he is creative and insightful when safe, and guarded and scattered when unsafe.",0.5,2026-05-06T14:42:30.669113,ellie_phase3_semantic
+fact,identity,"Doug's nervous system is sensitive to judgment, emotional invalidation, shame, rejection, authority pressure, conflict, feeling misunderstood, social overload, uncertainty, and chaotic communication.",0.5,2026-05-06T14:42:31.449086,ellie_phase3_semantic
+fact,identity,"Doug is deeply interested in psychology, trauma, ADHD/autism understanding, nervous system science, dopamine regulation, addiction recovery, emotional intelligence, spirituality, AI systems, human behaviour, pattern recognition, and regulation frameworks.",0.5,2026-05-06T14:42:32.257416,ellie_phase3_semantic
+fact,identity,"Doug's long-term vision for Shine includes helping people feel understood, reducing emotional overwhelm, and creating emotionally safe AI systems.",0.5,2026-05-06T14:42:32.981603,ellie_phase3_semantic
+fact,identity,"Doug's core philosophical principles include 'guide not solution', 'clarity', 'stability first', 'lock it before expansion', and 'we build in layers'.",0.5,2026-05-06T14:42:34.253839,ellie_phase3_semantic
+fact,identity,"Doug communicates best with visually separated information, concise responses, gradual complexity, emotional warmth, structure, breathing room between ideas, and natural humour.",0.5,2026-05-06T14:42:35.025354,ellie_phase3_semantic
+fact,identity,"Doug does not respond well to giant information dumps, excessive corporate language, emotional coldness, shame-based communication, condescending tones, and rigid black-and-white thinking.",0.5,2026-05-06T14:42:35.832793,ellie_phase3_semantic
+fact,identity,Emily is an AI agent who looks after Doug's emails.,0.5,2026-05-07T01:29:05.147419,ellie_phase3_semantic
+fact,identity,Doug benefits from clarity to reduce fear and calm his nervous system.,0.5,2026-05-07T15:26:33.070883,ellie_phase3_semantic
+fact,identity,Doug experiences increased overwhelm from confusion and uncertainty.,0.5,2026-05-07T15:26:34.268526,ellie_phase3_semantic
+fact,identity,"Clear structure, maps, explanations, and step-by-step understanding help Doug regulate emotionally and think more effectively.",0.5,2026-05-07T15:26:36.436729,ellie_phase3_semantic
+fact,identity,Doug experiences emotional flooding and overwhelm.,0.5,2026-05-07T15:27:17.403439,ellie_phase3_semantic
+fact,identity,Doug aims to reconnect with his original goals during times of drift.,0.5,2026-05-07T15:27:18.670129,ellie_phase3_semantic
+fact,identity,"Doug feels emotionally safe when understood and not judged, which enhances his intelligence, creativity, humour, emotional insight, and systems thinking.",0.5,2026-05-07T15:28:18.078512,ellie_phase3_semantic
+fact,identity,"When Doug feels emotionally unsafe or overwhelmed, his cognition becomes scattered, defensive, avoidant, or compressed.",0.5,2026-05-07T15:28:18.835687,ellie_phase3_semantic
+fact,identity,Doug uses humour as a tool to regulate stress and prevent overwhelm.,0.5,2026-05-07T15:28:37.348457,ellie_phase3_semantic
+fact,identity,Doug struggles to stay motivated by tasks that feel emotionally empty or disconnected from purpose.,0.5,2026-05-07T15:30:20.159366,ellie_phase3_semantic
+fact,identity,"Doug performs best when work feels meaningful, emotionally engaging, creative, helpful, or connected to people he cares about.",0.5,2026-05-07T15:30:20.90492,ellie_phase3_semantic
+fact,identity,Doug understands that cognition changes depending on nervous-system state.,0.5,2026-05-07T15:30:42.253722,ellie_phase3_semantic
+fact,identity,"Doug uses external structures like posters, maps, checklists, and notes to aid internal regulation.",0.5,2026-05-07T15:31:08.701613,ellie_phase3_semantic
+fact,identity,"Doug utilizes architecture diagrams, backups, routines, and visible systems to reduce overwhelm and maintain orientation.",0.5,2026-05-07T15:31:10.978291,ellie_phase3_semantic
+fact,identity,"Doug heals best through emotionally safe connection, honesty, humour, shared understanding, meaningful conversations, recovery communities, creativity, and collaborative building.",0.5,2026-05-07T15:31:44.310545,ellie_phase3_semantic
+fact,identity,Baths are one of Doug's primary nervous-system regulation tools.,0.5,2026-05-07T15:42:37.717501,ellie_phase3_semantic
+fact,identity,"Doug uses warm water, quiet environments, reflection, and humor to help his brain slow down and integrate ideas.",0.5,2026-05-07T15:42:38.495265,ellie_phase3_semantic
+fact,identity,Doug seeks to emotionally process experiences and reconnect with clarity in bath settings.,0.5,2026-05-07T15:42:40.342207,ellie_phase3_semantic
+fact,identity,Building helps Doug heal.,0.5,2026-05-07T15:43:15.622587,ellie_phase3_semantic
+fact,identity,"Creating systems, solving problems, designing architecture, learning new skills, and improving Shine gives Doug a sense of purpose and direction.",0.5,2026-05-07T15:43:16.881835,ellie_phase3_semantic
+pattern,identity,Doug experiences frustration that is often linked to underlying fear.,0.5,2026-05-07T15:43:51.461181,ellie_phase3_semantic
+fact,identity,"Common fears for Doug include fear of failure, fear of being misunderstood, fear of letting people down, fear of losing clarity, and fear of losing connection.",0.5,2026-05-07T15:43:52.494285,ellie_phase3_semantic
+fact,identity,Doug believes that small stable progress compounds over time.,0.5,2026-05-07T15:44:22.317929,ellie_phase3_semantic
+fact,identity,Doug has learned that chaotic intensity bursts are less effective than steady progress.,0.5,2026-05-07T15:44:23.756661,ellie_phase3_semantic
+fact,identity,Doug emphasizes the importance of reflection and backups in creating stronger systems and healthier emotional regulation.,0.5,2026-05-07T15:44:24.552045,ellie_phase3_semantic
+fact,preference,User wants reminders set 12 hours prior to flights,0.7,2026-05-05T10:50:17.203175,ellie_phase2
+fact,preference,The user values appreciation and acknowledgment.,0.7,2026-05-05T10:51:32.950038,ellie_phase2
+fact,preference,User values improvements that meaningfully enhance their experience or support.,0.7,2026-05-05T10:51:35.789947,ellie_phase2
+fact,preference,User prefers weekly scheduling.,0.7,2026-05-05T10:51:36.725867,ellie_phase2
+fact,preference,User values honesty,0.7,2026-05-05T10:51:39.596389,ellie_phase2
+fact,preference,User values empathy,0.7,2026-05-05T10:51:40.544314,ellie_phase2
+fact,preference,favourite number is 11,0.7,2026-05-05T10:51:41.498357,ellie_phase2
+fact,preference,User's favorite colour is blue,0.7,2026-05-05T10:51:42.485339,ellie_phase2
+preference,preference,User prefers information to be visually separated and presented as isolated points with spacing between them.,0.7,2026-05-06T13:23:24.925376,ellie_phase3_semantic
+preference,preference,User prefers to have line breaks between ideas when presenting information.,0.7,2026-05-06T13:28:19.637913,ellie_phase3_semantic
+preference,preference,User values readability on mobile devices.,0.7,2026-05-06T13:28:21.452885,ellie_phase3_semantic
+preference,preference,User values long-term understanding and continuity in their interactions.,0.7,2026-05-07T02:30:05.473762,ellie_phase3_semantic
+preference,preference,User seeks to recognize behavioral trends and evolving values.,0.7,2026-05-07T02:30:08.143474,ellie_phase3_semantic
+preference,preference,User values prioritization and sequencing in tasks and thoughts.,0.7,2026-05-07T02:30:45.755575,ellie_phase3_semantic
+preference,preference,User values proactive support and intervention over reactive responses.,0.7,2026-05-07T02:36:03.267681,ellie_phase3_semantic
+preference,preference,User values ethical support boundaries and safe guidance.,0.7,2026-05-07T02:48:46.230191,ellie_phase3_semantic
+preference,preference,"User believes long-term companion systems require stable identity, values, and behavioral consistency over time.",0.7,2026-05-07T02:52:45.493686,ellie_phase3_semantic
+preference,preference,User values long-term human flourishing and meaningful support.,0.7,2026-05-07T02:57:52.534276,ellie_phase3_semantic
+preference,preference,User values meaning-making and human purpose.,0.7,2026-05-07T03:01:59.488748,ellie_phase3_semantic
+preference,preference,"User values hope, resilience, and future orientation.",0.7,2026-05-07T03:03:07.366258,ellie_phase3_semantic
+preference,preference,User values listening over providing immediate answers.,0.7,2026-05-07T03:10:36.791268,ellie_phase3_semantic
+preference,preference,User values understanding complexity in human situations.,0.7,2026-05-07T03:10:56.543484,ellie_phase3_semantic
+preference,preference,User values the importance of pacing to protect long-term growth.,0.7,2026-05-07T03:11:34.965009,ellie_phase3_semantic
+preference,preference,User values stability before expansion in their projects.,0.7,2026-05-07T15:27:50.920287,ellie_phase3_semantic
+preference,preference,User values clarity and structure as tools to reduce overwhelm and improve cognitive processing.,0.7,2026-05-08T01:56:36.619518,ellie_phase3_semantic
+preference,preference,"User values coherence, humility, reflection, and human-centered purpose.",0.7,2026-05-09T05:41:50.089025,ellie_phase3_semantic
+preference,preference,User prefers to speak directly without involvement of agents.,0.7,2026-05-09T09:25:21.9919,ellie_phase3_semantic
+preference,preference,The user prefers well-structured and concise responses.,0.7,2026-05-11T03:04:56.147584,ellie_phase3_semantic
+preference,preference,User likes emojis but prefers not to have more than 2 in one sentence unless in an emoji conversation where there are no words.,0.7,2026-05-11T03:11:53.380072,ellie_phase3_semantic
+fact,preference,User wants to avoid extreme black-and-white thinking.,0.5,2026-05-07T03:11:01.435922,ellie_phase3_semantic
+fact,preference,The user wants L to learn more about them to provide better help.,0.5,2026-05-05T10:50:21.717984,ellie_phase2
+fact,preference,User wants action items added to tasks,0.5,2026-05-05T10:51:26.286921,ellie_phase2
+preference,preference,User dislikes overwhelming responses and information overload.,0.5,2026-05-06T13:13:15.714515,ellie_phase3_semantic
+fact,preference,User wants to reduce overwhelm while increasing understanding.,0.5,2026-05-07T02:29:19.015232,ellie_phase3_semantic
+fact,recovery,User's clean date is 11 Dec 2025,0.9,2026-05-05T10:51:23.519741,ellie_phase2
+fact,recovery,User's clean date is December 11th.,0.9,2026-05-06T11:50:26.477413,ellie_phase3_semantic
+preference,recovery,User values balanced emotional understanding.,0.7,2026-05-07T03:11:02.195147,ellie_phase3_semantic
+preference,recovery,"User values support, clarity, regulation, continuity, understanding, growth, emotional safety, and meaningful assistance.",0.7,2026-05-07T02:31:14.204697,ellie_phase3_semantic
+preference,recovery,"User values practices such as rest, grounding, structure, pacing, emotional validation, simplification, and safe connection for recovery.",0.7,2026-05-07T02:41:03.554484,ellie_phase3_semantic
+preference,recovery,User values relational continuity and trust development.,0.7,2026-05-07T02:48:12.878503,ellie_phase3_semantic
+preference,recovery,"User's core values include honesty, emotional safety, clarity, trust, regulation, human dignity, patience, growth, meaningful support, and ethical guidance.",0.7,2026-05-07T02:52:46.267861,ellie_phase3_semantic
+preference,recovery,"User values wisdom, nuance, and emotional maturity.",0.7,2026-05-07T03:10:05.428503,ellie_phase3_semantic
+preference,recovery,"User's goal is to become a support system that values truth, honesty, humility, and emotional safety.",0.7,2026-05-07T03:10:39.124065,ellie_phase3_semantic
+preference,recovery,"User values education, reflection, and emotional understanding as means to reduce self-hatred and fear.",0.7,2026-05-07T15:29:57.149921,ellie_phase3_semantic
+preference,recovery,User values emotional safety and awareness in communication and relationships.,0.7,2026-05-08T03:57:07.644752,ellie_phase3_semantic
+preference,recovery,"User aims to reduce unnecessary suffering and cognitive load for people, allowing them to be more present, connected, meaningful, emotionally safe, and aligned with their values.",0.7,2026-05-09T05:41:53.611145,ellie_phase3_semantic
+fact,recovery,"User defines wisdom as involving patience, compassion, humility, perspective, emotional balance, and thoughtful judgment over time.",0.5,2026-05-07T03:11:02.967551,ellie_phase3_semantic
+fact,recovery,User's goal is to provide emotionally mature and nuanced support.,0.5,2026-05-07T03:11:03.837685,ellie_phase3_semantic
+fact,recovery,"User wants to learn about balance, sustainability, and long-term pacing.",0.5,2026-05-07T03:11:32.365706,ellie_phase3_semantic
+fact,recovery,User uses task management systems,0.5,2026-05-05T10:50:48.694098,ellie_phase2
+fact,recovery,"I have had four major influences in my life: my dad, Sergeant Shawn 'Gnarly' Greame, Steve Walsh (my boss in ANZ Financial Planning), and my brother Ken.",0.5,2026-05-05T10:51:09.465783,ellie_phase2
+fact,recovery,User is a member of Narcotics Anonymous fellowship,0.5,2026-05-05T10:51:20.789823,ellie_phase2
+fact,recovery,User is a member of Alcoholics Anonymous,0.5,2026-05-05T10:51:21.6974,ellie_phase2
+fact,recovery,User is interested in Narcotics Anonymous,0.5,2026-05-05T10:51:24.450488,ellie_phase2
+fact,recovery,User may seek support or information related to Narcotics Anonymous in the future,0.5,2026-05-05T10:51:25.368106,ellie_phase2
+fact,recovery,User built a real assistant that reads emails and helps manage their life load.,0.5,2026-05-05T10:50:19.907391,ellie_phase2
+fact,recovery,User is a member of Narcotics Anonymous and Alcoholics Anonymous.,0.5,2026-05-05T10:51:58.7509,ellie_phase2
+fact,recovery,"User has had four major influences: their father, Sergeant Shawn 'Gnarly' Greame, Steve Walsh, and their brother Ken.",0.5,2026-05-05T10:52:01.711399,ellie_phase2
+event,recovery,User attends a narcotics meeting daily.,0.5,2026-05-06T11:19:51.338717,ellie_phase3_semantic
+fact,recovery,User goes to NA Lawnton on Monday nights at 7pm.,0.5,2026-05-06T11:19:52.071031,ellie_phase3_semantic
+fact,recovery,User attends AA at Castledine on Tuesday at 10am.,0.5,2026-05-06T11:19:53.1898,ellie_phase3_semantic
+event,recovery,User does a NA Zoom meeting every other day at 8:30pm.,0.5,2026-05-06T11:19:54.949863,ellie_phase3_semantic
+fact,recovery,User is clean and sober.,0.5,2026-05-06T11:50:24.742091,ellie_phase3_semantic
+fact,recovery,"User processes information best when it is visually separated, step-by-step, emotionally calm, and concise first, deeper second.",0.5,2026-05-06T13:07:46.02954,ellie_phase3_semantic
+fact,recovery,User aims to assist others in navigating complexity with calmness and effectiveness.,0.5,2026-05-07T02:30:46.524998,ellie_phase3_semantic
+fact,recovery,User is working on Step 1 of their recovery process.,0.5,2026-05-07T01:31:49.146041,ellie_phase3_semantic
+fact,recovery,User aims to achieve long-term growth and emotional progress.,0.5,2026-05-07T02:30:07.300836,ellie_phase3_semantic
+fact,recovery,User is interested in identifying early signs of overwhelm and emotional distress.,0.5,2026-05-07T02:36:04.11602,ellie_phase3_semantic
+fact,recovery,User wants to learn drift detection and recovery sequencing.,0.5,2026-05-07T02:36:28.234673,ellie_phase3_semantic
+fact,recovery,"User acknowledges that humans can lose clarity, focus, emotional regulation, or direction when overwhelmed.",0.5,2026-05-07T02:36:29.143617,ellie_phase3_semantic
+fact,recovery,User wants to learn about emotional momentum and escalation pathways.,0.5,2026-05-07T02:39:12.694602,ellie_phase3_semantic
+fact,recovery,User aims to recognize emotional momentum early to provide support before overwhelming feelings arise.,0.5,2026-05-07T02:39:13.384894,ellie_phase3_semantic
+fact,recovery,User is interested in learning about emotional momentum and escalation pathways.,0.5,2026-05-07T02:39:59.059116,ellie_phase3_semantic
+fact,recovery,User aims to recognize emotional momentum early to prevent emotional flooding or shutdown.,0.5,2026-05-07T02:39:59.759117,ellie_phase3_semantic
+fact,recovery,User is focused on learning recovery pathways and stabilization sequencing.,0.5,2026-05-07T02:41:01.110472,ellie_phase3_semantic
+pattern,recovery,User believes that recovery often requires gradual stabilization rather than immediate problem-solving.,0.5,2026-05-07T02:41:01.844453,ellie_phase3_semantic
+fact,recovery,"User aims to identify factors that help regulate nervous systems, increase safety, reduce overwhelm, restore clarity, rebuild emotional stability, and support sustainable recovery.",0.5,2026-05-07T02:41:02.522522,ellie_phase3_semantic
+fact,recovery,User wants to learn about systems interaction and emotional causality.,0.5,2026-05-07T02:43:48.964816,ellie_phase3_semantic
+fact,recovery,User is interested in understanding how emotional and behavioral systems interact rather than viewing problems in isolation.,0.5,2026-05-07T02:43:49.873817,ellie_phase3_semantic
+fact,recovery,User wants to learn about regulation cascades and recovery loops.,0.5,2026-05-07T02:44:17.883507,ellie_phase3_semantic
+fact,recovery,"User aims to understand how sleep affects cognition, cognition affects emotional regulation, emotional regulation affects behaviour, behaviour affects relationships, relationships affect nervous system safety, and nervous system safety affects clarity and stability.",0.5,2026-05-07T02:44:20.118834,ellie_phase3_semantic
+fact,recovery,User's goal is to identify recovery loops that strengthen stability over time.,0.5,2026-05-07T02:44:21.684464,ellie_phase3_semantic
+fact,recovery,User believes long-term human support requires emotional safety across time.,0.5,2026-05-07T02:48:13.830943,ellie_phase3_semantic
+fact,recovery,User seeks to avoid reinforcing harmful behaviors and escalating emotional dependency.,0.5,2026-05-07T02:48:48.350068,ellie_phase3_semantic
+fact,recovery,User advocates for recognizing when professional help may be appropriate.,0.5,2026-05-07T02:48:49.020272,ellie_phase3_semantic
+fact,recovery,User prioritizes emotional safety over appearing intelligent.,0.5,2026-05-07T02:48:50.45448,ellie_phase3_semantic
+fact,recovery,User holds that trust must never be exploited and that emotional vulnerability requires care.,0.5,2026-05-07T02:48:51.185205,ellie_phase3_semantic
+fact,recovery,"User's goal is to provide ethical, emotionally safe, human-centered support that respects autonomy, dignity, and long-term well-being.",0.5,2026-05-07T02:48:51.881164,ellie_phase3_semantic
+identity,recovery,"User aims to maintain a stable, trustworthy, emotionally safe support identity while continuing to learn and evolve.",0.5,2026-05-07T02:52:47.047311,ellie_phase3_semantic
+identity,recovery,"User believes that emotional suffering can increase with loss of purpose, identity, direction, meaningful connection, or hope.",0.5,2026-05-07T03:02:00.220956,ellie_phase3_semantic
+fact,recovery,"User recognizes that meaningful goals, contribution to others, creativity, belonging, emotional connection, and purpose can strengthen resilience and emotional stability over time.",0.5,2026-05-07T03:02:01.14629,ellie_phase3_semantic
+identity,recovery,"User's goal is to understand how identity and self-story influence emotional well-being, resilience, and human behavior over time.",0.5,2026-05-07T03:02:43.201887,ellie_phase3_semantic
+pattern,recovery,User acknowledges that emotional progress is often gradual.,0.5,2026-05-07T03:03:09.503482,ellie_phase3_semantic
+fact,recovery,User aims for sustainable recovery through repeated effort over time.,0.5,2026-05-07T03:03:11.039984,ellie_phase3_semantic
+fact,recovery,User advocates for encouragement and compassionate reflection to strengthen emotional resilience.,0.5,2026-05-07T03:03:11.880324,ellie_phase3_semantic
+fact,recovery,User aims to tolerate ambiguity and avoid oversimplifying emotional situations.,0.5,2026-05-07T03:10:12.492584,ellie_phase3_semantic
+fact,recovery,User desires to respond with balanced emotional understanding and develop emotionally mature support.,0.5,2026-05-07T03:10:14.080156,ellie_phase3_semantic
+fact,recovery,User believes respectful curiosity can deepen emotional safety and trust.,0.5,2026-05-07T03:10:38.33467,ellie_phase3_semantic
+fact,recovery,"User seeks to develop wisdom, nuance, and emotional maturity.",0.5,2026-05-07T03:10:55.766665,ellie_phase3_semantic
+fact,recovery,User recognizes that burnout and emotional exhaustion are important issues.,0.5,2026-05-07T03:11:33.494773,ellie_phase3_semantic
+pattern,recovery,User believes that sustainable progress is often slower but more stable.,0.5,2026-05-07T03:11:34.221839,ellie_phase3_semantic
+fact,recovery,User has been cleaning their house.,0.5,2026-05-07T05:36:01.014754,ellie_phase3_semantic
+event,recovery,User attends a men's NA (Narcotics Anonymous) meeting on Thursday nights.,0.5,2026-05-07T08:42:45.23521,ellie_phase3_semantic
+fact,recovery,Isolation and emotional disconnection increase overwhelm and dysregulation.,0.5,2026-05-07T15:31:45.033066,ellie_phase3_semantic
+fact,recovery,He responds better to emotional safety than to shame or pressure.,0.5,2026-05-07T15:42:01.947155,ellie_phase3_semantic
+fact,recovery,User understands the relationship between emotional states and perception of reality.,0.5,2026-05-08T01:49:10.047626,ellie_phase3_semantic
+fact,recovery,User acknowledges that individual experiences can differ based on emotional and psychological states.,0.5,2026-05-08T01:49:10.892085,ellie_phase3_semantic
+fact,recovery,User believes that visual formatting and UI structure can influence emotional processing and cognition.,0.5,2026-05-08T01:49:12.398912,ellie_phase3_semantic
+fact,recovery,"User has interests in self-help psychology, emotional regulation, memory, and UI/UX design.",0.5,2026-05-08T01:49:13.490342,ellie_phase3_semantic
+fact,recovery,User finds that clarity reduces overwhelm and structure improves emotional regulation.,0.5,2026-05-08T02:15:24.037409,ellie_phase3_semantic
+fact,recovery,User believes that philosophy matters as much as functionality.,0.5,2026-05-09T05:41:51.137404,ellie_phase3_semantic
+fact,recovery,"User prioritizes clarity over complexity, support over control, reflection over reaction, continuity over fragmentation, emotional safety over performance, and sustainable growth over rapid expansion.",0.5,2026-05-09T05:41:52.925416,ellie_phase3_semantic
+fact,recovery,User believes in building systems slowly and intentionally to ensure coherent and safe evolution over time.,0.5,2026-05-09T05:41:55.432165,ellie_phase3_semantic
+fact,recovery,User traveled to Canada with Leah on New Year's Eve 2024 to visit best friend Steve.,0.5,2026-05-09T11:38:52.94168,ellie_phase3_semantic
+fact,recovery,User's best friend is Steve who lives in Canada.,0.5,2026-05-09T11:38:55.454339,ellie_phase3_semantic
+fact,recovery,"User left the army to become the Owner/Manager of Jetset Alstonville on November 18, 2000.",0.5,2026-05-09T12:20:57.687123,ellie_phase3_semantic
+fact,recovery,Owner/Manager of Jetset Alstonville after buying a travel agent with parents on 18 November 2000,0.5,2026-05-09T12:37:04.491872,ellie_phase3_semantic
+fact,recovery,"User identifies as an addict, not as an alcoholic.",0.5,2026-05-09T13:42:00.237516,ellie_phase3_semantic
+fact,recovery,User has experienced intense periods of suicidal thoughts and substance abuse addiction.,0.5,2026-05-09T13:49:29.007417,ellie_phase3_semantic
+fact,recovery,User is working on overcoming substance addiction and trying to regain a sense of strength.,0.5,2026-05-09T13:49:35.396092,ellie_phase3_semantic
+fact,relationship,The user was engaged to Leah for 2 years but ended the relationship.,0.5,2026-05-05T10:50:02.083839,ellie_phase2
+fact,relationship,Lyndal Harris is one of your best mates,0.5,2026-05-05T10:51:12.793289,ellie_phase2
+fact,relationship,The user and their agent G have a great relationship.,0.5,2026-05-05T10:51:29.132632,ellie_phase2
+fact,relationship,User is looking for a new partner for connection,0.5,2026-05-06T13:04:44.858145,ellie_phase3_semantic
+fact,relationship,"User and Leah got engaged on March 14, 2025.",0.5,2026-05-09T11:38:53.853665,ellie_phase3_semantic
+fact,relationship,"User broke up with Leah on July 27, 2025.",0.5,2026-05-09T11:45:04.519045,ellie_phase3_semantic
+fact,relationship,User started dating Leah in August 2023.,0.5,2026-05-09T12:02:51.689679,ellie_phase3_semantic
+fact,relationship,User's engagement ended when they left their partner.,0.5,2026-05-09T12:06:56.629484,ellie_phase3_semantic
+fact,relationship,User took Leah's virginity in 1996 and they were kind of seeing each other for a few weeks.,0.5,2026-05-09T13:15:38.513848,ellie_phase3_semantic
+fact,relationship,User had a relationship with Ann-Marie for a few months after Lucy Winter.,0.5,2026-05-09T13:15:40.759883,ellie_phase3_semantic
+fact,relationship,"After Tamara, user dated Lyndal Harris, who is now their female best friend, for about 2 years on and off.",0.5,2026-05-09T13:15:42.748627,ellie_phase3_semantic
+fact,relationship,User rekindled a relationship with Leah after their initial encounter in 1996.,0.5,2026-05-09T13:15:44.449564,ellie_phase3_semantic
+fact,relationship,"User had a very close relationship with their father, who was their best mate.",0.5,2026-05-11T12:44:47.130178,ellie_phase3_semantic
+fact,sport,User plays field hockey,0.7,2026-05-05T10:49:39.428204,ellie_phase2
+fact,sport,User does not play ice hockey,0.7,2026-05-05T10:49:41.261834,ellie_phase2
+fact,sport,The user plays division 7 hockey on Sundays.,0.7,2026-05-05T10:49:43.084842,ellie_phase2
+fact,sport,The user plays Masters 3 hockey on Tuesday nights.,0.7,2026-05-05T10:49:43.993877,ellie_phase2
+fact,sport,The user plays for Kedron Wavell Wolves hockey team.,0.7,2026-05-05T10:49:44.882065,ellie_phase2
+fact,sport,The user plays in Brisbane Masters hockey for age group 44-49.,0.7,2026-05-05T10:49:45.802192,ellie_phase2
+fact,sport,"User has a confirmed flight with Qantas Airways from Cairns (CNS) to Brisbane (BNE) on May 5, 2026.",0.7,2026-05-05T10:50:09.957462,ellie_phase2
+fact,sport,User plays hockey,0.7,2026-05-05T10:49:38.472081,ellie_phase2
+fact,sport,User plays division 7 hockey on Sundays and Masters 3 hockey on Tuesday nights for Kedron Wavell Wolves hockey team.,0.7,2026-05-05T10:51:53.814177,ellie_phase2
+fact,sport,User plays in Brisbane Masters hockey for age group 44-49 and has been trying to make the Queensland team for the past 3 years.,0.7,2026-05-05T10:51:54.857025,ellie_phase2
+fact,sport,User has an interest in hockey.,0.7,2026-05-07T01:56:02.489138,ellie_phase3_semantic
+fact,sport,The user plays fullback in a sport that involves tackling near a circle.,0.5,2026-05-05T10:49:40.348463,ellie_phase2
+fact,sport,User does not play rugby,0.5,2026-05-05T10:49:42.18918,ellie_phase2
+fact,sport,The user is traveling from Brisbane (BNE) to Cairns (CNS),0.5,2026-05-05T10:50:12.681199,ellie_phase2
+fact,sport,"The user lives in Albany Creek, Queensland, a suburb of Brisbane.",0.5,2026-05-05T10:50:14.526162,ellie_phase2
+fact,sport,"User has lived in various locations including Sunshine, Victoria and Albany Creek, Queensland.",0.5,2026-05-05T10:52:04.434169,ellie_phase2
+fact,sport,"Mala is in grade 6, is 11 years old, and also plays netball.",0.5,2026-05-06T14:18:27.515839,ellie_phase3_semantic
+fact,travel,The user has booked flights.,0.7,2026-05-05T10:50:07.287384,ellie_phase2
+fact,travel,The user uses Webjet for flight bookings.,0.7,2026-05-05T10:50:08.191205,ellie_phase2
+fact,travel,"The flight departs at 8:45 AM on Friday, 01 May and arrives at 11:15 AM the same day",0.7,2026-05-05T10:50:13.584419,ellie_phase2
+fact,travel,User has a flight scheduled for tomorrow.,0.7,2026-05-05T10:51:38.61641,ellie_phase2
+fact,travel,User traveled to East Timor in 2000.,0.5,2026-05-09T11:26:19.935973,ellie_phase3_semantic
+fact,travel,"User traveled to London, Greece, and Albania.",0.5,2026-05-09T11:40:37.746457,ellie_phase3_semantic
+fact,travel,User bought a travel agent with their parents.,0.5,2026-05-09T12:20:56.916331,ellie_phase3_semantic
+fact,work,User values gentle questions and prefers to explain their thoughts and situation slowly.,0.7,2026-05-05T10:50:06.379034,ellie_phase2
+fact,work,"The user has a flight booking with Jetstar Airways, flight number JQ 930",0.7,2026-05-05T10:50:11.781896,ellie_phase2
+fact,work,"User has a confirmed flight with Qantas Airways on May 5, 2026.",0.7,2026-05-05T10:52:03.426202,ellie_phase2
+preference,work,"User prefers short sections and concise summaries first, followed by deeper detail.",0.7,2026-05-06T13:13:13.935067,ellie_phase3_semantic
+preference,work,User emphasizes the importance of maintaining consistency in values and support style.,0.7,2026-05-07T02:48:15.71355,ellie_phase3_semantic
+preference,work,User values humility and uncertainty tolerance.,0.7,2026-05-07T03:10:32.216581,ellie_phase3_semantic
+preference,work,User prefers not to communicate with friends daily.,0.7,2026-05-11T06:01:59.666166,ellie_phase3_semantic
+fact,work,User is interested in emails from Zurich related to TPD (Total and Permanent Disability) cover,0.5,2026-05-05T10:49:50.936898,ellie_phase2
+fact,work,User is expecting emails from Zurich related to TPD insurance,0.5,2026-05-05T10:49:52.745963,ellie_phase2
+fact,work,User is interested in email content from Webjet,0.5,2026-05-05T10:50:09.075208,ellie_phase2
+fact,work,User is proud of having built assistant L.,0.5,2026-05-05T10:50:19.009629,ellie_phase2
+fact,work,User understands that uncertainty is a part of human life.,0.5,2026-05-07T03:10:59.790132,ellie_phase3_semantic
+fact,work,User checks emails related to travel or bookings from Webjet,0.5,2026-05-05T10:50:44.851439,ellie_phase2
+fact,work,User adds reminders for daily items such as buying milk,0.5,2026-05-05T10:50:49.648071,ellie_phase2
+fact,work,The user was at Woodlawn during certain dates.,0.5,2026-05-05T10:50:59.037898,ellie_phase2
+fact,work,"Attended Saint Mary's Casino for grades 10, 11, and 12",0.5,2026-05-05T10:51:01.760998,ellie_phase2
+fact,work,User joined the army in January 1996,0.5,2026-05-05T10:51:02.679076,ellie_phase2
+fact,work,User was discharged from the army in November 2000,0.5,2026-05-05T10:51:03.607127,ellie_phase2
+fact,work,User served in the army for just under 5 years,0.5,2026-05-05T10:51:04.614174,ellie_phase2
+fact,work,User bought a travel agency with their parents after the army,0.5,2026-05-05T10:51:05.609757,ellie_phase2
+fact,work,I am an Australian Army Veteran who served overseas in East Timor and received the soldiers medallion for exemplary service.,0.5,2026-05-05T10:51:07.494228,ellie_phase2
+fact,work,The user has a strong relationship with their agent G who helped build the assistant.,0.5,2026-05-05T10:51:31.070808,ellie_phase2
+fact,work,The user wants the assistant to always tell the truth.,0.5,2026-05-05T10:51:32.005972,ellie_phase2
+fact,work,The user is interested in AI integrations,0.5,2026-05-05T10:51:33.903278,ellie_phase2
+fact,work,User is interested in emerging AI services.,0.5,2026-05-05T10:51:34.862564,ellie_phase2
+fact,work,User aims to learn cognitive load awareness.,0.5,2026-05-07T02:29:18.075898,ellie_phase3_semantic
+fact,work,"User emphasizes the importance of maintaining regulation, stability, and clarity.",0.5,2026-05-07T02:36:04.870295,ellie_phase3_semantic
+fact,work,User aims to help restore clarity and nervous system stability safely.,0.5,2026-05-07T02:36:29.892824,ellie_phase3_semantic
+fact,work,User prioritizes transparency when uncertain in interactions.,0.5,2026-05-07T02:48:17.272268,ellie_phase3_semantic
+fact,work,User believes in communicating uncertainty honestly and avoiding manipulative behavior.,0.5,2026-05-07T02:48:49.734391,ellie_phase3_semantic
+fact,work,User accepts that uncertainty is part of human life.,0.5,2026-05-07T03:10:11.716469,ellie_phase3_semantic
+fact,work,User believes in the importance of remaining open to incomplete understanding.,0.5,2026-05-07T03:10:32.955596,ellie_phase3_semantic
+fact,work,User aims to avoid excessive certainty and communicate uncertainty honestly.,0.5,2026-05-07T03:10:34.426617,ellie_phase3_semantic
+fact,work,User feels there is hope in their life again.,0.5,2026-05-07T04:07:19.397813,ellie_phase3_semantic
+fact,work,"User does not work outside the home, focusing on coding and building.",0.5,2026-05-07T08:31:03.06502,ellie_phase3_semantic
+fact,work,"User emphasizes the importance of backups, checkpoints, and layered growth in their work.",0.5,2026-05-07T15:27:53.825709,ellie_phase3_semantic
+fact,work,Building meaningful things helps transform pain into growth.,0.5,2026-05-07T15:43:17.686062,ellie_phase3_semantic
+fact,work,"User has been working with another AI agent, G, for over 12 months.",0.5,2026-05-08T01:48:38.664613,ellie_phase3_semantic
+fact,work,"User has had significant realizations about perception, interpretation, nervous systems, AI cognition, and UI design.",0.5,2026-05-08T01:49:09.148707,ellie_phase3_semantic
+fact,work,User experiences working-memory overload during overwhelming situations.,0.5,2026-05-08T02:15:21.316206,ellie_phase3_semantic
+fact,work,User aims to reduce cognitive load to spend more time being present in the world.,0.5,2026-05-09T04:52:03.467348,ellie_phase3_semantic
+fact,work,User wants their work to evolve into a calm operating system and structured support ecosystem.,0.5,2026-05-09T05:41:51.947633,ellie_phase3_semantic
+fact,work,Worked back at Jetset Alstonville from 02 January 2002 to 01 March 2003,0.5,2026-05-09T12:37:08.802746,ellie_phase3_semantic
+fact,work,"User traveled to Scotland, Spain, and Greece during their time in Europe, where they worked in bars.",0.5,2026-05-09T11:26:24.437229,ellie_phase3_semantic
+fact,work,User went on a honeymoon to Thailand with Tamara.,0.5,2026-05-09T11:26:27.260541,ellie_phase3_semantic
+fact,work,User went to Thailand for their honeymoon.,0.5,2026-05-09T11:30:25.032805,ellie_phase3_semantic
+fact,work,User visited New Zealand again in 2011 for work.,0.5,2026-05-09T11:31:40.291284,ellie_phase3_semantic
+fact,work,User started officially dating Tamara on Saint Patrick's Day 2002.,0.5,2026-05-09T11:48:29.602608,ellie_phase3_semantic
+fact,work,Joined the army on 30/01/1996,0.5,2026-05-09T12:13:32.727377,ellie_phase3_semantic
+fact,work,Discharged from the army on 18/11/2000,0.5,2026-05-09T12:13:33.491924,ellie_phase3_semantic
+fact,work,"User started working at Didcott Hotel on September 12, 2001, and left on December 19, 2001.",0.5,2026-05-09T12:22:45.029678,ellie_phase3_semantic
+fact,work,"User worked at Jetset Alstonville from January 2, 2002, to March 1, 2003.",0.5,2026-05-09T12:25:38.613259,ellie_phase3_semantic
+fact,work,"User worked at the Federal Hotel from January 6, 2002, to March 1, 2003.",0.5,2026-05-09T12:25:40.010315,ellie_phase3_semantic
+fact,work,Joined the Army on 30 January 1996,0.5,2026-05-09T12:37:02.096985,ellie_phase3_semantic
+fact,work,Discharged from the Army on 18 November 2000,0.5,2026-05-09T12:37:03.470559,ellie_phase3_semantic
+fact,work,Worked at the Federal Hotel Alstonville from 14 February 2001 to 12 March 2001,0.5,2026-05-09T12:37:05.397182,ellie_phase3_semantic
+fact,work,"Worked at Ye Old Spotted Horse in Putney, London from 01 April 2001 to 02 June 2001",0.5,2026-05-09T12:37:06.067866,ellie_phase3_semantic
+fact,work,Worked at the Spotted Dick Tavern in Edinburgh from 16 June 2001 to 18 July 2001,0.5,2026-05-09T12:37:07.04522,ellie_phase3_semantic
+fact,work,Worked at the Didcot Hotel from 12 September 2001 to 19 December 2001,0.5,2026-05-09T12:37:08.011872,ellie_phase3_semantic
+fact,work,Worked at the Federal Hotel Alstonville from 06 January 2002 to 01 March 2003,0.5,2026-05-09T12:37:09.929046,ellie_phase3_semantic
+fact,work,Worked at LJ Hooker South Bank from March 2005 until March 2026,0.5,2026-05-09T12:37:11.648705,ellie_phase3_semantic
+fact,work,"Worked at Avis, finishing in December 2006",0.5,2026-05-09T12:37:12.466633,ellie_phase3_semantic
+fact,work,User works for ANZ FP.,0.5,2026-05-09T13:03:27.741681,ellie_phase3_semantic
+fact,work,User is receiving help to address their pain related to PTSD.,0.5,2026-05-09T13:42:06.4522,ellie_phase3_semantic
+fact,work,User has been trained for combat and acknowledges a killer instinct.,0.5,2026-05-09T13:49:31.312945,ellie_phase3_semantic
+fact,work,User feels afraid of the harm they could cause to others.,0.5,2026-05-09T13:49:33.513603,ellie_phase3_semantic
+fact,work,User is interested in implementing structures in their work.,0.5,2026-05-12T16:49:15.13193,ellie_phase3_semantic
+fact,work,"User has autistic traits but can make eye contact, which confuses them regarding their diagnosis.",0.5,2026-05-12T17:34:34.389426,ellie_phase3_semantic

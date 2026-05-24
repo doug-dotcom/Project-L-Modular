@@ -1,0 +1,26 @@
+﻿{
+    "includes":  [
+                     "server.py",
+                     "memory domains",
+                     "pending queue state",
+                     "working memory layer",
+                     "cognition engines",
+                     "agent files",
+                     "api files",
+                     "core files"
+                 ],
+    "name":  "Project L Sacred Baseline",
+    "backup_dir":  "C:\\Shine_L\\FULL_BACKUPS\\BASELINES\\Project_L_BASELINE_20260523_181157",
+    "purpose":  "Stable rollback point before auto semantic git push experiment",
+    "root":  "C:\\Shine_L",
+    "created_at":  "2026-05-23T18:12:04",
+    "excludes":  [
+                     ".git",
+                     ".venv",
+                     "__pycache__",
+                     "node_modules",
+                     "FULL_BACKUPS",
+                     "logs",
+                     "*.pyc"
+                 ]
+}

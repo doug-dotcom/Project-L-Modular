@@ -1,0 +1,31 @@
+PROJECT L — STABLE CORE MVP
+
+STATUS:
+ONLINE
+
+WORKING:
+- FastAPI
+- OpenAI
+- Memory Engine
+- Logging
+- Swagger
+- Chat Endpoint
+- Session Persistence
+- UI Validation
+- Railway Deployment Pack
+
+NOT YET REMOUNTED:
+- orchestration
+- workflows
+- semantic graph
+- scoring
+- continuity
+- replay
+- advanced agent routers
+
+STRATEGY:
+Deploy stable core first.
+Reattach advanced modules later safely.
+
+LOCK DATE:
+2026-05-16_15-00-10

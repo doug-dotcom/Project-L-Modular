@@ -1,0 +1,18 @@
+{
+  "version": "AODS76",
+
+  "successful_patterns": [],
+
+  "failed_patterns": [],
+
+  "adaptation_rules": {
+
+    "promote_successful_patterns": true,
+
+    "reduce_high_drift_patterns": true,
+
+    "prefer_low_overload_sequences": true,
+
+    "prefer_stable_expansion_paths": true
+  }
+}

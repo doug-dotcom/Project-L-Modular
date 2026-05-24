@@ -1,0 +1,13 @@
+{
+  "stage": "STAGE_4",
+  "operation": "RUNTIME_MONITORING_DASHBOARD",
+  "monitoring_fields": [
+    "runtime",
+    "memory",
+    "cognition",
+    "recovery"
+  ],
+  "polling_interval_seconds": 5,
+  "runtime_health_endpoint": "/runtime/health",
+  "generated_at": "2026-05-15T18:45:00"
+}

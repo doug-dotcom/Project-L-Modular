@@ -1,0 +1,54 @@
+{
+  "version": "AODS52",
+  "doctrine": {
+    "front_command": "L",
+    "operations_command": "Major Tegan Triage",
+    "visible_layer": "Captains",
+    "hidden_layer": "Lieutenants and below",
+    "principle": "Doug interacts with Captain-rank abstractions and above only."
+  },
+  "captains": {
+    "general": {
+      "name": "L",
+      "rank": "Lieutenant Colonel",
+      "role": "Front-facing strategic command",
+      "status": "active",
+      "service_key": "general"
+    },
+    "memory": {
+      "name": "Captain Memory",
+      "rank": "Captain",
+      "role": "Memory recall, saving, persistence, and context retrieval",
+      "status": "active",
+      "service_key": "memory"
+    },
+    "email": {
+      "name": "Captain Emily",
+      "rank": "Captain",
+      "role": "Email drafting, inbox review, and message handling",
+      "status": "scaffold",
+      "service_key": "email"
+    },
+    "calendar": {
+      "name": "Captain Callie",
+      "rank": "Captain",
+      "role": "Calendar, appointments, scheduling, and reminders",
+      "status": "scaffold",
+      "service_key": "calendar"
+    },
+    "care": {
+      "name": "Captain Emme",
+      "rank": "Captain",
+      "role": "Emotional support, grounding, Shine Care, and nervous-system guidance",
+      "status": "scaffold",
+      "service_key": "care"
+    },
+    "build": {
+      "name": "Captain Builder",
+      "rank": "Captain",
+      "role": "AODS builds, runtime repair, deployment, and technical implementation",
+      "status": "active",
+      "service_key": "build"
+    }
+  }
+}

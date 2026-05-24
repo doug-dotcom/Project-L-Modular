@@ -1,0 +1,10 @@
+{
+  "populated_at": "2026-05-14T12:05:38",
+  "backup_dir": "C:\\Shine_L\\_FULL_BACKUPS\\AODS32_LOCAL_JSON_20260514_120537",
+  "classified_dir": "C:\\Shine_L\\memory\\imports\\classified_20260514_120512",
+  "created_by": "AODS32",
+  "supabase_modified": false,
+  "runtime_cutover_complete": false,
+  "status": "local_json_populated",
+  "expected_count": 608
+}
