@@ -1,7 +1,5 @@
 import os
 import json
-import subprocess
-import sys
 
 from pathlib import Path
 from datetime import datetime
@@ -9,31 +7,56 @@ from datetime import datetime
 try:
     from dotenv import load_dotenv
     load_dotenv()
-except Exception:
+except:
     pass
 
 from supabase import create_client
 
+# =====================================================
+# ROOT
+# =====================================================
+
 ROOT = Path(__file__).resolve().parents[2]
 
-MEMORY_DIR = ROOT / "memory"
+DOMAIN_DIR = ROOT / "memory" / "domains"
 
-PENDING_DIR = MEMORY_DIR / "pending"
+# =====================================================
+# SUPABASE
+# =====================================================
 
-PENDING_FILE = (
-    PENDING_DIR /
-    "pending_memory_queue.json"
-)
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 
-SUPABASE_URL = os.getenv(
-    "SUPABASE_URL",
-    ""
-)
+# =====================================================
+# DOMAIN MAP
+# =====================================================
 
-SUPABASE_KEY = os.getenv(
-    "SUPABASE_KEY",
-    ""
-)
+DOMAIN_MAP = {
+
+    "short_term_family": "family.json",
+
+    "short_term_finance": "finance.json",
+
+    "short_term_general": "general.json",
+
+    "short_term_health": "health.json",
+
+    "short_term_identity": "identity.json",
+
+    "short_term_knowledge": "knowledge.json",
+
+    "short_term_project_l": "project_l.json",
+
+    "short_term_relationships": "relationships.json",
+
+    "short_term_sport": "sport.json",
+
+    "short_term_work": "work.json"
+}
+
+# =====================================================
+# LOG
+# =====================================================
 
 def log(msg):
 
@@ -41,65 +64,86 @@ def log(msg):
         f"{datetime.now().isoformat()} | {msg}"
     )
 
-def load_queue():
+# =====================================================
+# LOAD JSON
+# =====================================================
 
-    if not PENDING_FILE.exists():
+def load_json(path):
+
+    if not path.exists():
         return []
 
     try:
 
         with open(
-            PENDING_FILE,
+            path,
             "r",
             encoding="utf-8"
         ) as f:
 
-            return json.load(f)
+            data = json.load(f)
 
-    except Exception:
+            if isinstance(data, list):
+                return data
+
+            return []
+
+    except Exception as e:
+
+        log(f"LOAD ERROR {path.name}: {e}")
 
         return []
 
-def save_queue(queue):
+# =====================================================
+# SAVE JSON
+# =====================================================
 
-    PENDING_DIR.mkdir(
-        parents=True,
-        exist_ok=True
-    )
+def save_json(path, data):
 
     with open(
-        PENDING_FILE,
+        path,
         "w",
         encoding="utf-8"
     ) as f:
 
         json.dump(
-            queue,
+            data,
             f,
             indent=2,
             ensure_ascii=False
         )
 
-def get_existing_ids(queue):
+# =====================================================
+# GET IDS
+# =====================================================
+
+def get_existing_ids(data):
 
     ids = set()
 
-    for item in queue:
+    for item in data:
 
-        raw_id = item.get("raw_id")
+        if not isinstance(item, dict):
+            continue
 
-        if raw_id:
-            ids.add(str(raw_id))
+        item_id = item.get("id")
+
+        if item_id:
+            ids.add(str(item_id))
 
     return ids
 
-def pull_raw_catchall(limit=1000):
+# =====================================================
+# MAIN SYNC
+# =====================================================
+
+def run_sync():
 
     if not SUPABASE_URL or not SUPABASE_KEY:
 
         log("SUPABASE ENV MISSING")
 
-        return []
+        return
 
     supabase = create_client(
         SUPABASE_URL,
@@ -108,185 +152,93 @@ def pull_raw_catchall(limit=1000):
 
     log("SUPABASE CONNECTED")
 
-    log("Pulling memories from Supabase...")
-
-    result = (
-        supabase
-        .table("raw_catchall")
-        .select("*")
-        .order("created_at", desc=True)
-        .limit(limit)
-        .execute()
+    DOMAIN_DIR.mkdir(
+        parents=True,
+        exist_ok=True
     )
 
-    rows = result.data or []
+    # =================================================
+    # LOOP DOMAINS
+    # =================================================
 
-    log(
-        f"ROWS RETURNED: {len(rows)}"
-    )
+    for table_name, json_name in DOMAIN_MAP.items():
 
-    return rows
+        try:
 
-def convert_raw_to_pending(row):
+            log(f"SYNCING {table_name}")
 
-    return {
-        "raw_id": str(
-            row.get("id", "")
-        ),
-
-        "created_at": row.get(
-            "created_at",
-            datetime.now().isoformat()
-        ),
-
-        "role": row.get(
-            "role",
-            ""
-        ),
-
-        "source": row.get(
-            "source",
-            "raw_catchall"
-        ),
-
-        "content": row.get(
-            "content",
-            ""
-        ),
-
-        "metadata": row.get(
-            "metadata",
-            {}
-        ),
-
-        "status": "pending",
-
-        "added_at": datetime.now().isoformat()
-    }
-
-def run_script(script_path):
-
-    if not script_path.exists():
-
-        log(
-            f"SKIPPED missing script: {script_path}"
-        )
-
-        return False
-
-    log(
-        f"RUNNING: {script_path.name}"
-    )
-
-    try:
-
-        result = subprocess.run(
-            [
-                sys.executable,
-                str(script_path)
-            ],
-            cwd=str(ROOT),
-            capture_output=True,
-            text=True
-        )
-
-        if result.stdout:
-            print(result.stdout)
-
-        if result.stderr:
-            print(result.stderr)
-
-        if result.returncode == 0:
-
-            log(
-                f"SUCCESS: {script_path.name}"
+            result = (
+                supabase
+                .table(table_name)
+                .select("*")
+                .order("created_at", desc=False)
+                .execute()
             )
 
-            return True
+            rows = result.data or []
 
-        log(
-            f"FAILED: {script_path.name}"
-        )
+            if not isinstance(rows, list):
 
-        return False
+                log(
+                    f"SKIPPED invalid rows in {table_name}"
+                )
 
-    except Exception as e:
+                continue
 
-        log(
-            f"ERROR running {script_path.name}: {e}"
-        )
+            json_path = DOMAIN_DIR / json_name
 
-        return False
+            existing = load_json(json_path)
 
-def run_sync(limit=1000):
+            existing_ids = get_existing_ids(existing)
 
-    queue = load_queue()
+            added = 0
 
-    existing_ids = get_existing_ids(queue)
+            for row in rows:
 
-    rows = pull_raw_catchall(limit=limit)
+                if not isinstance(row, dict):
 
-    added = 0
+                    log(
+                        f"SKIPPED malformed row in {table_name}"
+                    )
 
-    for row in rows:
+                    continue
 
-        raw_id = str(
-            row.get("id", "")
-        )
+                row_id = str(
+                    row.get("id", "")
+                )
 
-        if not raw_id:
-            continue
+                if not row_id:
+                    continue
 
-        if raw_id in existing_ids:
-            continue
+                if row_id in existing_ids:
+                    continue
 
-        content = str(
-            row.get("content", "")
-        ).strip()
+                existing.append(row)
 
-        if not content:
-            continue
+                existing_ids.add(row_id)
 
-        queue.append(
-            convert_raw_to_pending(row)
-        )
+                added += 1
 
-        existing_ids.add(raw_id)
+            save_json(
+                json_path,
+                existing
+            )
 
-        added += 1
+            log(
+                f"{json_name} -> +{added} memories"
+            )
 
-    save_queue(queue)
+        except Exception as e:
 
-    log(
-        f"SUCCESS: Added {added} new memories."
-    )
+            log(
+                f"FAILED {table_name}: {e}"
+            )
 
-    log(
-        f"Total pending memories: {len(queue)}"
-    )
+    log("DOMAIN SYNC COMPLETE")
 
-    scripts = [
-
-        MEMORY_DIR / "memory_classifier.py",
-
-        MEMORY_DIR / "memory_compression.py",
-
-        MEMORY_DIR / "domain_updater.py",
-
-        MEMORY_DIR / "memory_reinforcement.py"
-    ]
-
-    for script in scripts:
-
-        run_script(script)
-
-    log("Memory ingestion complete.")
-
-    return {
-        "success": True,
-        "added": added,
-        "pending_total": len(queue)
-    }
+# =====================================================
+# RUN
+# =====================================================
 
 if __name__ == "__main__":
 
