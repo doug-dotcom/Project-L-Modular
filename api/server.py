@@ -13,11 +13,6 @@ from pydantic import BaseModel
 from supabase import create_client
 from openai import OpenAI
 
-from core.memory_retriever import retrieve_memory_context
-from memory.sync.engine import run_sync
-
-
-
 from memory.retrieval.short_term_retrieval import (
     build_short_term_packet
 )
@@ -29,7 +24,6 @@ from agents.captain_ellie.captain_ellie import (
 from memory.classifier.short_term_classifier import (
     classify_message
 )
-
 
 from agents.brittany_browser.brittany import (
     should_handle,
@@ -99,7 +93,7 @@ if SUPABASE_URL and SUPABASE_KEY:
 
 app = FastAPI(
     title="Project L",
-    version="memory-retrieval-1.1"
+    version="short-term-memory-os-1.0"
 )
 
 app.add_middleware(
@@ -168,63 +162,9 @@ def write_raw_catchall(
 
     except Exception as e:
 
-        import traceback
-
         log(f"RAW MEMORY ERROR: {e}")
 
-        log(traceback.format_exc())
-
         return False
-
-
-# =====================================================
-# SHORT-TERM MEMORY WRITER
-# =====================================================
-
-def write_short_term_memory(
-    table_name,
-    role,
-    content
-):
-
-    try:
-
-        if not supabase:
-            return False
-
-        payload = {
-            "role": str(role),
-            "content": str(content)
-        }
-
-        supabase.table(
-            table_name
-        ).insert(
-            payload
-        ).execute()
-
-        log(
-            f"SHORT-TERM MEMORY SAVED -> {table_name}"
-        )
-
-        # ---------------------------------------------
-        # ENFORCE MEMORY LIMIT
-        # ---------------------------------------------
-
-        enforce_short_term_limit(
-            table_name
-        )
-
-        return True
-
-    except Exception as e:
-
-        log(
-            f"SHORT-TERM MEMORY ERROR: {e}"
-        )
-
-        return False
-
 
 # =====================================================
 # SHORT-TERM MEMORY LIMIT ENFORCER
@@ -279,6 +219,50 @@ def enforce_short_term_limit(
         )
 
 # =====================================================
+# SHORT-TERM MEMORY WRITER
+# =====================================================
+
+def write_short_term_memory(
+    table_name,
+    role,
+    content
+):
+
+    try:
+
+        if not supabase:
+            return False
+
+        payload = {
+            "role": str(role),
+            "content": str(content)
+        }
+
+        supabase.table(
+            table_name
+        ).insert(
+            payload
+        ).execute()
+
+        enforce_short_term_limit(
+            table_name
+        )
+
+        log(
+            f"SHORT-TERM MEMORY SAVED -> {table_name}"
+        )
+
+        return True
+
+    except Exception as e:
+
+        log(
+            f"SHORT-TERM MEMORY ERROR: {e}"
+        )
+
+        return False
+
+# =====================================================
 # ROOT
 # =====================================================
 
@@ -306,37 +290,10 @@ def health():
         "status": "ok",
         "openai_ready": bool(client),
         "supabase_ready": bool(supabase),
-        "memory_retrieval": True,
+        "short_term_memory": True,
+        "captain_ellie": True,
         "brittany_ready": True
     }
-
-# =====================================================
-# MEMORY TEST
-# =====================================================
-
-@app.get("/memory/test")
-def memory_test():
-
-    try:
-
-        result = retrieve_memory_context(
-            "Tell me about Doug",
-            limit=8
-        )
-
-        return {
-            "success": True,
-            "domains": result.get("domains", []),
-            "memory_count": len(result.get("memories", [])),
-            "context_preview": result.get("context", "")[:1000]
-        }
-
-    except Exception as e:
-
-        return {
-            "success": False,
-            "error": str(e)
-        }
 
 # =====================================================
 # CHAT
@@ -356,14 +313,53 @@ def chat(req: ChatRequest):
     log(f"CHAT REQUEST: {user_message[:100]}")
 
     # -------------------------------------------------
-    # SHORT-TERM SAFETY DEFAULT
+    # DEFAULTS
     # -------------------------------------------------
 
     short_term_domain = "short_term_general"
 
+    domains = [short_term_domain]
+
+    retrieved_rows = []
+
+    short_term_context = ""
+
+    runtime_context_packet = ""
 
     # -------------------------------------------------
-    # SAVE USER MEMORY
+    # DOMAIN CLASSIFICATION
+    # -------------------------------------------------
+
+    try:
+
+        short_term_domain = classify_message(
+            user_message
+        )
+
+        domains = [short_term_domain]
+
+        log(
+            f"SHORT-TERM DOMAIN: {short_term_domain}"
+        )
+
+    except Exception as e:
+
+        log(
+            f"CLASSIFICATION ERROR: {e}"
+        )
+
+    # -------------------------------------------------
+    # SAVE USER SHORT-TERM MEMORY
+    # -------------------------------------------------
+
+    write_short_term_memory(
+        short_term_domain,
+        "user",
+        user_message
+    )
+
+    # -------------------------------------------------
+    # SAVE RAW MEMORY
     # -------------------------------------------------
 
     write_raw_catchall(
@@ -371,38 +367,36 @@ def chat(req: ChatRequest):
         user_message
     )
 
-        # -------------------------------------------------
-    # SHORT-TERM RETRIEVAL ONLY
     # -------------------------------------------------
-
-    retrieved_rows = []
-
-    short_term_context = ""
+    # SHORT-TERM RETRIEVAL
+    # -------------------------------------------------
 
     try:
 
-        recent = supabase.table(
-            short_term_domain
-        ).select(
-            "*"
-        ).order(
-            "id",
-            desc=True
-        ).limit(
-            20
-        ).execute()
+        if supabase:
 
-        retrieved_rows = recent.data or []
+            recent = supabase.table(
+                short_term_domain
+            ).select(
+                "*"
+            ).order(
+                "id",
+                desc=True
+            ).limit(
+                20
+            ).execute()
 
-        retrieved_rows.reverse()
+            retrieved_rows = recent.data or []
 
-        short_term_context = build_short_term_packet(
-            retrieved_rows
-        )
+            retrieved_rows.reverse()
 
-        log(
-            f"SHORT-TERM RETRIEVAL COUNT: {len(retrieved_rows)}"
-        )
+            short_term_context = build_short_term_packet(
+                retrieved_rows
+            )
+
+            log(
+                f"SHORT-TERM RETRIEVAL COUNT: {len(retrieved_rows)}"
+            )
 
     except Exception as e:
 
@@ -410,9 +404,22 @@ def chat(req: ChatRequest):
             f"SHORT-TERM RETRIEVAL ERROR: {e}"
         )
 
-    
+    # -------------------------------------------------
+    # CAPTAIN ELLIE RUNTIME CONTEXT
+    # -------------------------------------------------
 
-    memory_context = short_term_context
+    try:
+
+        runtime_context_packet = build_runtime_context(
+            short_term_context,
+            short_term_domain
+        )
+
+    except Exception as e:
+
+        log(
+            f"ELLIE CONTEXT ERROR: {e}"
+        )
 
     # -------------------------------------------------
     # TIME
@@ -450,14 +457,14 @@ You are Doug's calm, grounded Project L companion.
 
 Use memory naturally and accurately.
 
-MEMORY DOMAINS:
+ACTIVE DOMAIN:
 {domains}
 
 CAPTAIN ELLIE RUNTIME CONTEXT:
 {runtime_context_packet}
 
-MEMORY CONTEXT:
-{memory_context}
+SHORT-TERM MEMORY CONTEXT:
+{short_term_context}
 """
 
     # -------------------------------------------------
@@ -516,20 +523,22 @@ MEMORY CONTEXT:
                 reply = f"AI ERROR: {str(e)}"
 
     # -------------------------------------------------
-    # SAVE ASSISTANT MEMORY
+    # SAVE ASSISTANT SHORT-TERM MEMORY
+    # -------------------------------------------------
+
+    write_short_term_memory(
+        short_term_domain,
+        "assistant",
+        reply
+    )
+
+    # -------------------------------------------------
+    # SAVE ASSISTANT RAW MEMORY
     # -------------------------------------------------
 
     write_raw_catchall(
         "assistant",
         reply
-    )
-
-        # -------------------------------------------------
-    # SHORT-TERM MEMORY MODE
-    # -------------------------------------------------
-
-    log(
-        "SHORT-TERM MEMORY MODE ACTIVE"
     )
 
     # -------------------------------------------------
@@ -539,10 +548,10 @@ MEMORY CONTEXT:
     return {
         "reply": reply,
         "domains": domains,
-        "memory_wired": bool(supabase),
-        "memory_count": len(
-            retrieved.get("memories", [])
-        ),
+        "short_term_domain": short_term_domain,
+        "memory_count": len(retrieved_rows),
+        "short_term_memory": True,
+        "captain_ellie": True,
         "brittany_enabled": True
     }
 
@@ -589,8 +598,3 @@ async def upload_file(
             "success": False,
             "error": str(e)
         }
-
-
-
-
-
