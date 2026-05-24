@@ -17,11 +17,6 @@ from core.memory_retriever import retrieve_memory_context
 from memory.sync.engine import run_sync
 
 
-
-from memory.retrieval.short_term_retrieval import (
-    build_short_term_packet
-)
-
 from agents.captain_ellie.captain_ellie import (
     build_runtime_context
 )
@@ -364,11 +359,32 @@ def chat(req: ChatRequest):
         user_message
     )
 
-        # -------------------------------------------------
-    # SHORT-TERM RETRIEVAL ONLY
+    # -------------------------------------------------
+    # RETRIEVE MEMORY
     # -------------------------------------------------
 
-    retrieved_rows = []
+    retrieved = retrieve_memory_context(
+        user_message,
+        limit=12
+    )
+
+    memory_context = retrieved.get(
+        "context",
+        "No memory context available."
+    )
+
+    domains = retrieved.get(
+        "domains",
+        []
+    )
+
+    log(f"MEMORY DOMAINS: {domains}")
+    log(f"MEMORY CONTEXT SIZE: {len(memory_context)}")
+
+    
+    # -------------------------------------------------
+    # SHORT-TERM RETRIEVAL
+    # -------------------------------------------------
 
     short_term_context = ""
 
@@ -382,20 +398,21 @@ def chat(req: ChatRequest):
             "id",
             desc=True
         ).limit(
-            20
+            15
         ).execute()
 
-        retrieved_rows = recent.data or []
+        rows = recent.data or []
 
-        retrieved_rows.reverse()
+        rows.reverse()
 
-        short_term_context = build_short_term_packet(
-            retrieved_rows
-        )
+        for row in rows:
 
-        log(
-            f"SHORT-TERM RETRIEVAL COUNT: {len(retrieved_rows)}"
-        )
+            role = row.get("role", "")
+            content = row.get("content", "")
+
+            short_term_context += (
+                f"{role}: {content}\n"
+            )
 
     except Exception as e:
 
@@ -403,9 +420,15 @@ def chat(req: ChatRequest):
             f"SHORT-TERM RETRIEVAL ERROR: {e}"
         )
 
-    domains = [short_term_domain]
+    
+    # -------------------------------------------------
+    # CAPTAIN ELLIE RUNTIME CONTEXT
+    # -------------------------------------------------
 
-    memory_context = short_term_context
+    runtime_context_packet = build_runtime_context(
+        short_term_context,
+        short_term_domain
+    )
 
     # -------------------------------------------------
     # TIME
@@ -517,13 +540,19 @@ MEMORY CONTEXT:
         reply
     )
 
-        # -------------------------------------------------
-    # SHORT-TERM MEMORY MODE
+    # -------------------------------------------------
+    # AUTO MEMORY INGESTION
     # -------------------------------------------------
 
-    log(
-        "SHORT-TERM MEMORY MODE ACTIVE"
-    )
+    try:
+
+        run_sync()
+
+        log("MEMORY INGESTION SYNC COMPLETE")
+
+    except Exception as e:
+
+        log(f"SYNC ENGINE ERROR: {e}")
 
     # -------------------------------------------------
     # RETURN
@@ -582,6 +611,5 @@ async def upload_file(
             "success": False,
             "error": str(e)
         }
-
 
 
