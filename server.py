@@ -1,4 +1,4 @@
-﻿
+
 # =====================================================
 # ACTIVE COGNITION
 # =====================================================
@@ -8,6 +8,7 @@ from core.cognition.working_memory import (
     build_working_context
 )
 import os
+import json
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -36,6 +37,37 @@ except Exception:
     pass
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# =====================================================
+# L IDENTITY CORE
+# =====================================================
+
+IDENTITY_FILE = (
+    ROOT /
+    "memory" /
+    "identity_core" /
+    "l_identity.json"
+)
+
+def load_identity_core():
+
+    try:
+
+        with open(
+            IDENTITY_FILE,
+            "r",
+            encoding="utf-8"
+        ) as f:
+
+            return json.load(f)
+
+    except Exception as e:
+
+        print(
+            f"L IDENTITY LOAD ERROR: {e}"
+        )
+
+        return {}
 
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -453,4 +485,5 @@ async def upload_file(
             "success": False,
             "error": str(e)
         }
+
 
