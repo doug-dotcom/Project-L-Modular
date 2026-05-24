@@ -403,7 +403,7 @@ def chat(req: ChatRequest):
             f"SHORT-TERM RETRIEVAL ERROR: {e}"
         )
 
-    
+    domains = [short_term_domain]
 
     memory_context = short_term_context
 
@@ -582,7 +582,6 @@ async def upload_file(
             "success": False,
             "error": str(e)
         }
-
 
 
 
