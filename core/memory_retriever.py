@@ -41,7 +41,11 @@ def load_json(path):
 
 def search_memories(user_message):
 
-    query = str(user_message).lower()
+    query = str(
+        user_message
+    ).lower()
+
+    query_words = query.split()
 
     results = []
 
@@ -60,36 +64,55 @@ def search_memories(user_message):
                 memory.get("content", "")
             ).lower()
 
-            if query in content:
+            # =========================================
+            # TOKEN MATCH SCORE
+            # =========================================
 
-                results.append({
+            score = sum(
+                1 for word in query_words
+                if word in content
+            )
 
-                    "domain": file.stem,
+            if score <= 0:
+                continue
 
-                    "content": memory.get(
-                        "content",
-                        ""
-                    ),
+            results.append({
 
-                    "priority": memory.get(
-                        "priority",
-                        5
-                    ),
+                "domain": file.stem,
 
-                    "salience": memory.get(
-                        "salience",
-                        "medium"
-                    ),
+                "content": memory.get(
+                    "content",
+                    ""
+                ),
 
-                    "anchor": memory.get(
-                        "anchor",
-                        False
-                    )
-                })
+                "priority": memory.get(
+                    "priority",
+                    5
+                ),
+
+                "salience": memory.get(
+                    "salience",
+                    "medium"
+                ),
+
+                "anchor": memory.get(
+                    "anchor",
+                    False
+                ),
+
+                "score": score
+            })
+
+    # =============================================
+    # SORT BY SCORE + PRIORITY
+    # =============================================
 
     return sorted(
         results,
-        key=lambda x: x["priority"],
+        key=lambda x: (
+            x["score"],
+            x["priority"]
+        ),
         reverse=True
     )[:15]
 
@@ -99,7 +122,9 @@ def search_memories(user_message):
 
 def retrieve_memory_context(user_message):
 
-    memories = search_memories(user_message)
+    memories = search_memories(
+        user_message
+    )
 
     if not memories:
 
@@ -108,7 +133,7 @@ def retrieve_memory_context(user_message):
     context = []
 
     context.append(
-        "Relevant Memory Context:"
+        "Relevant Long-Term Memory Context:"
     )
 
     for memory in memories:
