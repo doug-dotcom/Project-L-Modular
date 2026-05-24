@@ -356,13 +356,6 @@ def chat(req: ChatRequest):
     log(f"CHAT REQUEST: {user_message[:100]}")
 
     # -------------------------------------------------
-    # SHORT-TERM SAFETY DEFAULT
-    # -------------------------------------------------
-
-    short_term_domain = "short_term_general"
-
-
-    # -------------------------------------------------
     # SAVE USER MEMORY
     # -------------------------------------------------
 
@@ -589,7 +582,6 @@ async def upload_file(
             "success": False,
             "error": str(e)
         }
-
 
 
 
