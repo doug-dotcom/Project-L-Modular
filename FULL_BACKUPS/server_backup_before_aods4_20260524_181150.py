@@ -16,11 +16,6 @@ from openai import OpenAI
 from core.memory_retriever import retrieve_memory_context
 from memory.sync.engine import run_sync
 
-
-from agents.captain_ellie.captain_ellie import (
-    build_runtime_context
-)
-
 from memory.classifier.short_term_classifier import (
     classify_message
 )
@@ -359,16 +354,6 @@ def chat(req: ChatRequest):
             f"SHORT-TERM RETRIEVAL ERROR: {e}"
         )
 
-    
-    # -------------------------------------------------
-    # CAPTAIN ELLIE RUNTIME CONTEXT
-    # -------------------------------------------------
-
-    runtime_context_packet = build_runtime_context(
-        short_term_context,
-        short_term_domain
-    )
-
     # -------------------------------------------------
     # TIME
     # -------------------------------------------------
@@ -408,8 +393,8 @@ Use memory naturally and accurately.
 MEMORY DOMAINS:
 {domains}
 
-CAPTAIN ELLIE RUNTIME CONTEXT:
-{runtime_context_packet}
+SHORT-TERM CONTEXT:
+{short_term_context}
 
 MEMORY CONTEXT:
 {memory_context}
@@ -550,4 +535,3 @@ async def upload_file(
             "success": False,
             "error": str(e)
         }
-

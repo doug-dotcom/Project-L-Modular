@@ -16,16 +16,6 @@ from openai import OpenAI
 from core.memory_retriever import retrieve_memory_context
 from memory.sync.engine import run_sync
 
-
-from agents.captain_ellie.captain_ellie import (
-    build_runtime_context
-)
-
-from memory.classifier.short_term_classifier import (
-    classify_message
-)
-
-
 from agents.brittany_browser.brittany import (
     should_handle,
     investigate
@@ -171,47 +161,6 @@ def write_raw_catchall(
 
         return False
 
-
-# =====================================================
-# SHORT-TERM MEMORY WRITER
-# =====================================================
-
-def write_short_term_memory(
-    table_name,
-    role,
-    content
-):
-
-    try:
-
-        if not supabase:
-            return False
-
-        payload = {
-            "role": str(role),
-            "content": str(content)
-        }
-
-        supabase.table(
-            table_name
-        ).insert(
-            payload
-        ).execute()
-
-        log(
-            f"SHORT-TERM MEMORY SAVED -> {table_name}"
-        )
-
-        return True
-
-    except Exception as e:
-
-        log(
-            f"SHORT-TERM MEMORY ERROR: {e}"
-        )
-
-        return False
-
 # =====================================================
 # ROOT
 # =====================================================
@@ -320,55 +269,6 @@ def chat(req: ChatRequest):
     log(f"MEMORY DOMAINS: {domains}")
     log(f"MEMORY CONTEXT SIZE: {len(memory_context)}")
 
-    
-    # -------------------------------------------------
-    # SHORT-TERM RETRIEVAL
-    # -------------------------------------------------
-
-    short_term_context = ""
-
-    try:
-
-        recent = supabase.table(
-            short_term_domain
-        ).select(
-            "*"
-        ).order(
-            "id",
-            desc=True
-        ).limit(
-            15
-        ).execute()
-
-        rows = recent.data or []
-
-        rows.reverse()
-
-        for row in rows:
-
-            role = row.get("role", "")
-            content = row.get("content", "")
-
-            short_term_context += (
-                f"{role}: {content}\n"
-            )
-
-    except Exception as e:
-
-        log(
-            f"SHORT-TERM RETRIEVAL ERROR: {e}"
-        )
-
-    
-    # -------------------------------------------------
-    # CAPTAIN ELLIE RUNTIME CONTEXT
-    # -------------------------------------------------
-
-    runtime_context_packet = build_runtime_context(
-        short_term_context,
-        short_term_domain
-    )
-
     # -------------------------------------------------
     # TIME
     # -------------------------------------------------
@@ -407,9 +307,6 @@ Use memory naturally and accurately.
 
 MEMORY DOMAINS:
 {domains}
-
-CAPTAIN ELLIE RUNTIME CONTEXT:
-{runtime_context_packet}
 
 MEMORY CONTEXT:
 {memory_context}
@@ -550,4 +447,3 @@ async def upload_file(
             "success": False,
             "error": str(e)
         }
-
