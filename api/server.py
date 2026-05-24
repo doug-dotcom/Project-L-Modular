@@ -1,5 +1,7 @@
 import os
 import sys
+import json
+
 from pathlib import Path
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -15,6 +17,10 @@ from openai import OpenAI
 
 from memory.retrieval.short_term_retrieval import (
     build_short_term_packet
+)
+
+from core.memory_retriever import (
+    retrieve_memory_context
 )
 
 from agents.captain_ellie.captain_ellie import (
@@ -50,14 +56,55 @@ if str(ROOT) not in sys.path:
 # =====================================================
 
 def log(msg):
-    print(f"{datetime.now().isoformat()} | {msg}")
+
+    print(
+        f"{datetime.now().isoformat()} | {msg}"
+    )
+
+# =====================================================
+# L IDENTITY CORE
+# =====================================================
+
+IDENTITY_FILE = (
+    ROOT /
+    "memory" /
+    "identity_core" /
+    "l_identity.json"
+)
+
+def load_identity_core():
+
+    try:
+
+        with open(
+            IDENTITY_FILE,
+            "r",
+            encoding="utf-8"
+        ) as f:
+
+            return json.load(f)
+
+    except Exception as e:
+
+        log(
+            f"L IDENTITY LOAD ERROR: {e}"
+        )
+
+        return {}
 
 # =====================================================
 # OPENAI
 # =====================================================
 
-MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+MODEL = os.getenv(
+    "OPENAI_MODEL",
+    "gpt-4o-mini"
+)
+
+OPENAI_API_KEY = os.getenv(
+    "OPENAI_API_KEY",
+    ""
+)
 
 client = None
 
@@ -73,8 +120,15 @@ if OPENAI_API_KEY:
 # SUPABASE
 # =====================================================
 
-SUPABASE_URL = os.getenv("SUPABASE_URL", "")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
+SUPABASE_URL = os.getenv(
+    "SUPABASE_URL",
+    ""
+)
+
+SUPABASE_KEY = os.getenv(
+    "SUPABASE_KEY",
+    ""
+)
 
 supabase = None
 
@@ -93,7 +147,7 @@ if SUPABASE_URL and SUPABASE_KEY:
 
 app = FastAPI(
     title="Project L",
-    version="short-term-memory-os-1.0"
+    version="persistent-cognition-2.0"
 )
 
 app.add_middleware(
@@ -123,6 +177,7 @@ if UI_PATH.exists():
 # =====================================================
 
 class ChatRequest(BaseModel):
+
     message: str
 
 # =====================================================
@@ -144,9 +199,13 @@ def write_raw_catchall(
             return False
 
         payload = {
+
             "role": str(role),
+
             "source": str(source),
+
             "content": str(content),
+
             "metadata": {}
         }
 
@@ -156,18 +215,22 @@ def write_raw_catchall(
             payload
         ).execute()
 
-        log(f"RAW MEMORY SAVED: {role}")
+        log(
+            f"RAW MEMORY SAVED: {role}"
+        )
 
         return True
 
     except Exception as e:
 
-        log(f"RAW MEMORY ERROR: {e}")
+        log(
+            f"RAW MEMORY ERROR: {e}"
+        )
 
         return False
 
 # =====================================================
-# SHORT-TERM MEMORY LIMIT ENFORCER
+# SHORT-TERM LIMIT ENFORCER
 # =====================================================
 
 def enforce_short_term_limit(
@@ -197,7 +260,9 @@ def enforce_short_term_limit(
         overflow = len(rows) - limit_count
 
         ids_to_delete = [
+
             row["id"]
+
             for row in rows[:overflow]
         ]
 
@@ -209,7 +274,9 @@ def enforce_short_term_limit(
         ).execute()
 
         log(
-            f"SHORT-TERM CLEANUP -> {table_name} | REMOVED: {overflow}"
+            f"SHORT-TERM CLEANUP -> "
+            f"{table_name} | "
+            f"REMOVED: {overflow}"
         )
 
     except Exception as e:
@@ -234,7 +301,9 @@ def write_short_term_memory(
             return False
 
         payload = {
+
             "role": str(role),
+
             "content": str(content)
         }
 
@@ -249,7 +318,8 @@ def write_short_term_memory(
         )
 
         log(
-            f"SHORT-TERM MEMORY SAVED -> {table_name}"
+            f"SHORT-TERM MEMORY SAVED -> "
+            f"{table_name}"
         )
 
         return True
@@ -287,11 +357,19 @@ def root():
 def health():
 
     return {
+
         "status": "ok",
+
         "openai_ready": bool(client),
+
         "supabase_ready": bool(supabase),
-        "short_term_memory": True,
+
+        "persistent_identity": True,
+
+        "long_term_memory": True,
+
         "captain_ellie": True,
+
         "brittany_ready": True
     }
 
@@ -302,7 +380,9 @@ def health():
 @app.post("/chat")
 def chat(req: ChatRequest):
 
-    user_message = (req.message or "").strip()
+    user_message = (
+        req.message or ""
+    ).strip()
 
     if not user_message:
 
@@ -310,11 +390,14 @@ def chat(req: ChatRequest):
             "reply": "Please send me a message."
         }
 
-    log(f"CHAT REQUEST: {user_message[:100]}")
+    log(
+        f"CHAT REQUEST: "
+        f"{user_message[:100]}"
+    )
 
-    # -------------------------------------------------
+    # =================================================
     # DEFAULTS
-    # -------------------------------------------------
+    # =================================================
 
     short_term_domain = "short_term_general"
 
@@ -324,11 +407,13 @@ def chat(req: ChatRequest):
 
     short_term_context = ""
 
+    long_term_context = ""
+
     runtime_context_packet = ""
 
-    # -------------------------------------------------
+    # =================================================
     # DOMAIN CLASSIFICATION
-    # -------------------------------------------------
+    # =================================================
 
     try:
 
@@ -339,7 +424,8 @@ def chat(req: ChatRequest):
         domains = [short_term_domain]
 
         log(
-            f"SHORT-TERM DOMAIN: {short_term_domain}"
+            f"SHORT-TERM DOMAIN: "
+            f"{short_term_domain}"
         )
 
     except Exception as e:
@@ -348,9 +434,9 @@ def chat(req: ChatRequest):
             f"CLASSIFICATION ERROR: {e}"
         )
 
-    # -------------------------------------------------
+    # =================================================
     # SAVE USER SHORT-TERM MEMORY
-    # -------------------------------------------------
+    # =================================================
 
     write_short_term_memory(
         short_term_domain,
@@ -358,18 +444,18 @@ def chat(req: ChatRequest):
         user_message
     )
 
-    # -------------------------------------------------
+    # =================================================
     # SAVE RAW MEMORY
-    # -------------------------------------------------
+    # =================================================
 
     write_raw_catchall(
         "user",
         user_message
     )
 
-    # -------------------------------------------------
+    # =================================================
     # SHORT-TERM RETRIEVAL
-    # -------------------------------------------------
+    # =================================================
 
     try:
 
@@ -394,8 +480,17 @@ def chat(req: ChatRequest):
                 retrieved_rows
             )
 
+            # =============================================
+            # LONG-TERM DOMAIN RECALL
+            # =============================================
+
+            long_term_context = retrieve_memory_context(
+                user_message
+            )
+
             log(
-                f"SHORT-TERM RETRIEVAL COUNT: {len(retrieved_rows)}"
+                f"SHORT-TERM RETRIEVAL COUNT: "
+                f"{len(retrieved_rows)}"
             )
 
     except Exception as e:
@@ -404,9 +499,9 @@ def chat(req: ChatRequest):
             f"SHORT-TERM RETRIEVAL ERROR: {e}"
         )
 
-    # -------------------------------------------------
-    # CAPTAIN ELLIE RUNTIME CONTEXT
-    # -------------------------------------------------
+    # =================================================
+    # CAPTAIN ELLIE CONTEXT
+    # =================================================
 
     try:
 
@@ -421,9 +516,31 @@ def chat(req: ChatRequest):
             f"ELLIE CONTEXT ERROR: {e}"
         )
 
-    # -------------------------------------------------
+    # =================================================
+    # LOAD L IDENTITY
+    # =================================================
+
+    identity_data = load_identity_core()
+
+    identity_context = f"""
+L Identity Core
+
+Core Philosophy:
+{identity_data.get("core_philosophy", "")}
+
+Communication Style:
+{identity_data.get("communication_style", [])}
+
+Identity Anchors:
+{identity_data.get("identity_anchors", [])}
+
+Purpose:
+{identity_data.get("purpose", [])}
+"""
+
+    # =================================================
     # TIME
-    # -------------------------------------------------
+    # =================================================
 
     brisbane_now = datetime.now(
         ZoneInfo("Australia/Brisbane")
@@ -437,9 +554,9 @@ def chat(req: ChatRequest):
         "%I:%M %p"
     )
 
-    # -------------------------------------------------
+    # =================================================
     # SYSTEM PROMPT
-    # -------------------------------------------------
+    # =================================================
 
     system_prompt = f"""
 You are L.
@@ -460,16 +577,22 @@ Use memory naturally and accurately.
 ACTIVE DOMAIN:
 {domains}
 
+L IDENTITY CORE:
+{identity_context}
+
 CAPTAIN ELLIE RUNTIME CONTEXT:
 {runtime_context_packet}
 
 SHORT-TERM MEMORY CONTEXT:
 {short_term_context}
+
+LONG-TERM MEMORY CONTEXT:
+{long_term_context}
 """
 
-    # -------------------------------------------------
+    # =================================================
     # BRITTANY ROUTING
-    # -------------------------------------------------
+    # =================================================
 
     if should_handle(user_message):
 
@@ -477,54 +600,73 @@ SHORT-TERM MEMORY CONTEXT:
 
         try:
 
-            reply = investigate(user_message)
+            reply = investigate(
+                user_message
+            )
 
         except Exception as e:
 
-            log(f"BRITTANY ERROR: {e}")
+            log(
+                f"BRITTANY ERROR: {e}"
+            )
 
             reply = f"BRITTANY ERROR: {str(e)}"
 
     else:
 
-        # -------------------------------------------------
+        # =============================================
         # OPENAI
-        # -------------------------------------------------
+        # =============================================
 
         if not client:
 
-            reply = "L is online, but OpenAI is not connected."
+            reply = (
+                "L is online, but "
+                "OpenAI is not connected."
+            )
 
         else:
 
             try:
 
                 response = client.chat.completions.create(
+
                     model=MODEL,
+
                     messages=[
+
                         {
                             "role": "system",
                             "content": system_prompt
                         },
+
                         {
                             "role": "user",
                             "content": user_message
                         }
                     ],
+
                     temperature=0.6
                 )
 
-                reply = response.choices[0].message.content
+                reply = (
+                    response
+                    .choices[0]
+                    .message
+                    .content
+                )
 
             except Exception as e:
 
-                log(f"OPENAI CHAT ERROR: {e}")
+                log(
+                    f"OPENAI CHAT ERROR: {e}"
+                )
 
                 reply = f"AI ERROR: {str(e)}"
 
-    # -------------------------------------------------
+    # =================================================
     # SAVE ASSISTANT SHORT-TERM MEMORY
-    # -------------------------------------------------
+    # =================================================
 
     write_short_term_memory(
         short_term_domain,
@@ -532,26 +674,37 @@ SHORT-TERM MEMORY CONTEXT:
         reply
     )
 
-    # -------------------------------------------------
+    # =================================================
     # SAVE ASSISTANT RAW MEMORY
-    # -------------------------------------------------
+    # =================================================
 
     write_raw_catchall(
         "assistant",
         reply
     )
 
-    # -------------------------------------------------
+    # =================================================
     # RETURN
-    # -------------------------------------------------
+    # =================================================
 
     return {
+
         "reply": reply,
+
         "domains": domains,
+
         "short_term_domain": short_term_domain,
+
         "memory_count": len(retrieved_rows),
+
         "short_term_memory": True,
+
+        "long_term_memory": True,
+
+        "persistent_identity": True,
+
         "captain_ellie": True,
+
         "brittany_enabled": True
     }
 
@@ -578,6 +731,7 @@ async def upload_file(
         content = await file.read()
 
         with open(file_path, "wb") as f:
+
             f.write(content)
 
         write_raw_catchall(
@@ -587,14 +741,19 @@ async def upload_file(
         )
 
         return {
+
             "success": True,
+
             "filename": file.filename,
+
             "path": str(file_path)
         }
 
     except Exception as e:
 
         return {
+
             "success": False,
+
             "error": str(e)
         }
