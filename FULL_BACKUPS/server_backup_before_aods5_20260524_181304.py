@@ -202,14 +202,6 @@ def write_short_term_memory(
             f"SHORT-TERM MEMORY SAVED -> {table_name}"
         )
 
-        # ---------------------------------------------
-        # ENFORCE MEMORY LIMIT
-        # ---------------------------------------------
-
-        enforce_short_term_limit(
-            table_name
-        )
-
         return True
 
     except Exception as e:
@@ -219,59 +211,6 @@ def write_short_term_memory(
         )
 
         return False
-
-
-# =====================================================
-# SHORT-TERM MEMORY LIMIT ENFORCER
-# =====================================================
-
-def enforce_short_term_limit(
-    table_name,
-    limit_count=1000
-):
-
-    try:
-
-        if not supabase:
-            return
-
-        result = supabase.table(
-            table_name
-        ).select(
-            "id"
-        ).order(
-            "id",
-            desc=False
-        ).execute()
-
-        rows = result.data or []
-
-        if len(rows) <= limit_count:
-            return
-
-        overflow = len(rows) - limit_count
-
-        ids_to_delete = [
-            row["id"]
-            for row in rows[:overflow]
-        ]
-
-        supabase.table(
-            table_name
-        ).delete().in_(
-            "id",
-            ids_to_delete
-        ).execute()
-
-        log(
-            f"SHORT-TERM CLEANUP -> {table_name} | REMOVED: {overflow}"
-        )
-
-    except Exception as e:
-
-        log(
-            f"SHORT-TERM CLEANUP ERROR: {e}"
-        )
 
 # =====================================================
 # ROOT
@@ -611,5 +550,4 @@ async def upload_file(
             "success": False,
             "error": str(e)
         }
-
 
