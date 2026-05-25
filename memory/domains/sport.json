@@ -1,134 +1,38 @@
 [
   {
-    "id": 1,
-    "role": "user",
-    "content": "I like to play hockey",
-    "created_at": "2026-05-24T12:15:51.068962",
-    "cleaned": true,
-    "canonical": true,
-    "domain_verified": true,
-    "priority": 5,
-    "salience": "medium",
-    "anchor": false
-  },
-  {
-    "id": 2,
-    "role": "assistant",
-    "content": "That's great! Hockey is such an exciting sport. Do you play often, or are you part of a team?",
-    "created_at": "2026-05-24T12:15:53.169149",
-    "cleaned": true,
-    "canonical": true,
-    "domain_verified": true,
-    "priority": 5,
-    "salience": "medium",
-    "anchor": false
-  },
-  {
-    "id": 26,
-    "role": "assistant",
-    "content": "I've noted that the training data extends up to October 2023. If there's anything else you'd like to add or discuss, just let me know!",
-    "created_at": "2026-05-18T13:47:17.852662+00:00",
-    "cleaned": true,
-    "canonical": true,
-    "domain_verified": true,
-    "priority": 5,
-    "salience": "medium",
-    "anchor": false
-  },
-  {
-    "id": 249,
-    "role": "user",
-    "content": "hey L can you tell me about the sport I play",
-    "created_at": "2026-05-19T10:15:26.438608+00:00",
-    "cleaned": true,
-    "canonical": true,
-    "domain_verified": true,
-    "priority": 5,
-    "salience": "medium",
-    "anchor": false
-  },
-  {
-    "id": 250,
-    "role": "assistant",
-    "content": "I’d be happy to help! However, I’ll need a bit more information about the specific sport you play. Could you please tell me the name of the sport or share any details about it? This way, I can provide you with relevant information and insights!",
-    "created_at": "2026-05-19T10:15:30.406427+00:00",
-    "cleaned": true,
-    "canonical": true,
-    "domain_verified": true,
-    "priority": 5,
-    "salience": "medium",
-    "anchor": false
-  },
-  {
-    "id": 263,
-    "role": "user",
-    "content": "L what sport do I play",
-    "created_at": "2026-05-19T11:23:58.085369+00:00",
-    "cleaned": true,
-    "canonical": true,
-    "domain_verified": true,
-    "priority": 5,
-    "salience": "medium",
-    "anchor": false
-  },
-  {
-    "id": 264,
-    "role": "assistant",
     "content": "I don’t have specific information about the sport you play in my memory. If you’d like to share what sport you’re involved in, I can provide insights or information related to it. Just let me know!",
-    "created_at": "2026-05-19T11:24:02.916999+00:00",
-    "cleaned": true,
-    "canonical": true,
-    "domain_verified": true,
-    "priority": 5,
-    "salience": "medium",
-    "anchor": false
+    "timestamp": "2026-05-19T11:24:02.916999+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "supabase_raw_catchall",
+    "cleaned_at": "2026-05-25T05:46:07.309033",
+    "salience_score": 16
   },
   {
-    "id": 486,
-    "role": "assistant",
-    "content": "### Research Findings on Training Virtual Assistants for Internet Research\n\n**Verified Findings:**\n\n1. **TER BreizhGo Pass for Travel in Brittany**:\n   - The TER BreizhGo Pass is a travel pass that allows unlimited travel on the TER network in Brittany, valid for 2 or 7 days.\n   - It costs €55 for 2 days and €110 for 7 days.\n   - This pass can enhance the efficiency of planning trips and is particularly useful for exploring Brittany by train. \n   - **Source**: [Culturezvous](https://culturezvous.com/en/travelling-by-train-brittany-region-france-practical-guide)\n\n2. **Intent-Driven Training for Virtual Assistants**:\n   - Effective training for virtual assistants involves focusing on intent-driven queries. This means structuring training data to help the assistant understand user intentions better.\n   - Identifying entities in queries (like location and date) can improve the relevance of responses.\n   - **Source**: [Altice Labs](https://www.alticelabs.com/wp-content/uploads/2021/10/WP_BOTSchool.pdf)\n\n3. **AI Virtual Assistant Training Programs**:\n   - There are various training programs available for virtual assistants that aim to enhance skills and productivity.\n   - These programs can help virtual assistants learn to work more effectively with AI technologies.\n   - **Source**: [VA Staffer](https://vastaffer.com/boost-business-with-ai-virtual-assistant-training-programs)\n\n**Assumptions:**\n\n- **Training Methodologies**: While intent-driven training is highlighted, the specific methodologies for implementing this in a virtual assistant context are not detailed. It can be assumed that practical examples and hands-on training would be beneficial.\n  \n- **Integration of AI Techniques**: The rise of AI in virtual assistant roles suggests that integrating AI technologies into training could enhance capabilities. However, the exact impact of these technologies on training effectiveness remains uncertain without further evidence.\n\n### Conclusion\nTo improve the training of a virtual assistant like Brittany for internet research, focusing on intent-driven training and utilizing tools like the TER BreizhGo Pass for practical applications can be beneficial. Additionally, exploring structured training programs can provide further insights and skills necessary for effective research. \n\nIf you have any specific areas of interest or further questions, feel free to ask!",
-    "created_at": "2026-05-21T14:54:44.21955+00:00",
-    "cleaned": true,
-    "canonical": true,
-    "domain_verified": true,
-    "priority": 5,
-    "salience": "medium",
-    "anchor": false
-  },
-  {
-    "id": 636,
-    "role": "assistant",
     "content": "You enjoy playing field hockey, specifically division 7 hockey on Sundays and Masters 3 hockey on Tuesday nights for the Kedron Wavell Wolves hockey team. You've also been trying to make the Queensland team for the past three years.",
-    "created_at": "2026-05-22T11:05:27.054139+00:00",
-    "cleaned": true,
-    "canonical": true,
-    "domain_verified": true,
-    "priority": 5,
-    "salience": "medium",
-    "anchor": false
-  },
-  {
-    "id": 879,
-    "role": "user",
-    "content": "L I went to Kapooka which is the basic training in January 1996 where I spent four months there. Then I went to my initial employment training at Puel to become a driver in that course. My drivers course I was student Merritt I topped the course. I then marched into one field regiment headquarter battery and I was under the ready reserve scheme. What that was was you did one year full-time four years part-time and they paid for your university. I had deferred a bachelor of business at the university of Southern Cross at Lis lismore. I then was offered the opportunity to go into the regular army and sign up for four years. I was having so much fun. I did. They told me that I would be a transport fuel operator but when I signed the dotted line they’ve moved me across to artillery as a gun tractor driver we would then deployed from 105. Sorry from 101 battery down to fire support company 6RAR where I then found my groove and went from gun tractor driver to CIGNA to FOC which was an elite position. I was then nominated soldiers medallion for exemplary service from fire support company. I was the rank of Gunna I passed down any promotion as I was not going to stay in the army. I was not a life at so I’d rather my friends get the promotion then myself. I then went to East Seymour, with seven brigade as a driver in East Tim. I put my discharge in and I got out of the army as soon as I got back, I was charged the last day of my army career. For being a while I got drunk the night I got back from East Seymour,. All I had to do was rock up for work and I didn’t do that. I ended up getting a fine and that was the end of my army career if I had of stayed in, I would’ve been promoted to Lance Bombay on my next posting.",
-    "created_at": "2026-05-23T00:37:52.270652+00:00",
-    "cleaned": true,
-    "canonical": true,
-    "domain_verified": true,
-    "priority": 5,
-    "salience": "medium",
-    "anchor": false
-  },
-  {
-    "id": 880,
+    "timestamp": "2026-05-22T11:05:27.054139+00:00",
+    "session_id": null,
     "role": "assistant",
-    "content": "Thank you for sharing that detailed account of your military experience, Doug. Here’s a concise summary of what you shared that captures the key points of your story:\n\n---\n\n**Doug's Military Journey:**\n\n1. **Basic Training**: \n   - Doug commenced basic training at Kapooka in January 1996, where he spent four months.\n\n2. **Initial Employment Training**:\n   - After basic training, he attended initial employment training at Puel to become a driver. \n   - He topped the driver’s course as a student.\n\n3. **Service Structure**:\n   - Doug was assigned to the 1st Field Regiment Headquarters Battery under the Ready Reserve scheme: one year full-time and four years part-time, with the army covering his university fees.\n   - He deferred a Bachelor of Business at Southern Cross University in Lismore.\n\n4. **Regular Army**:\n   - Offered a chance to join the regular army, Doug signed up for four years, excited about the opportunity.\n   - Initially told he would be a transport fuel operator, he was later moved to artillery as a gun tractor driver.\n\n5. **Deployment and Achievements**:\n   - Deployed from 101 Battery to Fire Support Company 6RAR, where he excelled and progressed from gun tractor driver to CIGNA to FOC, an elite position.\n   - Nominated for the Soldier’s Medallion for exemplary service from Fire Support Company.\n\n6. **Rank and Promotions**:\n   - Held the rank of Gunner and chose not to pursue further promotions, preferring his friends to advance instead, as he did not intend to make a career in the army.\n\n7. **East Timor Deployment**:\n   - Served as a driver in East Timor with 7 Brigade.\n\n8. **Discharge**:\n   - Upon returning, Doug put in his discharge request and faced a charge on the last day of his service for failing to report for duty after celebrating with alcohol, resulting in a fine.\n   - He reflects that had he stayed in, he would have been promoted to Lance Bombardier on his next posting.\n\n---\n\nIf you'd like to add more details or modify anything, just let me know!",
-    "created_at": "2026-05-23T00:38:05.597899+00:00",
-    "cleaned": true,
-    "canonical": true,
-    "domain_verified": true,
-    "priority": 5,
-    "salience": "medium",
-    "anchor": false
+    "source": "supabase_raw_catchall",
+    "cleaned_at": "2026-05-25T05:46:07.310787",
+    "salience_score": 11
+  },
+  {
+    "content": "hey L can you tell me about the sport I play",
+    "timestamp": "2026-05-19T10:15:26.438608+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "supabase_raw_catchall",
+    "cleaned_at": "2026-05-25T05:46:07.308980",
+    "salience_score": 0
+  },
+  {
+    "content": "L what sport do I play",
+    "timestamp": "2026-05-19T11:23:58.085369+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "supabase_raw_catchall",
+    "cleaned_at": "2026-05-25T05:46:07.309030",
+    "salience_score": 0
   }
 ]

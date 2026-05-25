@@ -1,99 +1,110 @@
-from memory.memory_engine import (
-    _load_supabase_facts
-)
+from agents.brittany_browser import brittany
+from agents.emily import emily
+from agents.callie import callie
+from agents.tanya import tanya
 
-from datetime import datetime
+def route_message(message: str):
 
-# =====================================================
-# ROUTING
-# =====================================================
+    try:
 
-def should_handle(message: str) -> bool:
+        if emily.should_handle(message):
 
-    text = message.lower()
+            return {
 
-    triggers = [
+                "handled": True,
+                "agent": "Emily",
+                "reply":
+                    emily.handle_email_request(message)
 
-        "tegan",
-        
-    ]
+            }
 
-    return any(
-        t in text
-        for t in triggers
-    )
+    except Exception as e:
 
-# =====================================================
-# AGENT STATES
-# =====================================================
+        return {
 
-AGENTS = {
+            "handled": True,
+            "agent": "Emily",
+            "reply":
+                f"Emily Error: {str(e)}"
 
-    "Millie":
-        "Connected to unified Supabase memory",
+        }
 
-    "Emme":
-        "Emotional regulation online",
+    try:
 
-    "Addie":
-        "Task execution online",
+        if callie.should_handle(message):
 
-    "Gracie":
-        "Legacy workflows online",
+            return {
 
-    "Noelie":
-        "Research cognition online",
+                "handled": True,
+                "agent": "Callie",
+                "reply":
+                    callie.handle_calendar_request(message)
 
-    "Richie":
-        "Reflective cognition online"
+            }
 
-}
+    except Exception as e:
 
-# =====================================================
-# BUILD REPORT
-# =====================================================
+        return {
 
-def build_report():
+            "handled": True,
+            "agent": "Callie",
+            "reply":
+                f"Callie Error: {str(e)}"
 
-    facts = _load_supabase_facts(500)
+        }
 
-    reply = ""
+    try:
 
-    reply += "Shine ecosystem status:\n\n"
+        if tanya.should_handle(message):
 
-    for name, state in AGENTS.items():
+            return {
 
-        reply += (
-            f"- {name}: {state}\n"
-        )
+                "handled": True,
+                "agent": "Tanya",
+                "reply":
+                    tanya.handle_task_request(message)
 
-    reply += "\n"
+            }
 
-    reply += (
-        f"Unified memory count: {len(facts)}\n"
-    )
+    except Exception as e:
 
-    reply += (
-        "Supabase memory spine: ONLINE\n"
-    )
+        return {
 
-    reply += (
-        "Semantic memory: ACTIVE\n"
-    )
+            "handled": True,
+            "agent": "Tanya",
+            "reply":
+                f"Tanya Error: {str(e)}"
 
-    reply += (
-        "Orchestration spine: ACTIVE\n"
-    )
+        }
 
-    return reply
+    try:
 
-# =====================================================
-# MAIN HANDLER
-# =====================================================
+        if brittany.should_handle(message):
 
-def handle_integration_request(message: str):
+            return {
 
-    return build_report()
+                "handled": True,
+                "agent": "Brittany",
+                "reply":
+                    brittany.investigate(message)
 
+            }
 
+    except Exception as e:
 
+        return {
+
+            "handled": True,
+            "agent": "Brittany",
+            "reply":
+                f"Brittany Error: {str(e)}"
+
+        }
+
+    return {
+
+        "handled": False,
+        "agent": "L Core",
+        "reply": ""
+
+    }
