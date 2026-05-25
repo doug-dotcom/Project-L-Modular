@@ -45,7 +45,7 @@ def get_google_service(service_name, version):
 
     credentials_file = os.path.join(
         ROOT,
-        "configs/credentials.json"
+        "credentials.json"
     )
 
     scopes = SCOPES.get(service_name, [])
@@ -80,4 +80,3 @@ def get_google_service(service_name, version):
     )
 
     return service
-
