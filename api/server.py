@@ -31,9 +31,12 @@ from memory.classifier.short_term_classifier import (
     classify_message
 )
 
-from agents.brittany_browser.brittany import (
-    should_handle,
-    investigate
+# =====================================================
+# TEGAN ORCHESTRATOR
+# =====================================================
+
+from agents.tegan.tegan import (
+    route_message
 )
 
 # =====================================================
@@ -41,15 +44,23 @@ from agents.brittany_browser.brittany import (
 # =====================================================
 
 try:
+
     from dotenv import load_dotenv
+
     load_dotenv()
+
 except Exception:
+
     pass
 
 ROOT = Path(__file__).resolve().parents[1]
 
 if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+
+    sys.path.insert(
+        0,
+        str(ROOT)
+    )
 
 # =====================================================
 # LOGGER
@@ -66,10 +77,10 @@ def log(msg):
 # =====================================================
 
 IDENTITY_FILE = (
-    ROOT /
-    "memory" /
-    "identity_core" /
-    "l_identity.json"
+    ROOT
+    / "memory"
+    / "identity_core"
+    / "l_identity.json"
 )
 
 def load_identity_core():
@@ -114,7 +125,9 @@ if OPENAI_API_KEY:
         api_key=OPENAI_API_KEY
     )
 
-    log("OPENAI CLIENT INITIALIZED")
+    log(
+        "OPENAI CLIENT INITIALIZED"
+    )
 
 # =====================================================
 # SUPABASE
@@ -139,7 +152,9 @@ if SUPABASE_URL and SUPABASE_KEY:
         SUPABASE_KEY
     )
 
-    log("SUPABASE CONNECTED")
+    log(
+        "SUPABASE CONNECTED"
+    )
 
 # =====================================================
 # FASTAPI
@@ -147,15 +162,21 @@ if SUPABASE_URL and SUPABASE_KEY:
 
 app = FastAPI(
     title="Project L",
-    version="persistent-cognition-2.0"
+    version="persistent-cognition-3.0"
 )
 
 app.add_middleware(
+
     CORSMiddleware,
+
     allow_origins=["*"],
+
     allow_credentials=True,
+
     allow_methods=["*"],
-    allow_headers=["*"],
+
+    allow_headers=["*"]
+
 )
 
 # =====================================================
@@ -167,9 +188,15 @@ UI_PATH = ROOT / "ui"
 if UI_PATH.exists():
 
     app.mount(
+
         "/ui",
-        StaticFiles(directory=UI_PATH),
+
+        StaticFiles(
+            directory=UI_PATH
+        ),
+
         name="ui"
+
     )
 
 # =====================================================
@@ -185,16 +212,20 @@ class ChatRequest(BaseModel):
 # =====================================================
 
 def write_raw_catchall(
+
     role,
     content,
     source="chat"
+
 ):
 
     try:
 
         if not supabase:
 
-            log("SUPABASE NOT CONNECTED")
+            log(
+                "SUPABASE NOT CONNECTED"
+            )
 
             return False
 
@@ -207,6 +238,7 @@ def write_raw_catchall(
             "content": str(content),
 
             "metadata": {}
+
         }
 
         supabase.table(
@@ -230,17 +262,20 @@ def write_raw_catchall(
         return False
 
 # =====================================================
-# SHORT-TERM LIMIT ENFORCER
+# SHORT TERM LIMIT ENFORCER
 # =====================================================
 
 def enforce_short_term_limit(
+
     table_name,
     limit_count=1000
+
 ):
 
     try:
 
         if not supabase:
+
             return
 
         result = supabase.table(
@@ -255,6 +290,7 @@ def enforce_short_term_limit(
         rows = result.data or []
 
         if len(rows) <= limit_count:
+
             return
 
         overflow = len(rows) - limit_count
@@ -264,6 +300,7 @@ def enforce_short_term_limit(
             row["id"]
 
             for row in rows[:overflow]
+
         ]
 
         supabase.table(
@@ -274,7 +311,7 @@ def enforce_short_term_limit(
         ).execute()
 
         log(
-            f"SHORT-TERM CLEANUP -> "
+            f"SHORT TERM CLEANUP -> "
             f"{table_name} | "
             f"REMOVED: {overflow}"
         )
@@ -282,22 +319,25 @@ def enforce_short_term_limit(
     except Exception as e:
 
         log(
-            f"SHORT-TERM CLEANUP ERROR: {e}"
+            f"SHORT TERM CLEANUP ERROR: {e}"
         )
 
 # =====================================================
-# SHORT-TERM MEMORY WRITER
+# SHORT TERM MEMORY WRITER
 # =====================================================
 
 def write_short_term_memory(
+
     table_name,
     role,
     content
+
 ):
 
     try:
 
         if not supabase:
+
             return False
 
         payload = {
@@ -305,6 +345,7 @@ def write_short_term_memory(
             "role": str(role),
 
             "content": str(content)
+
         }
 
         supabase.table(
@@ -318,7 +359,7 @@ def write_short_term_memory(
         )
 
         log(
-            f"SHORT-TERM MEMORY SAVED -> "
+            f"SHORT TERM MEMORY SAVED -> "
             f"{table_name}"
         )
 
@@ -327,7 +368,7 @@ def write_short_term_memory(
     except Exception as e:
 
         log(
-            f"SHORT-TERM MEMORY ERROR: {e}"
+            f"SHORT TERM MEMORY ERROR: {e}"
         )
 
         return False
@@ -343,7 +384,9 @@ def root():
 
     if index_path.exists():
 
-        return FileResponse(index_path)
+        return FileResponse(
+            index_path
+        )
 
     return {
         "status": "Project L online"
@@ -370,7 +413,8 @@ def health():
 
         "captain_ellie": True,
 
-        "brittany_ready": True
+        "tegan_orchestrator": True
+
     }
 
 # =====================================================
@@ -387,12 +431,19 @@ def chat(req: ChatRequest):
     if not user_message:
 
         return {
-            "reply": "Please send me a message."
+
+            "reply":
+                "Please send me a message."
+
         }
 
     log(
         f"CHAT REQUEST: "
         f"{user_message[:100]}"
+    )
+
+    log(
+        "TEGAN ACTIVE"
     )
 
     # =================================================
@@ -424,7 +475,7 @@ def chat(req: ChatRequest):
         domains = [short_term_domain]
 
         log(
-            f"SHORT-TERM DOMAIN: "
+            f"SHORT TERM DOMAIN: "
             f"{short_term_domain}"
         )
 
@@ -435,26 +486,29 @@ def chat(req: ChatRequest):
         )
 
     # =================================================
-    # SAVE USER SHORT-TERM MEMORY
+    # SAVE USER MEMORY
     # =================================================
 
     write_short_term_memory(
-        short_term_domain,
-        "user",
-        user_message
-    )
 
-    # =================================================
-    # SAVE RAW MEMORY
-    # =================================================
+        short_term_domain,
+
+        "user",
+
+        user_message
+
+    )
 
     write_raw_catchall(
+
         "user",
+
         user_message
+
     )
 
     # =================================================
-    # SHORT-TERM RETRIEVAL
+    # MEMORY RETRIEVAL
     # =================================================
 
     try:
@@ -476,27 +530,27 @@ def chat(req: ChatRequest):
 
             retrieved_rows.reverse()
 
-            short_term_context = build_short_term_packet(
-                retrieved_rows
+            short_term_context = (
+                build_short_term_packet(
+                    retrieved_rows
+                )
             )
 
-            # =============================================
-            # LONG-TERM DOMAIN RECALL
-            # =============================================
-
-            long_term_context = retrieve_memory_context(
-                user_message
+            long_term_context = (
+                retrieve_memory_context(
+                    user_message
+                )
             )
 
             log(
-                f"SHORT-TERM RETRIEVAL COUNT: "
+                f"SHORT TERM RETRIEVAL COUNT: "
                 f"{len(retrieved_rows)}"
             )
 
     except Exception as e:
 
         log(
-            f"SHORT-TERM RETRIEVAL ERROR: {e}"
+            f"SHORT TERM RETRIEVAL ERROR: {e}"
         )
 
     # =================================================
@@ -505,9 +559,11 @@ def chat(req: ChatRequest):
 
     try:
 
-        runtime_context_packet = build_runtime_context(
-            short_term_context,
-            short_term_domain
+        runtime_context_packet = (
+            build_runtime_context(
+                short_term_context,
+                short_term_domain
+            )
         )
 
     except Exception as e:
@@ -517,7 +573,7 @@ def chat(req: ChatRequest):
         )
 
     # =================================================
-    # LOAD L IDENTITY
+    # L IDENTITY
     # =================================================
 
     identity_data = load_identity_core()
@@ -543,7 +599,9 @@ Purpose:
     # =================================================
 
     brisbane_now = datetime.now(
-        ZoneInfo("Australia/Brisbane")
+        ZoneInfo(
+            "Australia/Brisbane"
+        )
     )
 
     current_date = brisbane_now.strftime(
@@ -570,7 +628,7 @@ CURRENT TIME:
 TIMEZONE:
 Australia/Brisbane
 
-You are Doug's calm, grounded Project L companion.
+You are Doug's calm grounded companion.
 
 Use memory naturally and accurately.
 
@@ -583,45 +641,48 @@ L IDENTITY CORE:
 CAPTAIN ELLIE RUNTIME CONTEXT:
 {runtime_context_packet}
 
-SHORT-TERM MEMORY CONTEXT:
+SHORT TERM MEMORY CONTEXT:
 {short_term_context}
 
-LONG-TERM MEMORY CONTEXT:
+LONG TERM MEMORY CONTEXT:
 {long_term_context}
 """
 
     # =================================================
-    # BRITTANY ROUTING
+    # TEGAN ORCHESTRATION
     # =================================================
 
-    if should_handle(user_message):
+    agent_result = route_message(
+        user_message
+    )
 
-        log("ROUTING TO BRITTANY")
+    active_agent = agent_result.get(
+        "agent",
+        "L Core"
+    )
 
-        try:
+    if agent_result.get("handled"):
 
-            reply = investigate(
-                user_message
-            )
+        log(
+            f"ROUTING TO AGENT: "
+            f"{active_agent}"
+        )
 
-        except Exception as e:
-
-            log(
-                f"BRITTANY ERROR: {e}"
-            )
-
-            reply = f"BRITTANY ERROR: {str(e)}"
+        reply = agent_result.get(
+            "reply",
+            ""
+        )
 
     else:
 
         # =============================================
-        # OPENAI
+        # OPENAI FALLBACK
         # =============================================
 
         if not client:
 
             reply = (
-                "L is online, but "
+                "L is online but "
                 "OpenAI is not connected."
             )
 
@@ -629,24 +690,28 @@ LONG-TERM MEMORY CONTEXT:
 
             try:
 
-                response = client.chat.completions.create(
+                response = (
+                    client.chat.completions.create(
 
-                    model=MODEL,
+                        model=MODEL,
 
-                    messages=[
+                        messages=[
 
-                        {
-                            "role": "system",
-                            "content": system_prompt
-                        },
+                            {
+                                "role": "system",
+                                "content": system_prompt
+                            },
 
-                        {
-                            "role": "user",
-                            "content": user_message
-                        }
-                    ],
+                            {
+                                "role": "user",
+                                "content": user_message
+                            }
 
-                    temperature=0.6
+                        ],
+
+                        temperature=0.6
+
+                    )
                 )
 
                 reply = (
@@ -662,25 +727,30 @@ LONG-TERM MEMORY CONTEXT:
                     f"OPENAI CHAT ERROR: {e}"
                 )
 
-                reply = f"AI ERROR: {str(e)}"
+                reply = (
+                    f"AI ERROR: {str(e)}"
+                )
 
     # =================================================
-    # SAVE ASSISTANT SHORT-TERM MEMORY
+    # SAVE ASSISTANT MEMORY
     # =================================================
 
     write_short_term_memory(
+
         short_term_domain,
+
         "assistant",
+
         reply
+
     )
 
-    # =================================================
-    # SAVE ASSISTANT RAW MEMORY
-    # =================================================
-
     write_raw_catchall(
+
         "assistant",
+
         reply
+
     )
 
     # =================================================
@@ -705,7 +775,10 @@ LONG-TERM MEMORY CONTEXT:
 
         "captain_ellie": True,
 
-        "brittany_enabled": True
+        "tegan_orchestrator": True,
+
+        "active_agent": active_agent
+
     }
 
 # =====================================================
@@ -726,18 +799,28 @@ async def upload_file(
             exist_ok=True
         )
 
-        file_path = upload_dir / file.filename
+        file_path = (
+            upload_dir
+            / file.filename
+        )
 
         content = await file.read()
 
-        with open(file_path, "wb") as f:
+        with open(
+            file_path,
+            "wb"
+        ) as f:
 
             f.write(content)
 
         write_raw_catchall(
+
             "user",
+
             f"Uploaded file: {file.filename}",
+
             source="upload"
+
         )
 
         return {
@@ -747,6 +830,7 @@ async def upload_file(
             "filename": file.filename,
 
             "path": str(file_path)
+
         }
 
     except Exception as e:
@@ -756,4 +840,5 @@ async def upload_file(
             "success": False,
 
             "error": str(e)
+
         }
