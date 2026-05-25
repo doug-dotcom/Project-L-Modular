@@ -14,6 +14,10 @@ from pydantic import BaseModel
 
 from supabase import create_client
 from openai import OpenAI
+from core.truth_engine import (
+    classify_source,
+    build_truth_prompt
+)
 
 from memory.retrieval.short_term_retrieval import (
     build_short_term_packet

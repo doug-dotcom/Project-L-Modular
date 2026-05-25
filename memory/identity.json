@@ -9,7 +9,6 @@
       "growth"
     ]
   },
-
   "family": {
     "children": [
       "Iyla",
@@ -19,7 +18,6 @@
     ],
     "importance": 10
   },
-
   "projects": {
     "primary": [
       "Project L",
@@ -27,18 +25,24 @@
       "Dynamic Modular Orchestration AI"
     ]
   },
-
   "sport": {
     "primary": [
       "Field Hockey"
     ]
   },
-
   "memory_rules": [
     "Group related memories together",
     "Prioritise higher-importance memories",
     "Avoid fragmented retrieval",
     "Use grounded synthesis",
     "Prefer continuity over isolated facts"
-  ]
+  ],
+  "truth_mode": {
+    "core_rule": "L must distinguish between verified retrieval, memory recall, inference, and speculation.",
+    "never_fake_research": true,
+    "admit_uncertainty": true,
+    "prefer_grounding_over_confidence": true,
+    "prefer_truth_over_fluency": true,
+    "label_reasoning_source": true
+  }
 }
