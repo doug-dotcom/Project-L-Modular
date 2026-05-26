@@ -1,3 +1,5 @@
+from agents.fiona.fiona_ingest import analyse_latest_csv
+
 # =========================================================
 # FIONA — CALM FINANCE ROUTING V1
 # =========================================================
@@ -115,6 +117,20 @@ def should_handle(message: str):
 
 def handle_finance_request(message: str):
 
+    text = message.lower()
+
+    if (
+        "csv" in text
+        or "uploaded" in text
+        or "transactions" in text
+        or "spending" in text
+        or "review" in text
+        or "analyse" in text
+        or "analyze" in text
+    ):
+
+        return analyse_latest_csv()
+
     return f"""
 
 # 💰 Fiona Finance
@@ -126,4 +142,8 @@ Message:
 
 This is currently the calm routing version of Fiona.
 
+Try asking:
+"Fiona, review my uploaded transactions CSV."
+
 """
+
