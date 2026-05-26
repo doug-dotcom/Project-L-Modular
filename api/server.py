@@ -414,7 +414,7 @@ def write_short_term_memory(
 # =====================================================
 
 def build_conversation_continuity(
-    limit_count=16
+    limit_count=5
 ):
 
     try:
