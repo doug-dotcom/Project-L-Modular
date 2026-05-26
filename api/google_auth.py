@@ -114,6 +114,33 @@ def get_google_creds():
     creds = None
 
     # =================================================
+    # GOOGLE TOKEN ENV
+    # =================================================
+
+    google_token_json = os.getenv(
+        "GOOGLE_TOKEN_JSON"
+    )
+
+    if google_token_json:
+
+        token_data = json.loads(
+            google_token_json
+        )
+
+        TOKEN_PATH.parent.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        with open(TOKEN_PATH, "w") as f:
+
+            json.dump(token_data, f)
+
+        print(
+            "[RAILWAY] Using GOOGLE_TOKEN_JSON"
+        )
+
+    # =================================================
     # LOAD TOKEN
     # =================================================
 
@@ -176,5 +203,6 @@ def get_google_service(
         version,
         credentials=creds
     )
+
 
 
