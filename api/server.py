@@ -790,63 +790,89 @@ LONG TERM MEMORY CONTEXT:
 # =====================================================
 
 @app.post("/upload")
-async def upload_file(
-    file: UploadFile = File(...)
-):
+async def upload_file(file: UploadFile = File(...)):
 
     try:
 
-        upload_dir = ROOT / "uploads"
+        filename = file.filename
+        lower = filename.lower()
 
-        upload_dir.mkdir(
-            parents=True,
-            exist_ok=True
-        )
+        if lower.endswith(".csv"):
+            file_type = "csv"
+        elif lower.endswith(".pdf"):
+            file_type = "pdf"
+        elif lower.endswith((".png", ".jpg", ".jpeg", ".webp")):
+            file_type = "images"
+        elif lower.endswith((".doc", ".docx", ".txt", ".rtf")):
+            file_type = "docs"
+        else:
+            file_type = "archive"
 
-        file_path = (
-            upload_dir
-            / file.filename
-        )
+        upload_dir = ROOT / "uploads" / file_type
+        upload_dir.mkdir(parents=True, exist_ok=True)
 
+        file_path = upload_dir / filename
         content = await file.read()
 
-        with open(
-            file_path,
-            "wb"
-        ) as f:
-
+        with open(file_path, "wb") as f:
             f.write(content)
 
+        storage_path = f"{file_type}/{filename}"
+
+        uploaded_to_storage = False
+        storage_error = None
+
+        if supabase:
+            try:
+                supabase.storage.from_("uploads").upload(
+                    storage_path,
+                    content,
+                    {
+                        "content-type": file.content_type or "application/octet-stream",
+                        "upsert": "true"
+                    }
+                )
+
+                uploaded_to_storage = True
+                log(f"SUPABASE STORAGE OK: {storage_path}")
+
+            except Exception as e:
+                storage_error = str(e)
+                log(f"SUPABASE STORAGE ERROR: {storage_error}")
+
+        artifact_metadata = {
+            "event": "file_upload",
+            "filename": filename,
+            "file_type": file_type,
+            "local_path": str(file_path),
+            "storage_bucket": "uploads",
+            "storage_path": storage_path,
+            "uploaded_to_storage": uploaded_to_storage,
+            "storage_error": storage_error
+        }
+
         write_raw_catchall(
-
             "user",
-
-            f"Uploaded file: {file.filename}",
-
+            json.dumps(artifact_metadata),
             source="upload"
-
         )
 
         return {
-
             "success": True,
-
-            "filename": file.filename,
-
-            "path": str(file_path)
-
+            "filename": filename,
+            "file_type": file_type,
+            "local_path": str(file_path),
+            "storage_bucket": "uploads",
+            "storage_path": storage_path,
+            "uploaded_to_storage": uploaded_to_storage,
+            "storage_error": storage_error
         }
 
     except Exception as e:
 
+        log(f"UPLOAD ERROR: {e}")
+
         return {
-
             "success": False,
-
             "error": str(e)
-
         }
-
-
-
-
