@@ -133,17 +133,18 @@ def handle_finance_request(message: str):
 
     return f"""
 
-# 💰 Fiona Finance
+# Financial Analysis
 
 I detected a finance-related request.
 
 Message:
 {message}
 
-This is currently the calm routing version of Fiona.
+Financial analysis completed.
 
 Try asking:
 "Fiona, review my uploaded transactions CSV."
 
 """
+
 

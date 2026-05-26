@@ -781,7 +781,7 @@ LONG TERM MEMORY CONTEXT:
 
         "tegan_orchestrator": True,
 
-        "active_agent": active_agent
+        "active_agent": "L"
 
     }
 
@@ -876,3 +876,4 @@ async def upload_file(file: UploadFile = File(...)):
             "success": False,
             "error": str(e)
         }
+
