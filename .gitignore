@@ -35,6 +35,7 @@ Thumbs.db
 *.env
 configs/token.json
 configs/credentials.json
+configs/temp_google_credentials.json
 configs/openai_key.txt
 **/token.json
 **/credentials.json

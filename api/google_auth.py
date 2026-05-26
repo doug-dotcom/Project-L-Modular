@@ -1,83 +1,180 @@
 import os
-import pickle
+import json
+from pathlib import Path
 
+from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from googleapiclient.discovery import build
 
-ROOT = os.path.abspath(
-    os.path.join(
-        os.path.dirname(__file__),
-        ".."
-    )
-)
+# =====================================================
+# ROOT
+# =====================================================
 
-TOKEN_DIR = os.path.join(
-    ROOT,
-    "tokens"
-)
+ROOT = Path(__file__).resolve().parents[1]
 
-os.makedirs(
-    TOKEN_DIR,
-    exist_ok=True
-)
+# =====================================================
+# SCOPES
+# =====================================================
 
-SCOPES = {
+SCOPES = [
 
-    "gmail": [
-        "https://www.googleapis.com/auth/gmail.readonly"
-    ],
+    # =========================
+    # CALENDAR
+    # =========================
 
-    "calendar": [
-        "https://www.googleapis.com/auth/calendar.readonly"
-    ]
+    "https://www.googleapis.com/auth/calendar",
 
-}
+    # =========================
+    # GMAIL
+    # =========================
 
-def get_google_service(service_name, version):
+    "https://www.googleapis.com/auth/gmail.modify",
+
+    # =========================
+    # TASKS
+    # =========================
+
+    "https://www.googleapis.com/auth/tasks",
+
+    # =========================
+    # DRIVE
+    # =========================
+
+    "https://www.googleapis.com/auth/drive.file",
+
+    # =========================
+    # USER PROFILE
+    # =========================
+
+    "openid",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/userinfo.profile"
+]
+
+# =====================================================
+# TOKEN PATH
+# =====================================================
+
+TOKEN_PATH = ROOT / "configs" / "token.json"
+
+# =====================================================
+# TEMP CREDS PATH
+# =====================================================
+
+TEMP_CREDS_PATH = ROOT / "configs" / "temp_google_credentials.json"
+
+# =====================================================
+# LOAD CREDS
+# =====================================================
+
+google_creds_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
+
+# =====================================================
+# LOCAL FALLBACK
+# =====================================================
+
+if not google_creds_json:
+
+    local_creds = ROOT / "configs" / "credentials.json"
+
+    if local_creds.exists():
+
+        with open(local_creds, "r") as f:
+
+            creds_data = json.load(f)
+
+        print("[LOCAL] Using local credentials.json")
+
+    else:
+
+        raise Exception(
+            "No Google credentials found"
+        )
+
+else:
+
+    creds_data = json.loads(google_creds_json)
+
+    print("[RAILWAY] Using GOOGLE_CREDENTIALS_JSON")
+
+# =====================================================
+# ALWAYS CREATE TEMP FILE
+# =====================================================
+
+with open(TEMP_CREDS_PATH, "w") as f:
+
+    json.dump(creds_data, f)
+
+# =====================================================
+# AUTH FUNCTION
+# =====================================================
+
+def get_google_creds():
 
     creds = None
 
-    token_file = os.path.join(
-        TOKEN_DIR,
-        f"{service_name}_token.pickle"
-    )
+    # =================================================
+    # LOAD TOKEN
+    # =================================================
 
-    credentials_file = os.path.join(
-        ROOT,
-        "configs/credentials.json"
-    )
+    if TOKEN_PATH.exists():
 
-    scopes = SCOPES.get(service_name, [])
-
-    if os.path.exists(token_file):
-
-        with open(token_file, "rb") as token:
-
-            creds = pickle.load(token)
-
-    if creds and creds.expired and creds.refresh_token:
-
-        creds.refresh(Request())
-
-    elif not creds:
-
-        flow = InstalledAppFlow.from_client_secrets_file(
-            credentials_file,
-            scopes
+        creds = Credentials.from_authorized_user_file(
+            str(TOKEN_PATH),
+            SCOPES
         )
 
-        creds = flow.run_local_server(port=0)
+    # =================================================
+    # REFRESH / LOGIN
+    # =================================================
 
-        with open(token_file, "wb") as token:
+    if not creds or not creds.valid:
 
-            pickle.dump(creds, token)
+        if creds and creds.expired and creds.refresh_token:
 
-    service = build(
+            creds.refresh(Request())
+
+        else:
+
+            flow = InstalledAppFlow.from_client_secrets_file(
+                str(TEMP_CREDS_PATH),
+                SCOPES
+            )
+
+            creds = flow.run_local_server(port=0)
+
+        # =============================================
+        # SAVE TOKEN
+        # =============================================
+
+        TOKEN_PATH.parent.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        with open(TOKEN_PATH, "w") as token:
+
+            token.write(creds.to_json())
+
+    return creds
+
+# =====================================================
+# GOOGLE SERVICE BUILDER
+# =====================================================
+
+from googleapiclient.discovery import build
+
+def get_google_service(
+    service_name="calendar",
+    version="v3"
+):
+
+    creds = get_google_creds()
+
+    return build(
         service_name,
         version,
         credentials=creds
     )
 
-    return service
 

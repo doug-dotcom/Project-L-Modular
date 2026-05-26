@@ -1,3 +1,10 @@
+from dotenv import load_dotenv
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+
+load_dotenv(ROOT / ".env")
+
 import os
 
 from tavily import TavilyClient
@@ -86,3 +93,4 @@ Check:
 - internet connection
 
 """
+
