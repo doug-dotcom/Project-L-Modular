@@ -2,6 +2,7 @@ from agents.brittany_browser import brittany
 from agents.emily import emily
 from agents.callie import callie
 from agents.tanya import tanya
+from agents.fiona import fiona
 
 def route_message(message: str):
 
@@ -77,6 +78,31 @@ def route_message(message: str):
 
         }
 
+
+    try:
+
+        if fiona.should_handle(message):
+
+            return {
+
+                "handled": True,
+                "agent": "Fiona",
+                "reply":
+                    fiona.handle_finance_request(message)
+
+            }
+
+    except Exception as e:
+
+        return {
+
+            "handled": True,
+            "agent": "Fiona",
+            "reply":
+                f"Fiona Error: {str(e)}"
+
+        }
+
     try:
 
         if brittany.should_handle(message):
@@ -108,3 +134,4 @@ def route_message(message: str):
         "reply": ""
 
     }
+
