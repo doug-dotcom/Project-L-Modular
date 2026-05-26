@@ -466,6 +466,14 @@ def chat(req: ChatRequest):
 
     runtime_context_packet = ""
 
+    # =============================================
+    # CONTINUITY LOOP
+    # =============================================
+
+    continuity_context = (
+        build_conversation_continuity()
+    )
+
     # =================================================
     # DOMAIN CLASSIFICATION
     # =================================================
@@ -876,4 +884,5 @@ async def upload_file(file: UploadFile = File(...)):
             "success": False,
             "error": str(e)
         }
+
 
