@@ -8,15 +8,22 @@ def should_handle(message: str) -> bool:
 
     triggers = [
 
-        "email",
-        "emails",
-        "gmail",
-        "inbox",
-        "emily",
-        "check my emails",
-        "check my email"
+      "check my emails",
+      "check my email",
+      "look at my emails",
+      "look at my email",
+      "get my emails",
+      "get my email",
+      "review my emails",
+      "review my email",
+      "email summary",
+      "inbox summary",
+      "gmail summary",
+      "check gmail",
+      "open inbox",
+      "read my emails"
 
-    ]
+   ] 
 
     return any(
         t in text
