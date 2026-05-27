@@ -43,9 +43,10 @@ def investigate(message: str):
 
     try:
 
+        query = message[:350]
         results = tavily.search(
 
-            query=message,
+            query=query,
 
             search_depth="advanced",
 
