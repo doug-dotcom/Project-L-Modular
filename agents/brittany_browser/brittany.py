@@ -1,37 +1,36 @@
-from dotenv import load_dotenv
-from pathlib import Path
-
-ROOT = Path(__file__).resolve().parents[2]
-
-load_dotenv(ROOT / ".env")
-
 import os
-
+from pathlib import Path
+from dotenv import load_dotenv
+from openai import OpenAI
 from tavily import TavilyClient
 
-TAVILY_API_KEY = os.getenv(
-    "TAVILY_API_KEY",
-    ""
-)
+ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(ROOT / ".env")
 
-tavily = TavilyClient(
-    api_key=TAVILY_API_KEY
-)
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+tavily = TavilyClient(api_key=TAVILY_API_KEY)
+client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+
 
 def should_handle(message: str) -> bool:
 
     text = (message or "").lower()
 
     triggers = [
-
         "research",
         "latest",
         "news",
         "search",
         "web",
         "browser",
-        "brittany"
-
+        "brittany",
+        "look up",
+        "find online",
+        "check online",
+        "current information"
     ]
 
     return any(
@@ -39,30 +38,74 @@ def should_handle(message: str) -> bool:
         for t in triggers
     )
 
+
+def build_search_query(message: str) -> str:
+
+    raw = (message or "").strip()
+
+    if not raw:
+        return ""
+
+    if not client:
+        return raw[:350]
+
+    try:
+
+        response = client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are Brittany's search query planner. "
+                        "Convert the user's request into one concise, targeted web search query. "
+                        "Remove conversational filler. "
+                        "Keep names, dates, companies, locations, and key facts. "
+                        "Do not answer the question. "
+                        "Return only the search query. "
+                        "Maximum 300 characters."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": raw
+                }
+            ],
+            temperature=0.1
+        )
+
+        query = response.choices[0].message.content.strip()
+
+        if not query:
+            query = raw
+
+        return query[:350]
+
+    except Exception:
+
+        return raw[:350]
+
+
 def investigate(message: str):
 
     try:
 
-        query = message[:350]
+        query = build_search_query(message)
+
         results = tavily.search(
-
             query=query,
-
             search_depth="advanced",
-
             max_results=5
-
         )
 
         output = "# 🌐 Brittany Browser\n\n"
+        output += f"Search query used:\n{query}\n\n"
 
         for idx, r in enumerate(
             results.get("results", [])
         ):
 
-            output += (
-                f"## Source {idx+1}\n\n"
-            )
+            output += f"## Source {idx+1}\n\n"
 
             output += (
                 r.get("title", "")
@@ -84,14 +127,13 @@ def investigate(message: str):
     except Exception as e:
 
         return f"""
-
 # 🌐 Brittany Error
 
 {str(e)}
 
 Check:
 - TAVILY_API_KEY
+- OPENAI_API_KEY
 - internet connection
-
+- query length
 """
-
