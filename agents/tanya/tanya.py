@@ -4,12 +4,23 @@ def should_handle(message: str) -> bool:
 
     triggers = [
 
-        "task",
-        "todo",
-        "to do",
-        "action item",
-        "tanya",
-        "tania"
+      "tanya",
+      "tania",
+
+      "action item",
+
+      "add to tasks",
+      "add to my tasks",
+
+      "add to do",
+      "add to my to do list",
+
+      "what is on my task list",
+      "what tasks do i have",
+
+      "recall my tasks",
+      "show my tasks",
+      "my tasks"
 
     ]
 
