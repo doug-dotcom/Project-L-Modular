@@ -430,11 +430,11 @@ except Exception as e:
 # =========================================================
 try:
 
-    from agents.tania.tania import (
+    from agents.tanya.tania import (
         should_handle as tania_should_handle
     )
 
-    from agents.tania.tania import (
+    from agents.tanya.tania import (
         handle_task_request
     )
 
@@ -2688,7 +2688,7 @@ def store_handoffs(calendar_items, task_items):
 
 def execute_task_handoffs():
 
-    from agents.tania import (
+    from agents.tanya import (
         create_task_from_handoff
     )
 
@@ -2789,6 +2789,7 @@ Would you like me to:
 """
 
     return None
+
 
 
 

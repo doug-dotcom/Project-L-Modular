@@ -34,11 +34,11 @@ client = OpenAI()
 # =========================================================
 try:
 
-    from agents.tania.tania import (
+    from agents.tanya.tania import (
         should_handle as tania_should_handle
     )
 
-    from agents.tania.tania import (
+    from agents.tanya.tania import (
         handle_task_request
     )
 
@@ -891,6 +891,7 @@ async def emily_direct(req: ChatRequest):
     return {
         "reply": result
     }
+
 
 
 

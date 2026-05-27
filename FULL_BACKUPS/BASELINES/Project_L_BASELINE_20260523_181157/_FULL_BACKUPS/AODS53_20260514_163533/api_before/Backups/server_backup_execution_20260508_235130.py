@@ -57,11 +57,11 @@ client = OpenAI()
 # =========================================================
 try:
 
-    from agents.tania.tania import (
+    from agents.tanya.tania import (
         should_handle as tania_should_handle
     )
 
-    from agents.tania.tania import (
+    from agents.tanya.tania import (
         handle_task_request
     )
 
@@ -1006,4 +1006,5 @@ async def google_auth_reset():
         "status": "reset",
         "message": "Google token cleared. Reconnect via /google/auth/start"
     }
+
 
