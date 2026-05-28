@@ -1,4 +1,9 @@
 
+from core.consequence_engine.consequence_engine import (
+    evaluate,
+    drift_detected
+)
+
 # =====================================================
 # ACTIVE COGNITION
 # =====================================================
@@ -485,6 +490,7 @@ async def upload_file(
             "success": False,
             "error": str(e)
         }
+
 
 
 
