@@ -35,7 +35,13 @@ def _clamp(value, low=0.0, high=1.0):
 # BUILD GOVERNOR DECISION
 # =====================================================
 
-def build_governor_decision(runtime_state=None):
+def build_governor_decision(
+
+    runtime_state=None,
+
+    physiology_state=None
+
+):
 
     runtime_state = runtime_state or {}
 
@@ -67,6 +73,26 @@ def build_governor_decision(runtime_state=None):
             "truth_mode_intensity",
             0.7
         )
+    )
+
+    # =================================================
+    # PHYSIOLOGY STATE
+    # =================================================
+
+    physiology_state = (
+        physiology_state or {}
+    )
+
+    body_battery = physiology_state.get(
+        "body_battery"
+    )
+
+    physiological_stress = physiology_state.get(
+        "stress_score"
+    )
+
+    sleep_score = physiology_state.get(
+        "sleep_score"
     )
 
     decision = {
@@ -135,6 +161,60 @@ def build_governor_decision(runtime_state=None):
         decision["memory_depth"] += 5
 
     # =================================================
+    # LOW BODY BATTERY
+    # =================================================
+
+    if body_battery is not None:
+
+        if body_battery <= 20:
+
+            decision["response_depth"] = "gentle"
+
+            decision["compression_mode"] = "high"
+
+            decision["support_mode"] = True
+
+            decision["priority"] = (
+                "recovery_stabilization"
+            )
+
+            decision["memory_depth"] = 5
+
+            decision["low_body_battery_detected"] = True
+
+    # =================================================
+    # HIGH PHYSIOLOGICAL STRESS
+    # =================================================
+
+    if physiological_stress is not None:
+
+        if physiological_stress >= 75:
+
+            decision["support_mode"] = True
+
+            decision["priority"] = (
+                "physiological_regulation"
+            )
+
+            decision["high_stress_detected"] = True
+
+    # =================================================
+    # LOW SLEEP
+    # =================================================
+
+    if sleep_score is not None:
+
+        if sleep_score <= 40:
+
+            decision["response_depth"] = "gentle"
+
+            decision["priority"] = (
+                "recovery_support"
+            )
+
+            decision["low_sleep_detected"] = True
+
+    # =================================================
     # STRICT TRUTH MODE
     # =================================================
 
@@ -165,6 +245,9 @@ def summarize_governor(decision):
 
         f"memory_depth={decision.get('memory_depth')} | "
 
-        f"priority={decision.get('priority')}"
+        f"priority={decision.get('priority')} | "
+
+        f"battery_guard={decision.get('low_body_battery_detected', False)}"
 
     )
+
