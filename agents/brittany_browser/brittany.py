@@ -20,17 +20,13 @@ def should_handle(message: str) -> bool:
     text = (message or "").lower()
 
     triggers = [
-        "research",
-        "latest",
-        "news",
+        "research online",
         "search",
-        "web",
         "browser",
         "brittany",
-        "look up",
         "find online",
         "check online",
-        "current information"
+       
     ]
 
     return any(
