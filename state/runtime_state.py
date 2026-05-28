@@ -74,7 +74,9 @@ def build_runtime_state(
 
     retrieved_rows=None,
 
-    active_projects=None
+    active_projects=None,
+
+    physiology_state=None
 
 ):
 
@@ -177,6 +179,58 @@ def build_runtime_state(
             pass
 
     # =================================================
+    # BODY BATTERY MODULATION
+    # =================================================
+
+    if body_battery is not None:
+
+        if body_battery <= 20:
+
+            state["stress_level"] += 0.20
+
+            state["emotional_load"] += 0.15
+
+            state["cognitive_load"] -= 0.10
+
+            state["low_body_battery_detected"] = True
+
+        elif body_battery >= 80:
+
+            state["cognitive_load"] += 0.10
+
+            state["conversation_depth"] += 0.08
+
+            state["high_body_battery_detected"] = True
+
+    # =================================================
+    # PHYSIOLOGICAL STRESS
+    # =================================================
+
+    if physiological_stress is not None:
+
+        if physiological_stress >= 75:
+
+            state["stress_level"] += 0.20
+
+            state["emotional_load"] += 0.10
+
+            state["high_physiological_stress"] = True
+
+    # =================================================
+    # LOW SLEEP
+    # =================================================
+
+    if sleep_score is not None:
+
+        if sleep_score <= 40:
+
+            state["stress_level"] += 0.10
+
+            state["conversation_depth"] -= 0.05
+
+            state["poor_sleep_detected"] = True
+
+    # =================================================
     # ACTIVE FOCUS
     # =================================================
 
@@ -236,6 +290,9 @@ def summarize_runtime_state(state):
 
         f"cognitive={state.get('cognitive_load')} | "
 
-        f"depth={state.get('conversation_depth')}"
+        f"depth={state.get('conversation_depth')} | "
+
+        f"battery_low={state.get('low_body_battery_detected', False)}"
 
     )
+
