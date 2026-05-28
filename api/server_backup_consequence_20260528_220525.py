@@ -157,45 +157,6 @@ def load_identity_core():
             f"\nConsequence Engine Error: {str(e)}"
         )
 
-
-    # =====================================================
-    # CONSEQUENCE ENGINE
-    # =====================================================
-
-    try:
-
-        consequence_result = evaluate(
-
-            user_message=message,
-
-            ai_response=reply
-
-        )
-
-        drift_flag = drift_detected(
-            consequence_result
-        )
-
-        print(
-            "\n🧠 CONSEQUENCE ENGINE\n"
-        )
-
-        print(
-            consequence_result
-        )
-
-        if drift_flag:
-
-            print(
-                "\n⚠️ DRIFT WARNING DETECTED\n"
-            )
-
-    except Exception as e:
-
-        print(
-            f"\nConsequence Engine Error: {str(e)}"
-        )
-
 return {}
 
 def build_identity_context():
@@ -616,45 +577,6 @@ def build_time_context():
             f"\nConsequence Engine Error: {str(e)}"
         )
 
-
-    # =====================================================
-    # CONSEQUENCE ENGINE
-    # =====================================================
-
-    try:
-
-        consequence_result = evaluate(
-
-            user_message=message,
-
-            ai_response=reply
-
-        )
-
-        drift_flag = drift_detected(
-            consequence_result
-        )
-
-        print(
-            "\n🧠 CONSEQUENCE ENGINE\n"
-        )
-
-        print(
-            consequence_result
-        )
-
-        if drift_flag:
-
-            print(
-                "\n⚠️ DRIFT WARNING DETECTED\n"
-            )
-
-    except Exception as e:
-
-        print(
-            f"\nConsequence Engine Error: {str(e)}"
-        )
-
 return {
 
         "date":
@@ -771,45 +693,6 @@ def root():
             f"\nConsequence Engine Error: {str(e)}"
         )
 
-
-    # =====================================================
-    # CONSEQUENCE ENGINE
-    # =====================================================
-
-    try:
-
-        consequence_result = evaluate(
-
-            user_message=message,
-
-            ai_response=reply
-
-        )
-
-        drift_flag = drift_detected(
-            consequence_result
-        )
-
-        print(
-            "\n🧠 CONSEQUENCE ENGINE\n"
-        )
-
-        print(
-            consequence_result
-        )
-
-        if drift_flag:
-
-            print(
-                "\n⚠️ DRIFT WARNING DETECTED\n"
-            )
-
-    except Exception as e:
-
-        print(
-            f"\nConsequence Engine Error: {str(e)}"
-        )
-
 return {
         "status":
             "Project L online"
@@ -823,45 +706,6 @@ return {
 def health():
 
     
-    # =====================================================
-    # CONSEQUENCE ENGINE
-    # =====================================================
-
-    try:
-
-        consequence_result = evaluate(
-
-            user_message=message,
-
-            ai_response=reply
-
-        )
-
-        drift_flag = drift_detected(
-            consequence_result
-        )
-
-        print(
-            "\n🧠 CONSEQUENCE ENGINE\n"
-        )
-
-        print(
-            consequence_result
-        )
-
-        if drift_flag:
-
-            print(
-                "\n⚠️ DRIFT WARNING DETECTED\n"
-            )
-
-    except Exception as e:
-
-        print(
-            f"\nConsequence Engine Error: {str(e)}"
-        )
-
-
     # =====================================================
     # CONSEQUENCE ENGINE
     # =====================================================
@@ -946,45 +790,6 @@ def chat(
     if not user_message:
 
         
-    # =====================================================
-    # CONSEQUENCE ENGINE
-    # =====================================================
-
-    try:
-
-        consequence_result = evaluate(
-
-            user_message=message,
-
-            ai_response=reply
-
-        )
-
-        drift_flag = drift_detected(
-            consequence_result
-        )
-
-        print(
-            "\n🧠 CONSEQUENCE ENGINE\n"
-        )
-
-        print(
-            consequence_result
-        )
-
-        if drift_flag:
-
-            print(
-                "\n⚠️ DRIFT WARNING DETECTED\n"
-            )
-
-    except Exception as e:
-
-        print(
-            f"\nConsequence Engine Error: {str(e)}"
-        )
-
-
     # =====================================================
     # CONSEQUENCE ENGINE
     # =====================================================
@@ -1404,45 +1209,6 @@ CONTINUITY RULES:
             f"\nConsequence Engine Error: {str(e)}"
         )
 
-
-    # =====================================================
-    # CONSEQUENCE ENGINE
-    # =====================================================
-
-    try:
-
-        consequence_result = evaluate(
-
-            user_message=message,
-
-            ai_response=reply
-
-        )
-
-        drift_flag = drift_detected(
-            consequence_result
-        )
-
-        print(
-            "\n🧠 CONSEQUENCE ENGINE\n"
-        )
-
-        print(
-            consequence_result
-        )
-
-        if drift_flag:
-
-            print(
-                "\n⚠️ DRIFT WARNING DETECTED\n"
-            )
-
-    except Exception as e:
-
-        print(
-            f"\nConsequence Engine Error: {str(e)}"
-        )
-
 return {
 
         "reply":
@@ -1655,45 +1421,6 @@ async def upload_file(
             f"\nConsequence Engine Error: {str(e)}"
         )
 
-
-    # =====================================================
-    # CONSEQUENCE ENGINE
-    # =====================================================
-
-    try:
-
-        consequence_result = evaluate(
-
-            user_message=message,
-
-            ai_response=reply
-
-        )
-
-        drift_flag = drift_detected(
-            consequence_result
-        )
-
-        print(
-            "\n🧠 CONSEQUENCE ENGINE\n"
-        )
-
-        print(
-            consequence_result
-        )
-
-        if drift_flag:
-
-            print(
-                "\n⚠️ DRIFT WARNING DETECTED\n"
-            )
-
-    except Exception as e:
-
-        print(
-            f"\nConsequence Engine Error: {str(e)}"
-        )
-
 return {
 
             "success":
@@ -1767,45 +1494,6 @@ return {
             f"\nConsequence Engine Error: {str(e)}"
         )
 
-
-    # =====================================================
-    # CONSEQUENCE ENGINE
-    # =====================================================
-
-    try:
-
-        consequence_result = evaluate(
-
-            user_message=message,
-
-            ai_response=reply
-
-        )
-
-        drift_flag = drift_detected(
-            consequence_result
-        )
-
-        print(
-            "\n🧠 CONSEQUENCE ENGINE\n"
-        )
-
-        print(
-            consequence_result
-        )
-
-        if drift_flag:
-
-            print(
-                "\n⚠️ DRIFT WARNING DETECTED\n"
-            )
-
-    except Exception as e:
-
-        print(
-            f"\nConsequence Engine Error: {str(e)}"
-        )
-
 return {
 
             "success":
@@ -1815,5 +1503,4 @@ return {
                 str(e)
 
         }
-
 
