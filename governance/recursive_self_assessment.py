@@ -38,8 +38,8 @@ def assess_response_context(
 
     memory_context="",
 
-    draft_reply=""
-
+    draft_reply="",
+        physiology_state=None,
 ):
 
     runtime_state = runtime_state or {}
