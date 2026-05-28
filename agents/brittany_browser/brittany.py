@@ -1,3 +1,61 @@
+
+# =====================================================
+# MICRO SOURCE SUMMARIZER
+# =====================================================
+
+def summarize_source(content):
+
+    try:
+
+        response = (
+            client.chat.completions.create(
+
+                model=OPENAI_MODEL,
+
+                temperature=0.1,
+
+                messages=[
+
+                    {
+                        "role": "system",
+
+                        "content": """
+
+Summarize this source into:
+- core finding
+- key relevance
+- max 120 words
+
+Remove:
+- filler
+- redundancy
+- unrelated details
+
+"""
+                    },
+
+                    {
+                        "role": "user",
+                        "content": content[:2000]
+                    }
+
+                ]
+
+            )
+        )
+
+        return (
+            response
+            .choices[0]
+            .message
+            .content
+        )
+
+    except Exception:
+
+        return content[:500]
+
+
 import os
 
 from pathlib import Path
@@ -350,6 +408,12 @@ def investigate(message: str):
 
             if relevance >= 0.72:
 
+                summary = summarize_source(
+
+                    r.get("content", "")
+
+                )
+
                 filtered.append(
 
                     f"""
@@ -360,8 +424,8 @@ TITLE:
 URL:
 {r.get("url", "")}
 
-CONTENT:
-{r.get("content", "")}
+SUMMARY:
+{summary}
 
 """
 
@@ -393,3 +457,4 @@ No highly relevant external information found.
 {str(e)}
 
 """
+
