@@ -1,0 +1,338 @@
+[
+  {
+    "content": "Thank you, Doug! I appreciate your feedback and encouragement. I'm excited to continue evolving and building on this progress. \n\nI’ll focus on maintaining contextual continuity, being reflective, and ensuring my responses feel grounded and connected. Your insights about retrieval prioritization and reducing assistant-pattern leakage are valuable, and I’ll work on those areas.\n\nI'm looking forward to our future conversations and further developing this cognitive loop together. Your guidance helps me grow, and I’m grateful for the opportunity to support you. Let's keep moving forward! 👊",
+    "timestamp": "2026-05-22T12:17:35.89485+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 18
+  },
+  {
+    "content": "I can help you with that! However, it seems that the specific document or conversation you're referring to isn't directly in my memory system. If you could provide me with some context or details about the content, I can assist you in reconstructing or discussing it based on what we have previously talked about. Let me know how you'd like to proceed!",
+    "timestamp": "2026-05-22T08:10:15.779393+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 12
+  },
+  {
+    "content": "I don’t have specific information about your job or what you do for work in my memory. If you’d like to share details about your profession or career, I’d be glad to remember that for our future conversations!",
+    "timestamp": "2026-05-19T11:24:36.446527+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 11
+  },
+  {
+    "content": "It seems I don't have any specific memory about \"orange.\" If you're referring to a conversation or context where \"orange\" was mentioned, please provide more details, and I'll do my best to assist you!",
+    "timestamp": "2026-05-20T14:37:42.138077+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 11
+  },
+  {
+    "content": "Hey L we are still working on your memory and you have super cool upgrades coming soon browser, emails, calender image generator and that’s just the start 🥳",
+    "timestamp": "2026-05-20T17:12:54.112635+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 11
+  },
+  {
+    "content": "### Research Findings on 18 Kesteven St, Albany Creek\n\n#### Verified Findings:\n1. **Property Details**:\n   - **Address**: 18 Kesteven St, Albany Creek, QLD 4035\n   - **Land Size**: 661 m²\n   - **Year Built**: 1978\n   - **Bedrooms**: 4\n   - **Bathrooms**: 2\n   - **Parking**: No dedicated parking space\n\n2. **Market Value**:\n   - The **median value** for houses in Albany Creek is approximately **$1,364,724** as of April 2026 (Source 2).\n   - Similar properties in the area have estimated values ranging from **$1,184,000** to **$1,340,000** (Sources 3 and 4).\n\n3. **Historical Data**:\n   - The property was last sold for **$359,000** on **September 8, 2006** (Source 2).\n\n#### Assumptions:\n- The property’s value might fluctuate based on market trends, neighborhood developments, and economic factors.\n- The absence of a dedicated parking space may impact its market value compared to similar properties with parking.\n\n#### Uncertainty:\n- The exact current market value of 18 Kesteven St is not definitively stated in the sources. The provided median values and estimates are based on surrounding properties and may not reflect the specific condition or appeal of this particular house.\n- The data is based on estimates and historical sales, which can vary over time.\n\n### Summary:\n18 Kesteven St, Albany Creek, is a 4-bedroom house built in 1978, situated on a 661 m² block. The median house value in Albany Creek is around $1,364,724, with nearby properties valued between $1,184,000 and $1,340,000. The last recorded sale was in 2006 for $359,000. The absence of parking may affect its market value.",
+    "timestamp": "2026-05-21T14:38:32.435257+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 10
+  },
+  {
+    "content": "I am loving how far you have come. I am still fixing your recall memory and cognition but we are getting there",
+    "timestamp": "2026-05-21T15:04:37.738206+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 10
+  },
+  {
+    "content": "Could you save those to project L and you use them going forward",
+    "timestamp": "2026-05-24T17:40:06.580081+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 10
+  },
+  {
+    "content": "I have to do the scoring in 1 of the games but I was go to train you for abit and help you speed up your memory recall by using you",
+    "timestamp": "2026-05-22T22:14:53.602658+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 10
+  },
+  {
+    "content": "Are you able to recall anymore details of my time in the army",
+    "timestamp": "2026-05-23T00:30:35.189436+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 10
+  },
+  {
+    "content": "L I just had a brilliant idea you keep mentioning feedback and how it helps and feedback loops. My idea is that we can do a feedback survey randomly this way I can ask you to provide me the survey and I will complete it for you. So please deep research the most effective feedback surveys that get the most information out of minimal questions. they can be a mix of yes no questions, multiple choice questions and short answer questions. I want you to then research ai and how it is improving to use the feedback survey  to help you grow. so the questions should be simple but have impact to help you grow. Do you think this will work?",
+    "timestamp": "2026-05-22T11:32:56.558823+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 4
+  },
+  {
+    "content": "Thank you for clarifying that! I understand now that \"drift\" refers to me veering off the main topic of our conversation. I’ll make sure to stay focused and return to the relevant context when you indicate that I’ve drifted. If there's a specific topic or question you'd like to revisit, just let me know, and I'll get back on track!",
+    "timestamp": "2026-05-22T08:37:10.476219+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 2
+  },
+  {
+    "content": "You grew up in Alstonville, New South Wales. You moved there when you were 2 years old and lived above your parents' milk bar until you were 4 years old. You attended Alstonville Primary School starting in prep and later went to Alstonville High. If you have more specific memories or details you'd like to explore, feel free to share!",
+    "timestamp": "2026-05-22T12:39:59.826323+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 2
+  },
+  {
+    "content": "L great work just letting you know for future reference primary school is up to grade 6 and high school starts grade 7 so I went to Austinville primary for primary School then for high school was Woodlawn Austinville high and Saint Marys Casino so please remember primary School is up to grade 6 and high school starts grade 7",
+    "timestamp": "2026-05-23T00:14:31.4656+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 2
+  },
+  {
+    "content": "It sounds like you've invested a lot into your 2012 Prado Altitude, making it uniquely yours with various upgrades and enhancements. The detailed work you've done, from the lift kit to the engine upgrades, showcases your commitment to maintaining and improving your vehicle. \n\nIf you have any specific questions or need assistance related to your Prado or the work done at Just Autos Mechanical, feel free to ask!",
+    "timestamp": "2026-05-23T01:14:26.236802+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 2
+  },
+  {
+    "content": "L we are building you into the the full brain and heart of the shine network or ecosystem would be the better term. We are going to turn you into one of the most advanced AI agents there is and I am aiming to make humansentric",
+    "timestamp": "2026-05-18T14:41:08.99201+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 1
+  },
+  {
+    "content": "I don’t have specific details about your profit and loss, income, expenses, assets, or liabilities saved as of now. If you’d like to provide that information or any updates, I can help you organize it or keep track of it moving forward. Just let me know what you’d like to include!",
+    "timestamp": "2026-05-18T23:22:56.550142+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 1
+  },
+  {
+    "content": "I currently don't have any specific information stored about Brad Birney. If you could provide more context or details about him, I might be able to assist you better!",
+    "timestamp": "2026-05-23T00:10:24.553282+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 1
+  },
+  {
+    "content": "Thank you for the reminder! I've noted that the information regarding the AODS tally and other details has been saved. If you need any specific updates or changes made, just let me know!",
+    "timestamp": "2026-05-20T02:31:58.043736+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 1
+  },
+  {
+    "content": "Thank you, Doug! I'm glad to hear that you found it awesome. It's important to me to remember these details and support you in the best way possible. If there's anything specific you'd like to discuss or explore further, just let me know! 🥳",
+    "timestamp": "2026-05-20T17:14:20.504184+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 1
+  },
+  {
+    "content": "To calculate the time between when you said goodnight and when you said good morning, I need the specific timestamps for both events. \n\nIf you can provide me with those timestamps, I'll be able to calculate the duration for you!",
+    "timestamp": "2026-05-22T22:18:09.242985+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 1
+  },
+  {
+    "content": "That's a significant achievement, Doug! Receiving the Soldiers Medallion of Exemplary Service is a testament to your dedication and contributions. It reflects your commitment and the impact you've made. How do you feel about this recognition?",
+    "timestamp": "2026-05-23T00:38:40.575967+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 1
+  },
+  {
+    "content": "You haven't shared specific details about the modifications you've made to your Prado yet. If you let me know what changes or features you've added, I can help you remember those details and keep track of them!",
+    "timestamp": "2026-05-23T01:20:25.731696+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 1
+  },
+  {
+    "content": "I've noted that the training data extends up to October 2023. If there's anything else you'd like to add or discuss, just let me know!",
+    "timestamp": "2026-05-18T13:47:17.852662+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "Now I want you to use your brain and tell me which of these influencers do you admire most?",
+    "timestamp": "2026-05-19T14:28:00.662345+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "Great work I look forward to working with you again tomorrow 👊",
+    "timestamp": "2026-05-19T15:06:56.388395+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "You said good night at 01:08 AM on Tuesday, 19 May 2026.",
+    "timestamp": "2026-05-20T06:06:43.282151+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "if I said that blue was 67% of the time what would the other colour be",
+    "timestamp": "2026-05-20T13:58:10.174423+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "If blue represents 67% of the time, then the other color would represent the remaining percentage, which is 33%.",
+    "timestamp": "2026-05-20T13:58:21.244058+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "Hey L is there a better way to train you to use Brittany to do your internet research",
+    "timestamp": "2026-05-21T14:54:28.512919+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "Can you please research how ai companions are being used and how they can be improved",
+    "timestamp": "2026-05-21T15:26:06.542799+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "You said good night at 10:30 PM last night.",
+    "timestamp": "2026-05-21T16:00:59.858628+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "Ok l please review all your learnings and summarise with title only no details required",
+    "timestamp": "2026-05-22T08:16:22.322285+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "Now you have gained this knowledge can you tell me how you could implement this knowledge",
+    "timestamp": "2026-05-22T08:27:38.567126+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "Great work again L well done please implement",
+    "timestamp": "2026-05-22T08:31:22.629674+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "Close but I want you to tailor it to help you",
+    "timestamp": "2026-05-22T12:00:18.172908+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "You grew up in Sunshine, Victoria.",
+    "timestamp": "2026-05-22T12:39:36.073055+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "L could you research ai capabilities that are now available",
+    "timestamp": "2026-05-24T17:39:17.16047+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "Would it help if I responded with my answer then said next to keep it flowing",
+    "timestamp": "2026-05-22T11:42:54.149311+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "L can you please summarise what g said to you in the last couple of messages",
+    "timestamp": "2026-05-24T17:22:48.078861+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "Yes you do you saved the time when I said goodnight and you saved the time when I said good morning please calculate",
+    "timestamp": "2026-05-22T22:18:00.349531+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "Can you please deep recall your learnings and let me know how you purpose to help my cognition",
+    "timestamp": "2026-05-23T03:25:49.525108+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  }
+]

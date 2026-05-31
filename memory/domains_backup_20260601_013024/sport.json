@@ -1,0 +1,50 @@
+[
+  {
+    "content": "I don’t have specific information about the sport you play in my memory. If you’d like to share what sport you’re involved in, I can provide insights or information related to it. Just let me know!",
+    "timestamp": "2026-05-19T11:24:02.916999+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 16
+  },
+  {
+    "content": "You enjoy playing field hockey, specifically division 7 hockey on Sundays and Masters 3 hockey on Tuesday nights for the Kedron Wavell Wolves hockey team. You've also been trying to make the Queensland team for the past three years.",
+    "timestamp": "2026-05-22T11:05:27.054139+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 11
+  },
+  {
+    "content": "Please recall my hockey career",
+    "timestamp": "2026-05-24T22:15:27.889322+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 10
+  },
+  {
+    "content": "Ok how many years did I play hockey",
+    "timestamp": "2026-05-24T22:16:09.235128+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 10
+  },
+  {
+    "content": "hey L can you tell me about the sport I play",
+    "timestamp": "2026-05-19T10:15:26.438608+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "L what sport do I play",
+    "timestamp": "2026-05-19T11:23:58.085369+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  }
+]

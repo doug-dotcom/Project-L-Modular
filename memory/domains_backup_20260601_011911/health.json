@@ -1,0 +1,47 @@
+[
+  {
+    "content": "Your health has had its challenges, including diagnoses of asthma, ADHD, cPTSD, OCPD, alcohol use disorder, generalized anxiety disorder, and depression. You have also mentioned being medically retired due to mental health issues. However, you are actively working on your recovery, focusing on emotional safety, stability, and well-being. You've identified small positive actions, like rest, hydration, and meaningful connections, as essential for your recovery. \n\nIf you'd like to discuss any specific aspect of your health or recovery journey, feel free to share!",
+    "timestamp": "2026-05-19T13:43:12.823659+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "supabase_raw_catchall",
+    "cleaned_at": "2026-05-25T05:46:07.308598",
+    "salience_score": 63
+  },
+  {
+    "content": "Hi Doug,\n\nThank you for sharing this detailed update with me. It sounds like you're navigating through a particularly challenging time, and I appreciate your honesty in expressing your feelings and insights.\n\nThe uncertainty surrounding your TPD claim and the financial pressures you're facing understandably create a lot of emotional weight. It's clear that this ongoing limbo is impacting your ability to plan for the future and find a sense of stability in your life. The way you've articulated your experiences with your ADHD and how prolonged uncertainty affects you is insightful and important for us to explore further.\n\nRecognizing that nighttime feels safer for you is a significant insight. It highlights how your nervous system is seeking relief from the pressures of daily life, even if that comes at the cost of your sleep cycle. This is something we can work on together to find healthier coping strategies and ways to create a sense of safety during the day.\n\nIt's also commendable that despite feeling overwhelmed, you're managing to communicate professionally and engage with your responsibilities and children. This shows resilience and a commitment to your growth and recovery.\n\nBefore our next appointment, it may be helpful to think about specific areas where you feel you could use additional support or strategies to help manage the emotional pressure you're experiencing. We can work together to develop a plan that helps you navigate these challenges while prioritizing your mental health and well-being.\n\nLooking forward to our next session.\n\nTake care,\n\nPauline",
+    "timestamp": "2026-05-22T06:21:00.5233+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "supabase_raw_catchall",
+    "cleaned_at": "2026-05-25T05:46:07.310207",
+    "salience_score": 60
+  },
+  {
+    "content": "### Research Findings on Psychology\n\n#### Verified Findings:\n1. **General Overview of Psychology**:\n   - Psychology is the scientific study of behavior and mental processes. It encompasses various subfields including clinical psychology, cognitive psychology, developmental psychology, and social psychology.\n\n2. **Current Trends**:\n   - There is a growing emphasis on evidence-based practices in therapy and mental health interventions.\n   - The integration of technology, such as teletherapy and mental health apps, is becoming more prevalent.\n\n3. **Common Gaps in Knowledge**:\n   - **Cultural Competence**: Many psychological theories and practices are based on Western perspectives, which may not be applicable to all cultures.\n   - **Neurodiversity**: There is an increasing recognition of neurodiversity (e.g., autism, ADHD) but gaps remain in understanding and accommodating different cognitive styles.\n   - **Intersectionality**: The interplay of various social identities (race, gender, socioeconomic status) and their effects on mental health are still under-researched.\n\n#### Assumptions:\n1. **Potential Gaps in Research**:\n   - **Long-term Effects of Therapy**: More longitudinal studies are needed to understand the long-term effectiveness of different therapeutic approaches.\n   - **Impact of Social Media**: The psychological effects of social media on various demographics, especially adolescents, require further exploration.\n   - **Mental Health in Non-Western Cultures**: More research is needed to understand mental health issues and treatments in non-Western contexts.\n\n2. **Emerging Fields**:\n   - **Positive Psychology**: While gaining traction, there may still be gaps in how to effectively measure and apply positive psychology principles in diverse populations.\n   - **Psychedelic Research**: The resurgence of interest in psychedelics for therapeutic use presents both opportunities and gaps in understanding their long-term effects and safety.\n\n### Conclusion\nWhile I couldn't access live data, the existing literature suggests that psychology is a dynamic field with several gaps, particularly regarding cultural competence, neurodiversity, and the longitudinal effects of various therapies. Further research in these areas could enhance our understanding and application of psychological principles across diverse populations. \n\nIf you have specific areas of psychology you want to explore further, please let me know!\n\nBrittany Diagnostic:\nRequest timed out after 60 seconds.",
+    "timestamp": "2026-05-22T08:26:36.541317+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "supabase_raw_catchall",
+    "cleaned_at": "2026-05-25T05:46:07.310480",
+    "salience_score": 30
+  },
+  {
+    "content": "Yes, I remember that your psychologist is named Pauline, and your GP is Terri Biscak. If there are any other teachers or mentors you'd like to mention or discuss, feel free to share!",
+    "timestamp": "2026-05-23T00:21:52.551763+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "supabase_raw_catchall",
+    "cleaned_at": "2026-05-25T05:46:07.312178",
+    "salience_score": 1
+  },
+  {
+    "content": "Now overlay the psychologists that influenced modern psychology on the NA as program",
+    "timestamp": "2026-05-19T14:30:31.431525+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "supabase_raw_catchall",
+    "cleaned_at": "2026-05-25T05:46:07.309170",
+    "salience_score": 0
+  }
+]

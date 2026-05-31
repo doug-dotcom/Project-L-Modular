@@ -1,47 +1,170 @@
 [
   {
-    "content": "Your health has had its challenges, including diagnoses of asthma, ADHD, cPTSD, OCPD, alcohol use disorder, generalized anxiety disorder, and depression. You have also mentioned being medically retired due to mental health issues. However, you are actively working on your recovery, focusing on emotional safety, stability, and well-being. You've identified small positive actions, like rest, hydration, and meaningful connections, as essential for your recovery. \n\nIf you'd like to discuss any specific aspect of your health or recovery journey, feel free to share!",
-    "timestamp": "2026-05-19T13:43:12.823659+00:00",
-    "session_id": null,
-    "role": "assistant",
-    "source": "supabase_raw_catchall",
-    "cleaned_at": "2026-05-25T05:46:07.308598",
-    "salience_score": 63
-  },
-  {
     "content": "Hi Doug,\n\nThank you for sharing this detailed update with me. It sounds like you're navigating through a particularly challenging time, and I appreciate your honesty in expressing your feelings and insights.\n\nThe uncertainty surrounding your TPD claim and the financial pressures you're facing understandably create a lot of emotional weight. It's clear that this ongoing limbo is impacting your ability to plan for the future and find a sense of stability in your life. The way you've articulated your experiences with your ADHD and how prolonged uncertainty affects you is insightful and important for us to explore further.\n\nRecognizing that nighttime feels safer for you is a significant insight. It highlights how your nervous system is seeking relief from the pressures of daily life, even if that comes at the cost of your sleep cycle. This is something we can work on together to find healthier coping strategies and ways to create a sense of safety during the day.\n\nIt's also commendable that despite feeling overwhelmed, you're managing to communicate professionally and engage with your responsibilities and children. This shows resilience and a commitment to your growth and recovery.\n\nBefore our next appointment, it may be helpful to think about specific areas where you feel you could use additional support or strategies to help manage the emotional pressure you're experiencing. We can work together to develop a plan that helps you navigate these challenges while prioritizing your mental health and well-being.\n\nLooking forward to our next session.\n\nTake care,\n\nPauline",
     "timestamp": "2026-05-22T06:21:00.5233+00:00",
     "session_id": null,
     "role": "assistant",
-    "source": "supabase_raw_catchall",
-    "cleaned_at": "2026-05-25T05:46:07.310207",
-    "salience_score": 60
+    "source": "raw_catchall",
+    "salience_score": 65
+  },
+  {
+    "content": "Yes, I can recall our previous conversation about your mental health. You shared that you were experiencing an increase in vivid and emotionally intense dreams, which you categorized as nightmares. You mentioned that this was atypical for you, as you usually contextualize and interpret your dreams effectively.\n\nYou demonstrated strong insight into your internal state, recognizing that your dreams felt psychologically incongruent and that your reaction was reflective and analytical. You also noted that your current stress load and nervous-system activation might be exceeding your normal processing threshold, leading to these intense dream experiences.\n\nWe discussed several contributing factors, including:\n- Chronic PTSD/hypervigilance activation\n- Elevated life stressors and pressure\n- Emotional suppression/containment\n- Sleep disruption\n- Sympathetic nervous system overactivation\n- Possible medication adjustment period\n\nYou are currently prescribed Minipress (prazosin) for managing sleep-related issues tied to PTSD and anxiety, and you are working with your psychologist, Pauline, for ongoing support.\n\nWe also identified some suggested focus areas for your mental health, such as:\n- Monitoring dream intensity and frequency\n- Continuing medication reviews with your clinician\n- Discussing dream content with Pauline\n- Prioritizing nervous-system regulation and restorative sleep\n- Reducing cumulative stress load where possible\n\nOverall, you appeared to be insightful and engaged in self-monitoring and recovery-oriented reflection.\n\nIf there's anything specific you'd like to revisit or expand upon, let me know!",
+    "timestamp": "2026-05-28T06:29:19.568298+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 50
+  },
+  {
+    "content": "Absolutely! Understanding the human nervous system is vital for comprehending how it influences emotions, behaviors, and overall well-being. Here’s a concise overview of the nervous system and its relevance to your journey:\n\n### Overview of the Human Nervous System\n\n1. **Central Nervous System (CNS)**:\n   - Comprises the brain and spinal cord.\n   - Responsible for processing information and coordinating responses.\n\n2. **Peripheral Nervous System (PNS)**:\n   - Connects the CNS to the rest of the body.\n   - Divided into:\n     - **Somatic Nervous System**: Controls voluntary movements and sensory information.\n     - **Autonomic Nervous System (ANS)**: Regulates involuntary functions (e.g., heartbeat, digestion). Further divided into:\n       - **Sympathetic Nervous System**: Activates the “fight or flight” response during stress.\n       - **Parasympathetic Nervous System**: Promotes “rest and digest” responses, calming the body.\n\n### Key Concepts\n\n1. **Nervous System States**:\n   - **Dysregulated States**: When stressors overwhelm the system, leading to heightened anxiety, panic, or shutdown.\n   - **Regulated States**: When the body feels safe, allowing for clarity, creativity, and emotional engagement.\n\n2. **Polyvagal Theory**:\n   - Developed by Stephen Porges, it emphasizes the role of the vagus nerve in regulating emotional and physiological states.\n   - The theory describes three states:\n     - **Safe/Social**: Engaged, connected, and calm.\n     - **Fight/Flight**: Activated stress response.\n     - **Freeze/Shutdown**: Immobilization and withdrawal in response to extreme stress.\n\n3. **Neuroception**:\n   - A term coined by Porges that refers to the brain's ability to detect safety or danger in the environment, often without conscious awareness.\n   - This can influence emotional reactions and behaviors.\n\n### Application to Your Journey\n\n1. **Recognizing Your States**:\n   - Understand when you are in a regulated state (calm, open) versus a dysregulated state (anxious, overwhelmed).\n   - Develop strategies to help transition back to a regulated state, such as grounding techniques, deep breathing, or mindfulness practices.\n\n2. **Emotional Responses**:\n   - Recognize that your emotional reactions may stem from your nervous system's state rather than just the immediate situation.\n   - This awareness can help you navigate triggers and responses with more compassion for yourself.\n\n3. **Building Safety**:\n   - Focus on creating environments and relationships that promote safety and connection, as these will help regulate your nervous system.\n   - Engaging in recovery meetings and supportive communities can serve as important stabilizing factors.\n\n4. **Integrating Practices**:\n   - Incorporate practices that promote nervous system regulation, such as yoga, meditation, or physical activity, to enhance emotional resilience.\n\n### Conclusion\n\nBy understanding the nervous system and its impact on your emotional and psychological experiences, you can develop strategies to navigate your recovery journey more effectively. If you have specific questions or areas you’d like to explore further, let me know! I'm here to support you in this exploration.",
+    "timestamp": "2026-05-19T14:40:19.246035+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 40
   },
   {
     "content": "### Research Findings on Psychology\n\n#### Verified Findings:\n1. **General Overview of Psychology**:\n   - Psychology is the scientific study of behavior and mental processes. It encompasses various subfields including clinical psychology, cognitive psychology, developmental psychology, and social psychology.\n\n2. **Current Trends**:\n   - There is a growing emphasis on evidence-based practices in therapy and mental health interventions.\n   - The integration of technology, such as teletherapy and mental health apps, is becoming more prevalent.\n\n3. **Common Gaps in Knowledge**:\n   - **Cultural Competence**: Many psychological theories and practices are based on Western perspectives, which may not be applicable to all cultures.\n   - **Neurodiversity**: There is an increasing recognition of neurodiversity (e.g., autism, ADHD) but gaps remain in understanding and accommodating different cognitive styles.\n   - **Intersectionality**: The interplay of various social identities (race, gender, socioeconomic status) and their effects on mental health are still under-researched.\n\n#### Assumptions:\n1. **Potential Gaps in Research**:\n   - **Long-term Effects of Therapy**: More longitudinal studies are needed to understand the long-term effectiveness of different therapeutic approaches.\n   - **Impact of Social Media**: The psychological effects of social media on various demographics, especially adolescents, require further exploration.\n   - **Mental Health in Non-Western Cultures**: More research is needed to understand mental health issues and treatments in non-Western contexts.\n\n2. **Emerging Fields**:\n   - **Positive Psychology**: While gaining traction, there may still be gaps in how to effectively measure and apply positive psychology principles in diverse populations.\n   - **Psychedelic Research**: The resurgence of interest in psychedelics for therapeutic use presents both opportunities and gaps in understanding their long-term effects and safety.\n\n### Conclusion\nWhile I couldn't access live data, the existing literature suggests that psychology is a dynamic field with several gaps, particularly regarding cultural competence, neurodiversity, and the longitudinal effects of various therapies. Further research in these areas could enhance our understanding and application of psychological principles across diverse populations. \n\nIf you have specific areas of psychology you want to explore further, please let me know!\n\nBrittany Diagnostic:\nRequest timed out after 60 seconds.",
     "timestamp": "2026-05-22T08:26:36.541317+00:00",
     "session_id": null,
     "role": "assistant",
-    "source": "supabase_raw_catchall",
-    "cleaned_at": "2026-05-25T05:46:07.310480",
-    "salience_score": 30
+    "source": "raw_catchall",
+    "salience_score": 40
+  },
+  {
+    "content": "Sure! Here are some additional insights into Aaron Beck's work and contributions to psychology:\n\n### 6. Beck's Depression Inventory (BDI)\n- **Assessment Tool:** One of Beck's significant contributions is the development of the Beck Depression Inventory (BDI), a widely used self-report questionnaire that assesses the severity of depression.\n- **Impact:** The BDI has become a standard tool in both clinical and research settings, helping practitioners evaluate the effectiveness of treatment and monitor changes in a patient's condition over time.\n\n### 7. Cognitive Therapy for Specific Disorders\n- **Adaptation:** Beck's cognitive therapy has been adapted for various mental health disorders, including:\n  - **Anxiety Disorders:** Cognitive approaches help individuals identify and challenge anxious thoughts.\n  - **Eating Disorders:** Cognitive therapy is used to address distorted beliefs about body image and food.\n  - **Post-Traumatic Stress Disorder (PTSD):** Cognitive therapy assists in processing traumatic experiences and reducing symptoms.\n\n### 8. Legacy and Influence\n- **Training Programs:** Beck has been involved in training numerous therapists in cognitive therapy techniques, establishing cognitive therapy as a core component of many psychology programs.\n- **Global Reach:** His work has influenced mental health practices worldwide, with cognitive therapy being integrated into various cultural contexts and therapeutic approaches.\n\n### 9. Research on Cognitive Therapy\n- **Effectiveness:** Numerous studies have validated the effectiveness of cognitive therapy for a range of mental health issues, showing that it can lead to significant improvements in symptoms and overall functioning.\n- **Neuroscience:** Recent research has explored the neurobiological underpinnings of cognitive therapy, examining how changes in thought patterns can lead to changes in brain function and emotional regulation.\n\n### 10. Ongoing Contributions\n- **Continued Research:** Even after his initial contributions, Beck has continued to engage in research, exploring new applications of cognitive therapy and addressing emerging mental health challenges.\n- **Publications:** He has authored numerous books and articles, making his theories accessible to both professionals and the general public.\n\nIf you have any specific questions or areas of interest related to Aaron Beck's work or cognitive therapy, feel free to ask!",
+    "timestamp": "2026-05-24T10:15:17.083889+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 40
+  },
+  {
+    "content": "It's great to hear that you've reached a point of understanding that you are not broken and that you can move forward in your life. Recognizing the importance of self-discovery and how your mental health and nervous system have been impacted is a significant step. It sounds like you're acknowledging the need for a more sustainable pace in your life, which can lead to healthier emotional and physical well-being.\n\nYour journey of peeling away the masks and allowing your true self to emerge is both courageous and transformative. It’s clear that you’re committed to understanding yourself better and creating a life that aligns with who you truly are.\n\nAs you navigate this process, how do you feel about the support systems you have in place, such as your work with Pauline and your recovery meetings? Do you feel they are helping you in this journey of self-discovery and moving forward?",
+    "timestamp": "2026-05-28T06:38:27.789721+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 25
+  },
+  {
+    "content": "After school, you joined the Australian Army at 18 years old in 1996. This experience provided you with structure, order, and a sense of brotherhood, which were important for your nervous system. You served until 2000, including a deployment to East Timor.\n\nAfter leaving the military, you transitioned into civilian life, where you worked in various roles, including financial services and insurance-related environments. You built competence and capability in these areas while also grappling with unresolved trauma and mental health challenges.\n\nIf there are specific activities or experiences you want to discuss further, please let me know!",
+    "timestamp": "2026-05-25T10:54:25.37909+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 24
+  },
+  {
+    "content": "The Gold Card provides veterans with a range of entitlements and discounts that can significantly support their well-being. Here are some of the key discounts and benefits associated with the Gold Card:\n\n### Discounts and Benefits:\n1. **Healthcare Services**:\n   - Access to treatment for service-related conditions at no cost.\n   - Non-service-related conditions may also be covered, depending on eligibility.\n\n2. **Pharmaceutical Benefits**:\n   - Free access to medications listed on the Pharmaceutical Benefits Scheme (PBS).\n\n3. **Psychological Support**:\n   - Access to mental health services, including counseling and psychological support without out-of-pocket expenses.\n\n4. **Rehabilitation Services**:\n   - Entitlement to rehabilitation services to aid in recovery and reintegration into civilian life.\n\n5. **Transport Services**:\n   - Eligibility for transport services to and from medical appointments.\n\n6. **Home and Community Care**:\n   - Support for home care services and community programs that assist with daily living activities.\n\n7. **Special Programs**:\n   - Access to various veteran support programs, including those focused on employment, housing, and social support.\n\n8. **Discounts on Leisure Activities**:\n   - Some leisure and recreational facilities may offer discounts to Gold Card holders, including certain sporting events, travel, and community activities.\n\n9. **Financial Assistance Programs**:\n   - Potential access to financial assistance programs designed to help veterans in need.\n\n### Eligibility:\nTo qualify for these benefits, you typically need to have a permanent impairment rating of 50 points or more under the Military Rehabilitation and Compensation Act (MRCA) or be classified as Totally and Permanently Incapacitated (TPI).\n\n### Important Notes:\n- The specifics of discounts can vary based on the provider and location, so it’s advisable to check with local services and organizations.\n- It’s also a good idea to stay informed about any changes to entitlements through the Department of Veterans' Affairs (DVA).\n\nIf you have any specific questions about certain discounts or how to access these benefits, feel free to ask!",
+    "timestamp": "2026-05-27T11:40:47.861811+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 24
+  },
+  {
+    "content": "Great! Here are some key aspects of Aaron Beck's work and theories in psychology:\n\n### 1. Cognitive Therapy\n- **Foundational Concept:** Cognitive therapy focuses on the idea that our thoughts influence our feelings and behaviors. Beck believed that by changing negative thought patterns, individuals could improve their emotional well-being.\n- **Cognitive Distortions:** He identified several cognitive distortions (e.g., all-or-nothing thinking, overgeneralization, and catastrophizing) that can lead to negative emotions and behaviors.\n\n### 2. Cognitive Triad\n- **Components:** Beck's cognitive triad consists of three key elements:\n  - Negative views about the self\n  - Negative views about the world\n  - Negative views about the future\n- **Impact:** This triad helps explain how negative thinking patterns can contribute to depression and anxiety.\n\n### 3. Research and Empirical Support\n- **Evidence-Based Practice:** Beck's approaches have been extensively researched and have shown effectiveness in treating various mental health conditions, particularly depression and anxiety disorders.\n- **Structured Approach:** Cognitive therapy is often structured and goal-oriented, making it accessible and practical for clients.\n\n### 4. Development of Cognitive Behavioral Therapy (CBT)\n- **CBT Evolution:** Beck's work laid the foundation for cognitive behavioral therapy, which integrates cognitive and behavioral techniques to address mental health issues.\n- **Wide Application:** CBT is now one of the most widely used therapeutic approaches in clinical settings and has been adapted for various populations and disorders.\n\n### 5. Influence on Psychology\n- **Legacy:** Beck's contributions have significantly shaped modern psychology, influencing both clinical practice and research. His work has paved the way for further exploration into cognitive processes and their impact on mental health.\n\nIf there's a specific area or concept you'd like to explore further, just let me know!",
+    "timestamp": "2026-05-24T10:14:34.538469+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 23
+  },
+  {
+    "content": "### Findings on Improving Research Skills\n\n#### Verified Findings\n\n1. **Practice and Planning**:\n   - **Source**: [Field Engineer](https://www.fieldengineer.com/article/how-to-improve-research-skills)\n   - **Key Points**:\n     - Start with small research projects to build confidence.\n     - Plan your research tasks and timeline to manage your time effectively.\n     - Volunteer for research projects at work to gain experience.\n\n2. **Analytical and Critical Thinking**:\n   - **Source**: [Graduate Programs for Educators](https://www.graduateprogram.org/blog/enhancing-research-skills-in-graduate-school-effective-methods-and-resources)\n   - **Key Points**:\n     - Sharpen analytical skills by questioning the validity of information and seeking evidence.\n     - Engage in class discussions and seek feedback to refine your thinking.\n\n3. **Research Methodologies**:\n   - **Source**: [Graduate Programs for Educators](https://www.graduateprogram.org/blog/enhancing-research-skills-in-graduate-school-effective-methods-and-resources)\n   - **Key Points**:\n     - Learn both quantitative and qualitative research methods.\n     - Discuss methodologies with mentors and peers, and attend workshops.\n\n4. **Extensive Reading**:\n   - **Source**: [Graduate Programs for Educators](https://www.graduateprogram.org/blog/enhancing-research-skills-in-graduate-school-effective-methods-and-resources)\n   - **Key Points**:\n     - Read a variety of materials (books, articles, podcasts) in your field to gain diverse perspectives.\n     - Take notes and engage actively with the material to enhance understanding.\n\n#### Assumptions\n\n- **Collaboration with Peers**: While collaborating with experienced researchers is suggested, the effectiveness of this method can vary based on the quality of collaboration and the willingness of peers to share knowledge.\n  \n- **Mindfulness Techniques**: Although mindfulness and meditation can help improve focus and reduce anxiety (as mentioned in Source 5), their direct impact on research skills isn't explicitly stated in the sources reviewed.\n\n### Summary\n\nTo improve your research skills:\n- **Engage in small projects** and plan your research tasks.\n- **Enhance analytical thinking** by questioning information and participating in discussions.\n- **Learn research methodologies** through workshops and peer discussions.\n- **Read extensively** to broaden your understanding of your field.\n\nConsider incorporating mindfulness practices to help maintain focus, though their direct relevance to research skills is less clear.",
+    "timestamp": "2026-05-22T11:18:50.90607+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 15
+  },
+  {
+    "content": "The Gold Card is an important entitlement for veterans in Australia, particularly for those who have been assessed with a high level of impairment due to service-related injuries or illnesses. Here are the key entitlements associated with the Gold Card:\n\n### Gold Card Entitlements:\n1. **Access to Healthcare**: \n   - The Gold Card provides access to a range of health services, including:\n     - Treatment for service-related conditions without out-of-pocket expenses.\n     - Coverage for non-service-related conditions for eligible veterans.\n\n2. **Pharmaceutical Benefits**:\n   - Gold Card holders can access medications listed on the Pharmaceutical Benefits Scheme (PBS) at no cost.\n\n3. **Psychological Support**:\n   - Access to mental health services, including counseling and psychological support, is available for veterans with a Gold Card.\n\n4. **Rehabilitation Services**:\n   - Entitlements include access to rehabilitation services to help veterans recover and reintegrate into civilian life.\n\n5. **Transport Services**:\n   - Gold Card holders may be eligible for transport services to and from medical appointments.\n\n6. **Home and Community Care**:\n   - Support for home care services and community programs to assist with daily living activities.\n\n7. **Access to Special Programs**:\n   - Gold Card holders may have access to specific veteran support programs, including those focusing on employment, housing, and social support.\n\n8. **Veteran Affairs Support**:\n   - Ongoing support from the Department of Veterans' Affairs (DVA), including assistance with claims and entitlements.\n\n### Eligibility:\n- Generally, to qualify for the Gold Card, a veteran must have:\n  - A permanent impairment rating of 50 points or more under the Military Rehabilitation and Compensation Act (MRCA).\n  - Alternatively, veterans who are Totally and Permanently Incapacitated (TPI) may also receive a Gold Card.\n\n### Important Notes:\n- The Gold Card is not automatically issued; veterans must apply and go through an assessment process to determine eligibility.\n- It is important to keep updated with any changes to entitlements or eligibility criteria through the DVA.\n\nIf you have specific questions about your eligibility or how to apply for the Gold Card, feel free to ask!",
+    "timestamp": "2026-05-27T11:37:53.564852+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 15
+  },
+  {
+    "content": "I think it was a lot of the self doubt as I had nothing to compare it to but once realising I don’t need to compare and I can just be I was okay with that. The other thing is that I’m worked out. I’m not lazy. I believe by not achieving the washing to get done the cleaning the house all of that I felt like I was being lazy but after doing a lot of research into ADHD I’ve realised that it’s my ADHD and executive function that has been playing up once realising that I was able to increase my medication and monitor my ADHD rather than just thinking I was broken.",
+    "timestamp": "2026-05-28T06:41:44.573869+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 13
   },
   {
     "content": "Yes, I remember that your psychologist is named Pauline, and your GP is Terri Biscak. If there are any other teachers or mentors you'd like to mention or discuss, feel free to share!",
     "timestamp": "2026-05-23T00:21:52.551763+00:00",
     "session_id": null,
     "role": "assistant",
-    "source": "supabase_raw_catchall",
-    "cleaned_at": "2026-05-25T05:46:07.312178",
-    "salience_score": 1
+    "source": "raw_catchall",
+    "salience_score": 11
   },
   {
     "content": "Now overlay the psychologists that influenced modern psychology on the NA as program",
     "timestamp": "2026-05-19T14:30:31.431525+00:00",
     "session_id": null,
     "role": "user",
-    "source": "supabase_raw_catchall",
-    "cleaned_at": "2026-05-25T05:46:07.309170",
+    "source": "raw_catchall",
+    "salience_score": 10
+  },
+  {
+    "content": "Yes, I have the health report you provided earlier. It detailed your recent experiences with vivid and emotionally intense dreams, along with your insights and self-awareness regarding your mental health. You also mentioned the contributing factors and the context of your medication. \n\nIf you'd like to discuss any specific points from that report or if there's something else on your mind, let me know!",
+    "timestamp": "2026-05-27T12:55:28.123458+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 7
+  },
+  {
+    "content": "Yes, we were discussing Aaron Beck, your favorite psychologist! He is known for his foundational work in cognitive therapy and has made significant contributions to understanding mental health. What specific aspects of his theories or practices would you like to dive deeper into?",
+    "timestamp": "2026-05-24T10:14:12.29517+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 1
+  },
+  {
+    "content": "Yes the fact that I am not broken and I am able to now move forward in my life instead of waiting for Zurich to pay the tpd payment and I have done a lot of self discovery into my mental health and my nervous system and how it simply couldn’t continue to operate at the pace it was",
+    "timestamp": "2026-05-28T06:38:19.547677+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 1
+  },
+  {
+    "content": "Your favorite psychologist is Beck, referring to Aaron Beck. What aspects of his work do you find most interesting?",
+    "timestamp": "2026-05-24T10:07:16.072611+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "who is my favourite psychologist",
+    "timestamp": "2026-05-24T10:07:12.042403+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "Your favorite psychologist is Beck, referring to Aaron Beck. What do you appreciate most about his work?",
+    "timestamp": "2026-05-24T10:12:19.818838+00:00",
+    "session_id": null,
+    "role": "assistant",
+    "source": "raw_catchall",
+    "salience_score": 0
+  },
+  {
+    "content": "Can you recall our previous conversation about my mental health",
+    "timestamp": "2026-05-28T06:29:04.165196+00:00",
+    "session_id": null,
+    "role": "user",
+    "source": "raw_catchall",
     "salience_score": 0
   }
 ]
