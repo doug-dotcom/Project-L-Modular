@@ -1,0 +1,24 @@
+{
+  "created_at": "2026-06-01T13:55:33+10:00",
+  "source": "project_l_behaviour_layer_v1",
+  "events_reviewed": 1,
+  "counts": {
+    "emotion": {
+      "anxiety": 1
+    },
+    "state": {
+      "creative": 1
+    },
+    "behaviour": {
+      "building": 1
+    },
+    "trigger": {
+      "stress": 1
+    }
+  },
+  "interpretation": {
+    "truth_note": "This is a heuristic pattern summary, not a clinical assessment.",
+    "memory_type": "behavioural_pattern_summary",
+    "permanent_code_change": false
+  }
+}
