@@ -1238,6 +1238,3 @@ def behaviour_truth_status():
 # END_PROJECT_L_BEHAVIOUR_LAYER_V1
 # =====================================================
 
-
-
-

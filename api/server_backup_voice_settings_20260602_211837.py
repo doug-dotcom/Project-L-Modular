@@ -1240,4 +1240,3 @@ def behaviour_truth_status():
 
 
 
-

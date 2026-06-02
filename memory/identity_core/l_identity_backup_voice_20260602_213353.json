@@ -255,7 +255,5 @@
       "role": "L's cognitive reasoning engine."
     }
   },
-  "version": "2.1",
-  "voice_enabled": true,
-  "response_mode": "voice_and_text"
+  "version": "2.1"
 }
