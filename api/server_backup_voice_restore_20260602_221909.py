@@ -52,8 +52,6 @@ from agents.tegan.tegan import (
     route_message
 )
 
-from voice.speaker import speak
-
 # =====================================================
 # ENVIRONMENT
 # =====================================================
@@ -117,26 +115,6 @@ def load_identity_core():
         )
 
         return {}
-
-def get_voice_settings():
-
-    identity = load_identity_core()
-
-    return {
-
-        "voice_enabled":
-            identity.get(
-                "voice_enabled",
-                True
-            ),
-
-        "response_mode":
-            identity.get(
-                "response_mode",
-                "voice_and_text"
-            )
-
-    }
 
 def build_identity_context():
 
@@ -221,12 +199,6 @@ if SUPABASE_URL and SUPABASE_KEY:
 # =====================================================
 # FASTAPI
 # =====================================================
-
-voice_state = {
-
-    "enabled": True
-
-}
 
 app = FastAPI(
     title="Project L",
@@ -673,6 +645,10 @@ def chat(
         "TEGAN ACTIVE"
     )
 
+    # =================================================
+    # DEFAULTS
+    # =================================================
+
     short_term_domain = (
         "short_term_general"
     )
@@ -692,6 +668,10 @@ def chat(
     continuity_context = (
         build_conversation_continuity()
     )
+
+    # =================================================
+    # DOMAIN CLASSIFICATION
+    # =================================================
 
     try:
 
@@ -716,6 +696,10 @@ def chat(
             f"CLASSIFICATION ERROR: {e}"
         )
 
+    # =================================================
+    # SAVE USER MEMORY
+    # =================================================
+
     write_short_term_memory(
 
         short_term_domain,
@@ -733,6 +717,10 @@ def chat(
         user_message
 
     )
+
+    # =================================================
+    # MEMORY RETRIEVAL
+    # =================================================
 
     try:
 
@@ -780,6 +768,10 @@ def chat(
             f"SHORT TERM RETRIEVAL ERROR: {e}"
         )
 
+    # =================================================
+    # CAPTAIN ELLIE
+    # =================================================
+
     try:
 
         runtime_context_packet = (
@@ -795,6 +787,10 @@ def chat(
             f"ELLIE CONTEXT ERROR: {e}"
         )
 
+    # =================================================
+    # CONTEXT BUILD
+    # =================================================
+
     time_context = (
         build_time_context()
     )
@@ -802,6 +798,10 @@ def chat(
     identity_context = (
         build_identity_context()
     )
+
+    # =================================================
+    # SYSTEM PROMPT
+    # =================================================
 
     system_prompt = f"""
 You are L.
@@ -855,6 +855,10 @@ CONTINUITY RULES:
 - Keep emotional and topic continuity.
 - Join the dots, no more no less.
 """
+
+    # =================================================
+    # TEGAN ORCHESTRATION
+    # =================================================
 
     agent_result = (
         route_message(
@@ -941,6 +945,10 @@ CONTINUITY RULES:
                     f"AI ERROR: {str(e)}"
                 )
 
+    # =================================================
+    # SAVE ASSISTANT MEMORY
+    # =================================================
+
     write_short_term_memory(
 
         short_term_domain,
@@ -959,56 +967,9 @@ CONTINUITY RULES:
 
     )
 
-    try:
-
-        voice_settings = (
-            get_voice_settings()
-        )
-
-        voice_enabled = (
-            voice_settings.get(
-                "voice_enabled",
-                True
-            )
-        )
-
-        response_mode = (
-            voice_settings.get(
-                "response_mode",
-                "voice_and_text"
-            )
-        )
-
-        log(
-            f"VOICE SETTINGS: enabled={voice_enabled} mode={response_mode}"
-        )
-
-        if (
-            voice_enabled
-            and
-            response_mode in [
-                "voice_only",
-                "voice_and_text"
-            ]
-        ):
-
-            log(
-                "VOICE SPEAK START"
-            )
-
-            speak(
-                reply
-            )
-
-            log(
-                "VOICE SPEAK END"
-            )
-
-    except Exception as e:
-
-        log(
-            f"VOICE ERROR: {e}"
-        )
+    # =================================================
+    # RETURN
+    # =================================================
 
     return {
 
@@ -1222,10 +1183,11 @@ async def upload_file(
             "success":
                 False,
 
-                "error":
-                    str(e)
+            "error":
+                str(e)
 
         }
+
 
 # =====================================================
 # PROJECT_L_BEHAVIOUR_LAYER_V1
@@ -1239,16 +1201,13 @@ from memory.behaviour.engine import (
 )
 
 class BehaviourIngestRequest(BaseModel):
-
     user_text: str
-
     assistant_text: str = ""
 
 @app.post("/behaviour/ingest")
 def behaviour_ingest(
     req: BehaviourIngestRequest
 ):
-
     return record_behaviour_from_exchange(
         req.user_text,
         req.assistant_text
@@ -1258,29 +1217,27 @@ def behaviour_ingest(
 def behaviour_recent(
     limit: int = 20
 ):
-
     return {
         "events":
-            get_recent_behaviour_events(
-                limit
-            )
+        get_recent_behaviour_events(limit)
     }
 
 @app.get("/behaviour/patterns")
 def behaviour_patterns(
     limit: int = 200
 ):
-
     return build_behaviour_patterns(
         limit
     )
 
 @app.get("/behaviour/truth-status")
 def behaviour_truth_status():
-
     return truth_implementation_status()
 
 # =====================================================
 # END_PROJECT_L_BEHAVIOUR_LAYER_V1
 # =====================================================
+
+
+
 

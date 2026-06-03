@@ -261,6 +261,61 @@ def memory_test():
             "error": str(e)
         }
 
+
+# =====================================================
+# VOICE CONTROL
+# =====================================================
+
+@app.get("/voice/status")
+def voice_status():
+
+    voice_settings = get_voice_settings()
+
+    return {
+
+        "enabled":
+            voice_state.get(
+                "enabled",
+                True
+            ),
+
+        "identity_voice_enabled":
+            voice_settings.get(
+                "voice_enabled",
+                True
+            ),
+
+        "response_mode":
+            voice_settings.get(
+                "response_mode",
+                "voice_and_text"
+            )
+
+    }
+
+@app.post("/voice/toggle")
+def voice_toggle():
+
+    current = voice_state.get(
+        "enabled",
+        True
+    )
+
+    voice_state["enabled"] = (
+        not current
+    )
+
+    log(
+        f"VOICE TOGGLE -> {voice_state['enabled']}"
+    )
+
+    return {
+
+        "enabled":
+            voice_state["enabled"]
+
+    }
+
 # =====================================================
 # CHAT
 # =====================================================
@@ -556,3 +611,4 @@ except Exception as e:
 # ============================================================
 # END PROJECT L BEHAVIOUR LAYER V1
 # ============================================================
+

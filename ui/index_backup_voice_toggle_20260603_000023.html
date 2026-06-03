@@ -364,24 +364,7 @@
              SEND BUTTON
         ===================================================== -->
 
-        
-<button
-    id="voiceToggle"
-    style="
-        width:50px;
-        height:50px;
-        border-radius:14px;
-        font-size:24px;
-        background:#374151;
-        color:white;
-        border:none;
-        cursor:pointer;
-        flex-shrink:0;
-    "
->
-🔊
-</button>
-<button onclick="sendMessage()">
+        <button onclick="sendMessage()">
             Send
         </button>
 
@@ -548,74 +531,6 @@
 
     </script>
 
-
-<script>
-
-async function updateVoiceButton(){
-
-    try{
-
-        const r =
-            await fetch(
-                "/voice/status"
-            );
-
-        const data =
-            await r.json();
-
-        document
-            .getElementById(
-                "voiceToggle"
-            )
-            .innerText =
-                data.enabled
-                ? "🔊"
-                : "🔇";
-
-    }catch(e){
-
-        console.log(e);
-
-    }
-
-}
-
-document
-.addEventListener(
-"DOMContentLoaded",
-() => {
-
-    const btn =
-        document.getElementById(
-            "voiceToggle"
-        );
-
-    if(!btn){
-        return;
-    }
-
-    btn.onclick =
-    async () => {
-
-        await fetch(
-            "/voice/toggle",
-            {
-                method:"POST"
-            }
-        );
-
-        await updateVoiceButton();
-
-    };
-
-    updateVoiceButton();
-
-});
-
-</script>
-
 </body>
 
 </html>
-
-

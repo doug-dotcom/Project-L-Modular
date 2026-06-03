@@ -222,12 +222,6 @@ if SUPABASE_URL and SUPABASE_KEY:
 # FASTAPI
 # =====================================================
 
-voice_state = {
-
-    "enabled": True
-
-}
-
 app = FastAPI(
     title="Project L",
     version="persistent-cognition-3.1"
@@ -1283,4 +1277,3 @@ def behaviour_truth_status():
 # =====================================================
 # END_PROJECT_L_BEHAVIOUR_LAYER_V1
 # =====================================================
-
