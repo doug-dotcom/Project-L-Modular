@@ -642,6 +642,41 @@ def health():
 
     }
 
+
+# =====================================================
+# VOICE CONTROL
+# =====================================================
+
+@app.get("/voice/status")
+def voice_status():
+
+    return {
+
+        "enabled":
+            voice_state.get(
+                "enabled",
+                True
+            )
+
+    }
+
+@app.post("/voice/toggle")
+def voice_toggle():
+
+    voice_state["enabled"] = (
+        not voice_state.get(
+            "enabled",
+            True
+        )
+    )
+
+    return {
+
+        "enabled":
+            voice_state["enabled"]
+
+    }
+
 # =====================================================
 # CHAT
 # =====================================================
@@ -1283,4 +1318,5 @@ def behaviour_truth_status():
 # =====================================================
 # END_PROJECT_L_BEHAVIOUR_LAYER_V1
 # =====================================================
+
 
