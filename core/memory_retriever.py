@@ -35,7 +35,11 @@ def load_json(path):
 
             return []
 
-    except:
+    except Exception as e:
+
+        print(
+            f"MEMORY LOAD ERROR: {path.name} | {e}"
+        )
 
         return []
 
@@ -49,9 +53,17 @@ def search_memories(user_message):
         user_message
     ).lower()
 
-    query_words = query.split()
+    query_words = [
+        word.strip()
+        for word in query.split()
+        if len(word.strip()) >= 3
+    ]
 
     results = []
+
+    if not query_words:
+
+        return []
 
     files = DOMAIN_DIR.glob("*.json")
 
@@ -115,25 +127,19 @@ def search_memories(user_message):
             })
 
     return sorted(
-
         results,
-
         key=lambda x: (
             x["score"],
             x["priority"]
         ),
-
         reverse=True
-
     )[:MAX_MEMORY_COUNT]
 
 # =====================================================
 # BUILD CONTEXT
 # =====================================================
 
-def retrieve_memory_context(
-    user_message
-):
+def retrieve_memory_context(user_message):
 
     memories = search_memories(
         user_message
@@ -141,15 +147,14 @@ def retrieve_memory_context(
 
     if not memories:
 
-        return (
-            "No relevant memories found."
-        )
+        print("LONG TERM MEMORY COUNT: 0")
+        print("LONG TERM CONTEXT SIZE: 0")
 
-    context = []
+        return "No relevant memories found."
 
-    context.append(
+    context = [
         "Relevant Long-Term Memory Context:"
-    )
+    ]
 
     total_chars = 0
 
@@ -167,31 +172,21 @@ def retrieve_memory_context(
             f"{content}"
         )
 
-        if (
-            total_chars
-            + len(line)
-            > MAX_CONTEXT_CHARS
-        ):
+        if total_chars + len(line) > MAX_CONTEXT_CHARS:
             break
 
-        context.append(
-            line
-        )
+        context.append(line)
 
-        total_chars += len(
-            line
-        )
+        total_chars += len(line)
+
+    final_context = "\n".join(context)
 
     print(
-        f"LONG TERM MEMORY COUNT: "
-        f"{len(memories)}"
+        f"LONG TERM MEMORY COUNT: {len(memories)}"
     )
 
     print(
-        f"LONG TERM CONTEXT SIZE: "
-        f"{total_chars}"
+        f"LONG TERM CONTEXT SIZE: {len(final_context)}"
     )
 
-    return "\n".join(
-        context
-    )
+    return final_context
