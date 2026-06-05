@@ -10,10 +10,6 @@ ROOT = Path(__file__).resolve().parents[1]
 
 DOMAIN_DIR = ROOT / "memory" / "domains"
 
-MAX_MEMORY_COUNT = 15
-MAX_MEMORY_CHARS = 500
-MAX_CONTEXT_CHARS = 4000
-
 # =====================================================
 # LOAD JSON
 # =====================================================
@@ -65,15 +61,15 @@ def search_memories(user_message):
                 continue
 
             content = str(
-                memory.get(
-                    "content",
-                    ""
-                )
+                memory.get("content", "")
             ).lower()
 
+            # =========================================
+            # TOKEN MATCH SCORE
+            # =========================================
+
             score = sum(
-                1
-                for word in query_words
+                1 for word in query_words
                 if word in content
             )
 
@@ -82,58 +78,49 @@ def search_memories(user_message):
 
             results.append({
 
-                "domain":
-                    file.stem,
+                "domain": file.stem,
 
-                "content":
-                    memory.get(
-                        "content",
-                        ""
-                    ),
+                "content": memory.get(
+                    "content",
+                    ""
+                ),
 
-                "priority":
-                    memory.get(
-                        "priority",
-                        5
-                    ),
+                "priority": memory.get(
+                    "priority",
+                    5
+                ),
 
-                "salience":
-                    memory.get(
-                        "salience",
-                        "medium"
-                    ),
+                "salience": memory.get(
+                    "salience",
+                    "medium"
+                ),
 
-                "anchor":
-                    memory.get(
-                        "anchor",
-                        False
-                    ),
+                "anchor": memory.get(
+                    "anchor",
+                    False
+                ),
 
-                "score":
-                    score
-
+                "score": score
             })
 
+    # =============================================
+    # SORT BY SCORE + PRIORITY
+    # =============================================
+
     return sorted(
-
         results,
-
         key=lambda x: (
             x["score"],
             x["priority"]
         ),
-
         reverse=True
-
-    )[:MAX_MEMORY_COUNT]
+    )[:15]
 
 # =====================================================
 # BUILD CONTEXT
 # =====================================================
 
-def retrieve_memory_context(
-    user_message
-):
+def retrieve_memory_context(user_message):
 
     memories = search_memories(
         user_message
@@ -141,9 +128,7 @@ def retrieve_memory_context(
 
     if not memories:
 
-        return (
-            "No relevant memories found."
-        )
+        return "No relevant memories found."
 
     context = []
 
@@ -151,47 +136,13 @@ def retrieve_memory_context(
         "Relevant Long-Term Memory Context:"
     )
 
-    total_chars = 0
-
     for memory in memories:
-
-        content = str(
-            memory.get(
-                "content",
-                ""
-            )
-        )[:MAX_MEMORY_CHARS]
 
         line = (
             f"[{memory['domain']}] "
-            f"{content}"
+            f"{memory['content']}"
         )
 
-        if (
-            total_chars
-            + len(line)
-            > MAX_CONTEXT_CHARS
-        ):
-            break
+        context.append(line)
 
-        context.append(
-            line
-        )
-
-        total_chars += len(
-            line
-        )
-
-    print(
-        f"LONG TERM MEMORY COUNT: "
-        f"{len(memories)}"
-    )
-
-    print(
-        f"LONG TERM CONTEXT SIZE: "
-        f"{total_chars}"
-    )
-
-    return "\n".join(
-        context
-    )
+    return "\n".join(context)
