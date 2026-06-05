@@ -1,0 +1,119 @@
+{
+  "version": "0.1",
+  "created_from": "Value Discovery Drive",
+  "core_values": [
+    {
+      "value": "Family",
+      "strength": 100,
+      "children": [
+        "Love",
+        "Presence",
+        "Protection",
+        "Self Respect",
+        "You Are Enough"
+      ],
+      "evidence": [
+        "Kids chosen over Project L",
+        "Peace with kids chosen over legacy",
+        "User wants children to know they are enough"
+      ]
+    },
+    {
+      "value": "Service",
+      "strength": 95,
+      "children": [
+        "Helping People",
+        "Step 12",
+        "Contribution",
+        "Ripple Effect"
+      ],
+      "evidence": [
+        "Project L valued as a tool to help people",
+        "Recovery linked to carrying the message",
+        "Teaching and mentoring chosen over fame"
+      ]
+    },
+    {
+      "value": "Truth Seeking",
+      "strength": 94,
+      "children": [
+        "Truth Over Comfort",
+        "Become Less Wrong",
+        "Self Knowledge",
+        "Honest Growth"
+      ],
+      "evidence": [
+        "Truth chosen over hope",
+        "User said being wrong gets him closer to being right"
+      ]
+    },
+    {
+      "value": "Growth",
+      "strength": 92,
+      "children": [
+        "Discovery",
+        "Transformation",
+        "Earned Understanding",
+        "Shedding Old Skin"
+      ],
+      "evidence": [
+        "User would not erase past suffering",
+        "User values coming to answers over being handed answers"
+      ]
+    },
+    {
+      "value": "Connection",
+      "strength": 90,
+      "children": [
+        "Deep Conversations",
+        "Recovery Community",
+        "Family Connection",
+        "Helping Others Feel Seen"
+      ],
+      "evidence": [
+        "Connection chosen over creation",
+        "Smiles and laughter identified as healing"
+      ]
+    },
+    {
+      "value": "Peace",
+      "strength": 89,
+      "children": [
+        "Contentment",
+        "Security",
+        "Freedom",
+        "Ability To Breathe"
+      ],
+      "evidence": [
+        "Financial freedom described as breathing and paying bills",
+        "Peace with kids chosen over public legacy"
+      ]
+    }
+  ],
+  "value_collisions": [
+    {
+      "choice": "Kids over Project L",
+      "winner": "Family",
+      "loser": "Project L",
+      "meaning": "Family governs mission."
+    },
+    {
+      "choice": "Truth over Hope",
+      "winner": "Truth Seeking",
+      "loser": "Comfort",
+      "meaning": "Doug prefers truth even when difficult."
+    },
+    {
+      "choice": "Connection over Creation",
+      "winner": "Connection",
+      "loser": "Creation",
+      "meaning": "Creation is valuable when it serves connection."
+    },
+    {
+      "choice": "Purpose over Money",
+      "winner": "Purpose",
+      "loser": "Money",
+      "meaning": "Money is a tool for security, not the final goal."
+    }
+  ]
+}

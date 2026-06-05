@@ -1,0 +1,32 @@
+[
+  {
+    "winner": "Family",
+    "loser": "Project_L",
+    "reason": "Family governs mission",
+    "confidence": 1.0
+  },
+  {
+    "winner": "Truth",
+    "loser": "Hope",
+    "reason": "Truth preferred over comforting illusion",
+    "confidence": 0.95
+  },
+  {
+    "winner": "Peace",
+    "loser": "Legacy",
+    "reason": "Peace with children creates the real legacy",
+    "confidence": 0.95
+  },
+  {
+    "winner": "Connection",
+    "loser": "Creation",
+    "reason": "Connection chosen over building when forced",
+    "confidence": 0.90
+  },
+  {
+    "winner": "Purpose",
+    "loser": "Money",
+    "reason": "Money is a tool, purpose remains after security",
+    "confidence": 1.0
+  }
+]

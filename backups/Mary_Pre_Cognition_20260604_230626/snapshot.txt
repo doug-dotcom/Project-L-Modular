@@ -1,0 +1,25 @@
+MARY SNAPSHOT
+
+Created:
+06/04/2026 23:06:26
+
+Snapshot:
+C:\Shine_L\backups\Mary_Pre_Cognition_20260604_230626
+
+Contents:
+
+- agents\mary
+- memory\domains
+
+State:
+
+AODS15 Value Graph
+AODS16 Domain Profiler
+AODS17 Collision Engine
+AODS18 Enrichment Pass
+
+Memories:
+1917
+
+Ready For:
+AODS19 Mary Cognition Engine

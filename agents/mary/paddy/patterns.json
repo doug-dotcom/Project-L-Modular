@@ -1,0 +1,11 @@
+[
+  {
+    "pattern": "Pipeline Fatigue",
+    "sequence": [
+      "Progress",
+      "Delay",
+      "Follow-up",
+      "Progress"
+    ]
+  }
+]

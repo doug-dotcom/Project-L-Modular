@@ -1,0 +1,72 @@
+{
+  "DVA": [
+    "dva",
+    "agr",
+    "tpi",
+    "gold card",
+    "delegate",
+    "alan"
+  ],
+
+  "TPD": [
+    "tpd",
+    "onepath",
+    "zurich",
+    "trustee"
+  ],
+
+  "Recovery": [
+    "na",
+    "aa",
+    "meeting",
+    "sponsor",
+    "paul"
+  ],
+
+  "Health": [
+    "doctor",
+    "gp",
+    "terri",
+    "appointment",
+    "medication"
+  ],
+
+  "Family": [
+    "isla",
+    "ash",
+    "ashton",
+    "luella",
+    "mehlia",
+    "cass"
+  ],
+
+  "Project_L": [
+    "mary",
+    "carol",
+    "sally",
+    "connie",
+    "ellie",
+    "agent"
+  ],
+
+  "Financial": [
+    "capstone",
+    "income",
+    "payment",
+    "money",
+    "super"
+  ],
+
+  "Legal": [
+    "solicitor",
+    "lawyer",
+    "afca",
+    "legal"
+  ],
+
+  "Sports": [
+    "hockey",
+    "netball",
+    "punt49"
+  ]
+}

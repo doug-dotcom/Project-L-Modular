@@ -10,16 +10,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 117,
@@ -32,16 +26,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 118,
@@ -54,16 +42,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 137,
@@ -76,16 +58,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 145,
@@ -98,16 +74,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 151,
@@ -120,16 +90,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 237,
@@ -142,16 +106,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 238,
@@ -164,16 +122,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 245,
@@ -186,16 +138,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 252,
@@ -208,16 +154,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 267,
@@ -230,16 +170,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 270,
@@ -252,16 +186,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 288,
@@ -274,16 +202,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 292,
@@ -296,16 +218,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 295,
@@ -318,16 +234,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 296,
@@ -340,16 +250,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 301,
@@ -362,16 +266,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 307,
@@ -384,16 +282,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 331,
@@ -406,16 +298,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 340,
@@ -428,16 +314,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 349,
@@ -450,16 +330,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 351,
@@ -472,16 +346,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 466,
@@ -494,16 +362,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 512,
@@ -516,16 +378,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 535,
@@ -538,16 +394,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 583,
@@ -560,16 +410,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 597,
@@ -582,16 +426,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 657,
@@ -604,16 +442,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 663,
@@ -626,16 +458,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 665,
@@ -648,16 +474,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 701,
@@ -670,16 +490,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 703,
@@ -692,16 +506,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 708,
@@ -714,16 +522,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 717,
@@ -736,16 +538,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 755,
@@ -758,16 +554,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 849,
@@ -780,16 +570,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 871,
@@ -802,16 +586,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 873,
@@ -824,16 +602,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 875,
@@ -846,16 +618,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 894,
@@ -868,16 +634,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 899,
@@ -890,16 +650,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 900,
@@ -912,16 +666,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 967,
@@ -934,16 +682,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 968,
@@ -956,16 +698,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 983,
@@ -978,16 +714,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 984,
@@ -1000,16 +730,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 989,
@@ -1022,16 +746,10 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "id": 990,
@@ -1044,15 +762,9 @@
     "priority": 5,
     "salience": "medium",
     "anchor": false,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Achievement",
-      "Contribution",
-      "Growth",
-      "Integrity"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "work"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   }
 ]

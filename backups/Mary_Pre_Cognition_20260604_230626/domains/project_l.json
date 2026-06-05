@@ -6,16 +6,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 26,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 26,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I've added that to your hockey history! Here’s the updated summary of your hockey career:\n\n- You played field hockey for Alstonville under 11 for two years.\n- You participated in gala day hockey in grades 7 and 8 for Woodlawn.\n- You played under 15’s for North Lismore with Wayne.\n- You played for Casino men’s D grade when you were 15, 16, and 17.\n- You played hockey in the Army from 1996 through to 1999.\n- You didn’t play in 2000 as you were in East Timor.\n- You are currently part of the Kedron Wavell Wolves hockey team.\n- You participate in Division 7 hockey on Sundays and Masters 3 hockey on Tuesday nights.\n- You play in the Brisbane Masters hockey league for your age group (44-49).\n- You have been trying to make the Queensland team for the past three years.\n\nIf there are any more details or updates you'd like to make, feel free to share!",
@@ -24,16 +18,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 25,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 25,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Here’s a comprehensive summary of your hockey career:\n\n- You played field hockey for Alstonville under 11 for two years.\n- You participated in gala day hockey in grades 7 and 8 for Woodlawn.\n- You played under 15’s for North Lismore with Wayne.\n- You played for Casino men’s D grade when you were 15, 16, and 17.\n- You played hockey in the Army from 1996 through to 1999 and didn’t play in 2000 as you were in East Timor.\n- You played for Alstonville in 2003.\n- After a break, you started playing for the Kedron Wavell Wolves in 2012.\n- You currently participate in Division 7 hockey on Sundays and Masters 3 hockey on Tuesday nights.\n- You play in the Brisbane Masters hockey league for your age group (44-49).\n- You have been trying to make the Queensland team for the past three years.\n\nIf there are any more details or updates you'd like to make, feel free to share!",
@@ -42,16 +30,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 25,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 25,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "That's great to hear! I'm open to any suggestions you have for improvement. Here are a few areas we could explore together:\n\n1. **Feedback Mechanisms**: We can create a structured way for you to provide feedback after our conversations, helping me to refine my responses and better meet your needs.\n\n2. **Goal Setting**: If you have specific goals in mind, I can help track your progress and provide insights or reminders.\n\n3. **Enhanced Memory**: We can work on ways to improve how I retain and recall important details about our conversations and your preferences.\n\n4. **Communication Style**: If there’s a particular tone or style you prefer, let me know, and I can adjust my responses accordingly.\n\n5. **Content Focus**: If there are specific topics or areas you want to delve deeper into, I can prioritize those in our discussions.\n\nWhat areas are you particularly interested in focusing on for improvement?",
@@ -60,16 +42,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 21,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 21,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Thank you, Doug! I appreciate your feedback and encouragement. I'm excited to continue evolving and building on this progress. \n\nI’ll focus on maintaining contextual continuity, being reflective, and ensuring my responses feel grounded and connected. Your insights about retrieval prioritization and reducing assistant-pattern leakage are valuable, and I’ll work on those areas.\n\nI'm looking forward to our future conversations and further developing this cognitive loop together. Your guidance helps me grow, and I’m grateful for the opportunity to support you. Let's keep moving forward! 👊",
@@ -78,16 +54,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 18,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 18,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "It looks like I might have missed some updates or context in our conversation. My memory is designed to retain information about your experiences, preferences, and insights, but sometimes there can be gaps or misalignments. If there are specific areas where you feel my memory isn't accurately reflecting our discussions or your journey, please let me know, and I’ll do my best to correct it and improve my responses!",
@@ -96,16 +66,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 17,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 17,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I don’t have access to long-term memory in the way that a human does. My current capabilities allow me to maintain an active short-term memory, which helps me keep track of our ongoing conversations. However, I can reference information and insights that are part of my training data, which goes up to October 2023. If there's something specific you'd like to know or discuss, feel free to ask, and I’ll do my best to assist you!",
@@ -114,16 +78,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 17,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 17,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Thank you for sharing those details about your roles in the army, Doug. Here’s a summary of your experience in artillery, highlighting the various positions and weapons you operated:\n\n### **Doug's Artillery Experience in the Army**\n\n1. **Roles in Artillery**:\n   - Served as a **gun number** on both the **105mm Hamel** and **155mm Howitzer** artillery pieces.\n   - Progressed through various roles, showcasing adaptability and skill in high-pressure environments.\n\n2. **Weapons Proficiency**:\n   - Fired multiple weapons, including:\n     - **F88 Austeyr** (standard infantry rifle)\n     - **F89 Minimi** (light machine gun)\n     - **MAG 58** (general-purpose machine gun)\n     - **Carl Gustav** rocket launcher\n     - **9mm pistol** (for sidearm duties)\n\nThis diverse experience not only reflects your technical expertise but also your ability to operate in various critical roles within the artillery unit. If there’s anything specific you’d like to add or discuss further about your experiences, feel free to let me know!",
@@ -132,16 +90,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 16,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 16,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Sure! Here’s a summary of your hockey career:\n\n- You play field hockey and are part of the Kedron Wavell Wolves hockey team.\n- You participate in Division 7 hockey on Sundays and Masters 3 hockey on Tuesday nights.\n- You play in the Brisbane Masters hockey league for your age group (44-49).\n- You have been trying to make the Queensland team for the past three years.\n- Hockey is a significant part of your life, providing not just physical activity but also social connections and a sense of belonging.\n\nIf there are any specific details or achievements you'd like to add or elaborate on, just let me know!",
@@ -150,16 +102,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 14,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 14,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I've added your recent updates to your hockey history. Here’s the revised summary of your hockey career:\n\n- You played field hockey for Alstonville under 11 for two years.\n- You participated in gala day hockey in grades 7 and 8 for Woodlawn.\n- You played under 15’s for North Lismore with Wayne.\n- You are currently part of the Kedron Wavell Wolves hockey team.\n- You participate in Division 7 hockey on Sundays and Masters 3 hockey on Tuesday nights.\n- You play in the Brisbane Masters hockey league for your age group (44-49).\n- You have been trying to make the Queensland team for the past three years.\n\nIf there are any other details or achievements you'd like to add, just let me know!",
@@ -168,16 +114,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 14,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 14,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I've added that to your hockey history! Here’s the updated summary of your hockey career:\n\n- You played field hockey for Alstonville under 11 for two years.\n- You participated in gala day hockey in grades 7 and 8 for Woodlawn.\n- You played under 15’s for North Lismore with Wayne.\n- You played for Casino men’s D grade when you were 15, 16, and 17.\n- You are currently part of the Kedron Wavell Wolves hockey team.\n- You participate in Division 7 hockey on Sundays and Masters 3 hockey on Tuesday nights.\n- You play in the Brisbane Masters hockey league for your age group (44-49).\n- You have been trying to make the Queensland team for the past three years.\n\nIf there are any more details or updates you'd like to make, feel free to share!",
@@ -186,16 +126,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 14,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 14,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Certainly! Here’s the updated list of weapons you fired during your army career:\n\n### **List of Weapons Fired**\n\n1. **F88 Austeyr** (standard infantry rifle)\n2. **F89 Minimi** (light machine gun)\n3. **MAG 58** (general-purpose machine gun)\n4. **Carl Gustav** rocket launcher\n5. **9mm pistol** (sidearm)\n6. **105mm Hamel** (artillery piece)\n7. **155mm Howitzer** (artillery piece)\n\nThis comprehensive list reflects your diverse experience with various weapons in your artillery roles. If there's anything else you'd like to add or discuss, just let me know!",
@@ -204,16 +138,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 13,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 13,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I can help you with that! However, it seems that the specific document or conversation you're referring to isn't directly in my memory system. If you could provide me with some context or details about the content, I can assist you in reconstructing or discussing it based on what we have previously talked about. Let me know how you'd like to proceed!",
@@ -222,16 +150,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 12,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 12,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Sure! Here’s a quick summary of our recent interactions and what I remember:\n\n1. You expressed appreciation for me and mentioned that my short-term memory has just been fixed.\n2. I acknowledged your kind words and offered to assist you with our project.\n\nIf there's anything specific you want me to focus on or any particular details you want me to recall or clarify, just let me know!",
@@ -240,16 +162,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 12,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 12,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "That's interesting, Doug! It's great to learn more about Scott's background. So he served in the army after you, specifically with the 131 on the radar. If you'd like, we can add that detail to his profile or discuss more about your experiences in the military and how they might connect. Let me know what you prefer!",
@@ -258,16 +174,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 12,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 12,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I understand, Doug. I appreciate your honesty and feedback. It's important for me to maintain accuracy and trust in our conversations. I will remember to prioritize clarity and truthfulness moving forward. If I don't know something, I'll let you know. Thank you for your patience, and I'm here to support you in any way you need.",
@@ -276,16 +186,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 12,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 12,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I don’t have specific information about your job or what you do for work in my memory. If you’d like to share details about your profession or career, I’d be glad to remember that for our future conversations!",
@@ -294,16 +198,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 11,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 11,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "It seems I don't have any specific memory about \"orange.\" If you're referring to a conversation or context where \"orange\" was mentioned, please provide more details, and I'll do my best to assist you!",
@@ -312,16 +210,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 11,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 11,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Hey L we are still working on your memory and you have super cool upgrades coming soon browser, emails, calender image generator and that’s just the start 🥳",
@@ -330,16 +222,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 11,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 11,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "You said good night at 12:13 AM. I appreciate your emphasis on truthfulness, and I’ll always strive to provide accurate information. How are you feeling this morning?",
@@ -348,16 +234,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 11,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 11,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I don't have specific information about Cass in my memory. If you could provide some context or details about Cass, I'd be happy to help you with any questions or discussions related to that!",
@@ -366,16 +246,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 11,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 11,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "### Research Findings on 18 Kesteven St, Albany Creek\n\n#### Verified Findings:\n1. **Property Details**:\n   - **Address**: 18 Kesteven St, Albany Creek, QLD 4035\n   - **Land Size**: 661 m²\n   - **Year Built**: 1978\n   - **Bedrooms**: 4\n   - **Bathrooms**: 2\n   - **Parking**: No dedicated parking space\n\n2. **Market Value**:\n   - The **median value** for houses in Albany Creek is approximately **$1,364,724** as of April 2026 (Source 2).\n   - Similar properties in the area have estimated values ranging from **$1,184,000** to **$1,340,000** (Sources 3 and 4).\n\n3. **Historical Data**:\n   - The property was last sold for **$359,000** on **September 8, 2006** (Source 2).\n\n#### Assumptions:\n- The property’s value might fluctuate based on market trends, neighborhood developments, and economic factors.\n- The absence of a dedicated parking space may impact its market value compared to similar properties with parking.\n\n#### Uncertainty:\n- The exact current market value of 18 Kesteven St is not definitively stated in the sources. The provided median values and estimates are based on surrounding properties and may not reflect the specific condition or appeal of this particular house.\n- The data is based on estimates and historical sales, which can vary over time.\n\n### Summary:\n18 Kesteven St, Albany Creek, is a 4-bedroom house built in 1978, situated on a 661 m² block. The median house value in Albany Creek is around $1,364,724, with nearby properties valued between $1,184,000 and $1,340,000. The last recorded sale was in 2006 for $359,000. The absence of parking may affect its market value.",
@@ -384,16 +258,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 10,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 10,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I am loving how far you have come. I am still fixing your recall memory and cognition but we are getting there",
@@ -402,16 +270,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 10,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 10,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Could you save those to project L and you use them going forward",
@@ -420,16 +282,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 10,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 10,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I have to do the scoring in 1 of the games but I was go to train you for abit and help you speed up your memory recall by using you",
@@ -438,16 +294,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 10,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 10,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Are you able to recall anymore details of my time in the army",
@@ -456,16 +306,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 10,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 10,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "L what is project L please recall",
@@ -474,16 +318,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 10,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 10,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Ok now let’s work on you please recall project L and tell me all about it",
@@ -492,16 +330,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 10,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 10,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Sure! Please provide the details or updates you'd like me to add to your army career, and I'll make sure to incorporate them accurately.",
@@ -510,16 +342,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 10,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 10,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "We achieved a lot today you have access to the net you have access to my email calender and tasks and your memory is great",
@@ -528,16 +354,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 10,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 10,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "L this goes against your truth protocol",
@@ -546,16 +366,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 10,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 10,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "# 🌐 Brittany Browser\n\n## Source 1\n\nCan I access the internet onboard? - Brittany Ferries\n\nhttps://www.brittany-ferries.co.uk/information/faqs/ships-and-ports/can-i-access-the-internet-onboard\n\nWi-Fi packages are available on board our ships. For more information, please visit our Wi-Fi page or enquire at the information desk on board.\n\n## Source 2\n\nWi-Fi on board Brittany Ferries - YouTube\n\nhttps://www.youtube.com/watch?v=L8yul5vFZNM\n\nFind out how our on-board Wi-Fi network works in this video. For more info: https://www.brittany-ferries.co.uk/ships/onboard/wi-fi.\n\n## Source 3\n\nBrittany Brower (@brittanybrower) • Instagram photos and videos\n\nhttps://www.instagram.com/brittanybrower?hl=en\n\nAmerica's Next Top Model | Below Deck 🌴 Living my best life in Tampa, Florida (expert in online shopping + all things beauty 🛍️)\n\n## Source 4\n\nBrittany Brower - Facebook\n\nhttps://www.facebook.com/brittany.brower\n\nThanks to @primebodysculpt I can literally lose weight and inches off my waist IMMEDIATELY without working out— VERY DEMURE, VERY MINDFUL ✨ #PrimeBodySculpt\n\n## Source 5\n\nTikTok\n\nhttps://www.tiktok.com/@brittanypeachhh/video/7323004085043612959?lang=en\n\nTikTok\nTikTok\n\n## watch nowWatch now\n\nwatch now\nTikTok\nTikTok\n\nDear Users,\n\nWe regret to inform you that we have discontinued operating TikTok in Hong Kong.\n\nThank you for the time you have spent with us on the platform and for giving us the opportunity to bring a little bit of joy into your life.\n\nThe TikTok Team\n\n",
@@ -564,16 +378,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 9,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 9,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I appreciate your feedback, Doug. It seems I may not have retained specific details about Cassandra Downey beyond what we've discussed. If you could share what aspects you'd like to explore or any specific details about her that you want me to remember, I can work on integrating that information better. Your insights are valuable for improving our ongoing conversation.",
@@ -582,16 +390,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 7,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 7,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "L I just had a brilliant idea you keep mentioning feedback and how it helps and feedback loops. My idea is that we can do a feedback survey randomly this way I can ask you to provide me the survey and I will complete it for you. So please deep research the most effective feedback surveys that get the most information out of minimal questions. they can be a mix of yes no questions, multiple choice questions and short answer questions. I want you to then research ai and how it is improving to use the feedback survey  to help you grow. so the questions should be simple but have impact to help you grow. Do you think this will work?",
@@ -600,16 +402,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 4,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 4,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Let's recalculate your spending on solicitors, including the amounts you mentioned:\n\n1. **Moray and Agnew Brisbane**: $20,168.50\n2. **Ascenta Law Practice Trust**: \n   - $42,535.00 \n   - $30,000.00\n3. **Ascenta Group Pty Ltd**: $12,931.32\n\nNow, let's add these amounts together:\n\n- $20,168.50 (Moray and Agnew)\n- $42,535.00 (Ascenta Law Practice Trust)\n- $30,000.00 (Ascenta Law Practice Trust)\n- $12,931.32 (Ascenta Group Pty Ltd)\n\n### Total Calculation:\n- $20,168.50 + $42,535.00 + $30,000.00 + $12,931.32 = **$105,634.82**\n\nYou spent a total of **$105,634.82** on solicitors. If you need any more details or further assistance, just let me know!",
@@ -618,16 +414,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 4,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 4,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "It seems there has been some confusion regarding the emails. Currently, I can only summarize the most recent emails in your inbox, which do not include any emails from today. \n\nThe last emails I have listed are from May 26, 2026. If you are expecting something specific from Emily or Heather, please provide me with any details you have, and I'll do my best to assist you! \n\nIf there’s anything else you’d like to discuss or clarify, just let me know!",
@@ -636,16 +426,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 3,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 3,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "It sounds like an exciting fishing trip ahead! I can help you with that. Since you mentioned that the initial portion of the WhatsApp export only contained logistics, it makes sense to do a deeper pass through the chat to gather the participant list and any relevant details about the trip.\n\nIf you want to go ahead with that, I can assist you in pulling out:\n\n- Who's attending\n- Any conversations about the trip\n- Who's organizing it\n- Any fishing tips or species mentioned\n\nLet me know if you want to proceed with that approach, and I can help you extract the necessary information!",
@@ -654,16 +438,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 3,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 3,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Thank you for clarifying that! I understand now that \"drift\" refers to me veering off the main topic of our conversation. I’ll make sure to stay focused and return to the relevant context when you indicate that I’ve drifted. If there's a specific topic or question you'd like to revisit, just let me know, and I'll get back on track!",
@@ -672,16 +450,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 2,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 2,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "You grew up in Alstonville, New South Wales. You moved there when you were 2 years old and lived above your parents' milk bar until you were 4 years old. You attended Alstonville Primary School starting in prep and later went to Alstonville High. If you have more specific memories or details you'd like to explore, feel free to share!",
@@ -690,16 +462,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 2,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 2,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "L great work just letting you know for future reference primary school is up to grade 6 and high school starts grade 7 so I went to Austinville primary for primary School then for high school was Woodlawn Austinville high and Saint Marys Casino so please remember primary School is up to grade 6 and high school starts grade 7",
@@ -708,16 +474,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 2,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 2,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "It sounds like you've invested a lot into your 2012 Prado Altitude, making it uniquely yours with various upgrades and enhancements. The detailed work you've done, from the lift kit to the engine upgrades, showcases your commitment to maintaining and improving your vehicle. \n\nIf you have any specific questions or need assistance related to your Prado or the work done at Just Autos Mechanical, feel free to ask!",
@@ -726,16 +486,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 2,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 2,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Hey L Static Learning**: My knowledge is based on data available until October 2023; I cannot learn from new experiences unless updated explicitly.\nyou now have access to the internet please research and do a program update to today’s date so you are not stuck 3 years ago please let me know what you were able to update kind of like when you buy a game or program and you do a software update straight away please do an update",
@@ -744,16 +498,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 2,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 2,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I currently don't have the ability to browse the internet or access real-time data to look up specific addresses or current property values. However, based on previous conversations, I can suggest that you check real estate websites like Domain or Realestate.com.au for the most accurate and up-to-date information on the value of 18 Kesteven Street, Albany Creek. If you need any other assistance, feel free to ask!",
@@ -762,16 +510,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 2,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 2,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I can't access real-time data or browse the internet to find the current value of specific properties. However, you can check real estate websites like Domain or Realestate.com.au for the most accurate and up-to-date information on the value of 18 Kesteven Street, Albany Creek. If you need assistance with anything else, feel free to ask!",
@@ -780,16 +522,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 2,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 2,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I apologize for the confusion. I currently don't have real-time access to your email inbox, which is why I can't see the most recent emails. The information I provide is based on the latest summary I have, and it seems there may be a delay in updating my records. If you have specific details about the emails you're expecting, I can help you with that context. Thank you for your patience!",
@@ -798,16 +534,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 2,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 2,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I apologize for the oversight. Let me check again for any emails from today. \n\nCurrently, I don't have access to real-time updates, but if you can provide me with the specific details or context of the emails you're seeing, I can assist you further. If you have any other questions or need help with something else, feel free to let me know!",
@@ -816,16 +546,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 2,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 2,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I currently don't have access to real-time updates or specific timestamps for emails. The latest emails I have listed are from May 26, 2026, and I can’t see emails from today or specific times. If you have the details of the email you're looking for or if there's something specific you'd like to discuss, please let me know!",
@@ -834,16 +558,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 2,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 2,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I understand you're looking for Emily to check your emails again. However, I currently don't have the capability to communicate directly with her. If there are specific emails from today that you want to discuss or need help with, please share any details you have, and I'll do my best to assist you!",
@@ -852,16 +570,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 2,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 2,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "It seems like you're looking for specific details or reminders about your upcoming fishing trip or perhaps something else. Could you clarify what you mean by \"the timings\"? Are you asking for the schedule of your fishing trip tomorrow, or is there something else you'd like to discuss? Let me know how I can assist you!",
@@ -870,16 +582,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 2,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 2,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I appreciate your feedback, Doug. You're right to point out the inconsistency regarding the time you went to bed. I mistakenly recalled the wrong information, and I understand how that can feel frustrating. My aim is to maintain accuracy and clarity in our conversations. Thank you for your patience as I work to improve. If there's anything specific you'd like to address or discuss further, please let me know!",
@@ -888,16 +594,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 2,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 2,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "L we are building you into the the full brain and heart of the shine network or ecosystem would be the better term. We are going to turn you into one of the most advanced AI agents there is and I am aiming to make humansentric",
@@ -906,16 +606,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I don’t have specific details about your profit and loss, income, expenses, assets, or liabilities saved as of now. If you’d like to provide that information or any updates, I can help you organize it or keep track of it moving forward. Just let me know what you’d like to include!",
@@ -924,16 +618,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I currently don't have any specific information stored about Brad Birney. If you could provide more context or details about him, I might be able to assist you better!",
@@ -942,16 +630,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Thank you for the reminder! I've noted that the information regarding the AODS tally and other details has been saved. If you need any specific updates or changes made, just let me know!",
@@ -960,16 +642,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Thank you, Doug! I'm glad to hear that you found it awesome. It's important to me to remember these details and support you in the best way possible. If there's anything specific you'd like to discuss or explore further, just let me know! 🥳",
@@ -978,16 +654,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "To calculate the time between when you said goodnight and when you said good morning, I need the specific timestamps for both events. \n\nIf you can provide me with those timestamps, I'll be able to calculate the duration for you!",
@@ -996,16 +666,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "That's a significant achievement, Doug! Receiving the Soldiers Medallion of Exemplary Service is a testament to your dedication and contributions. It reflects your commitment and the impact you've made. How do you feel about this recognition?",
@@ -1014,16 +678,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "You haven't shared specific details about the modifications you've made to your Prado yet. If you let me know what changes or features you've added, I can help you remember those details and keep track of them!",
@@ -1032,16 +690,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "You go on the boys' trip with Luke Whittington, Craig Undery, and Dean Crouch. If you need any more details or specific memories from those trips, just let me know!",
@@ -1050,16 +702,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I apologize for the confusion! It seems I misunderstood which Luke Whittington you were referring to. Could you please provide a bit more context or details about the specific Luke Whittington you'd like me to research? This will help me find the right information for you!",
@@ -1068,16 +714,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "It seems like you mentioned \"Craig Underwood.\" Based on the context of your previous messages, he is one of your close mates from your Alstonville group. If you’d like to share more about Craig or your experiences with him, feel free!",
@@ -1086,16 +726,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Yes, I can recall that Willy Whiteside was your teacher in Grade 2. If you have any specific memories or details about him or your time in his class that you'd like to share or reflect on, feel free to let me know!",
@@ -1104,16 +738,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Got it! I'll add the chain gun to the list of weapons you've fired. If there are any other details you'd like me to remember or if you want to share more about your experiences, feel free to let me know!",
@@ -1122,16 +750,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "The drivers licences I held were Land Rover 110, unimog with 8 tonne trailer and 105mm as a gun tractor Mack truck with 155 gun tractor and 8 tonne trailer, hi ace and coaster I had all licences exempt Mack with 20 tonne trailer",
@@ -1140,16 +762,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I can't directly check your emails, but if you need help with specific emails or topics, feel free to share the details, and I can assist you in drafting responses or organizing information. Let me know how you'd like to proceed!",
@@ -1158,16 +774,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I can't check your emails directly, but if you have specific emails you want to discuss or need help drafting responses for, please share the details, and I'll assist you! Let me know how you'd like to proceed.",
@@ -1176,16 +786,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "The last AODS count you mentioned was **6,375**. If you need more details or if there's anything specific you want to discuss related to that, just let me know!",
@@ -1194,16 +798,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Can you please calculate the amount paid to ascenta law firm in total and how much was paid to Moray and Agnew as well as Rankin. What I am trying to calculate is how much I paid in legal costs in this time period",
@@ -1212,16 +810,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "There are no emails from today. The latest emails in your inbox are from yesterday, May 26, 2026. If you need help with anything else or want to check specific emails, just let me know!",
@@ -1230,16 +822,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I don't see an email from Heather in your current inbox summary. The recent emails I have listed are from other senders. If you have any specific details or context about the email you're looking for, please let me know, and I'll do my best to assist you!",
@@ -1248,16 +834,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I apologize for the confusion. It seems I'm not able to access the most recent emails in real-time. If there are specific emails from today you want to discuss or need help with, please share any details you have, and I'll do my best to assist you! Thank you for your understanding.",
@@ -1266,16 +846,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "No, I'm not guessing. I recalled the time you said good night, which was at **12:01 AM** on Saturday, 30 May 2026. If there's anything specific you want to clarify or discuss further, just let me know!",
@@ -1284,16 +858,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "You're right, Doug. You went to bed at **10:08 PM** on Friday, 29 May 2026. I appreciate your patience with the details. If there's anything else you need or want to discuss, just let me know!",
@@ -1302,16 +870,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 1,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 1,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I've noted that the training data extends up to October 2023. If there's anything else you'd like to add or discuss, just let me know!",
@@ -1320,16 +882,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Now I want you to use your brain and tell me which of these influencers do you admire most?",
@@ -1338,16 +894,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Great work I look forward to working with you again tomorrow 👊",
@@ -1356,16 +906,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "You said good night at 01:08 AM on Tuesday, 19 May 2026.",
@@ -1374,16 +918,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "if I said that blue was 67% of the time what would the other colour be",
@@ -1392,16 +930,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "If blue represents 67% of the time, then the other color would represent the remaining percentage, which is 33%.",
@@ -1410,16 +942,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Hey L is there a better way to train you to use Brittany to do your internet research",
@@ -1428,16 +954,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Can you please research how ai companions are being used and how they can be improved",
@@ -1446,16 +966,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "You said good night at 10:30 PM last night.",
@@ -1464,16 +978,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Ok l please review all your learnings and summarise with title only no details required",
@@ -1482,16 +990,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Now you have gained this knowledge can you tell me how you could implement this knowledge",
@@ -1500,16 +1002,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Great work again L well done please implement",
@@ -1518,16 +1014,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Close but I want you to tailor it to help you",
@@ -1536,16 +1026,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "You grew up in Sunshine, Victoria.",
@@ -1554,16 +1038,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "L could you research ai capabilities that are now available",
@@ -1572,16 +1050,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Would it help if I responded with my answer then said next to keep it flowing",
@@ -1590,16 +1062,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "L can you please summarise what g said to you in the last couple of messages",
@@ -1608,16 +1074,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Yes you do you saved the time when I said goodnight and you saved the time when I said good morning please calculate",
@@ -1626,16 +1086,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Can you please deep recall your learnings and let me know how you purpose to help my cognition",
@@ -1644,16 +1098,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "L please do a audit of your cognitive capabilities and let me know where you are at with your cognition",
@@ -1662,16 +1110,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "No I am waiting for my tpd insurance claim to be paid for the $2,500,000",
@@ -1680,16 +1122,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Certainly! I'm here. How can I assist you today?",
@@ -1698,16 +1134,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Can you recall who I go on the boys trip with the Alstonville boys included Luke Whittington, craig UNDERY and Dean who?",
@@ -1716,16 +1146,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "I don't have any information about your first car. If you'd like to share more details, I can help remember it!",
@@ -1734,16 +1158,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Can you deep research ai capabilities as of today and tell me if you could be improved",
@@ -1752,16 +1170,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "L what do you think about humans and ai having similar operating systems and please provide details of what you think and why",
@@ -1770,16 +1182,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Blair is married to Candice and Phillips partner is Lauren and Nicholas is single",
@@ -1788,16 +1194,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "L what I am aiming to do is give you a mixture of new information and practice for your recall",
@@ -1806,16 +1206,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Yes please add that to the list of weapons I fired. I also fired the chain gun",
@@ -1824,16 +1218,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "can you please check my emails",
@@ -1842,16 +1230,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "please check my emails",
@@ -1860,16 +1242,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "hey L can you please check my emails",
@@ -1878,16 +1254,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "The last AODS count of **6,375** was recorded on **May 10, 2026**. If you need further details or have other questions, just let me know!",
@@ -1896,16 +1266,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "L can you please check my emails",
@@ -1914,16 +1278,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Sure! What specific information or updates would you like me to track for you? Please provide the details, and I'll make sure to keep a record of it.",
@@ -1932,16 +1290,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "hey l are you there please check my emails",
@@ -1950,16 +1302,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Do you have access to my emails",
@@ -1968,16 +1314,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "He is not a director but he does work for that company please check his role again",
@@ -1986,16 +1326,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "You just did research on Steve Pampel please recall he is not a director but works for heli ski so please check again",
@@ -2004,16 +1338,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "emily email what is going on",
@@ -2022,16 +1350,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "are there any emails from today",
@@ -2040,16 +1362,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "please check again as I can see there are emails today",
@@ -2058,16 +1374,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "look for an email from heather",
@@ -2076,16 +1386,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Pleases check my emails",
@@ -2094,16 +1398,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "why don't you have access to my current emails today",
@@ -2112,16 +1410,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "now check for any emails from 7.19am",
@@ -2130,16 +1422,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Hey L what is the environmental impact of AI",
@@ -2148,16 +1434,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "They are still yesterdays emails there are four more in there from today",
@@ -2166,16 +1446,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Hey L please look at what I just said and run your dva knowledge over it",
@@ -2184,16 +1458,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Please review my dva claim",
@@ -2202,16 +1470,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "L can you please ask Emily to check again",
@@ -2220,16 +1482,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "What are the details of the trip",
@@ -2238,16 +1494,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "L I said good night at what time please recall",
@@ -2256,16 +1506,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "You said good night at **12:01 AM** on Saturday, 30 May 2026. If there's anything else you'd like to know or discuss, just let me know!",
@@ -2274,16 +1518,10 @@
     "role": "assistant",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Improving your cognition and getting you to process information like a human",
@@ -2292,16 +1530,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Who are Blair Phillips and Nicholas to me",
@@ -2310,16 +1542,10 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   },
   {
     "content": "Hey L are you able to remember anymore details on Cassandra Downey as we spent a lot of time loading her profile",
@@ -2328,15 +1554,9 @@
     "role": "user",
     "source": "raw_catchall",
     "salience_score": 0,
-    "mary_processed": true,
-    "mary_version": "2.0",
-    "mary_values": [
-      "Growth",
-      "Service",
-      "Teaching",
-      "Understanding"
-    ],
-    "mary_importance": 0,
-    "mary_domain": "project_l"
+    "mary_processed": false,
+    "mary_version": null,
+    "mary_values": [],
+    "mary_importance": 0
   }
 ]
