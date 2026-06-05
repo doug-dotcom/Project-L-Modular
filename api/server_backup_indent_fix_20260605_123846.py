@@ -838,7 +838,34 @@ def chat(
         build_identity_context()
     )
 
-    system_prompt = f"""
+    log("CONTEXT AUDIT START")
+
+log(
+    f"SHORT TERM SIZE: "
+    f"{len(short_term_context)}"
+)
+
+log(
+    f"LONG TERM SIZE: "
+    f"{len(long_term_context)}"
+)
+
+log(
+    f"RUNTIME SIZE: "
+    f"{len(runtime_context_packet)}"
+)
+
+log(
+    f"CONTINUITY SIZE: "
+    f"{len(continuity_context)}"
+)
+
+log(
+    f"IDENTITY SIZE: "
+    f"{len(identity_context)}"
+)
+
+system_prompt = f"""
 You are L.
 
 CURRENT DATE:
@@ -1318,5 +1345,7 @@ def behaviour_truth_status():
 # =====================================================
 # END_PROJECT_L_BEHAVIOUR_LAYER_V1
 # =====================================================
+
+
 
 
