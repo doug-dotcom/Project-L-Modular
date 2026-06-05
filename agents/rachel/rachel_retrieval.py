@@ -1,17 +1,15 @@
 import os
-from pathlib import Path
-
 from dotenv import load_dotenv
 from supabase import create_client
 
 load_dotenv()
 
-SUPABASE_URL = os.getenv("SUPABASE_URL","")
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 
 SUPABASE_KEY = (
-    os.getenv("SUPABASE_SERVICE_ROLE_KEY","")
+    os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
     or
-    os.getenv("SUPABASE_KEY","")
+    os.getenv("SUPABASE_KEY", "")
 )
 
 supabase = create_client(
@@ -20,7 +18,6 @@ supabase = create_client(
 )
 
 TABLES = [
-
     "memory_family",
     "memory_identity",
     "memory_recovery",
@@ -29,17 +26,35 @@ TABLES = [
     "memory_health",
     "memory_sport",
     "memory_work"
-
 ]
 
-def search_memories(
-    query,
-    limit=20
-):
+def score_memory(row, query):
 
-    query = str(
-        query
-    ).lower()
+    content = str(row.get("content", "")).lower()
+    query = str(query).lower()
+
+    score = 0
+
+    # keyword match
+    for word in query.split():
+        if word and word in content:
+            score += 25
+
+    # Sara layer
+    score += int(row.get("importance") or 0)
+    score += int(row.get("salience") or 0)
+
+    # anchor boost
+    if row.get("anchor") is True:
+        score += 100
+
+    # Brains Trust completion boost
+    processed = row.get("processed_by") or []
+    score += len(processed) * 10
+
+    return score
+
+def search_memories(query, limit=20):
 
     results = []
 
@@ -55,53 +70,43 @@ def search_memories(
 
         for row in rows:
 
-            content = str(
-                row.get(
-                    "content",
-                    ""
-                )
-            ).lower()
+            score = score_memory(row, query)
 
-            if query in content:
+            if score <= 0:
+                continue
 
-                results.append({
+            results.append({
+                "table": table,
+                "score": score,
+                "content": row.get("content", ""),
+                "importance": row.get("importance", 0),
+                "salience": row.get("salience", 0),
+                "anchor": row.get("anchor", False),
+                "processed_by": row.get("processed_by", [])
+            })
 
-                    "table": table,
-                    "content": row.get(
-                        "content",
-                        ""
-                    ),
-                    "importance": row.get(
-                        "importance",
-                        0
-                    )
-
-                })
+    results.sort(
+        key=lambda x: x.get("score", 0),
+        reverse=True
+    )
 
     return results[:limit]
 
 if __name__ == "__main__":
 
-    query = input(
-        "Search: "
-    )
+    query = input("Search: ")
 
-    matches = search_memories(
-        query
-    )
+    matches = search_memories(query)
 
     print()
     print("=" * 40)
-    print("CAPTAIN RACHEL")
+    print("CAPTAIN RACHEL RANKED RESULTS")
     print("=" * 40)
 
-    for m in matches:
+    for i, m in enumerate(matches, 1):
 
         print()
-        print(
-            m["table"]
-        )
-
-        print(
-            m["content"][:150]
-        )
+        print(f"{i}. {m['table']} | score: {m['score']}")
+        print(f"importance: {m['importance']} | salience: {m['salience']} | anchor: {m['anchor']}")
+        print(f"processed_by: {m['processed_by']}")
+        print(m["content"][:250])
