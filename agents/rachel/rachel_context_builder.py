@@ -99,10 +99,7 @@ def retrieve(query, limit=10):
 
         for row in rows:
 
-            score = score_memory(
-                row,
-                query
-            )
+            score = score_memory(row, query, table)
 
             if score <= 0:
                 continue
@@ -171,3 +168,4 @@ if __name__ == "__main__":
             query
         )
     )
+

@@ -1,0 +1,95 @@
+from datetime import datetime
+
+
+class DesleyDrift:
+
+    def __init__(self):
+        self.name = "Desley"
+        self.version = "1.0"
+
+
+    def analyse(
+        self,
+        desired_state: dict,
+        actual_state: dict
+    ):
+
+        drift_report = []
+
+        all_keys = set(
+            desired_state.keys()
+        ).union(
+            actual_state.keys()
+        )
+
+        for key in all_keys:
+
+            desired = desired_state.get(key)
+            actual = actual_state.get(key)
+
+            if desired != actual:
+
+                drift_report.append({
+                    "factor": key,
+                    "desired": desired,
+                    "actual": actual
+                })
+
+        return {
+            "agent": self.name,
+            "timestamp": datetime.now().isoformat(),
+            "drift_detected": len(drift_report) > 0,
+            "drift_count": len(drift_report),
+            "drift": drift_report
+        }
+
+
+    def recommend(
+        self,
+        drift_report
+    ):
+
+        actions = []
+
+        for item in drift_report.get(
+            "drift",
+            []
+        ):
+
+            factor = item["factor"]
+
+            actions.append(
+                f"Review {factor} and move actual toward desired."
+            )
+
+        return actions
+
+
+if __name__ == "__main__":
+
+    desley = DesleyDrift()
+
+    desired = {
+        "meetings": 5,
+        "sleep_hours": 8,
+        "exercise": 3
+    }
+
+    actual = {
+        "meetings": 2,
+        "sleep_hours": 6,
+        "exercise": 1
+    }
+
+    report = desley.analyse(
+        desired,
+        actual
+    )
+
+    print(report)
+
+    print(
+        desley.recommend(
+            report
+        )
+    )
