@@ -57,6 +57,7 @@ ENTITY_TABLE_MAP = {
     "sport": "memory_sport"
 }
 
+
 def detect_entities(query):
     text = str(query).lower()
     found = []
@@ -70,18 +71,50 @@ def detect_entities(query):
 
     return found
 
+
 def score_memory(row, query, table, entities):
-    content = str(row.get("content", "")).lower()
+    content = str(
+        row.get(
+            "content",
+            ""
+        )
+    ).lower()
+
+    primary_subject = str(
+        row.get(
+            "primary_subject",
+            ""
+        )
+    ).lower()
+
+    subjects = (
+        row.get(
+            "subjects",
+            []
+        )
+        or
+        []
+    )
+
+    subjects = [
+        str(x).lower()
+        for x in subjects
+    ]
+
     query = str(query).lower()
 
     score = 0
 
-    # Basic keyword match
+    if query == primary_subject:
+        score += 1000
+
+    if query in subjects:
+        score += 750
+
     for word in query.split():
         if word and word in content:
             score += 25
 
-    # Entity/domain awareness
     for item in entities:
         entity = item["entity"]
         preferred_table = item["preferred_table"]
@@ -92,19 +125,17 @@ def score_memory(row, query, table, entities):
         if entity in content:
             score += 300
 
-    # Sara layer
     score += int(row.get("importance") or 0)
     score += int(row.get("salience") or 0)
 
-    # Anchor boost
     if row.get("anchor") is True:
         score += 100
 
-    # Brains Trust processing boost
     processed = row.get("processed_by") or []
     score += len(processed) * 10
 
     return score
+
 
 def retrieve(query, limit=10):
     results = []
@@ -132,6 +163,8 @@ def retrieve(query, limit=10):
                 "table": table,
                 "score": score,
                 "content": row.get("content", ""),
+                "primary_subject": row.get("primary_subject", ""),
+                "subjects": row.get("subjects", []),
                 "importance": row.get("importance", 0),
                 "salience": row.get("salience", 0),
                 "anchor": row.get("anchor", False),
@@ -144,6 +177,7 @@ def retrieve(query, limit=10):
     )
 
     return results[:limit]
+
 
 def build_context_packet(query):
     entities = detect_entities(query)
@@ -165,10 +199,16 @@ def build_context_packet(query):
                 + item["preferred_table"]
             )
 
+    packet.append("")
+    packet.append("Matches: " + str(len(matches)))
+
     for i, m in enumerate(matches, 1):
         packet.append("")
         packet.append(
             f"{i}. [{m['table']}] score={m['score']}"
+        )
+        packet.append(
+            f"primary_subject={m['primary_subject']} subjects={m['subjects']}"
         )
         packet.append(
             f"importance={m['importance']} salience={m['salience']} anchor={m['anchor']}"
@@ -181,6 +221,7 @@ def build_context_packet(query):
         )
 
     return "\n".join(packet)
+
 
 if __name__ == "__main__":
     query = input("Context Query: ")
