@@ -45,6 +45,7 @@ def process_table(table):
     rows = result.data or []
 
     updated = 0
+subjects_found = 0
 
     for row in rows:
 
@@ -56,8 +57,7 @@ def process_table(table):
             or []
         )
 
-        if "mary" in processed:
-            continue
+        # REPROCESS ENABLED
 
         processed.append(
             "mary"
@@ -76,9 +76,15 @@ def process_table(table):
             .execute()
         )
 
-        updated += 1
+        if subject_data["primary_subject"]:
+    subjects_found += 1
 
-    return updated
+updated += 1
+
+    return {
+    "updated": updated,
+    "subjects_found": subjects_found
+}
 
 def run():
 
@@ -86,7 +92,11 @@ def run():
 
     for table in TABLES:
 
-        count = process_table(table)
+        result = process_table(table)
+
+count = result["updated"]
+
+subjects = result["subjects_found"]
 
         print(
             f"{table}: {count}"
@@ -106,3 +116,5 @@ if __name__ == "__main__":
     print(
         run()
     )
+
+
