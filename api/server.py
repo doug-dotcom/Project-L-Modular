@@ -52,7 +52,19 @@ from agents.tegan.tegan import (
     route_message
 )
 
-from voice.speaker import speak
+# =====================================================
+# VOICE IMPORT
+# =====================================================
+
+try:
+
+    from voice.speaker import speak
+
+except Exception as e:
+
+    def speak(text):
+
+        return None
 
 # =====================================================
 # ENVIRONMENT
