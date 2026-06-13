@@ -50,6 +50,13 @@ from agents.tegan.tegan import (
 )
 
 try:
+    from core.cognition.brain_pipeline import (
+        process_raw_memory
+    )
+except Exception as e:
+    process_raw_memory = None
+
+try:
     from voice.speaker import speak
 except Exception:
     def speak(text):
@@ -206,14 +213,44 @@ def write_raw_catchall(role, content, source="chat"):
             "metadata": {}
         }
 
-        supabase.table("raw_catchall").insert(payload).execute()
+        result = (
+            supabase.table("raw_catchall")
+            .insert(payload)
+            .execute()
+        )
+
+        rows = result.data or []
 
         log(f"RAW MEMORY SAVED: {role}")
+
+        if rows:
+            return rows[0]
 
         return True
 
     except Exception as e:
         log(f"RAW MEMORY ERROR: {e}")
+        return False
+
+
+def run_auto_brain_pipeline(raw_row):
+    try:
+        if not process_raw_memory:
+            log("AUTO BRAIN SKIPPED: brain_pipeline unavailable")
+            return False
+
+        if not raw_row or not isinstance(raw_row, dict):
+            log("AUTO BRAIN SKIPPED: no raw row returned")
+            return False
+
+        outcome = process_raw_memory(raw_row)
+
+        log(f"AUTO BRAIN OUTCOME: {outcome}")
+
+        return outcome
+
+    except Exception as e:
+        log(f"AUTO BRAIN ERROR: {e}")
         return False
 
 # =====================================================
@@ -444,9 +481,13 @@ def chat(req: ChatRequest):
         user_message
     )
 
-    write_raw_catchall(
+    raw_user_row = write_raw_catchall(
         "user",
         user_message
+    )
+
+    run_auto_brain_pipeline(
+        raw_user_row
     )
 
     try:
@@ -588,9 +629,13 @@ CONTINUITY RULES:
         reply
     )
 
-    write_raw_catchall(
+    raw_assistant_row = write_raw_catchall(
         "assistant",
         reply
+    )
+
+    run_auto_brain_pipeline(
+        raw_assistant_row
     )
 
     try:
