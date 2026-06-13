@@ -1,0 +1,76 @@
+[
+  {
+    "stored_at": "2026-06-11T17:46:20.162943",
+    "llgr": {
+      "record_type": "LLGR",
+      "version": "2.0",
+      "timestamp": "2026-06-11T17:46:20.160150",
+      "reflection": [
+        "Doug noticed he kept seeking validation from Pauline",
+        "Memory Reflection",
+        "['Pauline']"
+      ],
+      "lesson": "External certainty is being sought during uncertainty.",
+      "validated": true,
+      "validation_count": 1,
+      "confidence_score": 100.0,
+      "contradiction_count": 0,
+      "evidence": [],
+      "contradiction_evidence": [],
+      "adjustment": "Notice validation seeking sooner.",
+      "agency_score": 70,
+      "keys_owner": "Doug",
+      "growth_stored": true,
+      "ian_note": "Growth, confidence and contradiction tracking recorded."
+    }
+  },
+  {
+    "stored_at": "2026-06-11T17:46:20.173511",
+    "llgr": {
+      "record_type": "LLGR",
+      "version": "2.0",
+      "timestamp": "2026-06-11T17:46:20.163791",
+      "reflection": [
+        "Doug realised he keeps handing the keys to mentors",
+        "Memory Reflection",
+        "['Sean Graham', 'Walshy', 'Dad']",
+        "['Agency', 'Growth']"
+      ],
+      "lesson": "Trusted authority figures are influencing decision making.",
+      "validated": false,
+      "validation_count": 1,
+      "confidence_score": 100.0,
+      "contradiction_count": 0,
+      "evidence": [],
+      "contradiction_evidence": [],
+      "adjustment": "Pause before asking others for certainty.",
+      "agency_score": 50,
+      "keys_owner": "Doug",
+      "growth_stored": true,
+      "ian_note": "Growth, confidence and contradiction tracking recorded."
+    }
+  },
+  {
+    "stored_at": "2026-06-11T17:46:20.185876",
+    "llgr": {
+      "record_type": "LLGR",
+      "version": "2.0",
+      "timestamp": "2026-06-11T17:46:20.175209",
+      "reflection": [
+        "Memory Reflection"
+      ],
+      "lesson": "A meaningful pattern has been detected and requires further exploration.",
+      "validated": false,
+      "validation_count": 1,
+      "confidence_score": 100.0,
+      "contradiction_count": 0,
+      "evidence": [],
+      "contradiction_evidence": [],
+      "adjustment": "Continue observing.",
+      "agency_score": 50,
+      "keys_owner": "Doug",
+      "growth_stored": true,
+      "ian_note": "Growth, confidence and contradiction tracking recorded."
+    }
+  }
+]

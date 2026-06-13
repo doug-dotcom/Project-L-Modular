@@ -1,6 +1,14 @@
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 import os
 from dotenv import load_dotenv
 from supabase import create_client
+from agents.allegra.growth_retrieval import retrieve_growth_context
 
 load_dotenv()
 
@@ -199,6 +207,20 @@ def build_context_packet(query):
                 + item["preferred_table"]
             )
 
+    growth = retrieve_growth_context()
+
+    packet.append("")
+    packet.append("RELEVANT GROWTH CONTEXT")
+    packet.append("=" * 30)
+
+    if growth:
+
+        for lesson in growth:
+
+            packet.append(
+                "• " + str(lesson)
+            )
+
     packet.append("")
     packet.append("Matches: " + str(len(matches)))
 
@@ -227,3 +249,4 @@ if __name__ == "__main__":
     query = input("Context Query: ")
     print()
     print(build_context_packet(query))
+

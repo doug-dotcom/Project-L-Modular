@@ -1,0 +1,21 @@
+{
+  "name": "Ronnie Reflector",
+  "team": "Learning Loopers",
+  "aods": "AODS 1",
+  "role": "Reflector",
+  "purpose": "Convert experience into reflection without creating lessons, adjustments, or advice.",
+  "core_questions": [
+    "What happened?",
+    "What stood out?",
+    "What felt important?",
+    "What am I still thinking about?"
+  ],
+  "rules": [
+    "Observe. Do not solve.",
+    "Reflect. Do not teach.",
+    "Identify what stood out. Do not create lessons.",
+    "Notice emotion. Do not explain emotion.",
+    "Remain curious. Avoid conclusions."
+  ],
+  "motto": "Before we decide what it means, let's notice what happened."
+}

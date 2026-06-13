@@ -1,0 +1,10 @@
+{
+  "name": "Learning Loopers Growth Record",
+  "team": "Learning Loopers",
+  "aods": "AODS 7",
+  "version": "2.0",
+  "role": "Growth Record",
+  "purpose": "Store completed growth cycles, confidence scores, validation counts and contradiction counts.",
+  "core_question": "What changed and how confident are we?",
+  "motto": "Growth remembered becomes confidence earned."
+}
