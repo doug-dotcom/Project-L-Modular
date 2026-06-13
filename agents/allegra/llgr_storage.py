@@ -131,7 +131,7 @@ def store_llgr(llgr):
 if __name__ == "__main__":
 
     test = {
-        "lesson": "Trust your own judgement.",
+        "lesson": "Project L 502 - Trust judgment and act on it.",
         "agency_score": 85
     }
 
@@ -142,4 +142,5 @@ if __name__ == "__main__":
     print("AODS 16 COMPLETE")
     print("PATTERN EVOLUTION ACTIVE")
     print("=" * 50)
+
 
