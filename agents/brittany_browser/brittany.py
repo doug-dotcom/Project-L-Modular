@@ -1,8 +1,10 @@
 import os
+import json
 from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
 from tavily import TavilyClient
+from agents.frank.frank_orchestrator import run_rat_pack
 
 ROOT = Path(__file__).resolve().parents[2]
 load_dotenv(ROOT / ".env")
@@ -96,6 +98,15 @@ def investigate(message: str):
             max_results=5
         )
 
+        rat_pack = run_rat_pack(
+            message
+        )
+
+        return json.dumps(
+            rat_pack,
+            indent=2
+        )
+
         output = "# 🌐 Brittany Browser\n\n"
         output += f"Search query used:\n{query}\n\n"
 
@@ -149,4 +160,5 @@ Check:
 - internet connection
 - query length
 """
+
 
