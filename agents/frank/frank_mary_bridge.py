@@ -40,7 +40,10 @@ def _build_content(
         []
     )
 
-    parts.extend(findings)
+    parts.extend(
+        str(x)
+        for x in findings
+    )
 
     if finlay_output:
 
@@ -162,3 +165,4 @@ if __name__ == "__main__":
             indent=2
         )
     )
+
