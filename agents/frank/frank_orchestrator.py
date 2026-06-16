@@ -40,6 +40,10 @@ from agents.frank.frank_sara_bridge import (
     run_frank_sara_bridge
 )
 
+from agents.frank.research_memory_writer import (
+    save_research
+)
+
 
 # =====================================================
 # ORCHESTRATOR
@@ -187,4 +191,5 @@ if __name__ == "__main__":
     print(
         result.keys()
     )
+
 
