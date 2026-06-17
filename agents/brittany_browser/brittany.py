@@ -1,10 +1,24 @@
 import os
+import sys
 import json
+import time
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from dotenv import load_dotenv
 from openai import OpenAI
 from tavily import TavilyClient
+
 from agents.frank.frank_orchestrator import run_rat_pack
+
+from agents.polly.polly import (
+    present_research
+)
+
 
 ROOT = Path(__file__).resolve().parents[2]
 load_dotenv(ROOT / ".env")
@@ -27,6 +41,7 @@ def should_handle(message: str) -> bool:
     triggers = [
         "research online",
         "browser",
+        "google",
         "brittany",
         "find online",
         "check online",
@@ -90,7 +105,14 @@ def investigate(message: str):
 
     try:
 
+        stage = time.perf_counter()
+
         query = build_search_query(message)
+
+        print(
+            f"QUERY BUILDER: "
+            f"{time.perf_counter() - stage:.2f}s"
+        )
 
         results = tavily.search(
             query=query,
@@ -102,10 +124,44 @@ def investigate(message: str):
             message
         )
 
-        return json.dumps(
-            rat_pack,
-            indent=2
+        polly_packet = {
+
+            "summary":
+                rat_pack.get(
+                    "frank",
+                    {}
+                ).get(
+                    "summary",
+                    ""
+                ),
+
+            "confidence":
+                rat_pack.get(
+                    "frank",
+                    {}
+                ).get(
+                    "confidence",
+                    "UNKNOWN"
+                ),
+
+            "key_findings":
+                rat_pack.get(
+                    "frank",
+                    {}
+                ).get(
+                    "key_findings",
+                    []
+                )
+
+        }
+
+        polly_result = present_research(
+            polly_packet
         )
+
+        return polly_result[
+            "briefing"
+        ]
 
         output = "# 🌐 Brittany Browser\n\n"
         output += f"Search query used:\n{query}\n\n"
@@ -160,5 +216,13 @@ Check:
 - internet connection
 - query length
 """
+
+
+
+
+
+
+
+
 
 

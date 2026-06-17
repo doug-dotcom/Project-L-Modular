@@ -5,6 +5,7 @@
 # =====================================================
 
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -46,6 +47,29 @@ from agents.frank.frank_sara_bridge import (
 # ORCHESTRATOR
 # =====================================================
 
+
+def is_deep_research(question):
+
+    question = str(
+        question or ""
+    ).lower()
+
+    triggers = [
+
+        "deep research",
+        "research thoroughly",
+        "full research",
+        "investigate",
+        "comprehensive research"
+
+    ]
+
+    return any(
+        t in question
+        for t in triggers
+    )
+
+
 def run_rat_pack(
     question
 ):
@@ -61,8 +85,33 @@ def run_rat_pack(
         )
     )
 
+    deep_mode = is_deep_research(
+        question
+    )
+
+    if not deep_mode:
+
+        search_queries = (
+            search_queries[:3]
+        )
+
+        print(
+            f"FAST MODE QUERY LIMIT: {len(search_queries)}"
+        )
+
+    stage = time.perf_counter()
+
+    print(
+        f"SCOUT QUERY COUNT: {len(search_queries)}"
+    )
+
     scout = run_scout(
         search_queries
+    )
+
+    print(
+        f"SCOUT: "
+        f"{time.perf_counter() - stage:.2f}s"
     )
 
     sources = (
@@ -91,6 +140,33 @@ def run_rat_pack(
                 sources
         }
     )
+
+    deep_mode = is_deep_research(
+        question
+    )
+
+    print(
+        f"DEEP MODE: {deep_mode}"
+    )
+
+    if not deep_mode:
+
+        print(
+            "FAST RESEARCH MODE"
+        )
+
+        return {
+
+            "quinn":
+                quinn,
+
+            "scout":
+                scout,
+
+            "frank":
+                frank
+
+        }
 
     chase = (
         run_frank_chase_bridge(
@@ -188,5 +264,11 @@ if __name__ == "__main__":
     print(
         result.keys()
     )
+
+
+
+
+
+
 
 
