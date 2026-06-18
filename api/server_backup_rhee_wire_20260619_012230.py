@@ -465,7 +465,6 @@ def chat(req: ChatRequest):
     short_term_context = ""
     long_term_context = ""
     runtime_context_packet = ""
-    rhee_context = ""
 
     continuity_context = build_conversation_continuity()
 
@@ -533,7 +532,6 @@ def chat(req: ChatRequest):
     log("CONTEXT AUDIT START")
     log(f"SHORT TERM SIZE: {len(short_term_context)}")
     log(f"LONG TERM SIZE: {len(long_term_context)}")
-    log(f"RHEE CONTEXT SIZE: {len(rhee_context)}")
     log(f"RUNTIME SIZE: {len(runtime_context_packet)}")
     log(f"CONTINUITY SIZE: {len(continuity_context)}")
     log(f"IDENTITY SIZE: {len(identity_context)}")
@@ -796,8 +794,6 @@ def behaviour_truth_status():
 # =====================================================
 # END_PROJECT_L_BEHAVIOUR_LAYER_V1
 # =====================================================
-
-
 
 
 
