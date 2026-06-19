@@ -34,8 +34,8 @@ from memory.retrieval.short_term_retrieval import (
     build_short_term_packet
 )
 
-from core.memory_retriever import (
-    retrieve_memory_context
+from agents.rhee.rhee_v3 import (
+    build_context as build_rhee_context
 )
 
 from memory.classifier.short_term_classifier import (
@@ -509,7 +509,7 @@ def chat(req: ChatRequest):
                 retrieved_rows
             )
 
-            long_term_context = retrieve_memory_context(
+            rhee_context = build_rhee_context(
                 user_message
             )
 
@@ -567,20 +567,11 @@ Consult them internally if routing selects them, then answer as L.
 ACTIVE DOMAIN:
 {domains}
 
-L IDENTITY CORE:
-{identity_context}
+RHEE MEMORY CONTEXT:
+{rhee_context}
 
 CAPTAIN ELLIE RUNTIME CONTEXT:
 {runtime_context_packet}
-
-SHORT TERM MEMORY CONTEXT:
-{short_term_context}
-
-LONG TERM MEMORY CONTEXT:
-{long_term_context}
-
-ACTIVE CONVERSATION CONTINUITY:
-{continuity_context}
 
 CONTINUITY RULES:
 - Maintain active conversational topics naturally.
@@ -796,6 +787,7 @@ def behaviour_truth_status():
 # =====================================================
 # END_PROJECT_L_BEHAVIOUR_LAYER_V1
 # =====================================================
+
 
 
 
