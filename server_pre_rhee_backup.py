@@ -4,9 +4,6 @@ from core.consequence_engine.consequence_engine import (
     drift_detected
 )
 
-from agents.rhee.rhee_v3 import (
-    build_context as build_rhee_context
-)
 # =====================================================
 # ACTIVE COGNITION
 # =====================================================
@@ -38,14 +35,14 @@ from memory.sync.engine import run_sync
 # ENV
 # =====================================================
 
-    try:
-        from dotenv import load_dotenv
-        load_dotenv()
-    except Exception:
-        pass
-    
-    ROOT = Path(__file__).resolve().parents[1]
-    
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
+
+ROOT = Path(__file__).resolve().parents[1]
+
 # =====================================================
 # L IDENTITY CORE
 # =====================================================
@@ -614,6 +611,4 @@ except Exception as e:
 # ============================================================
 # END PROJECT L BEHAVIOUR LAYER V1
 # ============================================================
-
-
 

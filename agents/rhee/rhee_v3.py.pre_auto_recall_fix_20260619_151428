@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 
 # =====================================================
-# RHEE V3.1
-# MEMORY OUT / CONTEXT ENGINE
+# RHEE V3
+# MEMORY OUT ENGINE
 # =====================================================
 
 load_dotenv()
@@ -15,6 +15,7 @@ load_dotenv()
 ROOT = Path(__file__).resolve().parents[2]
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+
 SUPABASE_KEY = (
     os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
     or os.getenv("SUPABASE_KEY", "")
@@ -24,6 +25,10 @@ supabase = None
 
 if SUPABASE_URL and SUPABASE_KEY:
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# =====================================================
+# TABLES
+# =====================================================
 
 LONG_TERM_TABLES = [
     "memory_family",
@@ -60,10 +65,15 @@ LEARNING_TABLES = [
     "allegra_history",
 ]
 
+# =====================================================
+# SAFE HELPERS
+# =====================================================
+
 def safe_text(value):
     if value is None:
         return ""
     return str(value).strip()
+
 
 def safe_int(value, default=0):
     try:
@@ -73,11 +83,14 @@ def safe_int(value, default=0):
     except Exception:
         return default
 
+
 def safe_list(value):
     if isinstance(value, list):
         return value
+
     if value is None:
         return []
+
     if isinstance(value, str):
         try:
             parsed = json.loads(value)
@@ -85,33 +98,9 @@ def safe_list(value):
                 return parsed
         except Exception:
             return [value]
+
     return []
 
-def clean_query(query):
-    text = safe_text(query).lower()
-
-    for phrase in [
-        "who is",
-        "who are",
-        "tell me about",
-        "what do you know about",
-        "what can you tell me about",
-        "recall",
-        "remember",
-        "profile",
-        "history",
-    ]:
-        text = text.replace(phrase, "")
-
-    return text.strip()
-
-def query_words(query):
-    cleaned = clean_query(query)
-    return [
-        word.strip()
-        for word in cleaned.split()
-        if len(word.strip()) >= 3
-    ]
 
 def row_content(row):
     if not isinstance(row, dict):
@@ -134,8 +123,13 @@ def row_content(row):
 
     return safe_text(row)
 
+# =====================================================
+# IDENTITY
+# =====================================================
+
 def load_identity(limit_count=25):
     lines = []
+
     identity_file = ROOT / "memory" / "identity_core" / "l_identity.json"
 
     try:
@@ -149,6 +143,7 @@ def load_identity(limit_count=25):
             lines.append(f"Identity Anchors: {data.get('identity_anchors', [])}")
             lines.append(f"Purpose: {data.get('purpose', [])}")
             lines.append("")
+
     except Exception as e:
         lines.append(f"L IDENTITY LOAD ERROR: {e}")
 
@@ -167,14 +162,20 @@ def load_identity(limit_count=25):
 
             if rows:
                 lines.append("IDENTITY ANCHORS")
+
                 for row in rows:
                     content = row_content(row)
                     if content:
                         lines.append(f"- {content[:500]}")
+
     except Exception as e:
         lines.append(f"IDENTITY ANCHORS ERROR: {e}")
 
     return "\n".join(lines)
+
+# =====================================================
+# LEARNINGS
+# =====================================================
 
 def load_learnings(limit_count=20):
     if not supabase:
@@ -205,10 +206,15 @@ def load_learnings(limit_count=20):
                 content = row_content(row)
                 if content:
                     lines.append(f"- {content[:500]}")
+
         except Exception:
             continue
 
     return "\n".join(lines).strip()
+
+# =====================================================
+# CONTINUITY
+# =====================================================
 
 def load_continuity(limit_count=20):
     try:
@@ -240,6 +246,10 @@ def load_continuity(limit_count=20):
     except Exception as e:
         return f"CONTINUITY ERROR: {e}"
 
+# =====================================================
+# SHORT TERM
+# =====================================================
+
 def classify_short_term_domain(user_message):
     try:
         from memory.classifier.short_term_classifier import classify_message
@@ -253,6 +263,7 @@ def classify_short_term_domain(user_message):
 
     except Exception:
         return "short_term_general"
+
 
 def load_short_term(user_message, limit_count=20):
     table_name = classify_short_term_domain(user_message)
@@ -286,40 +297,27 @@ def load_short_term(user_message, limit_count=20):
     except Exception as e:
         return f"SHORT TERM ERROR [{table_name}]: {e}", table_name
 
+# =====================================================
+# RECALL DETECTION
+# =====================================================
+
 def recall_requested(user_message):
     text = safe_text(user_message).lower()
 
-    triggers = [
-        "recall",
-        "remember",
-        "who is",
-        "who are",
-        "tell me about",
-        "what do you know about",
-        "what can you tell me about",
-        "profile",
-        "history",
-        "my family",
-        "my siblings",
-        "my children",
-        "my kids",
-        "my dad",
-        "my father",
-        "my mum",
-        "my mother",
-        "my work history",
-        "my career",
-        "my recovery",
-        "project l",
-    ]
+    return (
+        "recall" in text
+        or "remember" in text
+    )
 
-    return any(trigger in text for trigger in triggers)
+# =====================================================
+# SCORING - RHEE V2 PRESERVED
+# =====================================================
 
 def calculate_memory_score(memory, query=""):
     score = 0
 
-    words = query_words(query)
-    content_lower = row_content(memory).lower()
+    query_lower = safe_text(query).lower()
+    content_lower = safe_text(memory.get("content", "")).lower()
     primary_subject = safe_text(memory.get("primary_subject", "")).lower()
 
     score += safe_int(memory.get("importance", 0))
@@ -328,33 +326,43 @@ def calculate_memory_score(memory, query=""):
     if memory.get("anchor", False):
         score += 75
 
-    for word in words:
-        if word in primary_subject:
-            score += 60
+    if query_lower and primary_subject and query_lower in primary_subject:
+        score += 100
 
-        if word in content_lower:
+    for subject in safe_list(memory.get("subjects", [])):
+        subject_lower = safe_text(subject).lower()
+        if query_lower and subject_lower and query_lower in subject_lower:
+            score += 50
+
+    for relationship in safe_list(memory.get("relationships", [])):
+        relationship_lower = safe_text(relationship).lower()
+        if query_lower and relationship_lower and query_lower in relationship_lower:
+            score += 40
+
+    values = safe_list(memory.get("values", []))
+    score += len(values) * 5
+
+    for value in values:
+        value_lower = safe_text(value).lower()
+        if query_lower and value_lower and query_lower in value_lower:
             score += 30
 
-        for subject in safe_list(memory.get("subjects", [])):
-            if word in safe_text(subject).lower():
-                score += 45
+    patterns = safe_list(memory.get("patterns", []))
+    score += len(patterns) * 10
 
-        for relationship in safe_list(memory.get("relationships", [])):
-            if word in safe_text(relationship).lower():
-                score += 35
+    for pattern in patterns:
+        pattern_lower = safe_text(pattern).lower()
+        if query_lower and pattern_lower and query_lower in pattern_lower:
+            score += 35
 
-        for value in safe_list(memory.get("values", [])):
-            if word in safe_text(value).lower():
-                score += 25
-
-        for pattern in safe_list(memory.get("patterns", [])):
-            if word in safe_text(pattern).lower():
-                score += 30
-
-    score += len(safe_list(memory.get("values", []))) * 3
-    score += len(safe_list(memory.get("patterns", []))) * 5
+    if query_lower and content_lower and query_lower in content_lower:
+        score += 25
 
     return score
+
+# =====================================================
+# LONG TERM LOADER - RHEE V2 PRESERVED
+# =====================================================
 
 def load_table_memories(table_name, batch_size=1000):
     table_memories = []
@@ -386,6 +394,7 @@ def load_table_memories(table_name, batch_size=1000):
 
     return table_memories
 
+
 def load_all_memories():
     memories = []
 
@@ -402,6 +411,10 @@ def load_all_memories():
             print(e)
 
     return memories
+
+# =====================================================
+# RECALL PACKET - RHEE V2 PRESERVED
+# =====================================================
 
 def build_recall_packet(query, limit=25):
     memories = load_all_memories()
@@ -423,10 +436,12 @@ def build_recall_packet(query, limit=25):
 
     return packet[:limit]
 
+
 def format_recall_packet(query, limit=25):
     packet = build_recall_packet(query, limit)
 
     lines = []
+
     lines.append("RHEE LONG TERM RECALL PACKET")
     lines.append(f"QUERY: {query}")
     lines.append(f"MEMORIES FOUND: {len(packet)}")
@@ -448,6 +463,10 @@ def format_recall_packet(query, limit=25):
 
     return "\n".join(lines)
 
+# =====================================================
+# MEMORY OUT CONTEXT
+# =====================================================
+
 def build_context(user_message):
     identity_context = load_identity()
     learnings_context = load_learnings()
@@ -462,7 +481,7 @@ def build_context(user_message):
 
     sections = []
 
-    sections.append("RHEE V3.1 MEMORY CONTEXT")
+    sections.append("RHEE V3 MEMORY CONTEXT")
     sections.append("")
     sections.append(f"SHORT TERM DOMAIN: {short_term_domain}")
     sections.append(f"LONG TERM RECALL ACTIVE: {recall_active}")
@@ -501,32 +520,24 @@ def build_context(user_message):
 
     return "\n".join(sections)
 
-def build_context_packet(user_message):
-    context = build_context(user_message)
-
-    return {
-        "engine": "rhee",
-        "version": "v3.1",
-        "context": context,
-        "context_size": len(context),
-        "recall_active": recall_requested(user_message),
-        "short_term_domain": classify_short_term_domain(user_message),
-    }
+# =====================================================
+# TEST
+# =====================================================
 
 if __name__ == "__main__":
     print()
     print("=" * 60)
-    print("RHEE V3.1 ONLINE")
+    print("RHEE V3 ONLINE")
     print("=" * 60)
 
-    for test in [
-        "How is Luella?",
-        "Recall Luella",
-        "Tell me about Terri Biscak",
-        "Who is Steven Pampel?",
-    ]:
-        print()
-        print("=" * 60)
-        print(test)
-        print("=" * 60)
-        print(build_context(test)[:4000])
+    print()
+    print("=" * 60)
+    print("TEST 1: FRONT OF STORE")
+    print("=" * 60)
+    print(build_context("How is Luella?")[:4000])
+
+    print()
+    print("=" * 60)
+    print("TEST 2: RECALL WAREHOUSE")
+    print("=" * 60)
+    print(build_context("Recall Luella")[:4000])

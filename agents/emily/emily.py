@@ -2,33 +2,44 @@ from api.google_auth import (
     get_google_service
 )
 
+# =====================================================
+# EMILY V3
+# EMAIL ASSISTANT
+# =====================================================
+
 def should_handle(message: str) -> bool:
 
     text = (message or "").lower()
 
     triggers = [
 
-      "check my emails",
-      "check my email",
-      "look at my emails",
-      "look at my email",
-      "get my emails",
-      "get my email",
-      "review my emails",
-      "review my email",
-      "email summary",
-      "inbox summary",
-      "gmail summary",
-      "check gmail",
-      "open inbox",
-      "read my emails"
+        "check my emails",
+        "check my email",
+        "look at my emails",
+        "look at my email",
+        "get my emails",
+        "get my email",
+        "review my emails",
+        "review my email",
+        "email summary",
+        "inbox summary",
+        "gmail summary",
+        "check gmail",
+        "open inbox",
+        "read my emails",
+        "latest emails",
+        "latest email"
 
-   ] 
+    ]
 
     return any(
         t in text
         for t in triggers
     )
+
+# =====================================================
+# EMAIL RETRIEVAL
+# =====================================================
 
 def get_emails():
 
@@ -42,7 +53,8 @@ def get_emails():
         .messages()
         .list(
             userId="me",
-            maxResults=5
+            q="in:inbox newer_than:30d",
+            maxResults=20
         )
         .execute()
     )
@@ -66,17 +78,59 @@ def get_emails():
             .execute()
         )
 
+        headers = (
+            data.get("payload", {})
+            .get("headers", [])
+        )
+
+        sender = ""
+        subject = ""
+        date = ""
+
+        for h in headers:
+
+            name = h.get("name", "").lower()
+
+            if name == "from":
+                sender = h.get("value", "")
+
+            elif name == "subject":
+                subject = h.get("value", "")
+
+            elif name == "date":
+                date = h.get("value", "")
+
         emails.append({
 
-            "snippet":
-                data.get(
-                    "snippet",
-                    ""
+            "from": sender,
+            "subject": subject,
+            "date": date,
+            "snippet": data.get("snippet", ""),
+
+            "timestamp":
+                int(
+                    data.get(
+                        "internalDate",
+                        0
+                    )
                 )
 
         })
 
+    # =================================================
+    # SORT NEWEST FIRST
+    # =================================================
+
+    emails.sort(
+        key=lambda x: x["timestamp"],
+        reverse=True
+    )
+
     return emails
+
+# =====================================================
+# OUTPUT
+# =====================================================
 
 def handle_email_request(message: str):
 
@@ -95,9 +149,11 @@ def handle_email_request(message: str):
         for idx, email in enumerate(emails):
 
             output += (
-                f"{idx+1}. "
-                + email["snippet"]
-                + "\n\n"
+                f"{idx+1}.\n\n"
+                f"FROM: {email['from']}\n"
+                f"SUBJECT: {email['subject']}\n"
+                f"DATE: {email['date']}\n"
+                f"SNIPPET: {email['snippet']}\n\n"
             )
 
         return output
@@ -116,3 +172,4 @@ You probably need:
 - first-time Google login
 
 """
+
