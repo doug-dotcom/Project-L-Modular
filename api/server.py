@@ -467,6 +467,9 @@ def chat(req: ChatRequest):
     log(f"CHAT REQUEST: {user_message[:100]}")
     log("TEGAN ACTIVE")
     global pending_willy_review
+    log("=== WILLY SAVE CHECK ===")
+    log(f"PENDING_WILLY_REVIEW = {pending_willy_review}")
+    log(f"USER_MESSAGE = {user_message}")
 
     if (
         pending_willy_review
