@@ -52,13 +52,6 @@ from agents.tegan.tegan import (
 
 from agents.willy.willy import Willy
 
-# =====================================================
-# WILLY
-# =====================================================
-
-willy = Willy()
-pending_willy_review = None
-
 try:
     from core.cognition.brain_pipeline import (
         process_raw_memory
@@ -466,63 +459,6 @@ def chat(req: ChatRequest):
 
     log(f"CHAT REQUEST: {user_message[:100]}")
     log("TEGAN ACTIVE")
-    global pending_willy_review
-
-    if (
-        pending_willy_review
-        and user_message.lower().strip() in [
-            "yes",
-            "yes save",
-            "save",
-            "approve",
-            "approved",
-            "save it",
-            "yes please save"
-        ]
-    ):
-        try:
-            willy.save_principle(
-                principle=pending_willy_review["principle"],
-                category=pending_willy_review["category"],
-                confidence=int(float(pending_willy_review["confidence"]) * 100),
-                approved_by="Doug"
-            )
-
-            saved = pending_willy_review.get("principle", "Unknown Principle")
-            pending_willy_review = None
-
-            return {
-                "reply": f"✅ Principle saved to Wisdom Warehouse:\n\n{saved}",
-                "active_agent": "Willy"
-            }
-
-        except Exception as e:
-            return {
-                "reply": f"Willy save failed: {str(e)}",
-                "active_agent": "Willy"
-            }
-
-    if user_message.lower().startswith("run willy"):
-        lesson = (
-            user_message
-            .replace("Run Willy", "")
-            .replace("run willy", "")
-            .replace(":", "")
-            .strip()
-        )
-
-        review = willy.review_lesson(lesson)
-        pending_willy_review = review
-
-        return {
-            "reply":
-                f"1. Lesson Learned: {review.get('lesson','')}\n\n"
-                f"2. Broader Reusable Principle: {review.get('principle','')}\n\n"
-                f"3. Category: {review.get('category','')}\n\n"
-                f"4. Confidence Score: {review.get('confidence','')}\n\n"
-                f"5. Would you like me to save this information?",
-            "active_agent": "Willy"
-        }
 
     short_term_domain = "short_term_general"
     domains = [short_term_domain]
@@ -860,8 +796,6 @@ def behaviour_truth_status():
 # =====================================================
 # END_PROJECT_L_BEHAVIOUR_LAYER_V1
 # =====================================================
-
-
 
 
 
