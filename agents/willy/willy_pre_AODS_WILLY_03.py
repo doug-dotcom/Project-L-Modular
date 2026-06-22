@@ -215,22 +215,7 @@ class Willy:
         if "connection" in lower:
             return "Connection weakens unhealthy thinking and strengthens recovery."
 
-        # -------------------------------------------------
-        # DEFAULT PRINCIPLE EXTRACTION
-        # -------------------------------------------------
-        # For Willy Protocol:
-        # First meaningful line = Principle
-
-        lines = [
-            line.strip()
-            for line in text.splitlines()
-            if line.strip()
-        ]
-
-        if lines:
-            return lines[0]
-
-        return text.strip()
+        return f"Extract the reusable principle from this lesson: {text}"
 
     # -------------------------------------------------
     # INTERNAL CATEGORY SUGGESTION
@@ -270,5 +255,4 @@ if __name__ == "__main__":
 
     print("WAREHOUSE COUNT")
     print(willy.count_principles())
-
 
