@@ -451,41 +451,6 @@ def voice_toggle():
         "enabled": voice_state["enabled"]
     }
 
-
-# =====================================================
-# EXPLICIT DOMAIN OVERRIDE
-# =====================================================
-
-def extract_forced_domain(message):
-
-    if not message:
-        return None
-
-    lower = message.lower().strip()
-
-    domain_map = {
-        "recovery": "short_term_recovery",
-        "health": "short_term_health",
-        "family": "short_term_family",
-        "relationships": "short_term_relationships",
-        "relationship": "short_term_relationships",
-        "identity": "short_term_identity",
-        "project_l": "short_term_project_l",
-        "project l": "short_term_project_l",
-        "sport": "short_term_sport",
-        "work": "short_term_work"
-    }
-
-    for key, table in domain_map.items():
-
-        trigger = f"save this under {key}"
-
-        if trigger in lower:
-            log(f"FORCED DOMAIN OVERRIDE: {table}")
-            return table
-
-    return None
-
 # =====================================================
 # CHAT
 # =====================================================
@@ -898,7 +863,6 @@ def behaviour_truth_status():
 # =====================================================
 # END_PROJECT_L_BEHAVIOUR_LAYER_V1
 # =====================================================
-
 
 
 
