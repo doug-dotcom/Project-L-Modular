@@ -9,9 +9,6 @@ def should_handle(message: str) -> bool:
     triggers = [
 
         "calendar",
-        "meeting",
-        "schedule",
-        "appointment",
         "callie",
         "what is on today"
 
