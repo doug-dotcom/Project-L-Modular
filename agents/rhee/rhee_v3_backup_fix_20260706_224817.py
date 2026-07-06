@@ -134,7 +134,7 @@ def row_content(row):
 
     return safe_text(row)
 
-def load_identity(limit_count=25):
+def load_identity(limit_count=1000):
     lines = []
     identity_file = ROOT / "memory" / "identity_core" / "l_identity.json"
 
@@ -176,7 +176,7 @@ def load_identity(limit_count=25):
 
     return "\n".join(lines)
 
-def load_learnings(limit_count=20):
+def load_learnings(limit_count=1000):
     if not supabase:
         return ""
 
@@ -254,7 +254,7 @@ def classify_short_term_domain(user_message):
     except Exception:
         return "short_term_general"
 
-def load_short_term(user_message, limit_count=20):
+def load_short_term(user_message, limit_count=1000):
     table_name = classify_short_term_domain(user_message)
 
     try:
@@ -403,7 +403,7 @@ def load_all_memories():
 
     return memories
 
-def build_recall_packet(query, limit=25):
+def build_recall_packet(query, limit=1000):
     memories = load_all_memories()
     packet = []
 
@@ -423,7 +423,7 @@ def build_recall_packet(query, limit=25):
 
     return packet[:limit]
 
-def format_recall_packet(query, limit=25):
+def format_recall_packet(query, limit=1000):
     packet = build_recall_packet(query, limit)
 
     lines = []
@@ -448,97 +448,10 @@ def format_recall_packet(query, limit=25):
 
     return "\n".join(lines)
 
-
-def load_all_raw_catchall(batch_size=1000):
-    rows = []
-    offset = 0
-
-    if not supabase:
-        return rows
-
-    while True:
-        response = (
-            supabase
-            .table("raw_catchall")
-            .select("*")
-            .order("id", desc=True)
-            .range(offset, offset + batch_size - 1)
-            .execute()
-        )
-
-        batch = response.data or []
-
-        if not batch:
-            break
-
-        rows.extend(batch)
-
-        if len(batch) < batch_size:
-            break
-
-        offset += batch_size
-
-    return rows
-
-def calculate_raw_score(row, query=""):
-    score = 0
-    words = query_words(query)
-    content = safe_text(row.get("content", ""))
-    content_lower = content.lower()
-    role = safe_text(row.get("role", "")).lower()
-
-    for word in words:
-        if word in content_lower:
-            score += 40
-
-    if role == "user":
-        score += 10
-
-    score += min(len(content) // 250, 20)
-
-    return score
-
-def build_raw_recall_packet(query, limit=40):
-    rows = load_all_raw_catchall()
-    scored = []
-
-    for row in rows:
-        score = calculate_raw_score(row, query)
-
-        if score <= 0:
-            continue
-
-        row["_score"] = score
-        scored.append(row)
-
-    scored.sort(
-        key=lambda x: x.get("_score", 0),
-        reverse=True
-    )
-
-    selected = scored[:limit]
-    selected.reverse()
-
-    lines = []
-    lines.append("RHEE RAW CATCHALL SMART RECALL")
-    lines.append(f"QUERY: {query}")
-    lines.append(f"RAW ROWS SEARCHED: {len(rows)}")
-    lines.append(f"RAW MATCHES INJECTED: {len(selected)}")
-    lines.append("")
-
-    for row in selected:
-        role = safe_text(row.get("role", "unknown")).upper()
-        content = safe_text(row.get("content", ""))
-
-        if content:
-            lines.append(f"{role}: {content[:900]}")
-
-    return "\n".join(lines)
-
 def build_context(user_message):
     identity_context = load_identity()
     learnings_context = load_learnings()
-    continuity_context = build_raw_recall_packet(user_message, limit=40)
+    continuity_context = load_continuity()
     short_term_context, short_term_domain = load_short_term(user_message)
 
     recall_active = recall_requested(user_message)
@@ -617,4 +530,3 @@ if __name__ == "__main__":
         print(test)
         print("=" * 60)
         print(build_context(test)[:4000])
-
