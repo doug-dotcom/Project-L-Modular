@@ -481,48 +481,37 @@ def load_all_raw_catchall(batch_size=1000):
     return rows
 
 
-
-STOP_WORDS = {
-    "please", "recall", "remember", "conversation", "conversations",
-    "where", "when", "what", "who", "the", "and", "for", "with",
-    "all", "every", "everything", "said", "tell", "about", "find",
-    "rest", "there", "more", "list", "show", "give", "can", "you",
-    "me", "my", "i"
-}
-
 def exhaustive_requested(query):
     text = safe_text(query).lower()
-    return any(trigger in text for trigger in [
-        "all", "every", "everything", "complete", "entire",
-        "full", "whole", "list", "find the rest", "there are more"
-    ])
 
-def evidence_mode_requested(query):
-    text = safe_text(query).lower()
-    return any(trigger in text for trigger in [
-        "all", "every", "exact", "quote", "list", "timeline",
-        "chronology", "date", "time", "times", "when"
-    ])
+    triggers = [
+        "all",
+        "every",
+        "everything",
+        "complete",
+        "entire",
+        "full",
+        "whole",
+        "list",
+        "find the rest",
+        "there are more",
+    ]
+
+    return any(trigger in text for trigger in triggers)
 
 def expanded_query_terms(query):
     text = safe_text(query).lower()
-
-    base_terms = [
-        word for word in query_words(query)
-        if word not in STOP_WORDS and len(word) >= 3
-    ]
-
-    terms = set(base_terms)
+    terms = set(query_words(query))
 
     phrase_map = {
         "good night": [
             "good night",
             "goodnight",
             "sleep well",
+            "sleep protocol",
             "went to bed",
             "go to bed",
             "bedtime",
-            "sleep protocol",
             "sleep duration",
             "record the time",
             "recorded the time",
@@ -530,15 +519,15 @@ def expanded_query_terms(query):
         "sleep": [
             "sleep",
             "sleep well",
+            "sleep protocol",
             "went to bed",
             "go to bed",
             "bedtime",
-            "sleep protocol",
             "sleep duration",
             "good night",
             "goodnight",
-            "wake",
             "woke",
+            "wake",
         ],
         "pauline": [
             "pauline",
@@ -599,8 +588,14 @@ def calculate_raw_score(row, query=""):
 
         if term in content_lower:
             matched = True
-            score += 120 if " " in term else 50
 
+            if " " in term:
+                score += 100
+            else:
+                score += 40
+
+    # Strict safety gate:
+    # no real match = no score.
     if not matched:
         return 0
 
@@ -610,7 +605,8 @@ def calculate_raw_score(row, query=""):
     if source == "chat":
         score += 5
 
-    score += min(len(content) // 400, 10)
+    # Length is only a tie-breaker AFTER a real match.
+    score += min(len(content) // 250, 20)
 
     return score
 
@@ -618,7 +614,6 @@ def build_raw_recall_packet(query, limit=40):
     rows = load_all_raw_catchall()
     scored = []
     exhaustive = exhaustive_requested(query)
-    evidence_mode = evidence_mode_requested(query)
 
     for row in rows:
         score = calculate_raw_score(row, query)
@@ -634,64 +629,48 @@ def build_raw_recall_packet(query, limit=40):
         reverse=True
     )
 
-    selected = scored[:120] if exhaustive else scored[:limit]
+    if exhaustive:
+        selected = scored[:120]
+    else:
+        selected = scored[:limit]
+
     selected.reverse()
 
     print("=" * 60)
     print(f"RAW ROWS SEARCHED : {len(rows)}")
     print(f"RAW MATCHES FOUND : {len(scored)}")
     print(f"RAW MATCHES SENT  : {len(selected)}")
-    print(f"EVIDENCE MODE     : {evidence_mode}")
     print("=" * 60)
 
     lines = []
-    lines.append("RHEE V5 EVIDENCE MODE RAW RECALL")
+    lines.append("RHEE V4 STRICT RAW SEARCH")
     lines.append(f"QUERY: {query}")
     lines.append(f"RAW ROWS SEARCHED: {len(rows)}")
     lines.append(f"RAW MATCHES FOUND: {len(scored)}")
     lines.append(f"EXHAUSTIVE MODE: {exhaustive}")
-    lines.append(f"EVIDENCE MODE: {evidence_mode}")
     lines.append(f"RAW MATCHES INJECTED: {len(selected)}")
     lines.append("")
 
-    if evidence_mode:
-        lines.append("RHEE EVIDENCE PROTOCOL")
-        lines.append("The records below are retrieved evidence.")
-        lines.append("Do not invent dates, times, events, or missing details.")
-        lines.append("Do not merge separate records into one event.")
-        lines.append("Do not reorder unless the record clearly contains a date or time.")
-        lines.append("If the evidence is incomplete, say it is incomplete.")
-        lines.append("When listing results, quote or closely preserve the retrieved wording.")
-        lines.append("")
-
     seen = set()
-    record_no = 1
 
     for row in selected:
         role = safe_text(row.get("role", "unknown")).upper()
         content = safe_text(row.get("content", ""))
-        created_at = safe_text(row.get("created_at", ""))
-        row_id = safe_text(row.get("id", ""))
 
         if not content:
             continue
 
-        fingerprint = content[:220].lower()
+        fingerprint = content[:180].lower()
 
         if fingerprint in seen:
             continue
 
         seen.add(fingerprint)
 
-        lines.append(f"RECORD {record_no}")
-        lines.append(f"ID: {row_id}")
-        lines.append(f"CREATED_AT: {created_at}")
-        lines.append(f"ROLE: {role}")
-        lines.append(f"SCORE: {row.get('_score', 0)}")
-        lines.append("CONTENT:")
-        lines.append(content[:700] if evidence_mode else content[:900])
-        lines.append("")
-        record_no += 1
+        if exhaustive:
+            lines.append(f"{role}: {content[:500]}")
+        else:
+            lines.append(f"{role}: {content[:900]}")
 
     return "\n".join(lines)
 
@@ -710,7 +689,7 @@ def build_context(user_message):
 
     sections = []
 
-    sections.append("RHEE V5 MEMORY CONTEXT")
+    sections.append("RHEE V4 MEMORY CONTEXT")
     sections.append("")
     sections.append(f"SHORT TERM DOMAIN: {short_term_domain}")
     sections.append(f"LONG TERM RECALL ACTIVE: {recall_active}")
@@ -754,7 +733,7 @@ def build_context_packet(user_message):
 
     return {
         "engine": "rhee",
-        "version": "v5.0",
+        "version": "v4.0",
         "context": context,
         "context_size": len(context),
         "recall_active": recall_requested(user_message),
