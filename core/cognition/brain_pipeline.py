@@ -91,6 +91,32 @@ def clean_content(text):
     return str(text or "").strip()
 
 
+def should_store_memory(content):
+    """Reject ordinary questions while preserving explicit save instructions."""
+    text = clean_content(content)
+    lowered = text.lower()
+
+    if not text:
+        return False
+
+    persistence_cues = (
+        "remember", "save this", "save that", "mark today", "note that",
+        "record this", "record that", "please store", "add to memory",
+    )
+    if any(cue in lowered for cue in persistence_cues):
+        return True
+
+    question_starters = (
+        "who ", "what ", "when ", "where ", "why ", "how ", "can ",
+        "could ", "would ", "should ", "do ", "does ", "did ", "is ",
+        "are ", "am ", "was ", "were ", "have ", "has ", "will ",
+    )
+    return not (
+        text.endswith("?")
+        or any(lowered.startswith(starter) for starter in question_starters)
+    )
+
+
 def detect_target_table(content):
     text = content.lower()
 
@@ -193,6 +219,14 @@ def process_raw_memory(row):
 
     if not content:
         return None
+
+    if not should_store_memory(content):
+        return {
+            "raw_id": raw_id,
+            "status": "skipped",
+            "reason": "question_not_memory",
+            "target": None,
+        }
 
     target_table = detect_target_table(content)
 
@@ -375,7 +409,6 @@ if __name__ == "__main__":
 
     for item in result["outcomes"]:
         print(item)
-
 
 
 
