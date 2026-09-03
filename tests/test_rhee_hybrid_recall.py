@@ -24,6 +24,13 @@ def test_unrelated_high_salience_memory_is_not_returned():
     assert rhee.calculate_memory_score(memory, "How is Luella?") == 0
 
 
+def test_raw_exact_query_terms_outrank_expansions():
+    exact = {"content": "Luella got her braces off on 16 June 2026", "role": "user"}
+    expanded = {"content": "A general story about Luella and her daughter", "role": "user"}
+    query = "When did Luella get her braces off?"
+    assert rhee.calculate_raw_score(exact, query) > rhee.calculate_raw_score(expanded, query)
+
+
 def test_context_packet_is_bounded_and_reports_recall(monkeypatch):
     monkeypatch.setattr(rhee, "supabase", None)
     packet = rhee.build_context_packet("How is Luella?")

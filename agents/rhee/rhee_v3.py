@@ -671,6 +671,11 @@ def calculate_raw_score(row, query=""):
     matched = False
 
     terms = expanded_query_terms(query)
+    direct_terms = {
+        safe_text(term).lower()
+        for term in query_words(query)
+        if safe_text(term)
+    }
     content = safe_text(row.get("content", ""))
     content_lower = content.lower()
     role = safe_text(row.get("role", "")).lower()
@@ -684,7 +689,13 @@ def calculate_raw_score(row, query=""):
 
         if term in content_lower:
             matched = True
-            score += 120 if " " in term else 50
+            # Exact words Doug used carry far more evidentiary weight than
+            # Rhee's broad subject expansions. This keeps a specific record
+            # such as "Luella ... braces" above generic daughter material.
+            if term in direct_terms:
+                score += 220
+            else:
+                score += 70 if " " in term else 30
 
     if not matched:
         return 0
