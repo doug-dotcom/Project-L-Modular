@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 import json
 import re
+import time
 from pathlib import Path
 
 # =====================================================
@@ -15,6 +16,11 @@ load_dotenv()
 
 ROOT = Path(__file__).resolve().parents[2]
 LOCAL_DOMAIN_DIR = ROOT / "memory" / "domains"
+MEMORY_CACHE_TTL_SECONDS = 300
+RAW_CACHE_TTL_SECONDS = 60
+
+_memory_cache = {"loaded_at": 0.0, "rows": None}
+_raw_cache = {"loaded_at": 0.0, "rows": None}
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = (
@@ -143,7 +149,7 @@ def row_content(row):
 
     return safe_text(row)
 
-def load_identity(limit_count=25):
+def load_identity(limit_count=10):
     lines = []
     identity_file = ROOT / "memory" / "identity_core" / "l_identity.json"
 
@@ -185,7 +191,7 @@ def load_identity(limit_count=25):
 
     return "\n".join(lines)
 
-def load_learnings(limit_count=20):
+def load_learnings(limit_count=8):
     if not supabase:
         return ""
 
@@ -263,7 +269,7 @@ def classify_short_term_domain(user_message):
     except Exception:
         return "short_term_general"
 
-def load_short_term(user_message, limit_count=20):
+def load_short_term(user_message, limit_count=8):
     table_name = classify_short_term_domain(user_message)
 
     try:
@@ -288,7 +294,7 @@ def load_short_term(user_message, limit_count=20):
             content = row_content(row)
 
             if content:
-                lines.append(f"{role}: {content}")
+                lines.append(f"{role}: {content[:700]}")
 
         return "\n".join(lines), table_name
 
@@ -441,6 +447,11 @@ def load_table_memories(table_name, batch_size=1000):
     return table_memories
 
 def load_all_memories():
+    now = time.monotonic()
+    cached_rows = _memory_cache.get("rows")
+    if cached_rows is not None and now - _memory_cache["loaded_at"] < MEMORY_CACHE_TTL_SECONDS:
+        return cached_rows
+
     memories = load_local_memories()
 
     for table_name in LONG_TERM_TABLES:
@@ -467,7 +478,9 @@ def load_all_memories():
         if existing is None or not safe_text(memory.get("_table")).startswith("local_"):
             deduplicated[fingerprint] = memory
 
-    return list(deduplicated.values())
+    rows = list(deduplicated.values())
+    _memory_cache.update({"loaded_at": now, "rows": rows})
+    return rows
 
 def build_recall_packet(query, limit=25):
     memories = load_all_memories()
@@ -516,6 +529,11 @@ def format_recall_packet(query, limit=25):
 
 
 def load_all_raw_catchall(batch_size=1000):
+    now = time.monotonic()
+    cached_rows = _raw_cache.get("rows")
+    if cached_rows is not None and now - _raw_cache["loaded_at"] < RAW_CACHE_TTL_SECONDS:
+        return cached_rows
+
     rows = []
     offset = 0
 
@@ -544,6 +562,7 @@ def load_all_raw_catchall(batch_size=1000):
 
         offset += batch_size
 
+    _raw_cache.update({"loaded_at": now, "rows": rows})
     return rows
 
 
@@ -700,7 +719,7 @@ def build_raw_recall_packet(query, limit=40):
         reverse=True
     )
 
-    selected = scored[:120] if exhaustive else scored[:limit]
+    selected = scored[:40] if exhaustive else scored[:limit]
     selected.reverse()
 
     print("=" * 60)
@@ -755,7 +774,7 @@ def build_raw_recall_packet(query, limit=40):
         lines.append(f"ROLE: {role}")
         lines.append(f"SCORE: {row.get('_score', 0)}")
         lines.append("CONTENT:")
-        lines.append(content[:700] if evidence_mode else content[:900])
+        lines.append(content[:600] if evidence_mode else content[:700])
         lines.append("")
         record_no += 1
 
@@ -765,10 +784,10 @@ def build_raw_recall_packet(query, limit=40):
 def build_context(user_message):
     identity_context = load_identity()
     learnings_context = load_learnings()
-    continuity_context = build_raw_recall_packet(user_message, limit=40)
+    continuity_context = build_raw_recall_packet(user_message, limit=12)
     short_term_context, short_term_domain = load_short_term(user_message)
 
-    recall_packet = build_recall_packet(user_message, limit=18)
+    recall_packet = build_recall_packet(user_message, limit=12)
     recall_active = bool(recall_packet)
     long_term_context = format_memory_packet(user_message, recall_packet)
 
@@ -830,7 +849,7 @@ def format_memory_packet(query, packet):
         )
         content = row_content(memory)
         if content:
-            lines.append(content[:900])
+            lines.append(content[:700])
         lines.append("")
 
     return "\n".join(lines)

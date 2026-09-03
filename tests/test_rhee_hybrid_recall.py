@@ -29,4 +29,4 @@ def test_context_packet_is_bounded_and_reports_recall(monkeypatch):
     packet = rhee.build_context_packet("How is Luella?")
     assert packet["recall_active"] is True
     assert "local_" in packet["context"]
-    assert len(packet["context"]) < 50000
+    assert len(packet["context"]) < 30000
