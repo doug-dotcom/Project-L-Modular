@@ -307,6 +307,8 @@ ROUTE INFORMATION:
 RESPONSE RULES:
 - Use Rhee context naturally and accurately.
 - If Rhee provides relevant memory, use it.
+- For a specific factual question, prioritise Rhee's highest-scoring direct evidence.
+- Prefer affirmative dated records over later questions or uncertainty replies.
 - Do not say you have no memory if relevant context is present.
 - Keep emotional and topic continuity.
 - Join the dots, no more no less.
