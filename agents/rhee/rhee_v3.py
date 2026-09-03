@@ -572,8 +572,31 @@ STOP_WORDS = {
     "where", "when", "what", "who", "the", "and", "for", "with",
     "all", "every", "everything", "said", "tell", "about", "find",
     "rest", "there", "more", "list", "show", "give", "can", "you",
-    "me", "my", "i"
+    "me", "my", "i", "a", "an", "is", "are", "was", "were",
+    "do", "does", "did", "get", "got", "off", "her", "hers",
+    "him", "his", "she", "he", "they", "their", "them", "it"
 }
+
+UNCERTAIN_RECALL_PHRASES = (
+    "do not provide an exact",
+    "does not provide an exact",
+    "currently incomplete",
+    "information is incomplete",
+    "records are incomplete",
+    "no exact date",
+    "no record of",
+    "don't have that information",
+    "do not have that information",
+)
+
+
+def term_in_text(term, text):
+    """Match recall terms as words/phrases, never as arbitrary substrings."""
+    words = re.findall(r"[a-z0-9']+", safe_text(term).lower())
+    if not words:
+        return False
+    pattern = r"\b" + r"\s+".join(re.escape(word) for word in words) + r"\b"
+    return bool(re.search(pattern, safe_text(text).lower()))
 
 def exhaustive_requested(query):
     text = safe_text(query).lower()
@@ -674,7 +697,7 @@ def calculate_raw_score(row, query=""):
     direct_terms = {
         safe_text(term).lower()
         for term in query_words(query)
-        if safe_text(term)
+        if safe_text(term) and safe_text(term).lower() not in STOP_WORDS
     }
     content = safe_text(row.get("content", ""))
     content_lower = content.lower()
@@ -687,7 +710,7 @@ def calculate_raw_score(row, query=""):
         if not term:
             continue
 
-        if term in content_lower:
+        if term_in_text(term, content_lower):
             matched = True
             # Exact words Doug used carry far more evidentiary weight than
             # Rhee's broad subject expansions. This keeps a specific record
@@ -699,6 +722,20 @@ def calculate_raw_score(row, query=""):
 
     if not matched:
         return 0
+
+    # Questions and earlier failed answers are conversation artefacts, not
+    # affirmative evidence. Keep them searchable but below factual records.
+    if content.rstrip().endswith("?"):
+        score -= 300
+
+    if any(phrase in content_lower for phrase in UNCERTAIN_RECALL_PHRASES):
+        score -= 500
+
+    if evidence_mode_requested(query) and re.search(
+        r"\b(?:\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}\s+[a-z]+\s+\d{4})\b",
+        content_lower,
+    ):
+        score += 100
 
     if role == "user":
         score += 15
@@ -731,7 +768,6 @@ def build_raw_recall_packet(query, limit=40):
     )
 
     selected = scored[:40] if exhaustive else scored[:limit]
-    selected.reverse()
 
     print("=" * 60)
     print(f"RAW ROWS SEARCHED : {len(rows)}")
@@ -753,6 +789,8 @@ def build_raw_recall_packet(query, limit=40):
     if evidence_mode:
         lines.append("RHEE EVIDENCE PROTOCOL")
         lines.append("The records below are retrieved evidence.")
+        lines.append("Records are ordered highest-confidence first.")
+        lines.append("Prefer direct, affirmative, dated records over questions or uncertainty replies.")
         lines.append("Do not invent dates, times, events, or missing details.")
         lines.append("Do not merge separate records into one event.")
         lines.append("Do not reorder unless the record clearly contains a date or time.")
