@@ -120,13 +120,43 @@ def query_words(query):
         "from", "has", "have", "how", "into", "its", "know", "me",
         "more", "please", "that", "the", "their", "them", "this",
         "was", "were", "what", "when", "where", "which", "who", "why",
-        "with", "would", "you", "your",
+        "with", "would", "you", "your", "get", "got", "off", "her",
+        "hers", "him", "his", "she", "he", "they", "it",
     }
     return [
         word
         for word in re.findall(r"[a-z0-9']+", cleaned)
         if len(word) >= 3 and word not in stop_words
     ]
+
+
+def term_in_text(term, text):
+    """Match recall terms as words/phrases, never as arbitrary substrings."""
+    words = re.findall(r"[a-z0-9']+", safe_text(term).lower())
+    if not words:
+        return False
+    pattern = r"\b" + r"\s+".join(re.escape(word) for word in words) + r"\b"
+    return bool(re.search(pattern, safe_text(text).lower()))
+
+
+def is_historical_memory_artifact(content):
+    """Identify questions/failed answers written before the ingestion gate."""
+    text = safe_text(content)
+    lowered = text.lower()
+    persistence_cues = (
+        "remember", "save this", "save that", "mark today", "note that",
+        "record this", "record that", "please store", "add to memory",
+    )
+    uncertain_phrases = (
+        "do not provide an exact", "does not provide an exact",
+        "currently incomplete", "information is incomplete",
+        "records are incomplete", "no exact date", "no record of",
+        "don't have that information", "do not have that information",
+    )
+    ordinary_question = text.rstrip().endswith("?") and not any(
+        cue in lowered for cue in persistence_cues
+    )
+    return ordinary_question or any(phrase in lowered for phrase in uncertain_phrases)
 
 def row_content(row):
     if not isinstance(row, dict):
@@ -337,6 +367,9 @@ def calculate_memory_score(memory, query=""):
     content_lower = row_content(memory).lower()
     primary_subject = safe_text(memory.get("primary_subject", "")).lower()
 
+    if is_historical_memory_artifact(content_lower):
+        return 0
+
     relevance = 0
 
     if memory.get("anchor", False):
@@ -346,7 +379,7 @@ def calculate_memory_score(memory, query=""):
         if word in primary_subject:
             relevance += 60
 
-        if word in content_lower:
+        if term_in_text(word, content_lower):
             relevance += 30
 
         for subject in safe_list(memory.get("subjects", [])):
@@ -589,14 +622,6 @@ UNCERTAIN_RECALL_PHRASES = (
     "do not have that information",
 )
 
-
-def term_in_text(term, text):
-    """Match recall terms as words/phrases, never as arbitrary substrings."""
-    words = re.findall(r"[a-z0-9']+", safe_text(term).lower())
-    if not words:
-        return False
-    pattern = r"\b" + r"\s+".join(re.escape(word) for word in words) + r"\b"
-    return bool(re.search(pattern, safe_text(text).lower()))
 
 def exhaustive_requested(query):
     text = safe_text(query).lower()

@@ -24,6 +24,30 @@ def test_unrelated_high_salience_memory_is_not_returned():
     assert rhee.calculate_memory_score(memory, "How is Luella?") == 0
 
 
+def test_historical_questions_and_failed_answers_are_quarantined():
+    query = "When did Luella get her braces off?"
+    question = {
+        "content": query,
+        "primary_subject": "Luella",
+        "importance": 100,
+        "salience": 100,
+    }
+    failed = {
+        "content": "The information is incomplete; there is no exact date for Luella's braces.",
+        "primary_subject": "Luella",
+        "importance": 100,
+        "salience": 100,
+    }
+    explicit_save = {
+        "content": "Can you remember that Luella loves netball?",
+        "primary_subject": "Luella",
+    }
+
+    assert rhee.calculate_memory_score(question, query) == 0
+    assert rhee.calculate_memory_score(failed, query) == 0
+    assert rhee.calculate_memory_score(explicit_save, query) > 0
+
+
 def test_raw_exact_query_terms_outrank_expansions():
     exact = {"content": "Luella got her braces off on 16 June 2026", "role": "user"}
     expanded = {"content": "A general story about Luella and her daughter", "role": "user"}
