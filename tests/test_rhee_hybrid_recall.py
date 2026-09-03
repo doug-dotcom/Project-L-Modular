@@ -31,6 +31,42 @@ def test_raw_exact_query_terms_outrank_expansions():
     assert rhee.calculate_raw_score(exact, query) > rhee.calculate_raw_score(expanded, query)
 
 
+def test_raw_matching_uses_word_boundaries_and_penalises_failed_recall():
+    query = "When did Luella get her braces off?"
+    fact = {
+        "content": "Luella had her braces removed on 16 June 2026.",
+        "role": "assistant",
+    }
+    failed = {
+        "content": "The records do not provide an exact date for when Luella got her braces off.",
+        "role": "assistant",
+    }
+    unrelated = {"content": "Whether there is another option", "role": "assistant"}
+
+    assert rhee.calculate_raw_score(fact, query) > rhee.calculate_raw_score(failed, query)
+    assert rhee.calculate_raw_score(unrelated, query) == 0
+
+
+def test_raw_packet_puts_affirmative_dated_evidence_first(monkeypatch):
+    rows = [
+        {"id": 1, "content": "When did Luella get her braces off?", "role": "user"},
+        {
+            "id": 2,
+            "content": "The information regarding when Luella got her braces off is currently incomplete.",
+            "role": "assistant",
+        },
+        {
+            "id": 3,
+            "content": "Luella had her braces removed on 16 June 2026.",
+            "role": "assistant",
+        },
+    ]
+    monkeypatch.setattr(rhee, "load_all_raw_catchall", lambda: rows)
+    packet = rhee.build_raw_recall_packet("When did Luella get her braces off?", limit=3)
+    assert "16 June 2026" in packet
+    assert "currently incomplete" not in packet
+
+
 def test_context_packet_is_bounded_and_reports_recall(monkeypatch):
     monkeypatch.setattr(rhee, "supabase", None)
     packet = rhee.build_context_packet("How is Luella?")
