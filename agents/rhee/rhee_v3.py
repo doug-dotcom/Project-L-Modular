@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 
 import os
 import json
+import re
 from pathlib import Path
 
 # =====================================================
@@ -13,6 +14,7 @@ from pathlib import Path
 load_dotenv()
 
 ROOT = Path(__file__).resolve().parents[2]
+LOCAL_DOMAIN_DIR = ROOT / "memory" / "domains"
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = (
@@ -107,10 +109,17 @@ def clean_query(query):
 
 def query_words(query):
     cleaned = clean_query(query)
+    stop_words = {
+        "about", "and", "are", "can", "could", "did", "does", "for",
+        "from", "has", "have", "how", "into", "its", "know", "me",
+        "more", "please", "that", "the", "their", "them", "this",
+        "was", "were", "what", "when", "where", "which", "who", "why",
+        "with", "would", "you", "your",
+    }
     return [
-        word.strip()
-        for word in cleaned.split()
-        if len(word.strip()) >= 3
+        word
+        for word in re.findall(r"[a-z0-9']+", cleaned)
+        if len(word) >= 3 and word not in stop_words
     ]
 
 def row_content(row):
@@ -322,39 +331,84 @@ def calculate_memory_score(memory, query=""):
     content_lower = row_content(memory).lower()
     primary_subject = safe_text(memory.get("primary_subject", "")).lower()
 
-    score += safe_int(memory.get("importance", 0))
-    score += safe_int(memory.get("salience", 0))
+    relevance = 0
 
     if memory.get("anchor", False):
         score += 75
 
     for word in words:
         if word in primary_subject:
-            score += 60
+            relevance += 60
 
         if word in content_lower:
-            score += 30
+            relevance += 30
 
         for subject in safe_list(memory.get("subjects", [])):
             if word in safe_text(subject).lower():
-                score += 45
+                relevance += 45
 
         for relationship in safe_list(memory.get("relationships", [])):
             if word in safe_text(relationship).lower():
-                score += 35
+                relevance += 35
 
         for value in safe_list(memory.get("values", [])):
             if word in safe_text(value).lower():
-                score += 25
+                relevance += 25
 
         for pattern in safe_list(memory.get("patterns", [])):
             if word in safe_text(pattern).lower():
-                score += 30
+                relevance += 30
+
+    # Do not inject unrelated high-salience memories.  Earlier Rhee versions
+    # gave every record a positive score before checking relevance, so the
+    # same generic memories crowded out the subject Doug actually asked about.
+    if relevance <= 0:
+        return 0
+
+    score += relevance
+    score += safe_int(memory.get("importance", 0))
+    score += safe_int(memory.get("salience", memory.get("salience_score", 0)))
 
     score += len(safe_list(memory.get("values", []))) * 3
     score += len(safe_list(memory.get("patterns", []))) * 5
 
     return score
+
+
+def load_local_memories():
+    """Load the historical domain library shipped with Project L.
+
+    Supabase is the live store, but the May/June memory corpus still lives in
+    memory/domains.  Rhee previously ignored it completely in production.
+    """
+    memories = []
+
+    if not LOCAL_DOMAIN_DIR.exists():
+        return memories
+
+    for path in sorted(LOCAL_DOMAIN_DIR.glob("*.json")):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception as e:
+            print(f"{path.name}: LOCAL MEMORY FAILED: {e}")
+            continue
+
+        if isinstance(data, dict):
+            data = data.get("memories", data.get("items", []))
+
+        if not isinstance(data, list):
+            continue
+
+        table_name = f"local_{path.stem}"
+        for item in data:
+            if isinstance(item, dict):
+                memory = dict(item)
+            else:
+                memory = {"content": safe_text(item)}
+            memory["_table"] = table_name
+            memories.append(memory)
+
+    return memories
 
 def load_table_memories(table_name, batch_size=1000):
     table_memories = []
@@ -387,7 +441,7 @@ def load_table_memories(table_name, batch_size=1000):
     return table_memories
 
 def load_all_memories():
-    memories = []
+    memories = load_local_memories()
 
     for table_name in LONG_TERM_TABLES:
         try:
@@ -401,7 +455,19 @@ def load_all_memories():
             print(f"{table_name}: FAILED")
             print(e)
 
-    return memories
+    # The same historical row can exist locally and in Supabase. Prefer the
+    # live Supabase version while ensuring duplicates cannot consume the
+    # bounded recall packet.
+    deduplicated = {}
+    for memory in memories:
+        fingerprint = row_content(memory).strip().lower()
+        if not fingerprint:
+            continue
+        existing = deduplicated.get(fingerprint)
+        if existing is None or not safe_text(memory.get("_table")).startswith("local_"):
+            deduplicated[fingerprint] = memory
+
+    return list(deduplicated.values())
 
 def build_recall_packet(query, limit=25):
     memories = load_all_memories()
@@ -702,11 +768,9 @@ def build_context(user_message):
     continuity_context = build_raw_recall_packet(user_message, limit=40)
     short_term_context, short_term_domain = load_short_term(user_message)
 
-    recall_active = recall_requested(user_message)
-    long_term_context = ""
-
-    if recall_active:
-        long_term_context = format_recall_packet(user_message, limit=25)
+    recall_packet = build_recall_packet(user_message, limit=18)
+    recall_active = bool(recall_packet)
+    long_term_context = format_memory_packet(user_message, recall_packet)
 
     sections = []
 
@@ -749,6 +813,28 @@ def build_context(user_message):
 
     return "\n".join(sections)
 
+
+def format_memory_packet(query, packet):
+    lines = [
+        "RHEE LONG TERM RECALL PACKET",
+        f"QUERY: {query}",
+        f"MEMORIES FOUND: {len(packet)}",
+        "",
+    ]
+
+    for memory in packet:
+        lines.append(
+            f"{memory.get('_score')} | "
+            f"{memory.get('_table')} | "
+            f"{memory.get('primary_subject', '')}"
+        )
+        content = row_content(memory)
+        if content:
+            lines.append(content[:900])
+        lines.append("")
+
+    return "\n".join(lines)
+
 def build_context_packet(user_message):
     context = build_context(user_message)
 
@@ -757,7 +843,7 @@ def build_context_packet(user_message):
         "version": "v5.0",
         "context": context,
         "context_size": len(context),
-        "recall_active": recall_requested(user_message),
+        "recall_active": "LONG TERM RECALL ACTIVE: True" in context,
         "short_term_domain": classify_short_term_domain(user_message),
     }
 
@@ -778,5 +864,3 @@ if __name__ == "__main__":
         print(test)
         print("=" * 60)
         print(build_context(test)[:4000])
-
-
