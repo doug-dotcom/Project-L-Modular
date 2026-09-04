@@ -728,14 +728,14 @@ UNCERTAIN_RECALL_PHRASES = (
 
 def exhaustive_requested(query):
     text = safe_text(query).lower()
-    return any(trigger in text for trigger in [
+    return any(term_in_text(trigger, text) for trigger in [
         "all", "every", "everything", "complete", "entire",
         "full", "whole", "list", "find the rest", "there are more"
     ])
 
 def evidence_mode_requested(query):
     text = safe_text(query).lower()
-    return any(trigger in text for trigger in [
+    return any(term_in_text(trigger, text) for trigger in [
         "all", "every", "exact", "quote", "list", "timeline",
         "chronology", "date", "time", "times", "when"
     ])
@@ -799,14 +799,17 @@ def expanded_query_terms(query):
         "project l": [
             "project l",
             "rhee",
+            "rike",
             "memory",
             "raw catchall",
             "aods",
-            "x",
             "mary",
-            "rachel",
+            "quinn",
             "carol",
-            "brittany",
+            "sara",
+            "brains trust",
+            "cognitive architecture",
+            "provenance",
         ],
     }
 
@@ -972,13 +975,21 @@ def database_search_terms(query):
     """Return bounded lexemes for the database candidate search."""
     terms = []
     seen = set()
-    for expanded_term in expanded_query_terms(query):
+    text = safe_text(query).lower()
+    low_value_project_terms = {
+        "any", "best", "compare", "created", "current", "forward",
+        "identify", "now", "original", "path", "project", "supported", "tell",
+    } if "project l" in text else set()
+
+    ordered_terms = list(query_words(query))
+    ordered_terms.extend(sorted(expanded_query_terms(query)))
+    for expanded_term in ordered_terms:
         for token in re.findall(r"[a-z0-9]+", safe_text(expanded_term).lower()):
-            if len(token) < 2 or token in seen:
+            if len(token) < 2 or token in seen or token in low_value_project_terms:
                 continue
             seen.add(token)
             terms.append(token)
-            if len(terms) >= 64:
+            if len(terms) >= 24:
                 return terms
     return terms
 
@@ -1028,8 +1039,8 @@ def build_context(user_message):
         user_message,
         # Raw evidence contains questions and historical failed answers that
         # Python deliberately down-ranks, so retain a wider candidate pool.
-        raw_limit=500 if exhaustive else 200,
-        memory_limit=500 if exhaustive else 80,
+        raw_limit=500 if exhaustive else 100,
+        memory_limit=500 if exhaustive else 40,
     )
     raw_candidates = candidates["raw"] if candidates is not None else None
     memory_candidates = candidates["memories"] if candidates is not None else None
