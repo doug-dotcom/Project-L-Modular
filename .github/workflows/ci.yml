@@ -1,0 +1,68 @@
+name: Project L CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: project-l-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  memory-and-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install pinned dependencies
+        run: python -m pip install --requirement requirements-dev.txt
+
+      - name: Verify production module syntax
+        run: >-
+          python -m py_compile
+          api/server.py
+          agents/rhee/rhee_v3.py
+          agents/carol/carol.py
+          agents/allegra/growth_retrieval.py
+          core/cognition/brain_pipeline.py
+          memory/identity_core/context_builder.py
+          memory/retrieval/cache_state.py
+          memory/retrieval/provenance.py
+
+      - name: Verify dependency imports
+        run: >-
+          python -c
+          "import fastapi, openai, supabase, tiktoken, tavily, uvicorn, yaml"
+
+      - name: Run active memory regression suite
+        env:
+          SUPABASE_URL: https://example.supabase.co
+          SUPABASE_KEY: ci-placeholder
+        run: >-
+          python -m pytest -q
+          tests/test_build_hardening.py
+          tests/test_identity_context_injection.py
+          tests/test_growth_pattern_learning.py
+          tests/test_live_short_term_memory.py
+          tests/test_specialised_memory_activation.py
+          tests/test_brain_pipeline_memory_gate.py
+          tests/test_rhee_hybrid_recall.py
+          tests/test_memory_cache_invalidation.py
+          tests/test_memory_provenance.py

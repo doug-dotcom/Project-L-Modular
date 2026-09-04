@@ -1,0 +1,35 @@
+# Project L production build context
+# Historical snapshots remain in GitHub but must never enter Railway images.
+.git
+.github
+.pytest_cache
+**/__pycache__
+**/*.py[cod]
+
+# Local configuration and credentials
+.env
+.env.*
+**/token.json
+**/credentials.json
+**/openai_key.txt
+
+# Historical releases and backup archives
+FULL_BACKUPS
+_FULL_BACKUPS
+_LOCKED_RELEASE
+LOCKED_RELEASES
+MANTLE
+backups
+_smart_backups
+api/Backups
+**/*_backup_*.py
+**/*.bak
+**/*.zip
+
+# Development-only material
+tests
+docs
+audit
+replay
+repo_inventory.txt
+C:
