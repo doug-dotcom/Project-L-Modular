@@ -37,8 +37,7 @@ DOMAIN_PATTERNS = {
         "boyfriend",
         "friend",
         "tamara",
-        "monica",
-        "rhee"
+        "monica"
     ],
 
     "short_term_health": [
@@ -102,9 +101,27 @@ DOMAIN_PATTERNS = {
         "cognition",
         "supabase",
         "aods",
-        "ellie"
+        "ellie",
+        "rhee",
+        "rike",
+        "mary",
+        "quinn",
+        "carol",
+        "sara",
+        "brains trust",
+        "architecture",
+        "orchestrator"
     ]
 }
+
+
+def _matches_pattern(text, pattern):
+    """Match complete words or phrases instead of arbitrary substrings."""
+    return bool(re.search(
+        rf"(?<!\w){re.escape(pattern)}(?!\w)",
+        text,
+        re.IGNORECASE,
+    ))
 
 # =====================================================
 # CLASSIFY
@@ -126,8 +143,9 @@ def classify_message(text):
 
         for p in patterns:
 
-            if p in text:
-                score += 1
+            if _matches_pattern(text, p):
+                # An explicit Project L reference should beat generic terms.
+                score += 3 if domain == "short_term_project_l" and p == "project l" else 1
 
         scores[domain] = score
 
@@ -160,4 +178,3 @@ if __name__ == "__main__":
         print("")
         print(f"INPUT: {t}")
         print(f"DOMAIN: {result}")
-
