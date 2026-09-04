@@ -19,6 +19,7 @@ from memory.promotion.gate import (
     evaluate_promotion,
     should_store_memory,
 )
+from memory.retrieval.cache_state import invalidate_recall_caches
 
 load_dotenv(ROOT / ".env")
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
@@ -259,6 +260,7 @@ def process_raw_memory(row):
     }
 
     supabase.table(target_table).insert(payload).execute()
+    invalidate_recall_caches(long_term=True)
 
     # =====================================================
     # AUTOMATIC COACH TRIGGER
@@ -392,5 +394,4 @@ if __name__ == "__main__":
 
     for item in result["outcomes"]:
         print(item)
-
 
