@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 
 from memory.identity_core.context_builder import build_identity_context
-from agents.allegra.growth_retrieval import retrieve_growth_context
+from core.cognition.learning_engine import retrieve_growth_context
 from memory.retrieval.cache_state import cache_generation
 from memory.retrieval.provenance import (
     annotate_memory_provenance,

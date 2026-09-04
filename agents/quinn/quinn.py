@@ -1,151 +1,46 @@
-# =====================================================
-# QUINN
-# RAT PACK - QUERY PLANNER
-# AODS 2
-# =====================================================
+"""Quinn: governed wisdom and principle curation for Project L.
 
-import os
-import json
+Quinn does not research, decide or speak to Doug. Quinn supplies versioned
+principles that RIKE may apply and L may explain.
+"""
 
-from openai import OpenAI
+from __future__ import annotations
 
 
-# =====================================================
-# OPENAI
-# =====================================================
+PRINCIPLES = (
+    {"id": "Q-EVIDENCE-001", "version": "1.0", "principle": "Prefer traceable evidence over confident language.", "applies_to": ("evidence", "fact", "true", "verify", "recall", "remember"), "source": "Project L truth and provenance constitution"},
+    {"id": "Q-CONFLICT-001", "version": "1.0", "principle": "Preserve material contradictions until stronger evidence resolves them.", "applies_to": ("conflict", "contradiction", "different", "disagree", "wrong"), "source": "Project L memory governance doctrine"},
+    {"id": "Q-PATTERN-001", "version": "1.0", "principle": "One event is evidence; a pattern requires repeated traceable observations.", "applies_to": ("again", "always", "pattern", "trend", "growth", "over time"), "source": "Brains Trust longitudinal reasoning doctrine"},
+    {"id": "Q-AGENCY-001", "version": "1.0", "principle": "Doug retains authority over consequential choices; L supports rather than overrides agency.", "applies_to": ("decide", "choice", "should", "recommend", "plan", "risk"), "source": "Project L agency constitution"},
+    {"id": "Q-UNCERTAINTY-001", "version": "1.0", "principle": "Confidence must reflect evidence quality, agreement, recency and missing information.", "applies_to": ("confidence", "likely", "predict", "risk", "uncertain", "forecast"), "source": "Project L confidence doctrine"},
+    {"id": "Q-CURRENCY-001", "version": "1.0", "principle": "Time-sensitive, legal, medical and financial claims require current authoritative verification.", "applies_to": ("current", "latest", "legal", "law", "medical", "finance", "market", "today"), "source": "Project L external research doctrine"},
+)
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
-client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
-
-
-# =====================================================
-# FALLBACK
-# =====================================================
-
-def _fallback(question: str, reason: str):
-    clean = (question or "").strip()
-
+def curate_principles(question: str, limit: int = 4) -> dict:
+    text = str(question or "").lower()
+    selected = [
+        {key: value for key, value in item.items() if key != "applies_to"}
+        for item in PRINCIPLES
+        if any(signal in text for signal in item["applies_to"])
+    ]
+    if not selected:
+        selected = [{key: value for key, value in PRINCIPLES[0].items() if key != "applies_to"}]
     return {
-        "agent": "Quinn",
-        "status": "fallback",
-        "primary_question": clean,
-        "research_angles": [
-            clean
-        ] if clean else [],
-        "sub_questions": [],
-        "search_queries": [
-            clean
-        ] if clean else [],
-        "coverage_plan": "",
-        "notes": [
-            reason
-        ]
+        "engine": "quinn",
+        "version": "2.0",
+        "status": "ok",
+        "principles": selected[: max(1, int(limit))],
+        "authority": "advisory",
+        "instruction": "Apply only relevant principles and disclose uncertainty; Quinn does not decide.",
     }
 
 
-# =====================================================
-# QUINN QUERY PLANNER
-# =====================================================
+def run_quinn(question: str) -> dict:
+    """Compatibility entrypoint for callers of the retired query-planner API."""
+    return curate_principles(question)
 
-def run_quinn(question: str):
-    """
-    Quinn converts one research question into a research plan
-    and multiple targeted search paths.
-    """
-
-    raw = (question or "").strip()
-
-    if not raw:
-        return _fallback(
-            raw,
-            "No question supplied"
-        )
-
-    if not client:
-        return _fallback(
-            raw,
-            "OpenAI unavailable"
-        )
-
-    try:
-        response = client.chat.completions.create(
-            model=OPENAI_MODEL,
-            response_format={
-                "type": "json_object"
-            },
-            messages=[
-                {
-                    "role": "system",
-                    "content": """
-You are Quinn.
-
-You are the RAT Pack query planner.
-
-Your job is to convert one research request into a clear research plan
-and multiple targeted search queries.
-
-Return valid JSON only.
-
-Required JSON format:
-
-{
-    "agent": "Quinn",
-    "status": "ok",
-    "primary_question": "",
-    "research_angles": [],
-    "sub_questions": [],
-    "search_queries": [],
-    "coverage_plan": "",
-    "notes": []
-}
-
-Rules:
-- Do not answer the research question.
-- Create search paths that improve coverage.
-- Include synonyms, related concepts, laws, people, organisations, dates, and alternate wording where useful.
-- Keep search queries concise.
-- Prefer 5 to 8 search queries.
-- Make the coverage plan practical.
-"""
-                },
-                {
-                    "role": "user",
-                    "content": raw
-                }
-            ],
-            temperature=0.2
-        )
-
-        content = response.choices[0].message.content.strip()
-        data = json.loads(content)
-
-        data.setdefault("agent", "Quinn")
-        data.setdefault("status", "ok")
-        data.setdefault("primary_question", raw)
-        data.setdefault("research_angles", [])
-        data.setdefault("sub_questions", [])
-        data.setdefault("search_queries", [raw])
-        data.setdefault("coverage_plan", "")
-        data.setdefault("notes", [])
-
-        return data
-
-    except Exception as e:
-        return _fallback(
-            raw,
-            f"Quinn planning failed: {str(e)}"
-        )
-
-
-# =====================================================
-# DIRECT TEST
-# =====================================================
 
 if __name__ == "__main__":
-    result = run_quinn(
-        "Research dementia prevention and what the strongest evidence says"
-    )
-
-    print(json.dumps(result, indent=2))
+    import json
+    print(json.dumps(run_quinn("Should I trust this pattern?"), indent=2))

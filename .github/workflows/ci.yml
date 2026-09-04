@@ -40,8 +40,20 @@ jobs:
           api/server.py
           agents/rhee/rhee_v3.py
           agents/carol/carol.py
+          agents/quinn/quinn.py
           agents/allegra/growth_retrieval.py
           core/cognition/brain_pipeline.py
+          core/cognition/brains_trust.py
+          core/cognition/longitudinal.py
+          core/cognition/learning_engine.py
+          core/cognition/memory_governance.py
+          core/cognition/orchestrator.py
+          core/cognition/rike.py
+          governance/cognitive_guardrails.py
+          services/__init__.py
+          services/capability_router_service.py
+          services/external_research_service.py
+          services/google_workspace_service.py
           memory/identity_core/context_builder.py
           memory/retrieval/cache_state.py
           memory/retrieval/provenance.py
@@ -66,3 +78,4 @@ jobs:
           tests/test_rhee_hybrid_recall.py
           tests/test_memory_cache_invalidation.py
           tests/test_memory_provenance.py
+          tests/test_cognitive_core.py
