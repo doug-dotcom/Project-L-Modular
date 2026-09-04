@@ -41,7 +41,7 @@ REQUEST_STARTERS = (
 )
 
 RECALL_STARTERS = (
-    "recall ", "remember ", "tell me what you remember ",
+    "recall ", "deep recall ", "remember ", "tell me what you remember ",
     "tell me what you recall ",
 )
 
