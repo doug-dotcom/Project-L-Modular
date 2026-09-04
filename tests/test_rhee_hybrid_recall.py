@@ -325,6 +325,42 @@ def test_recall_is_not_misread_as_all_or_evidence_mode():
     assert len(terms) <= 24
 
 
+def test_deep_recall_is_explicit_without_hijacking_full_swot():
+    assert rhee.deep_recall_requested("Deep recall Leah") is True
+    assert rhee.exhaustive_requested("Deep recall Leah") is True
+    assert rhee.evidence_mode_requested("Deep recall Leah") is True
+    assert rhee.exhaustive_requested("Can you do a full SWOT analysis on yourself") is False
+    assert rhee.exhaustive_requested("Tell me all about Leah") is False
+    assert "deep" not in rhee.database_search_terms("Deep recall Leah")
+    assert "leah" in rhee.database_search_terms("Deep recall Leah")
+
+
+def test_month_first_dates_are_detected_and_prioritised_for_breakup_recall():
+    query = "When did I break up with Leah"
+    exact = {
+        "content": "Doug and Leah's relationship ended on July 27, 2025.",
+        "primary_subject": "Leah",
+        "importance": 0,
+        "salience": 0,
+    }
+    generic = {
+        "content": "Doug reflected on his relationship with Leah.",
+        "primary_subject": "Leah",
+        "importance": 100,
+        "salience": 100,
+    }
+
+    assert rhee.contains_explicit_date("July 27, 2025") is True
+    assert rhee.contains_explicit_date("27 July 2025") is True
+    assert rhee.calculate_memory_score(exact, query) > rhee.calculate_memory_score(generic, query)
+    assert rhee.calculate_raw_score({**exact, "role": "user"}, query) > 0
+
+
+def test_historical_question_without_question_mark_is_not_evidence():
+    query = "When did I break up with Leah"
+    assert rhee.calculate_raw_score({"content": query, "role": "user"}, query) == 0
+
+
 def test_indexed_search_failure_preserves_full_scan_fallback(monkeypatch):
     class BrokenQuery:
         def execute(self):
@@ -336,6 +372,32 @@ def test_indexed_search_failure_preserves_full_scan_fallback(monkeypatch):
 
     monkeypatch.setattr(rhee, "supabase", BrokenClient())
     assert rhee.search_database_candidates("Luella") is None
+
+
+def test_indexed_search_retries_with_safe_bounds_before_full_scan(monkeypatch):
+    calls = []
+
+    class RetryQuery:
+        def __init__(self, params):
+            self.params = params
+
+        def execute(self):
+            if len(calls) == 1:
+                raise RuntimeError("statement timeout")
+            return type("Response", (), {"data": {"raw": [], "memories": []}})()
+
+    class RetryClient:
+        def rpc(self, name, params):
+            calls.append((name, params))
+            return RetryQuery(params)
+
+    monkeypatch.setattr(rhee, "supabase", RetryClient())
+    result = rhee.search_database_candidates("Deep recall Leah", raw_limit=200, memory_limit=120)
+
+    assert result == {"raw": [], "memories": []}
+    assert len(calls) == 2
+    assert calls[1][1]["p_raw_limit"] == 100
+    assert calls[1][1]["p_memory_limit"] == 60
 
 
 def test_candidate_recall_keeps_local_library_and_database_provenance(monkeypatch):

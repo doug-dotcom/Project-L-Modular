@@ -46,6 +46,8 @@ def test_classifies_live_message_into_rhees_existing_domain():
     assert classify_short_term_domain("Luella had a brilliant day") == "short_term_family"
     assert classify_short_term_domain("Project L memory is working") == "short_term_project_l"
     assert classify_short_term_domain("Just checking in") == "short_term_general"
+    assert classify_short_term_domain("Why did I break up with Leah") == "short_term_relationships"
+    assert classify_short_term_domain("Can you do a full SWOT analysis on yourself") == "short_term_project_l"
 
 
 def test_project_l_architecture_does_not_match_na_inside_original():

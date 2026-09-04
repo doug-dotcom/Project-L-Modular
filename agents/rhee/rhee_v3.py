@@ -133,7 +133,7 @@ def query_words(query):
         "more", "please", "that", "the", "their", "them", "this",
         "was", "were", "what", "when", "where", "which", "who", "why",
         "with", "would", "you", "your", "get", "got", "off", "her",
-        "hers", "him", "his", "she", "he", "they", "it",
+        "hers", "him", "his", "she", "he", "they", "it", "deep",
     }
     return [
         word
@@ -165,10 +165,53 @@ def is_historical_memory_artifact(content):
         "records are incomplete", "no exact date", "no record of",
         "don't have that information", "do not have that information",
     )
-    ordinary_question = text.rstrip().endswith("?") and not any(
-        cue in lowered for cue in persistence_cues
-    )
+    stripped = re.sub(r"^\s*l[\s,:-]+", "", lowered)
+    question_or_recall = bool(re.match(
+        r"^(?:deep\s+recall|recall|when|why|what|who|where|how|can|could|"
+        r"do|did|does|is|are|was|were)\b",
+        stripped,
+    ))
+    ordinary_question = (
+        text.rstrip().endswith("?") or question_or_recall
+    ) and not any(cue in lowered for cue in persistence_cues)
     return ordinary_question or any(phrase in lowered for phrase in uncertain_phrases)
+
+
+MONTH_PATTERN = (
+    r"(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|"
+    r"jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|"
+    r"dec(?:ember)?)"
+)
+
+
+def contains_explicit_date(text):
+    value = safe_text(text).lower()
+    return bool(re.search(
+        rf"\b(?:"
+        rf"\d{{1,2}}[/-]\d{{1,2}}[/-]\d{{2,4}}|"
+        rf"\d{{4}}-\d{{1,2}}-\d{{1,2}}|"
+        rf"\d{{1,2}}\s+{MONTH_PATTERN}\s+\d{{4}}|"
+        rf"{MONTH_PATTERN}\s+\d{{1,2}}(?:st|nd|rd|th)?[,]?\s+\d{{4}}"
+        rf")\b",
+        value,
+    ))
+
+
+def date_requested(query):
+    text = safe_text(query).lower()
+    return any(term_in_text(term, text) for term in (
+        "when", "date", "what day", "which day", "timeline", "chronology",
+    ))
+
+
+EVENT_QUERY_TERMS = {
+    "break", "broke", "breakup", "broken", "ended", "end", "separated",
+    "relationship", "date", "day", "time", "timeline", "chronology",
+}
+
+
+def focal_query_terms(query):
+    return [word for word in query_words(query) if word not in EVENT_QUERY_TERMS]
 
 
 def is_recall_quarantined(memory):
@@ -385,6 +428,31 @@ def load_short_term(user_message, limit_count=8):
     except Exception as e:
         return f"SHORT TERM ERROR [{table_name}]: {e}", table_name
 
+
+def load_recent_conversation(limit_count=8):
+    """Load bounded chronological continuity across short-term domains."""
+    if not supabase:
+        return ""
+    try:
+        result = (
+            supabase.table("raw_catchall")
+            .select("id,role,content,created_at")
+            .order("id", desc=True)
+            .limit(limit_count)
+            .execute()
+        )
+        rows = result.data or []
+        rows.reverse()
+        lines = []
+        for row in rows:
+            role = safe_text(row.get("role", "memory")).upper()
+            content = safe_text(row.get("content", ""))
+            if content:
+                lines.append(f"{role}: {content[:700]}")
+        return "\n".join(lines)
+    except Exception as error:
+        return f"RECENT CONVERSATION ERROR: {error}"
+
 def recall_requested(user_message):
     text = safe_text(user_message).lower()
 
@@ -417,7 +485,8 @@ def recall_requested(user_message):
 def calculate_memory_score(memory, query=""):
     score = 0
 
-    words = query_words(query)
+    direct_words = set(query_words(query))
+    words = expanded_query_terms(query)
     content_lower = row_content(memory).lower()
     primary_subject = safe_text(memory.get("primary_subject", "")).lower()
 
@@ -430,27 +499,28 @@ def calculate_memory_score(memory, query=""):
         score += 75
 
     for word in words:
+        direct = word in direct_words
         if word in primary_subject:
-            relevance += 60
+            relevance += 60 if direct else 40
 
         if term_in_text(word, content_lower):
-            relevance += 30
+            relevance += 30 if direct else 20
 
         for subject in safe_list(memory.get("subjects", [])):
             if word in safe_text(subject).lower():
-                relevance += 45
+                relevance += 45 if direct else 30
 
         for relationship in safe_list(memory.get("relationships", [])):
             if word in safe_text(relationship).lower():
-                relevance += 35
+                relevance += 35 if direct else 25
 
         for value in safe_list(memory.get("values", [])):
             if word in safe_text(value).lower():
-                relevance += 25
+                relevance += 25 if direct else 15
 
         for pattern in safe_list(memory.get("patterns", [])):
             if word in safe_text(pattern).lower():
-                relevance += 30
+                relevance += 30 if direct else 20
 
     # Do not inject unrelated high-salience memories.  Earlier Rhee versions
     # gave every record a positive score before checking relevance, so the
@@ -465,6 +535,14 @@ def calculate_memory_score(memory, query=""):
     score += len(safe_list(memory.get("values", []))) * 3
     score += len(safe_list(memory.get("patterns", []))) * 5
     score += provenance_adjustment(memory_source_role(memory))
+
+    focal_terms = focal_query_terms(query)
+    if (
+        date_requested(query)
+        and contains_explicit_date(content_lower)
+        and any(term_in_text(term, content_lower) for term in focal_terms)
+    ):
+        score += 500
 
     return score
 
@@ -726,16 +804,21 @@ UNCERTAIN_RECALL_PHRASES = (
 )
 
 
+def deep_recall_requested(query):
+    return term_in_text("deep recall", safe_text(query).lower())
+
+
 def exhaustive_requested(query):
     text = safe_text(query).lower()
-    return any(term_in_text(trigger, text) for trigger in [
-        "all", "every", "everything", "complete", "entire",
-        "full", "whole", "list", "find the rest", "there are more"
+    return deep_recall_requested(query) or any(term_in_text(trigger, text) for trigger in [
+        "all memories", "every memory", "everything you know", "entire memory",
+        "whole memory", "complete history", "full history", "list all",
+        "find the rest", "there are more",
     ])
 
 def evidence_mode_requested(query):
     text = safe_text(query).lower()
-    return any(term_in_text(trigger, text) for trigger in [
+    return deep_recall_requested(query) or any(term_in_text(trigger, text) for trigger in [
         "all", "every", "exact", "quote", "list", "timeline",
         "chronology", "date", "time", "times", "when"
     ])
@@ -795,6 +878,18 @@ def expanded_query_terms(query):
             "braces",
             "kitten",
             "kayd",
+        ],
+        "break up": [
+            "break up", "breakup", "broke up", "broken up",
+            "relationship ended", "ended relationship", "separated",
+        ],
+        "broke up": [
+            "break up", "breakup", "broke up", "broken up",
+            "relationship ended", "ended relationship", "separated",
+        ],
+        "breakup": [
+            "break up", "breakup", "broke up", "broken up",
+            "relationship ended", "ended relationship", "separated",
         ],
         "project l": [
             "project l",
@@ -867,11 +962,16 @@ def calculate_raw_score(row, query=""):
     if any(phrase in content_lower for phrase in UNCERTAIN_RECALL_PHRASES):
         score -= 500
 
-    if evidence_mode_requested(query) and re.search(
-        r"\b(?:\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}\s+[a-z]+\s+\d{4})\b",
-        content_lower,
-    ):
+    if evidence_mode_requested(query) and contains_explicit_date(content_lower):
         score += 100
+
+    focal_terms = focal_query_terms(query)
+    if (
+        date_requested(query)
+        and contains_explicit_date(content_lower)
+        and any(term_in_text(term, content_lower) for term in focal_terms)
+    ):
+        score += 500
 
     if role == "user":
         score += provenance_adjustment(role, raw=True)
@@ -906,12 +1006,16 @@ def build_raw_recall_packet(query, limit=40, rows=None):
         reverse=True
     )
 
-    selected = scored[:40] if exhaustive else scored[:limit]
+    selected_limit = 24 if deep_recall_requested(query) else (40 if exhaustive else limit)
+    selected = scored[:selected_limit]
 
     print("=" * 60)
     print(f"RAW ROWS SEARCHED : {len(rows)}")
     print(f"RAW MATCHES FOUND : {len(scored)}")
     print(f"RAW MATCHES SENT  : {len(selected)}")
+    print("RAW RECORD IDS SENT: " + ",".join(
+        safe_text(row.get("id")) for row in selected if row.get("id") is not None
+    ))
     print(f"EVIDENCE MODE     : {evidence_mode}")
     print("=" * 60)
 
@@ -1003,13 +1107,13 @@ def search_database_candidates(query, raw_limit=200, memory_limit=80):
     if not terms:
         return {"raw": [], "memories": []}
 
-    try:
+    def execute(candidate_raw_limit, candidate_memory_limit):
         response = supabase.rpc(
             "search_project_l_memory",
             {
                 "p_terms": terms,
-                "p_raw_limit": min(max(safe_int(raw_limit, 200), 1), 500),
-                "p_memory_limit": min(max(safe_int(memory_limit, 80), 1), 500),
+                "p_raw_limit": min(max(safe_int(candidate_raw_limit, 200), 1), 500),
+                "p_memory_limit": min(max(safe_int(candidate_memory_limit, 80), 1), 500),
             },
         ).execute()
         payload = response.data or {}
@@ -1024,23 +1128,31 @@ def search_database_candidates(query, raw_limit=200, memory_limit=80):
             raise ValueError("candidate search returned malformed row lists")
 
         return {"raw": raw_rows, "memories": memory_rows}
+
+    try:
+        return execute(raw_limit, memory_limit)
     except Exception as error:
-        # Deployment order and transient database errors must not take L's
-        # memory offline. The caller retains the proven full-scan path.
-        print(f"INDEXED MEMORY SEARCH FALLBACK: {error}")
-        return None
+        print(f"INDEXED MEMORY SEARCH RETRY: {error}")
+        try:
+            return execute(min(safe_int(raw_limit, 200), 100), min(safe_int(memory_limit, 80), 60))
+        except Exception as retry_error:
+            # Deployment order and transient database errors must not take L's
+            # memory offline. The caller retains the proven full-scan path.
+            print(f"INDEXED MEMORY SEARCH FALLBACK: {retry_error}")
+            return None
 
 
 def build_context(user_message):
     identity_context = load_identity()
     learnings_context = load_learnings(user_message=user_message)
     exhaustive = exhaustive_requested(user_message)
+    deep_recall = deep_recall_requested(user_message)
     candidates = search_database_candidates(
         user_message,
         # Raw evidence contains questions and historical failed answers that
         # Python deliberately down-ranks, so retain a wider candidate pool.
-        raw_limit=500 if exhaustive else 100,
-        memory_limit=500 if exhaustive else 40,
+        raw_limit=200 if exhaustive else 100,
+        memory_limit=120 if exhaustive else 40,
     )
     raw_candidates = candidates["raw"] if candidates is not None else None
     memory_candidates = candidates["memories"] if candidates is not None else None
@@ -1050,13 +1162,18 @@ def build_context(user_message):
         limit=12,
         rows=raw_candidates,
     )
+    recent_conversation_context = load_recent_conversation()
     short_term_context, short_term_domain = load_short_term(user_message)
 
     recall_packet = build_recall_packet(
         user_message,
-        limit=12,
+        limit=20 if deep_recall else 12,
         database_memories=memory_candidates,
     )
+    print("LONG TERM RECORDS SENT: " + ",".join(
+        f"{safe_text(memory.get('_table'))}:{safe_text(memory.get('id'))}"
+        for memory in recall_packet
+    ))
     recall_active = bool(recall_packet)
     long_term_context = format_memory_packet(user_message, recall_packet)
 
@@ -1066,6 +1183,7 @@ def build_context(user_message):
     sections.append("")
     sections.append(f"SHORT TERM DOMAIN: {short_term_domain}")
     sections.append(f"LONG TERM RECALL ACTIVE: {recall_active}")
+    sections.append(f"DEEP RECALL MODE: {deep_recall}")
     sections.append("")
 
     sections.append("====================================================")
@@ -1078,6 +1196,12 @@ def build_context(user_message):
     sections.append("LEARNINGS")
     sections.append("====================================================")
     sections.append(learnings_context or "No learnings context loaded.")
+    sections.append("")
+
+    sections.append("====================================================")
+    sections.append("RECENT CONVERSATION")
+    sections.append("====================================================")
+    sections.append(recent_conversation_context or "No recent conversation loaded.")
     sections.append("")
 
     sections.append("====================================================")
@@ -1136,6 +1260,7 @@ def build_context_packet(user_message):
         "context": context,
         "context_size": len(context),
         "recall_active": "LONG TERM RECALL ACTIVE: True" in context,
+        "deep_recall": deep_recall_requested(user_message),
         "short_term_domain": classify_short_term_domain(user_message),
     }
 

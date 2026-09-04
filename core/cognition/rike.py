@@ -13,7 +13,8 @@ REASONING_SIGNALS = (
     "contradiction", "decide", "diagnose", "evaluate", "explain why",
     "how should", "make sense of", "pros and cons", "reason", "recommend",
     "risk", "should i", "trade-off", "what caused", "why did", "why is",
-    "what should", "which is better", "which one",
+    "what should", "which is better", "which one", "swot", "self audit",
+    "self-audit", "audit yourself", "your capabilities",
 )
 
 
@@ -119,7 +120,10 @@ def reason(
 You are RIKE, Project L's structured reasoning engine. You do not speak to Doug.
 Analyse only the supplied question, evidence, principles and constraints. Distinguish
 retrieved evidence from inference. Preserve contradictions. Do not claim that one
-event proves a pattern. Never invent a source or memory. Return JSON only with:
+event proves a pattern. Never invent a source or memory. For a question asking why
+a past personal event happened, state a cause only when the supplied evidence directly
+attributes that cause; later insights and surrounding circumstances are context, not
+causal proof. Return JSON only with:
 activation_reason, evidence_summary, assumptions, hypotheses, conflicts, conclusion,
 confidence {level: low|medium|high, score: 0..1, basis}, uncertainties,
 recommended_action, rationale_summary. Hypotheses must be concise claim/support/
