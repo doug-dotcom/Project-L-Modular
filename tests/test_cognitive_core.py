@@ -255,6 +255,30 @@ def test_live_server_uses_cognitive_core_and_service_router():
     assert "COGNITIVE TRACE:" in source
 
 
+def test_project_l_self_audit_contract_names_live_architecture_and_boundaries():
+    from api.server import build_architecture_audit_context
+
+    contract = build_architecture_audit_context(
+        "L, recall why we created Project L, compare the original architecture and identify contradictions",
+        {"route": {"rhee": "required", "rike": "active", "mary": "not_required"}},
+    )
+
+    for component in ("L", "Rhee", "RIKE", "Mary", "Quinn", "Carol", "Sara", "Brains Trust"):
+        assert component in contract
+    assert "historical intent" in contract
+    assert "current runtime facts" in contract
+    assert "generic feature-rich AI" in contract
+    assert '\"rike\": \"active\"' in contract
+
+
+def test_project_l_self_audit_contract_stays_out_of_ordinary_conversation():
+    from api.server import build_architecture_audit_context
+
+    assert build_architecture_audit_context("Good morning L", {}) == (
+        "No Project L self-audit requested."
+    )
+
+
 def test_brain_pipeline_no_longer_runs_retired_coach_chain():
     source = (ROOT / "core" / "cognition" / "brain_pipeline.py").read_text(encoding="utf-8")
     assert "build_memory_payload" in source
