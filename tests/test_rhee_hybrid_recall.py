@@ -24,6 +24,74 @@ def test_unrelated_high_salience_memory_is_not_returned():
     assert rhee.calculate_memory_score(memory, "How is Luella?") == 0
 
 
+def test_doug_authored_memory_outranks_equivalent_assistant_memory():
+    base = {
+        "content": "Luella got her braces off on 16 June 2026.",
+        "primary_subject": "Luella",
+        "importance": 70,
+        "salience": 70,
+    }
+    user_memory = {**base, "_source_role": "user"}
+    assistant_memory = {**base, "_source_role": "assistant"}
+
+    user_score = rhee.calculate_memory_score(user_memory, "When did Luella get her braces off?")
+    assistant_score = rhee.calculate_memory_score(assistant_memory, "When did Luella get her braces off?")
+
+    assert user_score > assistant_score > 0
+
+
+def test_raw_doug_record_outranks_equivalent_assistant_record():
+    query = "When did Luella get her braces off?"
+    content = "Luella got her braces off on 16 June 2026."
+
+    user_score = rhee.calculate_raw_score({"content": content, "role": "user"}, query)
+    assistant_score = rhee.calculate_raw_score({"content": content, "role": "assistant"}, query)
+
+    assert user_score > assistant_score > 0
+
+
+def test_duplicate_memory_prefers_doug_authored_provenance(monkeypatch):
+    monkeypatch.setattr(rhee, "LONG_TERM_TABLES", ["memory_family"])
+    monkeypatch.setattr(
+        rhee,
+        "load_local_memories",
+        lambda: [{"content": "Doug's direct fact", "role": "user", "_table": "local_family"}],
+    )
+    monkeypatch.setattr(
+        rhee,
+        "load_table_memories",
+        lambda table: [{"content": "Doug's direct fact", "raw_id": 44}],
+    )
+    monkeypatch.setattr(
+        rhee,
+        "load_all_raw_catchall",
+        lambda: [{"id": 44, "role": "assistant"}],
+    )
+    monkeypatch.setattr(rhee, "_memory_cache", {"loaded_at": 0.0, "rows": None})
+
+    memories = rhee.load_all_memories()
+
+    assert len(memories) == 1
+    assert memories[0]["_table"] == "local_family"
+    assert memories[0]["_source_role"] == "user"
+
+
+def test_formatted_packet_exposes_provenance_to_reasoning_layer():
+    packet = [{
+        "content": "Doug's direct fact",
+        "_score": 300,
+        "_table": "memory_family",
+        "_source_role": "user",
+        "_provenance_evidence": "raw_catchall",
+    }]
+
+    context = rhee.format_memory_packet("fact", packet)
+
+    assert "USER records are Doug-authored primary evidence" in context
+    assert "SOURCE_ROLE=USER" in context
+    assert "PROVENANCE=raw_catchall" in context
+
+
 def test_historical_questions_and_failed_answers_are_quarantined():
     query = "When did Luella get her braces off?"
     question = {

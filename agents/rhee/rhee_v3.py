@@ -8,6 +8,13 @@ import time
 from pathlib import Path
 
 from memory.identity_core.context_builder import build_identity_context
+from memory.retrieval.provenance import (
+    annotate_memory_provenance,
+    build_raw_role_index,
+    memory_source_role,
+    provenance_adjustment,
+    provenance_trust_rank,
+)
 
 # =====================================================
 # RHEE V3.1
@@ -410,6 +417,7 @@ def calculate_memory_score(memory, query=""):
 
     score += len(safe_list(memory.get("values", []))) * 3
     score += len(safe_list(memory.get("patterns", []))) * 5
+    score += provenance_adjustment(memory_source_role(memory))
 
     return score
 
@@ -499,16 +507,31 @@ def load_all_memories():
             print(f"{table_name}: FAILED")
             print(e)
 
+    # Resolve organised rows back to the role in raw_catchall. That linked
+    # source is authoritative; local archives fall back to their embedded
+    # user/assistant role and genuinely unlinked rows remain neutral.
+    raw_role_index = build_raw_role_index(load_all_raw_catchall())
+    for memory in memories:
+        annotate_memory_provenance(memory, raw_role_index)
+
     # The same historical row can exist locally and in Supabase. Prefer the
-    # live Supabase version while ensuring duplicates cannot consume the
-    # bounded recall packet.
+    # more trustworthy provenance first, then the live Supabase version when
+    # both copies have the same source role.
     deduplicated = {}
     for memory in memories:
         fingerprint = row_content(memory).strip().lower()
         if not fingerprint:
             continue
         existing = deduplicated.get(fingerprint)
-        if existing is None or not safe_text(memory.get("_table")).startswith("local_"):
+        candidate_rank = provenance_trust_rank(memory)
+        existing_rank = provenance_trust_rank(existing) if existing else -1
+        candidate_is_live = not safe_text(memory.get("_table")).startswith("local_")
+        existing_is_local = bool(existing) and safe_text(existing.get("_table")).startswith("local_")
+        if (
+            existing is None
+            or candidate_rank > existing_rank
+            or (candidate_rank == existing_rank and candidate_is_live and existing_is_local)
+        ):
             deduplicated[fingerprint] = memory
 
     rows = list(deduplicated.values())
@@ -548,7 +571,8 @@ def format_recall_packet(query, limit=25):
         lines.append(
             f"{memory.get('_score')} | "
             f"{memory.get('_table')} | "
-            f"{memory.get('primary_subject')}"
+            f"{memory.get('primary_subject')} | "
+            f"SOURCE_ROLE={memory_source_role(memory).upper()}"
         )
 
         content = row_content(memory)
@@ -763,7 +787,9 @@ def calculate_raw_score(row, query=""):
         score += 100
 
     if role == "user":
-        score += 15
+        score += provenance_adjustment(role, raw=True)
+    elif role == "assistant":
+        score += provenance_adjustment(role, raw=True)
 
     if source == "chat":
         score += 5
@@ -815,6 +841,8 @@ def build_raw_recall_packet(query, limit=40):
         lines.append("RHEE EVIDENCE PROTOCOL")
         lines.append("The records below are retrieved evidence.")
         lines.append("Records are ordered highest-confidence first.")
+        lines.append("Doug-authored USER records are primary evidence.")
+        lines.append("ASSISTANT records are secondary and cannot override conflicting USER records.")
         lines.append("Prefer direct, affirmative, dated records over questions or uncertainty replies.")
         lines.append("Do not invent dates, times, events, or missing details.")
         lines.append("Do not merge separate records into one event.")
@@ -912,6 +940,8 @@ def format_memory_packet(query, packet):
         "RHEE LONG TERM RECALL PACKET",
         f"QUERY: {query}",
         f"MEMORIES FOUND: {len(packet)}",
+        "PROVENANCE: USER records are Doug-authored primary evidence; ASSISTANT records are secondary.",
+        "CONFLICT RULE: A conflicting ASSISTANT record must not override a USER record.",
         "",
     ]
 
@@ -919,7 +949,9 @@ def format_memory_packet(query, packet):
         lines.append(
             f"{memory.get('_score')} | "
             f"{memory.get('_table')} | "
-            f"{memory.get('primary_subject', '')}"
+            f"{memory.get('primary_subject', '')} | "
+            f"SOURCE_ROLE={memory_source_role(memory).upper()} | "
+            f"PROVENANCE={memory.get('_provenance_evidence', 'unlinked')}"
         )
         content = row_content(memory)
         if content:
