@@ -40,6 +40,11 @@ REQUEST_STARTERS = (
     "let us ",
 )
 
+RECALL_STARTERS = (
+    "recall ", "remember ", "tell me what you remember ",
+    "tell me what you recall ",
+)
+
 GREETING_PREFIXES = (
     "hey ", "hi ", "hello ", "good morning", "good afternoon",
     "good evening", "good night", "goodnight",
@@ -70,6 +75,17 @@ def clean_content(value):
 def _contains_persistence_instruction(text):
     lowered = re.sub(r"^(?:hey\s+)?l[,\s:]+", "", text.lower()).lstrip()
     return any(re.search(pattern, lowered) for pattern in PERSISTENCE_PATTERNS)
+
+
+def _strip_l_address(text):
+    """Remove an optional address to L before classifying the utterance."""
+    return re.sub(
+        r"^(?:hey\s+)?l(?:\s*[,\-—:]\s*|\s+)",
+        "",
+        str(text or ""),
+        count=1,
+        flags=re.IGNORECASE,
+    ).lstrip()
 
 
 def _word_count(text):
@@ -108,7 +124,8 @@ def evaluate_promotion(row):
             return {"promote": False, "reason": "empty_save_instruction", "explicit": True}
         return {"promote": True, "reason": "explicit_save_instruction", "explicit": True}
 
-    lowered = content.lower().lstrip()
+    original_lowered = content.lower().lstrip()
+    lowered = _strip_l_address(content).lower().lstrip()
 
     if len(content) < 12 or _word_count(content) < 3:
         return {"promote": False, "reason": "too_short", "explicit": False}
@@ -116,12 +133,16 @@ def evaluate_promotion(row):
         return {"promote": False, "reason": "assistant_transcript", "explicit": False}
     if any(lowered.startswith(prefix) for prefix in CONVERSATIONAL_REPLY_PREFIXES):
         return {"promote": False, "reason": "conversational_reply", "explicit": False}
-    if "?" in content or any(lowered.startswith(starter) for starter in QUESTION_STARTERS):
+    if any(original_lowered.startswith(prefix) for prefix in GREETING_PREFIXES) and _word_count(content) <= 12:
+        return {"promote": False, "reason": "greeting", "explicit": False}
+    if (
+        "?" in content
+        or any(lowered.startswith(starter) for starter in QUESTION_STARTERS)
+        or any(lowered.startswith(starter) for starter in RECALL_STARTERS)
+    ):
         return {"promote": False, "reason": "question_or_recall", "explicit": False}
     if _is_acknowledgement_only(content):
         return {"promote": False, "reason": "acknowledgement", "explicit": False}
-    if any(lowered.startswith(prefix) for prefix in GREETING_PREFIXES) and _word_count(content) <= 12:
-        return {"promote": False, "reason": "greeting", "explicit": False}
     if any(lowered.startswith(starter) for starter in REQUEST_STARTERS):
         return {"promote": False, "reason": "operational_request", "explicit": False}
 

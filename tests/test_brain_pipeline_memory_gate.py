@@ -11,6 +11,15 @@ def test_questions_and_recall_requests_do_not_pollute_long_term_memory():
     assert decision("When did Luella get her braces off?")["reason"] == "question_or_recall"
     assert decision("How is Luella?")["promote"] is False
     assert decision("Do you remember when we fixed Rhee")["promote"] is False
+    addressed = decision(
+        "L, recall why we created Project L, compare the original architecture "
+        "with what you can do now, identify contradictions, and recommend a path."
+    )
+    assert addressed == {
+        "promote": False,
+        "reason": "question_or_recall",
+        "explicit": False,
+    }
 
 
 def test_explicit_memory_instruction_is_preserved_even_as_question():

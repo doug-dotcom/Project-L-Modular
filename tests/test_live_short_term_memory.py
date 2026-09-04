@@ -48,6 +48,15 @@ def test_classifies_live_message_into_rhees_existing_domain():
     assert classify_short_term_domain("Just checking in") == "short_term_general"
 
 
+def test_project_l_architecture_does_not_match_na_inside_original():
+    prompt = (
+        "L, recall why we created Project L, compare the original architecture "
+        "with what you can do now, identify contradictions, and recommend a path."
+    )
+    assert classify_short_term_domain(prompt) == "short_term_project_l"
+    assert classify_short_term_domain("RIKE and Rhee architecture") == "short_term_project_l"
+
+
 def test_writes_both_sides_of_an_exchange_to_the_same_domain():
     client = FakeSupabase()
     table_name = classify_short_term_domain("Luella had a brilliant day")

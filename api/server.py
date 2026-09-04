@@ -348,6 +348,14 @@ def chat(req: ChatRequest):
             client=client,
             model=MODEL,
         )
+        log(
+            "COGNITIVE TRACE: "
+            f"route={cognitive_packet.get('route', {})} | "
+            f"rike_status={cognitive_packet.get('rike', {}).get('status')} | "
+            f"lenses={cognitive_packet.get('rike', {}).get('lenses', [])} | "
+            f"confidence={cognitive_packet.get('rike', {}).get('confidence', {})} | "
+            f"guardrails={cognitive_packet.get('guardrails', {})}"
+        )
         cognitive_context = json.dumps(cognitive_packet, ensure_ascii=False, indent=2)
         cognitive_guardrails = guardrail_prompt(cognitive_packet.get("guardrails", {}))
 
