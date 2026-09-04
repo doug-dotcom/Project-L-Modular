@@ -20,7 +20,7 @@ from agents.ian.ian import run_ian_integration
 from agents.allegra.allegra import create_llgr
 
 
-def run_coach(experience):
+def run_coach(experience, source_reference=None):
 
     ronnie = run_ronnie_reflector(
         experience
@@ -127,11 +127,21 @@ def run_coach(experience):
             store_llgr
         )
 
-        store_llgr(
-            llgr
+        storage_outcome = store_llgr(
+            llgr,
+            source_reference=source_reference,
         )
+        llgr["growth_stored"] = bool(storage_outcome.get("stored"))
+        llgr["growth_storage_status"] = storage_outcome.get("reason")
 
     except Exception as e:
+
+        storage_outcome = {
+            "stored": False,
+            "reason": "storage_error",
+        }
+        llgr["growth_stored"] = False
+        llgr["growth_storage_status"] = "storage_error"
 
         print(
             f"ALLEGRA ERROR: {e}"
@@ -165,7 +175,10 @@ def run_coach(experience):
             ian,
 
         "llgr":
-            llgr
+            llgr,
+
+        "growth_storage":
+            storage_outcome
 
     }
 
@@ -196,5 +209,4 @@ if __name__ == "__main__":
             indent=2
         )
     )
-
 

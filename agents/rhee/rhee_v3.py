@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 from memory.identity_core.context_builder import build_identity_context
+from agents.allegra.growth_retrieval import retrieve_growth_context
 from memory.retrieval.cache_state import cache_generation
 from memory.retrieval.provenance import (
     annotate_memory_provenance,
@@ -75,7 +76,6 @@ SHORT_TERM_TABLES = {
 LEARNING_TABLES = [
     "system_memory",
     "structured_summaries",
-    "allegra_history",
 ]
 
 def safe_text(value):
@@ -243,7 +243,7 @@ def load_identity(limit_count=10):
 
     return "\n".join(lines)
 
-def load_learnings(limit_count=8):
+def load_learnings(user_message="", limit_count=8):
     if not supabase:
         return ""
 
@@ -274,6 +274,19 @@ def load_learnings(limit_count=8):
                     lines.append(f"- {content[:500]}")
         except Exception:
             continue
+
+    try:
+        growth = retrieve_growth_context(
+            query=user_message,
+            limit=limit_count,
+            client=supabase,
+        )
+        if growth:
+            lines.append("")
+            lines.append("ALLEGRA GROWTH PATTERNS")
+            lines.extend(f"- {item}" for item in growth)
+    except Exception:
+        pass
 
     return "\n".join(lines).strip()
 
@@ -913,7 +926,7 @@ def build_raw_recall_packet(query, limit=40):
 
 def build_context(user_message):
     identity_context = load_identity()
-    learnings_context = load_learnings()
+    learnings_context = load_learnings(user_message=user_message)
     continuity_context = build_raw_recall_packet(user_message, limit=12)
     short_term_context, short_term_domain = load_short_term(user_message)
 

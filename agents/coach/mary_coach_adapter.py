@@ -7,6 +7,18 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 from agents.coach.coach import run_coach
 
+
+def build_source_reference(memory):
+    raw_id = memory.get("raw_id")
+    if raw_id is not None:
+        return f"raw_catchall:{raw_id}"
+
+    memory_id = memory.get("id")
+    if memory_id is not None:
+        return f"memory:{memory_id}"
+
+    return None
+
 def build_experience(memory):
 
     return f"""
@@ -44,7 +56,8 @@ def run_memory_to_coach(memory):
     experience = build_experience(memory)
 
     return run_coach(
-        experience
+        experience,
+        source_reference=build_source_reference(memory),
     )
 
 if __name__ == "__main__":
@@ -89,4 +102,3 @@ if __name__ == "__main__":
             indent=2
         )
     )
-

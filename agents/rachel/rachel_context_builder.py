@@ -207,7 +207,7 @@ def build_context_packet(query):
                 + item["preferred_table"]
             )
 
-    growth = retrieve_growth_context()
+    growth = retrieve_growth_context(query=query)
 
     packet.append("")
     packet.append("RELEVANT GROWTH CONTEXT")
@@ -249,4 +249,3 @@ if __name__ == "__main__":
     query = input("Context Query: ")
     print()
     print(build_context_packet(query))
-
