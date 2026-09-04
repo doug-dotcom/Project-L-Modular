@@ -29,6 +29,7 @@ ROOT = Path(__file__).resolve().parents[2]
 LOCAL_DOMAIN_DIR = ROOT / "memory" / "domains"
 MEMORY_CACHE_TTL_SECONDS = 300
 RAW_CACHE_TTL_SECONDS = 60
+MAX_ATOMIC_MEMORY_CHARS = 20000
 
 _memory_cache = {"loaded_at": 0.0, "rows": None, "generation": -1}
 _raw_cache = {"loaded_at": 0.0, "rows": None, "generation": -1}
@@ -168,6 +169,23 @@ def is_historical_memory_artifact(content):
         cue in lowered for cue in persistence_cues
     )
     return ordinary_question or any(phrase in lowered for phrase in uncertain_phrases)
+
+
+def is_recall_quarantined(memory):
+    """Mirror the database quarantine rules for local/full-scan fallback."""
+    if not isinstance(memory, dict):
+        return False
+
+    if safe_text(memory.get("memory_status")).upper() == "QUARANTINED":
+        return True
+
+    content = row_content(memory)
+    if is_historical_memory_artifact(content):
+        return True
+
+    # Large transcript/composite blobs are archives rather than atomic facts.
+    # The raw record remains preserved and can be inspected independently.
+    return len(content) > MAX_ATOMIC_MEMORY_CHARS
 
 def row_content(row):
     if not isinstance(row, dict):
@@ -403,7 +421,7 @@ def calculate_memory_score(memory, query=""):
     content_lower = row_content(memory).lower()
     primary_subject = safe_text(memory.get("primary_subject", "")).lower()
 
-    if is_historical_memory_artifact(content_lower):
+    if is_recall_quarantined(memory):
         return 0
 
     relevance = 0
@@ -813,6 +831,11 @@ def calculate_raw_score(row, query=""):
     content_lower = content.lower()
     role = safe_text(row.get("role", "")).lower()
     source = safe_text(row.get("source", "")).lower()
+
+    # Raw history is never deleted, but historical questions and failed recall
+    # replies must not be treated as affirmative evidence.
+    if is_historical_memory_artifact(content):
+        return 0
 
     for term in terms:
         term = safe_text(term).lower()
