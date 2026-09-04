@@ -2,10 +2,14 @@ import os
 import sys
 import json
 import re
+import calendar
+import threading
+import time as monotonic_time
 
 from pathlib import Path
-from datetime import datetime
+from datetime import date, datetime
 from zoneinfo import ZoneInfo
+from uuid import UUID
 
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
@@ -88,9 +92,52 @@ def build_time_context():
 
     return {
         "date": now.strftime("%A %d %B %Y"),
+        "iso_date": now.date().isoformat(),
         "time": now.strftime("%I:%M %p"),
         "timezone": "Australia/Brisbane"
     }
+
+
+def pauline_report_requested(user_message):
+    text = str(user_message or "").lower()
+    asks_for_report = bool(re.search(r"\b(?:report|summary|review)\b", text))
+    named_or_bounded = bool(re.search(
+        r"\b(?:pauline|psychologist|last (?:six|6) months|past (?:six|6) months)\b",
+        text,
+    ))
+    return asks_for_report and named_or_bounded
+
+
+def subtract_calendar_months(value, months):
+    month_index = value.year * 12 + value.month - 1 - months
+    year, zero_month = divmod(month_index, 12)
+    month = zero_month + 1
+    day = min(value.day, calendar.monthrange(year, month)[1])
+    return date(year, month, day)
+
+
+def build_pauline_report_context(user_message, time_context=None):
+    if not pauline_report_requested(user_message):
+        return "No Pauline report requested."
+    try:
+        today = date.fromisoformat(str((time_context or {}).get("iso_date", "")))
+    except ValueError:
+        today = datetime.now(ZoneInfo("Australia/Brisbane")).date()
+    period_start = subtract_calendar_months(today, 6)
+    clean_date = date(2025, 12, 11)
+    sober_days = (today - clean_date).days
+    return f"""PAULINE SIX-MONTH REPORT CONTRACT
+- Reporting period: {period_start.isoformat()} through {today.isoformat()} (Australia/Brisbane).
+- Doug's verified clean and sober date is 2025-12-11; current elapsed days: {sober_days}.
+- Do not repeat a stored historical day count as current. Recalculate from the clean date.
+- Use only supplied retrieved evidence. Separate verified facts, Doug's reflections and cautious synthesis.
+- Build a chronological and thematic clinical handover, not a generic encouragement summary.
+- Cover recovery/treatment, meetings, sponsorship, step work, Pauline sessions, emotional and trauma themes, family/relationships, physical health, stress/overwhelm, major life events, projects as recovery structure, progress, current challenges and next therapeutic focus.
+- Include concrete dates and turning points when supported. Exclude events outside the reporting window unless brief background is necessary.
+- Identify contradictions or gaps instead of silently resolving them.
+- Do not claim Doug is currently feeling a particular way unless recent evidence supports it.
+- Write in third person for Pauline, with useful section headings and enough detail to preserve change across the full period.
+"""
 
 
 def build_architecture_audit_context(user_message, cognitive_packet):
@@ -209,6 +256,55 @@ if UI_PATH.exists():
 
 class ChatRequest(BaseModel):
     message: str
+    request_id: str | None = None
+
+
+CHAT_RESULT_TTL_SECONDS = 600
+_chat_results = {}
+_chat_results_lock = threading.Lock()
+
+
+def normalise_request_id(value):
+    try:
+        return str(UUID(str(value or "")))
+    except (TypeError, ValueError, AttributeError):
+        return ""
+
+
+def store_chat_result(request_id, status, payload=None):
+    request_id = normalise_request_id(request_id)
+    if not request_id:
+        return
+    now = monotonic_time.monotonic()
+    with _chat_results_lock:
+        expired = [
+            key for key, item in _chat_results.items()
+            if now - item.get("stored_at", now) > CHAT_RESULT_TTL_SECONDS
+        ]
+        for key in expired:
+            _chat_results.pop(key, None)
+        _chat_results[request_id] = {
+            "status": status,
+            "payload": payload,
+            "stored_at": now,
+        }
+
+
+@app.get("/chat/result/{request_id}")
+def recover_chat_result(request_id: str):
+    request_id = normalise_request_id(request_id)
+    if not request_id:
+        return {"status": "not_found"}
+    with _chat_results_lock:
+        item = _chat_results.get(request_id)
+        if not item:
+            return {"status": "not_found"}
+        if monotonic_time.monotonic() - item["stored_at"] > CHAT_RESULT_TTL_SECONDS:
+            _chat_results.pop(request_id, None)
+            return {"status": "not_found"}
+        if item["status"] != "ready":
+            return {"status": "pending"}
+        return {"status": "ready", "result": item["payload"]}
 
 # =====================================================
 # MEMORY DEPOT
@@ -361,12 +457,16 @@ def cognition_status():
 @app.post("/chat")
 def chat(req: ChatRequest):
     user_message = (req.message or "").strip()
+    request_id = normalise_request_id(req.request_id)
+    store_chat_result(request_id, "pending")
 
     if not user_message:
-        return {
+        payload = {
             "reply": "Please send me a message.",
             "server": "vx"
         }
+        store_chat_result(request_id, "ready", payload)
+        return payload
 
     log(f"VX CHAT REQUEST: {user_message[:120]}")
 
@@ -450,6 +550,10 @@ def chat(req: ChatRequest):
             cognitive_packet,
         )
         causal_recall_context = build_causal_recall_context(user_message)
+        pauline_report_context = build_pauline_report_context(
+            user_message,
+            time_context,
+        )
 
         system_prompt = f"""
 You are L.
@@ -491,6 +595,8 @@ COGNITIVE PACKET:
 
 {causal_recall_context}
 
+{pauline_report_context}
+
 {cognitive_guardrails}
 
 RESPONSE RULES:
@@ -512,9 +618,9 @@ RESPONSE RULES:
 """
 
         try:
-            response = client.chat.completions.create(
-                model=MODEL,
-                messages=[
+            completion_options = {
+                "model": MODEL,
+                "messages": [
                     {
                         "role": "system",
                         "content": system_prompt
@@ -524,8 +630,12 @@ RESPONSE RULES:
                         "content": user_message
                     }
                 ],
-                temperature=0.45
-            )
+                "temperature": 0.3 if pauline_report_requested(user_message) else 0.45,
+            }
+            if pauline_report_requested(user_message):
+                completion_options["max_tokens"] = 3000
+
+            response = client.chat.completions.create(**completion_options)
 
             reply = response.choices[0].message.content
             reply = ensure_architecture_audit_grounding(
@@ -560,7 +670,7 @@ RESPONSE RULES:
         except Exception as e:
             log(f"VOICE ERROR: {e}")
 
-    return {
+    payload = {
         "reply": reply,
         "server": "vx",
         "route": route,
@@ -584,6 +694,8 @@ RESPONSE RULES:
             "guardrail_issues": cognitive_packet.get("guardrails", {}).get("issues", []),
         }
     }
+    store_chat_result(request_id, "ready", payload)
+    return payload
 
 # =====================================================
 # END SERVER VX
