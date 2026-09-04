@@ -250,3 +250,73 @@ def test_context_packet_is_bounded_and_reports_recall(monkeypatch):
     assert packet["recall_active"] is True
     assert "local_" in packet["context"]
     assert len(packet["context"]) < 30000
+
+
+def test_indexed_search_fetches_bounded_candidates_in_one_rpc(monkeypatch):
+    calls = []
+
+    class RpcQuery:
+        def execute(self):
+            return type("Response", (), {"data": {
+                "raw": [{"id": 7, "role": "user", "content": "Luella braces"}],
+                "memories": [{
+                    "id": 8,
+                    "content": "Luella got her braces off.",
+                    "_table": "memory_family",
+                    "_source_role": "user",
+                    "_provenance_evidence": "raw_catchall",
+                }],
+            }})()
+
+    class RpcClient:
+        def rpc(self, name, params):
+            calls.append((name, params))
+            return RpcQuery()
+
+    monkeypatch.setattr(rhee, "supabase", RpcClient())
+    result = rhee.search_database_candidates("When did Luella get her braces off?")
+
+    assert len(calls) == 1
+    assert calls[0][0] == "search_project_l_memory"
+    assert calls[0][1]["p_raw_limit"] == 200
+    assert calls[0][1]["p_memory_limit"] == 80
+    assert {"luella", "braces"}.issubset(set(calls[0][1]["p_terms"]))
+    assert result["raw"][0]["id"] == 7
+    assert result["memories"][0]["_source_role"] == "user"
+
+
+def test_indexed_search_failure_preserves_full_scan_fallback(monkeypatch):
+    class BrokenQuery:
+        def execute(self):
+            raise RuntimeError("RPC unavailable")
+
+    class BrokenClient:
+        def rpc(self, name, params):
+            return BrokenQuery()
+
+    monkeypatch.setattr(rhee, "supabase", BrokenClient())
+    assert rhee.search_database_candidates("Luella") is None
+
+
+def test_candidate_recall_keeps_local_library_and_database_provenance(monkeypatch):
+    monkeypatch.setattr(
+        rhee,
+        "load_local_memories",
+        lambda: [{"content": "Luella enjoys netball.", "role": "user", "_table": "local_family"}],
+    )
+    database_rows = [{
+        "content": "Luella got her braces off.",
+        "_table": "memory_family",
+        "_source_role": "user",
+        "_provenance_evidence": "raw_catchall",
+    }]
+
+    packet = rhee.build_recall_packet(
+        "Tell me about Luella and her braces",
+        limit=10,
+        database_memories=database_rows,
+    )
+
+    assert any(row["_table"] == "memory_family" for row in packet)
+    assert any(row["_table"] == "local_family" for row in packet)
+    assert all(row["_source_role"] == "user" for row in packet)
