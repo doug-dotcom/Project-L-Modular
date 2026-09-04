@@ -252,6 +252,7 @@ def test_live_server_uses_cognitive_core_and_service_router():
     assert "cognitive_packet" in source
     assert '@app.get("/cognition/status")' in source
     assert '"self_generated_learning_disabled": True' in source
+    assert "COGNITIVE TRACE:" in source
 
 
 def test_brain_pipeline_no_longer_runs_retired_coach_chain():
