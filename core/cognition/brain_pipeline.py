@@ -19,6 +19,7 @@ from memory.promotion.gate import (
     evaluate_promotion,
     should_store_memory,
 )
+from memory.promotion.specialised import write_specialised_memories
 from memory.retrieval.cache_state import invalidate_recall_caches
 
 load_dotenv(ROOT / ".env")
@@ -260,6 +261,12 @@ def process_raw_memory(row):
     }
 
     supabase.table(target_table).insert(payload).execute()
+
+    specialised = write_specialised_memories(
+        supabase,
+        row,
+        category=target_table.removeprefix("memory_"),
+    )
     invalidate_recall_caches(long_term=True)
 
     # =====================================================
@@ -347,6 +354,7 @@ def process_raw_memory(row):
         "importance": importance,
         "salience": salience,
         "anchor": anchor,
+        "specialised": specialised,
     }
 
 
@@ -394,4 +402,3 @@ if __name__ == "__main__":
 
     for item in result["outcomes"]:
         print(item)
-
