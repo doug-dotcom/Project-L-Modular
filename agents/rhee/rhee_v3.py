@@ -544,6 +544,20 @@ def calculate_memory_score(memory, query=""):
     ):
         score += 500
 
+    if pauline_report_requested(query):
+        # Six-month handovers need dated progress notes and Pauline/session
+        # reports ahead of broad identity archives that merely share a topic.
+        report_signals = (
+            "pauline", "session report", "weekly report", "daily report",
+            "recovery progress report", "medical report", "psychologist",
+        )
+        score += sum(
+            90 for signal in report_signals
+            if term_in_text(signal, content_lower)
+        )
+        if contains_explicit_date(content_lower):
+            score += 120
+
     return score
 
 
@@ -1107,7 +1121,10 @@ def build_raw_recall_packet(query, limit=40, rows=None):
         lines.append(f"ROLE: {role}")
         lines.append(f"SCORE: {row.get('_score', 0)}")
         lines.append("CONTENT:")
-        lines.append(content[:600] if evidence_mode else content[:700])
+        if pauline_report_requested(query):
+            lines.append(content[:1200])
+        else:
+            lines.append(content[:600] if evidence_mode else content[:700])
         lines.append("")
         record_no += 1
 
@@ -1289,13 +1306,19 @@ def format_memory_packet(query, packet):
         lines.append(
             f"{memory.get('_score')} | "
             f"{memory.get('_table')} | "
+            f"ID={safe_text(memory.get('id'))} | "
+            f"CREATED_AT={safe_text(memory.get('created_at'))} | "
             f"{memory.get('primary_subject', '')} | "
             f"SOURCE_ROLE={memory_source_role(memory).upper()} | "
             f"PROVENANCE={memory.get('_provenance_evidence', 'unlinked')}"
         )
         content = row_content(memory)
         if content:
-            lines.append(content[:700])
+            # Ordinary chat remains tightly bounded. A six-month clinical
+            # handover needs enough of each dated report to preserve the
+            # actual event and insight instead of only its introductory text.
+            excerpt_limit = 1600 if pauline_report_requested(query) else 700
+            lines.append(content[:excerpt_limit])
         lines.append("")
 
     return "\n".join(lines)
