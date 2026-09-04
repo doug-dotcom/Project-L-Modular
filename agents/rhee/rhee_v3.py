@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 from memory.identity_core.context_builder import build_identity_context
+from memory.retrieval.cache_state import cache_generation
 from memory.retrieval.provenance import (
     annotate_memory_provenance,
     build_raw_role_index,
@@ -28,8 +29,8 @@ LOCAL_DOMAIN_DIR = ROOT / "memory" / "domains"
 MEMORY_CACHE_TTL_SECONDS = 300
 RAW_CACHE_TTL_SECONDS = 60
 
-_memory_cache = {"loaded_at": 0.0, "rows": None}
-_raw_cache = {"loaded_at": 0.0, "rows": None}
+_memory_cache = {"loaded_at": 0.0, "rows": None, "generation": -1}
+_raw_cache = {"loaded_at": 0.0, "rows": None, "generation": -1}
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = (
@@ -489,8 +490,13 @@ def load_table_memories(table_name, batch_size=1000):
 
 def load_all_memories():
     now = time.monotonic()
+    generation = cache_generation("long_term")
     cached_rows = _memory_cache.get("rows")
-    if cached_rows is not None and now - _memory_cache["loaded_at"] < MEMORY_CACHE_TTL_SECONDS:
+    if (
+        cached_rows is not None
+        and _memory_cache.get("generation") == generation
+        and now - _memory_cache["loaded_at"] < MEMORY_CACHE_TTL_SECONDS
+    ):
         return cached_rows
 
     memories = load_local_memories()
@@ -535,7 +541,10 @@ def load_all_memories():
             deduplicated[fingerprint] = memory
 
     rows = list(deduplicated.values())
-    _memory_cache.update({"loaded_at": now, "rows": rows})
+    # Store the generation captured before loading. If a concurrent write
+    # invalidated the cache mid-load, the next read will detect the mismatch
+    # and refresh again rather than blessing a potentially stale snapshot.
+    _memory_cache.update({"loaded_at": now, "rows": rows, "generation": generation})
     return rows
 
 def build_recall_packet(query, limit=25):
@@ -587,8 +596,13 @@ def format_recall_packet(query, limit=25):
 
 def load_all_raw_catchall(batch_size=1000):
     now = time.monotonic()
+    generation = cache_generation("raw")
     cached_rows = _raw_cache.get("rows")
-    if cached_rows is not None and now - _raw_cache["loaded_at"] < RAW_CACHE_TTL_SECONDS:
+    if (
+        cached_rows is not None
+        and _raw_cache.get("generation") == generation
+        and now - _raw_cache["loaded_at"] < RAW_CACHE_TTL_SECONDS
+    ):
         return cached_rows
 
     rows = []
@@ -619,7 +633,7 @@ def load_all_raw_catchall(batch_size=1000):
 
         offset += batch_size
 
-    _raw_cache.update({"loaded_at": now, "rows": rows})
+    _raw_cache.update({"loaded_at": now, "rows": rows, "generation": generation})
     return rows
 
 

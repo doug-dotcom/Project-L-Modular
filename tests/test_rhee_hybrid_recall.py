@@ -1,4 +1,8 @@
 import agents.rhee.rhee_v3 as rhee
+from memory.retrieval.cache_state import (
+    cache_generation,
+    invalidate_recall_caches,
+)
 
 
 def test_local_domain_library_is_loaded():
@@ -22,6 +26,70 @@ def test_unrelated_high_salience_memory_is_not_returned():
         "anchor": True,
     }
     assert rhee.calculate_memory_score(memory, "How is Luella?") == 0
+
+
+def test_long_term_cache_refreshes_immediately_after_invalidation(monkeypatch):
+    source_rows = [{"content": "First durable fact", "role": "user"}]
+    monkeypatch.setattr(rhee, "LONG_TERM_TABLES", ["memory_general"])
+    monkeypatch.setattr(rhee, "load_local_memories", lambda: [])
+    monkeypatch.setattr(rhee, "load_table_memories", lambda table: [dict(row) for row in source_rows])
+    monkeypatch.setattr(rhee, "load_all_raw_catchall", lambda: [])
+    monkeypatch.setattr(
+        rhee,
+        "_memory_cache",
+        {"loaded_at": 0.0, "rows": None, "generation": cache_generation("long_term")},
+    )
+
+    first = rhee.load_all_memories()
+    source_rows.append({"content": "Newly saved durable fact", "role": "user"})
+    still_cached = rhee.load_all_memories()
+    invalidate_recall_caches(long_term=True)
+    refreshed = rhee.load_all_memories()
+
+    assert len(first) == 1
+    assert len(still_cached) == 1
+    assert len(refreshed) == 2
+    assert any("Newly saved" in row["content"] for row in refreshed)
+
+
+def test_raw_cache_refreshes_immediately_after_invalidation(monkeypatch):
+    source_rows = [{"id": 1, "role": "user", "content": "First raw fact"}]
+
+    class RawQuery:
+        def select(self, *args, **kwargs):
+            return self
+
+        def order(self, *args, **kwargs):
+            return self
+
+        def range(self, *args, **kwargs):
+            return self
+
+        def execute(self):
+            return type("Response", (), {"data": [dict(row) for row in source_rows]})()
+
+    class RawClient:
+        def table(self, table_name):
+            assert table_name == "raw_catchall"
+            return RawQuery()
+
+    monkeypatch.setattr(rhee, "supabase", RawClient())
+    monkeypatch.setattr(
+        rhee,
+        "_raw_cache",
+        {"loaded_at": 0.0, "rows": None, "generation": cache_generation("raw")},
+    )
+
+    first = rhee.load_all_raw_catchall()
+    source_rows.append({"id": 2, "role": "user", "content": "Newly saved raw fact"})
+    still_cached = rhee.load_all_raw_catchall()
+    invalidate_recall_caches(raw=True)
+    refreshed = rhee.load_all_raw_catchall()
+
+    assert len(first) == 1
+    assert len(still_cached) == 1
+    assert len(refreshed) == 2
+    assert refreshed[-1]["id"] == 2
 
 
 def test_doug_authored_memory_outranks_equivalent_assistant_memory():
