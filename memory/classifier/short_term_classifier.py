@@ -37,7 +37,14 @@ DOMAIN_PATTERNS = {
         "boyfriend",
         "friend",
         "tamara",
-        "monica"
+        "monica",
+        "leah",
+        "fiancée",
+        "fiancee",
+        "break up",
+        "broke up",
+        "breakup",
+        "separated"
     ],
 
     "short_term_health": [
@@ -110,7 +117,12 @@ DOMAIN_PATTERNS = {
         "sara",
         "brains trust",
         "architecture",
-        "orchestrator"
+        "orchestrator",
+        "self audit",
+        "self-audit",
+        "swot",
+        "your capabilities",
+        "audit yourself"
     ]
 }
 

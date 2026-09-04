@@ -105,6 +105,12 @@ def test_brains_trust_is_selective_framework_not_persona_swarm():
 def test_rike_activates_for_reasoning_not_ordinary_conversation():
     assert needs_structured_reasoning("How are you?") is False
     assert needs_structured_reasoning("Compare these options and recommend the best one") is True
+    assert needs_structured_reasoning("Can you do a full SWOT analysis on yourself") is True
+
+
+def test_swot_selects_evidence_systems_and_uncertainty_lenses():
+    names = [item["name"] for item in select_lenses("Do a full SWOT analysis on yourself")]
+    assert {"evidence", "systems", "uncertainty"}.issubset(set(names))
 
 
 def test_rike_returns_bounded_inspectable_packet():
@@ -276,6 +282,30 @@ def test_project_l_self_audit_contract_stays_out_of_ordinary_conversation():
 
     assert build_architecture_audit_context("Good morning L", {}) == (
         "No Project L self-audit requested."
+    )
+
+
+def test_self_directed_swot_uses_project_l_architecture_contract():
+    from api.server import build_architecture_audit_context
+
+    contract = build_architecture_audit_context(
+        "Can you do a full SWOT analysis on yourself",
+        {"route": {"rhee": "required", "rike": "active"}},
+    )
+    assert "current architecture" in contract
+    assert "Rhee" in contract
+    assert "RIKE" in contract
+
+
+def test_personal_causal_recall_contract_blocks_invented_reasons():
+    from api.server import build_causal_recall_context
+
+    contract = build_causal_recall_context("Why did I break up with Leah")
+    assert "directly attributes" in contract
+    assert "reason is not established" in contract
+    assert "Context, not confirmed cause" in contract
+    assert build_causal_recall_context("When did I break up with Leah") == (
+        "No causal personal-history question detected."
     )
 
 

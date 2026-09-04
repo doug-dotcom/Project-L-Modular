@@ -11,12 +11,12 @@ LENSES = {
     "evidence": {
         "purpose": "Separate observations, sourced facts and inference.",
         "question": "What is directly supported, contradicted or still unknown?",
-        "signals": ("evidence", "fact", "prove", "source", "verify", "true"),
+        "signals": ("evidence", "fact", "prove", "source", "verify", "true", "audit", "swot"),
     },
     "systems": {
         "purpose": "Examine relationships, feedback loops and downstream effects.",
         "question": "What interacts with this and what changes downstream?",
-        "signals": ("system", "pattern", "cause", "effect", "impact", "architecture"),
+        "signals": ("system", "pattern", "cause", "effect", "impact", "architecture", "capabilities", "self audit", "self-audit", "swot"),
     },
     "decision": {
         "purpose": "Compare options against goals, constraints and trade-offs.",
@@ -36,7 +36,7 @@ LENSES = {
     "uncertainty": {
         "purpose": "Calibrate confidence and identify what could change the conclusion.",
         "question": "How certain is this and what evidence would alter the result?",
-        "signals": ("risk", "uncertain", "confidence", "likely", "forecast", "predict"),
+        "signals": ("risk", "uncertain", "confidence", "likely", "forecast", "predict", "swot", "weakness", "threat"),
     },
     "cognition": {
         "purpose": "Account for attention, executive function, cognitive load and bias.",

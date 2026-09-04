@@ -96,11 +96,16 @@ def build_time_context():
 def build_architecture_audit_context(user_message, cognitive_packet):
     """Add a runtime-authoritative contract for Project L self-audits."""
     text = str(user_message or "").lower()
-    asks_about_project_l = bool(re.search(r"\bproject\s+l\b", text))
+    self_directed_audit = any(signal in text for signal in (
+        "self audit", "self-audit", "swot", "your capabilities",
+        "what can you do", "audit yourself", "analysis on yourself",
+    ))
+    asks_about_project_l = bool(re.search(r"\bproject\s+l\b", text)) or self_directed_audit
     audit_signals = (
         "architecture", "why we created", "why was created", "original intent",
         "original purpose", "what can you do", "capabilities", "contradiction",
-        "path forward", "purpose",
+        "path forward", "purpose", "self audit", "self-audit", "swot",
+        "audit yourself", "analysis on yourself",
     )
     if not asks_about_project_l or not any(signal in text for signal in audit_signals):
         return "No Project L self-audit requested."
@@ -114,6 +119,18 @@ def build_architecture_audit_context(user_message, cognitive_packet):
 - Current activation route: {json.dumps(route, ensure_ascii=False)}
 - When asked to compare architectures or identify contradictions, cover: original purpose, original components, current implemented components, retained ideas, retired persona behaviour, unresolved gaps, and the best-supported next step.
 - If the retrieved records do not establish part of the original architecture, say that evidence is incomplete instead of substituting a generic summary.
+"""
+
+
+def build_causal_recall_context(user_message):
+    text = str(user_message or "").strip().lower()
+    if not re.match(r"^(?:l[\s,:-]+)?(?:why did|what caused)\b", text):
+        return "No causal personal-history question detected."
+    return """CAUSAL RECALL CONTRACT
+- State a cause for a past personal event only when the supplied evidence directly attributes that cause.
+- Later recovery insights, emotional themes and surrounding stress are context, not proof of why the event occurred.
+- If direct causal evidence is absent, say the reason is not established in the retrieved records.
+- You may list relevant surrounding context only under an explicit 'Context, not confirmed cause' label.
 """
 
 
@@ -360,6 +377,7 @@ def chat(req: ChatRequest):
         rhee_context = rhee_packet.get("context", "")
         log(f"RHEE CONTEXT SIZE: {len(rhee_context)}")
         log(f"RHEE RECALL ACTIVE: {rhee_packet.get('recall_active')}")
+        log(f"RHEE DEEP RECALL: {rhee_packet.get('deep_recall', False)}")
     except Exception as e:
         log(f"RHEE ERROR: {e}")
         rhee_packet = {}
@@ -413,6 +431,7 @@ def chat(req: ChatRequest):
             user_message,
             cognitive_packet,
         )
+        causal_recall_context = build_causal_recall_context(user_message)
 
         system_prompt = f"""
 You are L.
@@ -451,6 +470,8 @@ COGNITIVE PACKET:
 {cognitive_context}
 
 {architecture_audit_context}
+
+{causal_recall_context}
 
 {cognitive_guardrails}
 
