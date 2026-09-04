@@ -28,6 +28,7 @@ logs/
 # BUILD
 dist/
 build/
+C:/
 
 # OS
 .DS_Store
