@@ -28,6 +28,23 @@ def test_unrelated_high_salience_memory_is_not_returned():
     assert rhee.calculate_memory_score(memory, "How is Luella?") == 0
 
 
+def test_specialised_rows_expose_dates_and_anchor_keys_to_recall():
+    episode = {
+        "_table": "episodic_memories",
+        "event_date": "2026-06-16",
+        "summary": "Luella got her braces off.",
+    }
+    anchor = {
+        "_table": "identity_anchors",
+        "key": "learning_style:raw_88",
+        "value": "My preferred learning style starts with context.",
+    }
+
+    assert rhee.row_content(episode) == "2026-06-16 — Luella got her braces off."
+    assert rhee.row_content(anchor).startswith("learning_style:raw_88:")
+    assert rhee.calculate_memory_score(episode, "Luella braces 2026") > 0
+
+
 def test_long_term_cache_refreshes_immediately_after_invalidation(monkeypatch):
     source_rows = [{"content": "First durable fact", "role": "user"}]
     monkeypatch.setattr(rhee, "LONG_TERM_TABLES", ["memory_general"])

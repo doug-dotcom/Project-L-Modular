@@ -5,6 +5,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client
 from memory.promotion.gate import evaluate_promotion
+from memory.promotion.specialised import write_specialised_memories
 from memory.retrieval.cache_state import invalidate_recall_caches
 
 # =====================================================
@@ -229,6 +230,12 @@ def process_domain(
         ).insert(
             payload
         ).execute()
+
+        write_specialised_memories(
+            supabase,
+            raw_row,
+            category=target_table.removeprefix("memory_"),
+        )
 
         invalidate_recall_caches(long_term=True)
 

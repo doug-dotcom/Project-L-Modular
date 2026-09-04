@@ -45,7 +45,11 @@ def annotate_memory_provenance(memory, raw_role_index=None):
     if not isinstance(memory, dict):
         return memory
 
+    # Domain memories use raw_id. Specialised autobiographical tables use
+    # source_reference for the same authoritative raw_catchall relationship.
     raw_id = memory.get("raw_id")
+    if raw_id is None:
+        raw_id = memory.get("source_reference")
     linked_role = "unknown"
     if raw_id is not None and raw_role_index:
         linked_role = normalise_source_role(raw_role_index.get(str(raw_id)))
