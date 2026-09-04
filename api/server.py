@@ -134,6 +134,24 @@ def build_causal_recall_context(user_message):
 """
 
 
+def ensure_causal_recall_grounding(user_message, reply, cognitive_packet):
+    """Fail closed when RIKE cannot establish a direct historical cause."""
+    if build_causal_recall_context(user_message) == "No causal personal-history question detected.":
+        return reply
+
+    direct = (
+        ((cognitive_packet or {}).get("rike") or {})
+        .get("direct_causal_evidence", {})
+    )
+    if isinstance(direct, dict) and direct.get("established") is True:
+        return reply
+
+    return (
+        "The specific reason is not established in the records I retrieved. "
+        "I won't guess or turn later reflections and surrounding context into a cause."
+    )
+
+
 def ensure_architecture_audit_grounding(user_message, reply, cognitive_packet):
     """Guarantee that a Project L self-audit exposes the verified live stack."""
     contract = build_architecture_audit_context(user_message, cognitive_packet)
@@ -511,6 +529,11 @@ RESPONSE RULES:
 
             reply = response.choices[0].message.content
             reply = ensure_architecture_audit_grounding(
+                user_message,
+                reply,
+                cognitive_packet,
+            )
+            reply = ensure_causal_recall_grounding(
                 user_message,
                 reply,
                 cognitive_packet,
