@@ -7,6 +7,8 @@ import re
 import time
 from pathlib import Path
 
+from memory.identity_core.context_builder import build_identity_context
+
 # =====================================================
 # RHEE V3.1
 # MEMORY OUT / CONTEXT ENGINE
@@ -188,12 +190,10 @@ def load_identity(limit_count=10):
             with open(identity_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
-            lines.append("L IDENTITY CORE")
-            lines.append(f"Core Philosophy: {data.get('core_philosophy', '')}")
-            lines.append(f"Communication Style: {data.get('communication_style', [])}")
-            lines.append(f"Identity Anchors: {data.get('identity_anchors', [])}")
-            lines.append(f"Purpose: {data.get('purpose', [])}")
-            lines.append("")
+            identity_context = build_identity_context(data)
+            if identity_context:
+                lines.append(identity_context)
+                lines.append("")
     except Exception as e:
         lines.append(f"L IDENTITY LOAD ERROR: {e}")
 
