@@ -279,6 +279,38 @@ def test_project_l_self_audit_contract_stays_out_of_ordinary_conversation():
     )
 
 
+def test_project_l_self_audit_verifier_appends_verified_runtime_status():
+    from api.server import ensure_architecture_audit_grounding
+
+    answer = ensure_architecture_audit_grounding(
+        "Compare the original Project L architecture and identify contradictions",
+        "A generated comparison.",
+        {
+            "route": {
+                "rhee": "required",
+                "rike": "active",
+                "mary": "not_required",
+                "quinn": "advisory",
+            },
+            "rike": {"lenses": ["systems", "decision"]},
+        },
+    )
+
+    for component in ("L", "Rhee", "RIKE", "Mary", "Quinn", "Carol and Sara", "Brains Trust"):
+        assert component in answer
+    assert "systems, decision" in answer
+    assert "recall request is not promoted" in answer
+    assert "remains provisional" in answer
+
+
+def test_project_l_self_audit_verifier_leaves_ordinary_answer_unchanged():
+    from api.server import ensure_architecture_audit_grounding
+
+    assert ensure_architecture_audit_grounding("Good morning L", "Morning Doug.", {}) == (
+        "Morning Doug."
+    )
+
+
 def test_brain_pipeline_no_longer_runs_retired_coach_chain():
     source = (ROOT / "core" / "cognition" / "brain_pipeline.py").read_text(encoding="utf-8")
     assert "build_memory_payload" in source
