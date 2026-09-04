@@ -32,6 +32,7 @@ RAW_CACHE_TTL_SECONDS = 60
 
 _memory_cache = {"loaded_at": 0.0, "rows": None, "generation": -1}
 _raw_cache = {"loaded_at": 0.0, "rows": None, "generation": -1}
+_local_memory_cache = {"rows": None}
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = (
@@ -456,6 +457,10 @@ def load_local_memories():
     Supabase is the live store, but the May/June memory corpus still lives in
     memory/domains.  Rhee previously ignored it completely in production.
     """
+    cached_rows = _local_memory_cache.get("rows")
+    if cached_rows is not None:
+        return [dict(memory) for memory in cached_rows]
+
     memories = []
 
     if not LOCAL_DOMAIN_DIR.exists():
@@ -483,7 +488,32 @@ def load_local_memories():
             memory["_table"] = table_name
             memories.append(memory)
 
-    return memories
+    # This corpus ships with the application and cannot change between
+    # deployments, so parsing it once per process is sufficient. Return
+    # copies because recall scoring annotates rows with a transient score.
+    _local_memory_cache["rows"] = memories
+    return [dict(memory) for memory in memories]
+
+
+def deduplicate_memories(memories):
+    """Collapse duplicate content without weakening provenance ordering."""
+    deduplicated = {}
+    for memory in memories:
+        fingerprint = row_content(memory).strip().lower()
+        if not fingerprint:
+            continue
+        existing = deduplicated.get(fingerprint)
+        candidate_rank = provenance_trust_rank(memory)
+        existing_rank = provenance_trust_rank(existing) if existing else -1
+        candidate_is_live = not safe_text(memory.get("_table")).startswith("local_")
+        existing_is_local = bool(existing) and safe_text(existing.get("_table")).startswith("local_")
+        if (
+            existing is None
+            or candidate_rank > existing_rank
+            or (candidate_rank == existing_rank and candidate_is_live and existing_is_local)
+        ):
+            deduplicated[fingerprint] = memory
+    return list(deduplicated.values())
 
 def load_table_memories(table_name, batch_size=1000):
     table_memories = []
@@ -550,32 +580,22 @@ def load_all_memories():
     # The same historical row can exist locally and in Supabase. Prefer the
     # more trustworthy provenance first, then the live Supabase version when
     # both copies have the same source role.
-    deduplicated = {}
-    for memory in memories:
-        fingerprint = row_content(memory).strip().lower()
-        if not fingerprint:
-            continue
-        existing = deduplicated.get(fingerprint)
-        candidate_rank = provenance_trust_rank(memory)
-        existing_rank = provenance_trust_rank(existing) if existing else -1
-        candidate_is_live = not safe_text(memory.get("_table")).startswith("local_")
-        existing_is_local = bool(existing) and safe_text(existing.get("_table")).startswith("local_")
-        if (
-            existing is None
-            or candidate_rank > existing_rank
-            or (candidate_rank == existing_rank and candidate_is_live and existing_is_local)
-        ):
-            deduplicated[fingerprint] = memory
-
-    rows = list(deduplicated.values())
+    rows = deduplicate_memories(memories)
     # Store the generation captured before loading. If a concurrent write
     # invalidated the cache mid-load, the next read will detect the mismatch
     # and refresh again rather than blessing a potentially stale snapshot.
     _memory_cache.update({"loaded_at": now, "rows": rows, "generation": generation})
     return rows
 
-def build_recall_packet(query, limit=25):
-    memories = load_all_memories()
+def build_recall_packet(query, limit=25, database_memories=None):
+    if database_memories is None:
+        memories = load_all_memories()
+    else:
+        memories = load_local_memories()
+        for memory in memories:
+            annotate_memory_provenance(memory)
+        memories.extend(dict(memory) for memory in database_memories)
+        memories = deduplicate_memories(memories)
     packet = []
 
     for memory in memories:
@@ -839,8 +859,9 @@ def calculate_raw_score(row, query=""):
 
     return score
 
-def build_raw_recall_packet(query, limit=40):
-    rows = load_all_raw_catchall()
+def build_raw_recall_packet(query, limit=40, rows=None):
+    if rows is None:
+        rows = load_all_raw_catchall()
     scored = []
     exhaustive = exhaustive_requested(query)
     evidence_mode = evidence_mode_requested(query)
@@ -924,13 +945,84 @@ def build_raw_recall_packet(query, limit=40):
     return "\n".join(lines)
 
 
+def database_search_terms(query):
+    """Return bounded lexemes for the database candidate search."""
+    terms = []
+    seen = set()
+    for expanded_term in expanded_query_terms(query):
+        for token in re.findall(r"[a-z0-9]+", safe_text(expanded_term).lower()):
+            if len(token) < 2 or token in seen:
+                continue
+            seen.add(token)
+            terms.append(token)
+            if len(terms) >= 64:
+                return terms
+    return terms
+
+
+def search_database_candidates(query, raw_limit=200, memory_limit=80):
+    """Fetch bounded indexed candidates in one RPC, or signal fallback."""
+    if not supabase:
+        return None
+
+    terms = database_search_terms(query)
+    if not terms:
+        return {"raw": [], "memories": []}
+
+    try:
+        response = supabase.rpc(
+            "search_project_l_memory",
+            {
+                "p_terms": terms,
+                "p_raw_limit": min(max(safe_int(raw_limit, 200), 1), 500),
+                "p_memory_limit": min(max(safe_int(memory_limit, 80), 1), 500),
+            },
+        ).execute()
+        payload = response.data or {}
+        if isinstance(payload, list) and len(payload) == 1 and isinstance(payload[0], dict):
+            payload = payload[0]
+        if not isinstance(payload, dict):
+            raise ValueError("candidate search returned a non-object payload")
+
+        raw_rows = payload.get("raw", [])
+        memory_rows = payload.get("memories", [])
+        if not isinstance(raw_rows, list) or not isinstance(memory_rows, list):
+            raise ValueError("candidate search returned malformed row lists")
+
+        return {"raw": raw_rows, "memories": memory_rows}
+    except Exception as error:
+        # Deployment order and transient database errors must not take L's
+        # memory offline. The caller retains the proven full-scan path.
+        print(f"INDEXED MEMORY SEARCH FALLBACK: {error}")
+        return None
+
+
 def build_context(user_message):
     identity_context = load_identity()
     learnings_context = load_learnings(user_message=user_message)
-    continuity_context = build_raw_recall_packet(user_message, limit=12)
+    exhaustive = exhaustive_requested(user_message)
+    candidates = search_database_candidates(
+        user_message,
+        # Raw evidence contains questions and historical failed answers that
+        # Python deliberately down-ranks, so retain a wider candidate pool.
+        raw_limit=500 if exhaustive else 200,
+        memory_limit=500 if exhaustive else 80,
+    )
+    raw_candidates = candidates["raw"] if candidates is not None else None
+    memory_candidates = candidates["memories"] if candidates is not None else None
+
+    continuity_context = build_raw_recall_packet(
+        user_message,
+        limit=12,
+        rows=raw_candidates,
+    )
     short_term_context, short_term_domain = load_short_term(user_message)
 
-    recall_packet = build_recall_packet(user_message, limit=12)
+    recall_packet = build_recall_packet(
+        user_message,
+        limit=12,
+        database_memories=memory_candidates,
+    )
     recall_active = bool(recall_packet)
     long_term_context = format_memory_packet(user_message, recall_packet)
 
