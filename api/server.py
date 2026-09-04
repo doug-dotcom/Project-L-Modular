@@ -44,6 +44,7 @@ from memory.continuity.live_short_term import (
     classify_short_term_domain,
     write_short_term_memory,
 )
+from memory.retrieval.cache_state import invalidate_recall_caches
 
 try:
     from voice.speaker import speak
@@ -144,6 +145,8 @@ def write_raw_catchall(role, content, source="chat"):
             .insert(payload)
             .execute()
         )
+
+        invalidate_recall_caches(raw=True)
 
         rows = result.data or []
 
