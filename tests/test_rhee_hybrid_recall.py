@@ -312,6 +312,19 @@ def test_indexed_search_fetches_bounded_candidates_in_one_rpc(monkeypatch):
     assert result["memories"][0]["_source_role"] == "user"
 
 
+def test_recall_is_not_misread_as_all_or_evidence_mode():
+    prompt = (
+        "L, recall why we created Project L, compare the original architecture "
+        "with what you can do now and identify contradictions."
+    )
+    assert rhee.exhaustive_requested(prompt) is False
+    assert rhee.evidence_mode_requested(prompt) is False
+    terms = rhee.database_search_terms(prompt)
+    assert {"rike", "rhee", "mary", "quinn", "carol", "sara"}.issubset(set(terms))
+    assert "project" not in terms
+    assert len(terms) <= 24
+
+
 def test_indexed_search_failure_preserves_full_scan_fallback(monkeypatch):
     class BrokenQuery:
         def execute(self):
