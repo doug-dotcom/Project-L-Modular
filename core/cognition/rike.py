@@ -52,6 +52,10 @@ def _fallback_packet(question: str, evidence_context: str, lenses: list[dict], r
         "uncertainties": ["A structured model assessment was not available."],
         "recommended_action": "Use the retrieved evidence cautiously and state what remains unknown.",
         "rationale_summary": "No model-generated rationale was accepted.",
+        "direct_causal_evidence": {
+            "established": False,
+            "basis": "No accepted structured reasoning established a direct cause.",
+        },
     }
 
 
@@ -85,6 +89,14 @@ def _normalise_packet(data: dict, question: str, lenses: list[dict]) -> dict:
         "uncertainties": list(data.get("uncertainties") or [])[:8],
         "recommended_action": str(data.get("recommended_action") or "")[:1200],
         "rationale_summary": str(data.get("rationale_summary") or "")[:1800],
+        "direct_causal_evidence": {
+            "established": bool(
+                (data.get("direct_causal_evidence") or {}).get("established")
+            ) if isinstance(data.get("direct_causal_evidence"), dict) else False,
+            "basis": str(
+                (data.get("direct_causal_evidence") or {}).get("basis") or ""
+            )[:800] if isinstance(data.get("direct_causal_evidence"), dict) else "",
+        },
     }
     if not packet["uncertainties"]:
         packet["uncertainties"] = ["No uncertainty analysis was supplied; treat confidence as low."]
@@ -129,6 +141,9 @@ confidence {level: low|medium|high, score: 0..1, basis}, uncertainties,
 recommended_action, rationale_summary. Hypotheses must be concise claim/support/
 counterevidence objects. rationale_summary is a short inspectable justification, not
 hidden chain-of-thought or token-by-token deliberation.
+Also return direct_causal_evidence {established: boolean, basis: string}. Set
+established true only when the supplied evidence explicitly attributes the event to
+that cause. Similar themes, later reflections and chronological proximity are false.
 """.strip()
 
     try:
