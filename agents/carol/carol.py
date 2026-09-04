@@ -5,6 +5,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client
 from memory.promotion.gate import evaluate_promotion
+from memory.retrieval.cache_state import invalidate_recall_caches
 
 # =====================================================
 # CAROL V4
@@ -228,6 +229,8 @@ def process_domain(
         ).insert(
             payload
         ).execute()
+
+        invalidate_recall_caches(long_term=True)
 
         moved += 1
 
