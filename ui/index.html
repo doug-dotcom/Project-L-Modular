@@ -348,6 +348,7 @@
         <input
             type="file"
             id="fileInput"
+            accept="image/jpeg,image/png,image/webp,image/gif"
             style="display:none;"
         />
 
@@ -404,40 +405,57 @@
             fileInput.click();
         };
 
-        fileInput.onchange = async () => {
-
-            const file = fileInput.files[0];
-
+        async function submitImage(file) {
             if (!file) return;
+            const chat = document.getElementById("chat");
+            const input = document.getElementById("message");
+            const prompt = input.value.trim() || "Tell me what you can see in this picture.";
+            const requestId = newChatRequestId();
+            const preview = document.createElement("img");
+            preview.src = URL.createObjectURL(file);
+            preview.alt = "Picture sent to L";
+            preview.style.cssText = "display:block;max-width:72%;max-height:280px;margin:10px 0 10px auto;border-radius:14px;object-fit:contain;";
+            chat.appendChild(preview);
+            appendChatMessage(chat, "user", prompt);
+            input.value = "";
+            const thinking = appendChatMessage(chat, "assistant", "L is looking at your picture...");
+            chat.scrollTop = chat.scrollHeight;
 
             const formData = new FormData();
-
-            formData.append(
-                "file",
-                file
-            );
+            formData.append("file", file);
+            formData.append("request_id", requestId);
+            formData.append("prompt", prompt);
+            rememberPendingRequest(requestId, prompt, "image");
 
             try {
-
-                const res = await fetch(
-                    "/upload",
-                    {
-                        method: "POST",
-                        body: formData
-                    }
-                );
-
-                const data = await res.json();
-
-                alert(
-                    "Uploaded: " + data.filename
-                );
-
-            } catch(err) {
-
-                alert("Upload failed");
+                const response = await fetch("/image/start", {method: "POST", body: formData});
+                const start = await response.json();
+                if (!response.ok || start.status === "unsupported_file" || start.status === "invalid_file_size") {
+                    throw new Error(start.message || "Image upload failed");
+                }
+                const result = await recoverChatResponse(requestId);
+                thinking.remove();
+                clearPendingRequest();
+                if (!result || !result.reply) throw new Error("Image response was not recovered");
+                appendChatMessage(chat, "assistant", result.reply);
+            } catch (error) {
+                thinking.remove();
+                clearPendingRequest();
+                appendChatMessage(chat, "assistant error", error.message || "Picture upload failed. Please try again.");
+            } finally {
+                fileInput.value = "";
+                chat.scrollTop = chat.scrollHeight;
             }
-        };
+        }
+
+        fileInput.onchange = () => submitImage(fileInput.files[0]);
+
+        document.addEventListener("dragover", event => event.preventDefault());
+        document.addEventListener("drop", event => {
+            event.preventDefault();
+            const file = event.dataTransfer && event.dataTransfer.files[0];
+            if (file) submitImage(file);
+        });
 
     </script>
 
@@ -447,7 +465,9 @@
 
     <script>
 
-        const API_URL = "/chat";
+        const API_URL = "/chat/start";
+        const PENDING_REQUEST_KEY = "project-l-pending-request";
+        let lastAssistantText = "";
 
         const sleep = (milliseconds) =>
             new Promise(resolve => setTimeout(resolve, milliseconds));
@@ -472,11 +492,22 @@
             if (id) element.id = id;
             element.textContent = text;
             chat.appendChild(element);
+            if (className === "assistant" && !String(text).startsWith("L is ")) {
+                lastAssistantText = text;
+            }
             return element;
         }
 
+        function rememberPendingRequest(requestId, message, kind = "chat") {
+            localStorage.setItem(PENDING_REQUEST_KEY, JSON.stringify({requestId, message, kind}));
+        }
+
+        function clearPendingRequest() {
+            localStorage.removeItem(PENDING_REQUEST_KEY);
+        }
+
         async function recoverChatResponse(requestId) {
-            for (let attempt = 0; attempt < 45; attempt += 1) {
+            for (let attempt = 0; attempt < 120; attempt += 1) {
                 await sleep(2000);
                 try {
                     const response = await fetch(
@@ -531,6 +562,7 @@
             );
 
             const requestId = newChatRequestId();
+            rememberPendingRequest(requestId, message, "chat");
 
             chat.scrollTop =
                 chat.scrollHeight;
@@ -558,14 +590,24 @@
                     throw new Error(`Chat request returned ${response.status}`);
                 }
 
-                const data =
-                    await response.json();
+                const start = await response.json();
+
+                if (start.status === "invalid_request_id") {
+                    throw new Error("The request could not be started");
+                }
+
+                const data = await recoverChatResponse(requestId);
+
+                if (!data || !data.reply) {
+                    throw new Error("L's answer was not recovered");
+                }
 
                 // =====================================================
                 // REMOVE THINKING
                 // =====================================================
 
                 thinking.remove();
+                clearPendingRequest();
 
                 // =====================================================
                 // ASSISTANT RESPONSE
@@ -578,6 +620,7 @@
                 const recovered = await recoverChatResponse(requestId);
                 thinking.remove();
                 if (recovered && recovered.reply) {
+                    clearPendingRequest();
                     appendChatMessage(chat, "assistant", recovered.reply);
                 } else {
                     appendChatMessage(
@@ -592,39 +635,32 @@
                 chat.scrollHeight;
         }
 
+        async function resumePendingRequest() {
+            let pending;
+            try {
+                pending = JSON.parse(localStorage.getItem(PENDING_REQUEST_KEY) || "null");
+            } catch (error) {
+                clearPendingRequest();
+                return;
+            }
+            if (!pending || !pending.requestId) return;
+            const chat = document.getElementById("chat");
+            const thinking = appendChatMessage(chat, "assistant", "Reconnecting to L's answer...");
+            const result = await recoverChatResponse(pending.requestId);
+            thinking.remove();
+            if (result && result.reply) {
+                clearPendingRequest();
+                appendChatMessage(chat, "assistant", result.reply);
+                chat.scrollTop = chat.scrollHeight;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", resumePendingRequest);
+
     </script>
 
 
 <script>
-
-async function updateVoiceButton(){
-
-    try{
-
-        const r =
-            await fetch(
-                "/voice/status"
-            );
-
-        const data =
-            await r.json();
-
-        document
-            .getElementById(
-                "voiceToggle"
-            )
-            .innerText =
-                data.enabled
-                ? "🔊"
-                : "🔇";
-
-    }catch(e){
-
-        console.log(e);
-
-    }
-
-}
 
 document
 .addEventListener(
@@ -640,21 +676,29 @@ document
         return;
     }
 
-    btn.onclick =
-    async () => {
+    if (!("speechSynthesis" in window)) {
+        btn.disabled = true;
+        btn.title = "Text-to-speech is unavailable in this browser";
+        return;
+    }
 
-        await fetch(
-            "/voice/toggle",
-            {
-                method:"POST"
-            }
-        );
-
-        await updateVoiceButton();
-
+    btn.title = "Read L's latest reply aloud";
+    btn.onclick = () => {
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+            btn.innerText = "🔊";
+            return;
+        }
+        if (!lastAssistantText) return;
+        const utterance = new SpeechSynthesisUtterance(lastAssistantText);
+        utterance.lang = "en-AU";
+        const voices = window.speechSynthesis.getVoices();
+        utterance.voice = voices.find(voice => voice.lang === "en-AU") ||
+            voices.find(voice => voice.lang.startsWith("en")) || null;
+        utterance.onend = utterance.onerror = () => { btn.innerText = "🔊"; };
+        btn.innerText = "⏹️";
+        window.speechSynthesis.speak(utterance);
     };
-
-    updateVoiceButton();
 
 });
 

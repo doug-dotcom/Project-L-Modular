@@ -3,6 +3,7 @@ import sys
 import json
 import re
 import calendar
+import base64
 import threading
 import time as monotonic_time
 
@@ -265,6 +266,7 @@ class ChatRequest(BaseModel):
 CHAT_RESULT_TTL_SECONDS = 600
 _chat_results = {}
 _chat_results_lock = threading.Lock()
+_chat_workers = set()
 
 
 def normalise_request_id(value):
@@ -291,6 +293,56 @@ def store_chat_result(request_id, status, payload=None):
             "payload": payload,
             "stored_at": now,
         }
+
+
+def chat_result_status(request_id):
+    request_id = normalise_request_id(request_id)
+    if not request_id:
+        return "not_found"
+    with _chat_results_lock:
+        item = _chat_results.get(request_id)
+        return item.get("status", "not_found") if item else "not_found"
+
+
+def run_chat_worker(request_id, request):
+    try:
+        chat(request)
+    except Exception as exc:
+        log(f"BACKGROUND CHAT ERROR: {exc}")
+        store_chat_result(request_id, "ready", {
+            "reply": "L hit a temporary connection problem. Please try again.",
+            "server": "vx",
+            "error": True,
+        })
+    finally:
+        with _chat_results_lock:
+            _chat_workers.discard(request_id)
+
+
+@app.post("/chat/start")
+def start_chat(req: ChatRequest):
+    """Start long-running cognition outside the browser connection."""
+    request_id = normalise_request_id(req.request_id)
+    if not request_id:
+        return {"status": "invalid_request_id"}
+
+    if chat_result_status(request_id) == "ready":
+        return {"status": "ready", "request_id": request_id}
+
+    with _chat_results_lock:
+        if request_id in _chat_workers:
+            return {"status": "pending", "request_id": request_id}
+        _chat_workers.add(request_id)
+
+    store_chat_result(request_id, "pending")
+    worker = threading.Thread(
+        target=run_chat_worker,
+        args=(request_id, req),
+        daemon=True,
+        name=f"l-chat-{request_id[:8]}",
+    )
+    worker.start()
+    return {"status": "pending", "request_id": request_id}
 
 
 @app.get("/chat/result/{request_id}")
@@ -397,6 +449,113 @@ def voice_enabled():
 
     except Exception:
         return True
+
+
+# =====================================================
+# IMAGE UNDERSTANDING
+# =====================================================
+
+IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+MAX_IMAGE_BYTES = 10 * 1024 * 1024
+
+
+def analyse_image_worker(request_id, image_bytes, content_type, prompt):
+    user_prompt = (prompt or "Tell me what you can see in this picture.").strip()
+    memory_message = f"Doug attached an image and asked: {user_prompt}"
+    try:
+        if not client:
+            raise RuntimeError("OpenAI is not connected")
+
+        encoded = base64.b64encode(image_bytes).decode("ascii")
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are L, Doug's calm grounded companion. Analyse the attached "
+                        "image accurately. Distinguish what is visible from inference, do not "
+                        "identify unknown people, and answer Doug's question directly."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": user_prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:{content_type};base64,{encoded}",
+                                "detail": "auto",
+                            },
+                        },
+                    ],
+                },
+            ],
+            temperature=0.3,
+        )
+        reply = response.choices[0].message.content or "I couldn't read that image."
+        domain = classify_short_term_domain(user_prompt)
+        write_live_short_term(domain, "user", memory_message)
+        write_raw_catchall("user", memory_message, source="image_upload")
+        write_live_short_term(domain, "assistant", reply)
+        write_raw_catchall("assistant", reply, source="image_upload")
+        store_chat_result(request_id, "ready", {
+            "reply": reply,
+            "server": "vx",
+            "attachment": {"type": "image", "analysed": True},
+        })
+    except Exception as exc:
+        log(f"IMAGE ANALYSIS ERROR: {exc}")
+        store_chat_result(request_id, "ready", {
+            "reply": "I couldn't read that picture this time. Please try a JPEG, PNG, WebP or GIF under 10 MB.",
+            "server": "vx",
+            "error": True,
+        })
+    finally:
+        with _chat_results_lock:
+            _chat_workers.discard(request_id)
+
+
+@app.post("/image/start")
+async def start_image_analysis(
+    file: UploadFile = File(...),
+    request_id: str = File(...),
+    prompt: str = File(""),
+):
+    request_id = normalise_request_id(request_id)
+    if not request_id:
+        return {"status": "invalid_request_id"}
+
+    content_type = (file.content_type or "").lower()
+    if content_type not in IMAGE_MIME_TYPES:
+        return {
+            "status": "unsupported_file",
+            "message": "Please choose a JPEG, PNG, WebP or GIF image.",
+        }
+
+    image_bytes = await file.read(MAX_IMAGE_BYTES + 1)
+    await file.close()
+    if not image_bytes or len(image_bytes) > MAX_IMAGE_BYTES:
+        return {
+            "status": "invalid_file_size",
+            "message": "Please choose an image under 10 MB.",
+        }
+
+    with _chat_results_lock:
+        if request_id in _chat_workers:
+            return {"status": "pending", "request_id": request_id}
+        _chat_workers.add(request_id)
+
+    store_chat_result(request_id, "pending")
+    worker = threading.Thread(
+        target=analyse_image_worker,
+        args=(request_id, image_bytes, content_type, prompt),
+        daemon=True,
+        name=f"l-image-{request_id[:8]}",
+    )
+    worker.start()
+    return {"status": "pending", "request_id": request_id}
 
 # =====================================================
 # ROOT / HEALTH
