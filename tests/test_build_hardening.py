@@ -36,3 +36,12 @@ def test_railway_context_excludes_historical_archives_and_secrets():
 
 def test_production_python_version_is_explicit():
     assert (ROOT / ".python-version").read_text(encoding="utf-8").strip() == "3.11"
+
+
+def test_mobile_chat_recovers_completed_long_responses():
+    source = (ROOT / "ui" / "index.html").read_text(encoding="utf-8")
+    assert "request_id: requestId" in source
+    assert "/chat/result/${encodeURIComponent(requestId)}" in source
+    assert "L is still thinking..." in source
+    assert "recoverChatResponse(requestId)" in source
+    assert "element.textContent = text" in source
