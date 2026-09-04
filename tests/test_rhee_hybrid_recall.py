@@ -422,3 +422,45 @@ def test_candidate_recall_keeps_local_library_and_database_provenance(monkeypatc
     assert any(row["_table"] == "memory_family" for row in packet)
     assert any(row["_table"] == "local_family" for row in packet)
     assert all(row["_source_role"] == "user" for row in packet)
+
+
+def test_pauline_six_month_report_is_a_real_deep_recall_mode():
+    prompt = "Can you write a full report for Pauline based on my last 6 months"
+    assert rhee.pauline_report_requested(prompt) is True
+    assert rhee.deep_recall_requested(prompt) is True
+    assert rhee.exhaustive_requested(prompt) is True
+    terms = set(rhee.database_search_terms(prompt))
+    assert {"pauline", "recovery", "therapy", "meeting", "trauma"} <= terms
+    assert rhee.pauline_report_requested("Write a software report") is False
+
+
+def test_pauline_report_memory_selection_balances_domains(monkeypatch):
+    monkeypatch.setattr(rhee, "load_local_memories", lambda: [])
+    rows = [
+        {
+            "id": index,
+            "content": f"Recovery meeting and sponsor progress record {index}",
+            "_table": "memory_recovery",
+            "_source_role": "user",
+        }
+        for index in range(12)
+    ]
+    rows.extend([
+        {
+            "id": 100 + index,
+            "content": f"Health and therapy progress record {index}",
+            "_table": "memory_health",
+            "_source_role": "user",
+        }
+        for index in range(3)
+    ])
+
+    packet = rhee.build_recall_packet(
+        "Full report for Pauline based on my last six months",
+        limit=10,
+        database_memories=rows,
+    )
+
+    tables = [row["_table"] for row in packet]
+    assert tables.count("memory_recovery") == 8
+    assert tables.count("memory_health") == 2
