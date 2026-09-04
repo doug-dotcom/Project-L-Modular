@@ -116,6 +116,32 @@ def build_architecture_audit_context(user_message, cognitive_packet):
 - If the retrieved records do not establish part of the original architecture, say that evidence is incomplete instead of substituting a generic summary.
 """
 
+
+def ensure_architecture_audit_grounding(user_message, reply, cognitive_packet):
+    """Guarantee that a Project L self-audit exposes the verified live stack."""
+    contract = build_architecture_audit_context(user_message, cognitive_packet)
+    if contract == "No Project L self-audit requested.":
+        return reply
+
+    packet = cognitive_packet or {}
+    route = packet.get("route", {})
+    lenses = packet.get("rike", {}).get("lenses", [])
+    runtime_check = (
+        "\n\n### Verified current implementation\n"
+        "- **L** is the sole user-facing voice and synthesiser.\n"
+        f"- **Rhee** retrieval: {route.get('rhee', 'unknown')}.\n"
+        f"- **RIKE** structured reasoning: {route.get('rike', 'unknown')}.\n"
+        f"- **Mary** longitudinal pattern analysis: {route.get('mary', 'unknown')}.\n"
+        f"- **Quinn** governed principles: {route.get('quinn', 'unknown')}.\n"
+        "- **Carol and Sara** govern long-term memory promotion and provenance; "
+        "a recall request is not promoted as a new fact.\n"
+        f"- **Brains Trust** is retained as bounded RIKE lenses, not personas. "
+        f"Lenses selected for this request: {', '.join(lenses) if lenses else 'none'}.\n"
+        "\nAny claim about the original architecture that is not directly established "
+        "by Doug-authored retrieved evidence remains provisional, not fact."
+    )
+    return f"{str(reply or '').rstrip()}{runtime_check}"
+
 # =====================================================
 # FASTAPI
 # =====================================================
@@ -463,6 +489,11 @@ RESPONSE RULES:
             )
 
             reply = response.choices[0].message.content
+            reply = ensure_architecture_audit_grounding(
+                user_message,
+                reply,
+                cognitive_packet,
+            )
 
         except Exception as e:
             log(f"OPENAI ERROR: {e}")
