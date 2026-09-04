@@ -20,6 +20,13 @@ def test_questions_and_recall_requests_do_not_pollute_long_term_memory():
         "reason": "question_or_recall",
         "explicit": False,
     }
+    assert decision(
+        "Deep recall Leah and tell me all about her and my relationship with her"
+    ) == {
+        "promote": False,
+        "reason": "question_or_recall",
+        "explicit": False,
+    }
 
 
 def test_explicit_memory_instruction_is_preserved_even_as_question():
