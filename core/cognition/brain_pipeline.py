@@ -15,6 +15,10 @@ from supabase import create_client
 from agents.coach.mary_coach_adapter import (
     run_memory_to_coach
 )
+from memory.promotion.gate import (
+    evaluate_promotion,
+    should_store_memory,
+)
 
 load_dotenv(ROOT / ".env")
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
@@ -89,32 +93,6 @@ VALUE_KEYWORDS = {
 
 def clean_content(text):
     return str(text or "").strip()
-
-
-def should_store_memory(content):
-    """Reject ordinary questions while preserving explicit save instructions."""
-    text = clean_content(content)
-    lowered = text.lower()
-
-    if not text:
-        return False
-
-    persistence_cues = (
-        "remember", "save this", "save that", "mark today", "note that",
-        "record this", "record that", "please store", "add to memory",
-    )
-    if any(cue in lowered for cue in persistence_cues):
-        return True
-
-    question_starters = (
-        "who ", "what ", "when ", "where ", "why ", "how ", "can ",
-        "could ", "would ", "should ", "do ", "does ", "did ", "is ",
-        "are ", "am ", "was ", "were ", "have ", "has ", "will ",
-    )
-    return not (
-        text.endswith("?")
-        or any(lowered.startswith(starter) for starter in question_starters)
-    )
 
 
 def detect_target_table(content):
@@ -216,15 +194,13 @@ def already_processed(table, raw_id):
 def process_raw_memory(row):
     raw_id = row.get("id")
     content = clean_content(row.get("content", ""))
+    promotion = evaluate_promotion(row)
 
-    if not content:
-        return None
-
-    if not should_store_memory(content):
+    if not promotion["promote"]:
         return {
             "raw_id": raw_id,
             "status": "skipped",
-            "reason": "question_not_memory",
+            "reason": promotion["reason"],
             "target": None,
         }
 
@@ -264,7 +240,13 @@ def process_raw_memory(row):
         "metadata": {
             "source_table": RAW_TABLE,
             "processed_at": datetime.now().isoformat(),
-            "pipeline": "brain_pipeline_v1",
+            "pipeline": "brain_pipeline_v2",
+            "promotion_gate": {
+                "version": "2.0",
+                "reason": promotion["reason"],
+                "explicit": promotion["explicit"],
+                "source_role": clean_content(row.get("role", "")).lower(),
+            },
         },
 
         "processed_by": [
@@ -409,7 +391,6 @@ if __name__ == "__main__":
 
     for item in result["outcomes"]:
         print(item)
-
 
 
 
