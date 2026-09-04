@@ -40,6 +40,11 @@ from agents.tegan.tegan import (
     route_message
 )
 
+from memory.continuity.live_short_term import (
+    classify_short_term_domain,
+    write_short_term_memory,
+)
+
 try:
     from voice.speaker import speak
 except Exception:
@@ -165,6 +170,27 @@ def run_brain_pipeline(raw_row):
         log(f"BRAIN PIPELINE ERROR: {e}")
         return None
 
+def write_live_short_term(table_name, role, content):
+    result = write_short_term_memory(
+        supabase,
+        table_name,
+        role,
+        content,
+    )
+
+    if result.get("saved"):
+        log(
+            f"SHORT TERM SAVED -> {table_name} | "
+            f"{role} | ID={result.get('id')}"
+        )
+    else:
+        log(
+            f"SHORT TERM SKIPPED -> {table_name} | "
+            f"{role} | {result.get('reason')}"
+        )
+
+    return result
+
 # =====================================================
 # VOICE
 # =====================================================
@@ -226,6 +252,13 @@ def chat(req: ChatRequest):
         }
 
     log(f"VX CHAT REQUEST: {user_message[:120]}")
+
+    short_term_domain = classify_short_term_domain(user_message)
+    short_term_user = write_live_short_term(
+        short_term_domain,
+        "user",
+        user_message,
+    )
 
     raw_user_row = write_raw_catchall(
         "user",
@@ -336,6 +369,12 @@ RESPONSE RULES:
                 log(f"OPENAI ERROR: {e}")
                 reply = f"AI ERROR: {str(e)}"
 
+    short_term_assistant = write_live_short_term(
+        short_term_domain,
+        "assistant",
+        reply,
+    )
+
     write_raw_catchall(
         "assistant",
         reply
@@ -355,6 +394,11 @@ RESPONSE RULES:
             "context_size": len(rhee_context),
             "recall_active": rhee_packet.get("recall_active"),
             "short_term_domain": rhee_packet.get("short_term_domain")
+        },
+        "short_term": {
+            "domain": short_term_domain,
+            "user_saved": bool(short_term_user.get("saved")),
+            "assistant_saved": bool(short_term_assistant.get("saved"))
         }
     }
 
