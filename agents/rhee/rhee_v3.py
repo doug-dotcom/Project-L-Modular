@@ -708,6 +708,19 @@ def build_recall_packet(query, limit=25, database_memories=None):
         reverse=True
     )
 
+    if pauline_report_requested(query):
+        diversified = []
+        per_table = {}
+        for memory in packet:
+            table = safe_text(memory.get("_table", "unknown"))
+            if per_table.get(table, 0) >= 8:
+                continue
+            diversified.append(memory)
+            per_table[table] = per_table.get(table, 0) + 1
+            if len(diversified) >= limit:
+                break
+        return diversified
+
     return packet[:limit]
 
 def format_recall_packet(query, limit=25):
@@ -804,8 +817,24 @@ UNCERTAIN_RECALL_PHRASES = (
 )
 
 
+def pauline_report_requested(query):
+    """Recognise the bounded clinical-summary workflow, not generic reports."""
+    text = safe_text(query).lower()
+    asks_for_report = any(term_in_text(term, text) for term in (
+        "report", "summary", "six month review", "6 month review",
+    ))
+    pauline_context = any(term_in_text(term, text) for term in (
+        "pauline", "psychologist", "therapy report",
+    ))
+    six_month_context = any(term_in_text(term, text) for term in (
+        "last six months", "past six months", "last 6 months", "past 6 months",
+    ))
+    return asks_for_report and (pauline_context or six_month_context)
+
+
 def deep_recall_requested(query):
-    return term_in_text("deep recall", safe_text(query).lower())
+    text = safe_text(query).lower()
+    return term_in_text("deep recall", text) or pauline_report_requested(text)
 
 
 def exhaustive_requested(query):
@@ -832,6 +861,14 @@ def expanded_query_terms(query):
     ]
 
     terms = set(base_terms)
+
+    if pauline_report_requested(text):
+        terms.update({
+            "pauline", "psychologist", "therapy", "recovery", "sobriety",
+            "clean", "meeting", "step", "sponsor", "trauma", "identity",
+            "family", "relationship", "health", "progress", "challenge",
+            "insight", "overwhelm", "growth", "hader", "aa", "na",
+        })
 
     phrase_map = {
         "good night": [
@@ -1006,7 +1043,9 @@ def build_raw_recall_packet(query, limit=40, rows=None):
         reverse=True
     )
 
-    selected_limit = 24 if deep_recall_requested(query) else (40 if exhaustive else limit)
+    selected_limit = 30 if pauline_report_requested(query) else (
+        24 if deep_recall_requested(query) else (40 if exhaustive else limit)
+    )
     selected = scored[:selected_limit]
 
     print("=" * 60)
@@ -1080,16 +1119,24 @@ def database_search_terms(query):
     terms = []
     seen = set()
     text = safe_text(query).lower()
-    low_value_project_terms = {
+    low_value_terms = {
         "any", "best", "compare", "created", "current", "forward",
         "identify", "now", "original", "path", "project", "supported", "tell",
     } if "project l" in text else set()
+    if pauline_report_requested(text):
+        low_value_terms.update({"based", "full", "last", "months", "report", "summary", "write"})
 
     ordered_terms = list(query_words(query))
+    if pauline_report_requested(text):
+        ordered_terms.extend([
+            "pauline", "recovery", "therapy", "meeting", "step", "sponsor",
+            "trauma", "identity", "family", "relationship", "health",
+            "progress", "challenge", "overwhelm", "hader", "aa", "na",
+        ])
     ordered_terms.extend(sorted(expanded_query_terms(query)))
     for expanded_term in ordered_terms:
         for token in re.findall(r"[a-z0-9]+", safe_text(expanded_term).lower()):
-            if len(token) < 2 or token in seen or token in low_value_project_terms:
+            if len(token) < 2 or token in seen or token in low_value_terms:
                 continue
             seen.add(token)
             terms.append(token)
@@ -1147,12 +1194,13 @@ def build_context(user_message):
     learnings_context = load_learnings(user_message=user_message)
     exhaustive = exhaustive_requested(user_message)
     deep_recall = deep_recall_requested(user_message)
+    pauline_report = pauline_report_requested(user_message)
     candidates = search_database_candidates(
         user_message,
         # Raw evidence contains questions and historical failed answers that
         # Python deliberately down-ranks, so retain a wider candidate pool.
         raw_limit=200 if exhaustive else 100,
-        memory_limit=120 if exhaustive else 40,
+        memory_limit=160 if pauline_report else (120 if exhaustive else 40),
     )
     raw_candidates = candidates["raw"] if candidates is not None else None
     memory_candidates = candidates["memories"] if candidates is not None else None
@@ -1167,7 +1215,7 @@ def build_context(user_message):
 
     recall_packet = build_recall_packet(
         user_message,
-        limit=20 if deep_recall else 12,
+        limit=36 if pauline_report else (20 if deep_recall else 12),
         database_memories=memory_candidates,
     )
     print("LONG TERM RECORDS SENT: " + ",".join(
@@ -1184,6 +1232,7 @@ def build_context(user_message):
     sections.append(f"SHORT TERM DOMAIN: {short_term_domain}")
     sections.append(f"LONG TERM RECALL ACTIVE: {recall_active}")
     sections.append(f"DEEP RECALL MODE: {deep_recall}")
+    sections.append(f"PAULINE REPORT MODE: {pauline_report}")
     sections.append("")
 
     sections.append("====================================================")

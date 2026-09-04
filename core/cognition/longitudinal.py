@@ -8,6 +8,8 @@ import re
 LONGITUDINAL_SIGNALS = (
     "again", "always", "before", "change", "changed", "growth", "history",
     "keep doing", "over time", "pattern", "progress", "repeated", "trend",
+    "last six months", "past six months", "last 6 months", "past 6 months",
+    "report for pauline",
 )
 
 

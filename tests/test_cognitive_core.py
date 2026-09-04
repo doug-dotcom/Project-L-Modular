@@ -437,3 +437,44 @@ def test_chat_runs_rike_then_returns_only_ls_final_voice(monkeypatch):
     assert len(client.chat.completions.calls) == 2
     assert client.chat.completions.calls[0].get("response_format") == {"type": "json_object"}
     assert client.chat.completions.calls[1].get("response_format") is None
+
+
+def test_pauline_report_contract_uses_calendar_window_and_current_sobriety():
+    from api.server import build_pauline_report_context, pauline_report_requested
+
+    prompt = "Can you write a full report for Pauline based on my last 6 months"
+    assert pauline_report_requested(prompt) is True
+    contract = build_pauline_report_context(
+        prompt,
+        {"iso_date": "2026-09-05"},
+    )
+    assert "2026-03-05 through 2026-09-05" in contract
+    assert "current elapsed days: 268" in contract
+    assert "chronological and thematic clinical handover" in contract
+    assert pauline_report_requested("Write a deployment report") is False
+
+
+def test_long_report_results_can_be_recovered_after_connection_drop():
+    from api import server
+
+    request_id = "86b71e80-dac5-4adc-9780-725912600983"
+    server._chat_results.clear()
+    server.store_chat_result(request_id, "pending")
+    assert server.recover_chat_result(request_id) == {"status": "pending"}
+    payload = {"reply": "Completed Pauline report", "server": "vx"}
+    server.store_chat_result(request_id, "ready", payload)
+    assert server.recover_chat_result(request_id) == {
+        "status": "ready",
+        "result": payload,
+    }
+    assert server.recover_chat_result("not-a-uuid") == {"status": "not_found"}
+
+
+def test_pauline_report_activates_mary_and_rike():
+    packet = run_cognitive_core(
+        "Write a report for Pauline covering my last six months",
+        {"context": "80 | memory_recovery | verified event"},
+        client=FakeClient(),
+    )
+    assert packet["route"]["mary"] == "active"
+    assert packet["route"]["rike"] == "active"

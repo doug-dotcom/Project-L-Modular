@@ -449,6 +449,52 @@
 
         const API_URL = "/chat";
 
+        const sleep = (milliseconds) =>
+            new Promise(resolve => setTimeout(resolve, milliseconds));
+
+        function newChatRequestId() {
+            if (window.crypto && typeof window.crypto.randomUUID === "function") {
+                return window.crypto.randomUUID();
+            }
+            return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+                /[xy]/g,
+                character => {
+                    const random = Math.random() * 16 | 0;
+                    const value = character === "x" ? random : (random & 0x3 | 0x8);
+                    return value.toString(16);
+                }
+            );
+        }
+
+        function appendChatMessage(chat, className, text, id = "") {
+            const element = document.createElement("div");
+            element.className = `msg ${className}`;
+            if (id) element.id = id;
+            element.textContent = text;
+            chat.appendChild(element);
+            return element;
+        }
+
+        async function recoverChatResponse(requestId) {
+            for (let attempt = 0; attempt < 45; attempt += 1) {
+                await sleep(2000);
+                try {
+                    const response = await fetch(
+                        `/chat/result/${encodeURIComponent(requestId)}`,
+                        { cache: "no-store" }
+                    );
+                    if (!response.ok) continue;
+                    const data = await response.json();
+                    if (data.status === "ready" && data.result) {
+                        return data.result;
+                    }
+                } catch (error) {
+                    // The next bounded poll may recover from a transient drop.
+                }
+            }
+            return null;
+        }
+
         async function sendMessage() {
 
             const input =
@@ -466,11 +512,7 @@
             // USER MESSAGE
             // =====================================================
 
-            chat.innerHTML += `
-                <div class="msg user">
-                    ${message}
-                </div>
-            `;
+            appendChatMessage(chat, "user", message);
 
             input.value = "";
 
@@ -481,11 +523,14 @@
             const thinkingId =
                 "thinking-" + Date.now();
 
-            chat.innerHTML += `
-                <div class="msg assistant" id="${thinkingId}">
-                    L is thinking...
-                </div>
-            `;
+            const thinking = appendChatMessage(
+                chat,
+                "assistant",
+                "L is thinking...",
+                thinkingId
+            );
+
+            const requestId = newChatRequestId();
 
             chat.scrollTop =
                 chat.scrollHeight;
@@ -503,10 +548,15 @@
                         },
 
                         body: JSON.stringify({
-                            message: message
+                            message: message,
+                            request_id: requestId
                         })
                     }
                 );
+
+                if (!response.ok) {
+                    throw new Error(`Chat request returned ${response.status}`);
+                }
 
                 const data =
                     await response.json();
@@ -515,31 +565,27 @@
                 // REMOVE THINKING
                 // =====================================================
 
-                document
-                    .getElementById(thinkingId)
-                    .remove();
+                thinking.remove();
 
                 // =====================================================
                 // ASSISTANT RESPONSE
                 // =====================================================
 
-                chat.innerHTML += `
-                    <div class="msg assistant">
-                        ${data.reply}
-                    </div>
-                `;
+                appendChatMessage(chat, "assistant", data.reply);
 
             } catch (err) {
-
-                document
-                    .getElementById(thinkingId)
-                    .remove();
-
-                chat.innerHTML += `
-                    <div class="msg assistant error">
-                        Connection error.
-                    </div>
-                `;
+                thinking.textContent = "L is still thinking...";
+                const recovered = await recoverChatResponse(requestId);
+                thinking.remove();
+                if (recovered && recovered.reply) {
+                    appendChatMessage(chat, "assistant", recovered.reply);
+                } else {
+                    appendChatMessage(
+                        chat,
+                        "assistant error",
+                        "The connection closed before L's answer could be recovered. Please try again."
+                    );
+                }
             }
 
             chat.scrollTop =
@@ -617,5 +663,4 @@ document
 </body>
 
 </html>
-
 
