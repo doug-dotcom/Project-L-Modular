@@ -134,9 +134,12 @@ def build_pauline_report_context(user_message, time_context=None):
 - Build a chronological and thematic clinical handover, not a generic encouragement summary.
 - Cover recovery/treatment, meetings, sponsorship, step work, Pauline sessions, emotional and trauma themes, family/relationships, physical health, stress/overwhelm, major life events, projects as recovery structure, progress, current challenges and next therapeutic focus.
 - Include concrete dates and turning points when supported. Exclude events outside the reporting window unless brief background is necessary.
+- Start with a concise executive summary, then include a dated chronology spanning the reporting window, followed by thematic clinical observations, current strengths, current vulnerabilities, evidence gaps and suggested topics for Pauline.
+- Use at least eight concrete dated or date-bounded developments from the retrieved records when available. If a month has no supplied evidence, say so rather than filling it with generalities.
+- Aim for 1,000–1,600 words when the evidence supports that length. Do not pad the report or repeat the same insight under multiple headings.
 - Identify contradictions or gaps instead of silently resolving them.
 - Do not claim Doug is currently feeling a particular way unless recent evidence supports it.
-- Write in third person for Pauline, with useful section headings and enough detail to preserve change across the full period.
+- Write in third person for Pauline. Label the result as a personal-history handover for discussion, not a diagnosis or clinician-authored report.
 """
 
 

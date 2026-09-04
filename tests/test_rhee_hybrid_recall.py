@@ -464,3 +464,40 @@ def test_pauline_report_memory_selection_balances_domains(monkeypatch):
     tables = [row["_table"] for row in packet]
     assert tables.count("memory_recovery") == 8
     assert tables.count("memory_health") == 2
+
+
+def test_pauline_report_ranking_prefers_dated_session_reports():
+    generic = {
+        "id": 1,
+        "_table": "memory_family",
+        "content": "Family recovery therapy progress and relationships.",
+        "importance": 9,
+        "salience": 9,
+    }
+    dated_report = {
+        "id": 2,
+        "_table": "memory_relationships",
+        "content": "Pauline Session Report — 25 August 2026. Recovery and trauma insight.",
+        "importance": 1,
+        "salience": 1,
+    }
+
+    query = "Can you write a full report for Pauline based on my last 6 months"
+    assert rhee.calculate_memory_score(dated_report, query) > rhee.calculate_memory_score(generic, query)
+
+
+def test_pauline_report_packet_preserves_long_evidence_excerpt():
+    marker = "DETAIL_AFTER_700"
+    memory = {
+        "id": 22,
+        "_table": "memory_recovery",
+        "content": "Pauline report 25 August 2026 " + ("x" * 720) + marker,
+        "_score": 100,
+    }
+
+    formatted = rhee.format_memory_packet(
+        "full report for Pauline based on my last six months",
+        [memory],
+    )
+
+    assert marker in formatted
