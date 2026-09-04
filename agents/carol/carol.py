@@ -4,9 +4,10 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from supabase import create_client
+from memory.promotion.gate import evaluate_promotion
 
 # =====================================================
-# CAROL V3
+# CAROL V4
 # MEMORY CURATOR
 # =====================================================
 
@@ -59,17 +60,39 @@ def clean_content(text):
     return str(text or "").strip()
 
 
-def memory_status(content):
+def resolve_raw_source(short_term_row):
 
-    content = clean_content(content)
+    content = clean_content(
+        short_term_row.get("content", "")
+    )
 
-    if not content:
-        return "NOISE"
+    role = clean_content(
+        short_term_row.get("role", "")
+    ).lower()
 
-    if len(content) < 10:
-        return "NOISE"
+    if not content or not role:
+        return None
 
-    return "ACTIVE"
+    try:
+
+        result = (
+            supabase
+            .table("raw_catchall")
+            .select("*")
+            .eq("role", role)
+            .eq("content", content)
+            .order("id", desc=True)
+            .limit(1)
+            .execute()
+        )
+
+        rows = result.data or []
+
+        return rows[0] if rows else None
+
+    except Exception:
+
+        return None
 
 
 def already_exists(
@@ -92,7 +115,7 @@ def already_exists(
 
     except Exception:
 
-        return False
+        return None
 
 
 # =====================================================
@@ -127,21 +150,31 @@ def process_domain(
 
     for row in rows:
 
-        raw_id = row.get("id")
+        raw_row = resolve_raw_source(row)
 
-        if already_exists(
+        promotion = evaluate_promotion(raw_row)
+
+        if not promotion["promote"]:
+            skipped += 1
+            continue
+
+        raw_id = raw_row.get("id")
+
+        existing = already_exists(
             target_table,
             raw_id
-        ):
+        )
+
+        if existing is None:
+            skipped += 1
+            continue
+
+        if existing:
             skipped += 1
             continue
 
         content = clean_content(
-            row.get("content", "")
-        )
-
-        status = memory_status(
-            content
+            raw_row.get("content", "")
         )
 
         payload = {
@@ -156,17 +189,33 @@ def process_domain(
 
             "anchor": False,
 
-            "memory_status": status,
+            "memory_status": "ACTIVE",
 
             "processed_by": [
-                "carol_v3"
+                "carol_v4"
             ],
 
             "metadata": {
 
-                "source_table": source_table,
+                "source_table": "raw_catchall",
 
-                "carol_version": "3.0",
+                "source_short_term_table": source_table,
+
+                "carol_version": "4.0",
+
+                "promotion_gate": {
+
+                    "version": "2.0",
+
+                    "reason": promotion["reason"],
+
+                    "explicit": promotion["explicit"],
+
+                    "source_role": clean_content(
+                        raw_row.get("role", "")
+                    ).lower()
+
+                },
 
                 "processed_at": datetime.now().isoformat()
 
