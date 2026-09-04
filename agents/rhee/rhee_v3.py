@@ -172,6 +172,16 @@ def row_content(row):
     if not isinstance(row, dict):
         return safe_text(row)
 
+    table_name = safe_text(row.get("_table"))
+    if table_name == "episodic_memories":
+        event_date = safe_text(row.get("event_date"))
+        summary = safe_text(row.get("summary"))
+        return " — ".join(part for part in (event_date, summary) if part)
+    if table_name == "identity_anchors":
+        key = safe_text(row.get("key"))
+        value = safe_text(row.get("value"))
+        return ": ".join(part for part in (key, value) if part)
+
     for key in [
         "content",
         "summary",
@@ -221,7 +231,11 @@ def load_identity(limit_count=10):
             if rows:
                 lines.append("IDENTITY ANCHORS")
                 for row in rows:
-                    content = row_content(row)
+                    if safe_text(row.get("memory_status", "ACTIVE")).upper() != "ACTIVE":
+                        continue
+                    key = safe_text(row.get("key"))
+                    value = safe_text(row.get("value"))
+                    content = ": ".join(part for part in (key, value) if part)
                     if content:
                         lines.append(f"- {content[:500]}")
     except Exception as e:
