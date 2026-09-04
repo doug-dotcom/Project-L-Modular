@@ -12,6 +12,7 @@ from core.cognition.rike import needs_structured_reasoning, reason
 from governance.cognitive_guardrails import assess_cognitive_packet
 from services.capability_router_service import route_capability
 from core.cognition.controller import finalise_cognition_plan, plan_cognition
+from core.cognition.uncertainty import DIMENSIONS, assess_confidence_dimensions
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -226,6 +227,65 @@ def test_controller_tracks_known_unknown_and_specialist_outcome():
     assert "specialist_result_available" in final["known"]
     assert "current_external_facts_until_capability_returns" not in final["unknown"]
     assert final["specialist"] == {"capability": "external_research", "status": "ok"}
+
+
+def test_phase_two_keeps_all_confidence_dimensions_separate():
+    packet = run_cognitive_core(
+        "Deep recall my recovery pattern over time and assess what it means",
+        {
+            "context": (
+                "LONG TERM RECALL ACTIVE: True\n"
+                "90 | memory_recovery | ID=1 | SOURCE_ROLE=USER | PROVENANCE=linked\n"
+                "80 | memory_recovery | ID=2 | SOURCE_ROLE=USER | PROVENANCE=linked\n"
+                "70 | memory_recovery | ID=3 | SOURCE_ROLE=ASSISTANT | PROVENANCE=linked"
+            ),
+            "recall_active": True,
+        },
+        client=FakeClient(),
+    )
+    confidence = packet["confidence_dimensions"]
+    assert confidence["aggregation"] == "prohibited"
+    assert tuple(confidence["dimensions"]) == DIMENSIONS
+    assert "overall" not in confidence
+    assert confidence["dimensions"]["source"]["level"] == "high"
+    assert confidence["dimensions"]["retrieval"]["level"] == "high"
+    assert confidence["dimensions"]["memory"]["level"] == "high"
+    assert confidence["dimensions"]["prediction"]["level"] == "not_applicable"
+
+
+def test_phase_two_lowers_only_dimensions_with_missing_evidence():
+    controller = plan_cognition("Deep recall why this happened and predict what will happen")
+    confidence = assess_confidence_dimensions(
+        "Deep recall why this happened and predict what will happen",
+        controller,
+        {"context": "LONG TERM RECALL ACTIVE: False", "recall_active": False},
+        {"handled": False, "capability": "l_core", "status": "not_required"},
+        {"active": False, "pattern_threshold_met": False},
+        {"status": "degraded", "uncertainties": ["No accepted reasoning."]},
+    )
+    dimensions = confidence["dimensions"]
+    assert dimensions["retrieval"]["level"] == "low"
+    assert dimensions["memory"]["level"] == "low"
+    assert dimensions["reasoning"]["level"] == "low"
+    assert dimensions["prediction"]["level"] == "low"
+    assert dimensions["source"]["level"] == "low"
+    assert len(confidence["material_limits"]) == 5
+
+
+def test_guardrails_reject_missing_or_aggregated_confidence_dimensions():
+    reasoning = {
+        "status": "ok",
+        "evidence_summary": "evidence",
+        "confidence": {"level": "medium"},
+        "uncertainties": ["one limit"],
+    }
+    assessment = assess_cognitive_packet(
+        reasoning,
+        {},
+        {"aggregation": "average", "dimensions": {"source": {}}},
+    )
+    assert "confidence_dimensions_incomplete" in assessment["issues"]
+    assert "confidence_dimensions_improperly_aggregated" in assessment["issues"]
 
 
 def test_memory_pipeline_records_only_stages_that_really_ran():

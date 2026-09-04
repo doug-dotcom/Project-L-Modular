@@ -8,6 +8,7 @@ from core.cognition.learning_engine import build_learning_observation
 from core.cognition.rike import needs_structured_reasoning, reason
 from governance.cognitive_guardrails import assess_cognitive_packet
 from core.cognition.controller import finalise_cognition_plan, plan_cognition
+from core.cognition.uncertainty import assess_confidence_dimensions
 
 
 def run_cognitive_core(
@@ -57,11 +58,20 @@ def run_cognitive_core(
             "lenses": [],
         }
 
-    guardrails = assess_cognitive_packet(rike, mary)
+    confidence_dimensions = assess_confidence_dimensions(
+        message,
+        cognitive_plan,
+        rhee_packet,
+        capability_packet,
+        mary,
+        rike,
+    )
+    guardrails = assess_cognitive_packet(rike, mary, confidence_dimensions)
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "2.0",
+        "version": "3.0",
         "controller": cognitive_plan,
+        "confidence_dimensions": confidence_dimensions,
         "route": {
             "rhee": "required" if cognitive_plan["needs"]["memory"] else "not_required",
             "mary": "active" if mary["active"] else "not_required",

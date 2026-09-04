@@ -594,10 +594,11 @@ def cognition_status():
     return {
         "status": "ok",
         "architecture": "project_l_cognitive_core",
-        "version": "2.0",
+        "version": "3.0",
         "user_facing_voice": "L",
         "engines": {
             "metacognition": "cognitive_controller_v1",
+            "uncertainty": "multidimensional_uncertainty_v1",
             "retrieval": "rhee_v5",
             "reasoning": "rike_v1",
             "longitudinal": "mary_v4",
@@ -724,6 +725,7 @@ def chat(req: ChatRequest):
             f"rike_status={cognitive_packet.get('rike', {}).get('status')} | "
             f"lenses={cognitive_packet.get('rike', {}).get('lenses', [])} | "
             f"confidence={cognitive_packet.get('rike', {}).get('confidence', {})} | "
+            f"dimensions={cognitive_packet.get('confidence_dimensions', {}).get('dimensions', {})} | "
             f"guardrails={cognitive_packet.get('guardrails', {})}"
         )
         cognitive_context = json.dumps(cognitive_packet, ensure_ascii=False, indent=2)
@@ -794,6 +796,9 @@ RESPONSE RULES:
 - Keep emotional and topic continuity.
 - Use RIKE's conclusion only when it is supported by the supplied evidence.
 - If RIKE is degraded or low-confidence, say what is uncertain rather than filling gaps.
+- Treat the six confidence dimensions independently; never average or collapse them into an overall score.
+- When a material dimension is low, state the specific limitation naturally and limit only the affected claim.
+- A strong source score must not inflate weak retrieval, interpretation, reasoning or prediction confidence.
 - Mary may call something a pattern only when her threshold is met; otherwise call it an observation.
 - Quinn's principles are advisory and must not override evidence or Doug's agency.
 - A capability result is evidence or an action receipt, not a separate voice. Present it as L.
@@ -876,6 +881,7 @@ RESPONSE RULES:
             "route": cognitive_packet.get("route", {}),
             "rike_status": cognitive_packet.get("rike", {}).get("status"),
             "confidence": cognitive_packet.get("rike", {}).get("confidence", {}),
+            "confidence_dimensions": cognitive_packet.get("confidence_dimensions", {}),
             "lenses": cognitive_packet.get("rike", {}).get("lenses", []),
             "guardrails_passed": cognitive_packet.get("guardrails", {}).get("passed"),
             "guardrail_issues": cognitive_packet.get("guardrails", {}).get("issues", []),

@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 
-def assess_cognitive_packet(packet: dict, mary_packet: dict | None = None) -> dict:
+def assess_cognitive_packet(
+    packet: dict,
+    mary_packet: dict | None = None,
+    confidence_dimensions: dict | None = None,
+) -> dict:
     packet = packet or {}
     mary_packet = mary_packet or {}
     issues = []
@@ -16,6 +20,13 @@ def assess_cognitive_packet(packet: dict, mary_packet: dict | None = None) -> di
         issues.append("pattern_claim_requires_caution")
     if not packet.get("uncertainties"):
         issues.append("uncertainty_review_missing")
+    if confidence_dimensions is not None:
+        dimensions = (confidence_dimensions or {}).get("dimensions") or {}
+        required = {"source", "retrieval", "memory", "interpretation", "reasoning", "prediction"}
+        if set(dimensions) != required:
+            issues.append("confidence_dimensions_incomplete")
+        if (confidence_dimensions or {}).get("aggregation") != "prohibited":
+            issues.append("confidence_dimensions_improperly_aggregated")
     return {
         "engine": "project_l_cognitive_guardrails",
         "version": "1.0",
@@ -33,6 +44,8 @@ def guardrail_prompt(assessment: dict) -> str:
         "- Separate retrieved evidence from inference.\n"
         "- Do not turn one observation into a pattern.\n"
         "- State material uncertainty and contradictions.\n"
+        "- Keep source, retrieval, memory, interpretation, reasoning and prediction confidence separate.\n"
+        "- Never collapse the confidence dimensions into one overall score.\n"
         "- Preserve Doug's authority over consequential decisions.\n"
         "- Do not reveal hidden chain-of-thought; provide only a concise rationale.\n"
         f"- Pre-response review issues: {issues}."
