@@ -451,6 +451,9 @@ def test_pauline_report_contract_uses_calendar_window_and_current_sobriety():
     assert "2026-03-05 through 2026-09-05" in contract
     assert "current elapsed days: 268" in contract
     assert "chronological and thematic clinical handover" in contract
+    assert "eight concrete dated or date-bounded developments" in contract
+    assert "1,000–1,600 words" in contract
+    assert "not a diagnosis" in contract
     assert pauline_report_requested("Write a deployment report") is False
 
 
