@@ -192,9 +192,8 @@ def already_processed(table, raw_id):
 
 
 def process_raw_memory(row):
-    raw_id = row.get("id")
-    content = clean_content(row.get("content", ""))
     promotion = evaluate_promotion(row)
+    raw_id = row.get("id") if isinstance(row, dict) else None
 
     if not promotion["promote"]:
         return {
@@ -203,6 +202,8 @@ def process_raw_memory(row):
             "reason": promotion["reason"],
             "target": None,
         }
+
+    content = clean_content(row.get("content", ""))
 
     target_table = detect_target_table(content)
 
@@ -391,6 +392,5 @@ if __name__ == "__main__":
 
     for item in result["outcomes"]:
         print(item)
-
 
 
