@@ -298,7 +298,7 @@ def test_self_directed_swot_uses_project_l_architecture_contract():
 
 
 def test_personal_causal_recall_contract_blocks_invented_reasons():
-    from api.server import build_causal_recall_context
+    from api.server import build_causal_recall_context, ensure_causal_recall_grounding
 
     contract = build_causal_recall_context("Why did I break up with Leah")
     assert "directly attributes" in contract
@@ -307,6 +307,21 @@ def test_personal_causal_recall_contract_blocks_invented_reasons():
     assert build_causal_recall_context("When did I break up with Leah") == (
         "No causal personal-history question detected."
     )
+    unsafe = (
+        "The reason is not documented. However, it may be connected to "
+        "self-discovery and emotional understanding."
+    )
+    unproven = {"rike": {"direct_causal_evidence": {"established": False}}}
+    grounded = ensure_causal_recall_grounding(
+        "Why did I break up with Leah?", unsafe, unproven
+    )
+    assert "not established" in grounded
+    assert "self-discovery" not in grounded
+
+    proven = {"rike": {"direct_causal_evidence": {"established": True}}}
+    assert ensure_causal_recall_grounding(
+        "Why did I leave the job?", "Doug said the commute caused it.", proven
+    ) == "Doug said the commute caused it."
 
 
 def test_project_l_self_audit_verifier_appends_verified_runtime_status():
