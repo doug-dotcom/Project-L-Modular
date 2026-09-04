@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import re
 
 from pathlib import Path
 from datetime import datetime
@@ -90,6 +91,30 @@ def build_time_context():
         "time": now.strftime("%I:%M %p"),
         "timezone": "Australia/Brisbane"
     }
+
+
+def build_architecture_audit_context(user_message, cognitive_packet):
+    """Add a runtime-authoritative contract for Project L self-audits."""
+    text = str(user_message or "").lower()
+    asks_about_project_l = bool(re.search(r"\bproject\s+l\b", text))
+    audit_signals = (
+        "architecture", "why we created", "why was created", "original intent",
+        "original purpose", "what can you do", "capabilities", "contradiction",
+        "path forward", "purpose",
+    )
+    if not asks_about_project_l or not any(signal in text for signal in audit_signals):
+        return "No Project L self-audit requested."
+
+    route = (cognitive_packet or {}).get("route", {})
+    return f"""PROJECT L SELF-AUDIT CONTRACT (RUNTIME-AUTHORITATIVE)
+- Separate retrieved historical intent from current runtime facts and from your inference.
+- Do not describe the original intent as a generic feature-rich AI or frontier-AI competitor unless a Doug-authored record directly supports that claim.
+- Name the current architecture explicitly: L is the sole voice and synthesiser; Rhee retrieves evidence; RIKE performs structured reasoning; Mary tests longitudinal patterns; Quinn supplies advisory principles; Carol and Sara govern memory promotion and provenance.
+- The historical Brains Trust is retained as bounded reasoning lenses inside RIKE, not as competing personas or separate voices.
+- Current activation route: {json.dumps(route, ensure_ascii=False)}
+- When asked to compare architectures or identify contradictions, cover: original purpose, original components, current implemented components, retained ideas, retired persona behaviour, unresolved gaps, and the best-supported next step.
+- If the retrieved records do not establish part of the original architecture, say that evidence is incomplete instead of substituting a generic summary.
+"""
 
 # =====================================================
 # FASTAPI
@@ -358,6 +383,10 @@ def chat(req: ChatRequest):
         )
         cognitive_context = json.dumps(cognitive_packet, ensure_ascii=False, indent=2)
         cognitive_guardrails = guardrail_prompt(cognitive_packet.get("guardrails", {}))
+        architecture_audit_context = build_architecture_audit_context(
+            user_message,
+            cognitive_packet,
+        )
 
         system_prompt = f"""
 You are L.
@@ -394,6 +423,8 @@ CAPABILITY ROUTE:
 
 COGNITIVE PACKET:
 {cognitive_context}
+
+{architecture_audit_context}
 
 {cognitive_guardrails}
 
