@@ -11,6 +11,7 @@ from core.cognition.orchestrator import run_cognitive_core
 from core.cognition.rike import needs_structured_reasoning, reason
 from governance.cognitive_guardrails import assess_cognitive_packet
 from services.capability_router_service import route_capability
+from core.cognition.controller import finalise_cognition_plan, plan_cognition
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -175,6 +176,7 @@ def test_guardrails_block_unsupported_pattern_claims():
 def test_orchestrator_selectively_connects_rhee_mary_quinn_and_rike():
     simple = run_cognitive_core("Hello L", {"context": "identity context"}, client=FakeClient())
     assert simple["route"]["rike"] == "not_required"
+    assert simple["route"]["rhee"] == "not_required"
 
     complex_packet = run_cognitive_core(
         "Compare this pattern over time and recommend what I should do",
@@ -189,6 +191,41 @@ def test_orchestrator_selectively_connects_rhee_mary_quinn_and_rike():
     }
     assert complex_packet["rike"]["status"] == "ok"
     assert complex_packet["guardrails"]["passed"] is True
+
+
+def test_controller_plans_before_cognition_and_complexity_earns_systems():
+    simple = plan_cognition("Hello L")
+    assert simple["problem_type"] == "conversation"
+    assert simple["difficulty"] == "low"
+    assert simple["needs"] == {
+        "memory": False,
+        "external_evidence": False,
+        "structured_reasoning": False,
+        "longitudinal_reasoning": False,
+        "specialist": False,
+    }
+
+    complex_plan = plan_cognition(
+        "Deep recall my recovery pattern over time, compare the evidence and recommend what I should do"
+    )
+    assert complex_plan["problem_type"] == "longitudinal"
+    assert complex_plan["difficulty"] == "high"
+    assert complex_plan["needs"]["memory"] is True
+    assert complex_plan["needs"]["structured_reasoning"] is True
+    assert complex_plan["needs"]["longitudinal_reasoning"] is True
+
+
+def test_controller_tracks_known_unknown_and_specialist_outcome():
+    planned = plan_cognition("Search the latest research and compare the findings")
+    assert "current_external_facts_until_capability_returns" in planned["unknown"]
+    final = finalise_cognition_plan(
+        planned,
+        {},
+        {"handled": True, "capability": "external_research", "status": "ok", "reply": "evidence"},
+    )
+    assert "specialist_result_available" in final["known"]
+    assert "current_external_facts_until_capability_returns" not in final["unknown"]
+    assert final["specialist"] == {"capability": "external_research", "status": "ok"}
 
 
 def test_memory_pipeline_records_only_stages_that_really_ran():

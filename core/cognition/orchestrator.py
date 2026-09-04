@@ -7,6 +7,7 @@ from core.cognition.longitudinal import build_longitudinal_packet
 from core.cognition.learning_engine import build_learning_observation
 from core.cognition.rike import needs_structured_reasoning, reason
 from governance.cognitive_guardrails import assess_cognitive_packet
+from core.cognition.controller import finalise_cognition_plan, plan_cognition
 
 
 def run_cognitive_core(
@@ -15,7 +16,13 @@ def run_cognitive_core(
     capability_packet: dict | None = None,
     client=None,
     model="gpt-4o-mini",
+    cognitive_plan: dict | None = None,
 ) -> dict:
+    cognitive_plan = finalise_cognition_plan(
+        cognitive_plan or plan_cognition(message),
+        rhee_packet,
+        capability_packet or {},
+    )
     evidence_context = str((rhee_packet or {}).get("context") or "")
     capability_packet = capability_packet or {}
     if capability_packet.get("handled") and capability_packet.get("reply"):
@@ -27,7 +34,7 @@ def run_cognitive_core(
         )
     mary = build_longitudinal_packet(message, evidence_context)
     quinn = curate_principles(message)
-    rike_required = needs_structured_reasoning(message) or mary["active"]
+    rike_required = bool(cognitive_plan["needs"]["structured_reasoning"] or mary["active"])
 
     if rike_required:
         rike = reason(
@@ -53,9 +60,10 @@ def run_cognitive_core(
     guardrails = assess_cognitive_packet(rike, mary)
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "1.0",
+        "version": "2.0",
+        "controller": cognitive_plan,
         "route": {
-            "rhee": "required",
+            "rhee": "required" if cognitive_plan["needs"]["memory"] else "not_required",
             "mary": "active" if mary["active"] else "not_required",
             "quinn": "advisory" if rike_required else "not_required",
             "rike": "active" if rike_required else "not_required",

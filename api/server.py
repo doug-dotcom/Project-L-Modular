@@ -43,6 +43,7 @@ from agents.rhee.rhee_v3 import (
 )
 
 from core.cognition.orchestrator import run_cognitive_core
+from core.cognition.controller import plan_cognition
 from governance.cognitive_guardrails import guardrail_prompt
 from services.capability_router_service import route_capability
 
@@ -593,9 +594,10 @@ def cognition_status():
     return {
         "status": "ok",
         "architecture": "project_l_cognitive_core",
-        "version": "1.0",
+        "version": "2.0",
         "user_facing_voice": "L",
         "engines": {
+            "metacognition": "cognitive_controller_v1",
             "retrieval": "rhee_v5",
             "reasoning": "rike_v1",
             "longitudinal": "mary_v4",
@@ -648,12 +650,30 @@ def chat(req: ChatRequest):
 
     time_context = build_time_context()
 
+    # The controller plans cognition before retrieval, services or generation.
+    cognitive_plan = plan_cognition(user_message)
+    log(
+        "COGNITIVE PLAN: "
+        f"type={cognitive_plan['problem_type']} | "
+        f"difficulty={cognitive_plan['difficulty']} | "
+        f"needs={cognitive_plan['needs']}"
+    )
+
     # =================================================
     # RHEE GIFT SHOP - MANDATORY ENTRY
     # =================================================
 
     try:
-        rhee_packet = build_rhee_packet(user_message)
+        rhee_packet = (
+            build_rhee_packet(user_message)
+            if cognitive_plan["needs"]["memory"]
+            else {
+                "context": "Memory retrieval not required by the cognitive controller.",
+                "recall_active": False,
+                "deep_recall": False,
+                "short_term_domain": short_term_domain,
+            }
+        )
         rhee_context = rhee_packet.get("context", "")
         log(f"RHEE CONTEXT SIZE: {len(rhee_context)}")
         log(f"RHEE RECALL ACTIVE: {rhee_packet.get('recall_active')}")
@@ -696,6 +716,7 @@ def chat(req: ChatRequest):
             capability_packet=route,
             client=client,
             model=MODEL,
+            cognitive_plan=cognitive_plan,
         )
         log(
             "COGNITIVE TRACE: "
@@ -743,6 +764,9 @@ COGNITIVE ARCHITECTURE:
 - Mary tests longitudinal patterns against events across time.
 - Quinn supplies governed principles, never decisions.
 - External research, finance, email, calendar and tasks are services.
+
+COGNITIVE CONTROLLER PLAN:
+{json.dumps(cognitive_packet.get("controller", cognitive_plan), ensure_ascii=False, indent=2)}
 
 RHEE CONTEXT PACKET:
 {rhee_context}
@@ -848,6 +872,7 @@ RESPONSE RULES:
         },
         "cognition": {
             "version": cognitive_packet.get("version"),
+            "controller": cognitive_packet.get("controller", cognitive_plan),
             "route": cognitive_packet.get("route", {}),
             "rike_status": cognitive_packet.get("rike", {}).get("status"),
             "confidence": cognitive_packet.get("rike", {}).get("confidence", {}),
