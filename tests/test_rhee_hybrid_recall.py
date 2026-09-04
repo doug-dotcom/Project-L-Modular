@@ -201,6 +201,33 @@ def test_historical_questions_and_failed_answers_are_quarantined():
     assert rhee.calculate_memory_score(explicit_save, query) > 0
 
 
+def test_quarantine_status_and_oversized_composites_are_not_recalled():
+    query = "Project L memory"
+    quarantined = {
+        "content": "Project L memory is operational.",
+        "memory_status": "QUARANTINED",
+    }
+    oversized = {
+        "content": "Project L memory " + ("archive " * 3000),
+        "memory_status": "ACTIVE",
+    }
+
+    assert rhee.calculate_memory_score(quarantined, query) == 0
+    assert rhee.calculate_memory_score(oversized, query) == 0
+
+
+def test_raw_historical_artifacts_are_excluded_not_merely_downranked():
+    query = "When was the exact date for Project L?"
+    question = {"content": query, "role": "user"}
+    failed = {
+        "content": "The records are incomplete and do not provide an exact date for Project L.",
+        "role": "assistant",
+    }
+
+    assert rhee.calculate_raw_score(question, query) == 0
+    assert rhee.calculate_raw_score(failed, query) == 0
+
+
 def test_raw_exact_query_terms_outrank_expansions():
     exact = {"content": "Luella got her braces off on 16 June 2026", "role": "user"}
     expanded = {"content": "A general story about Luella and her daughter", "role": "user"}
