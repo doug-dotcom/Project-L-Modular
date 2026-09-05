@@ -1,5 +1,383 @@
 {
-  "enabled": false,
-  "reason": "Keep the configured baseline until candidate trials have been reviewed.",
-  "recall_evaluation": {}
+  "enabled": true,
+  "reason": "Terra passed 10/10 bounded evidence checks, with the lowest latency and estimated cost among passing candidates. Reviewed Stage 3 provider trials.",
+  "recall_evaluation": {
+    "api": "responses",
+    "cases_executed": 10,
+    "cases_passed": 10,
+    "executed_at": "2026-09-05T15:03:42.521561+00:00",
+    "mode": "model_with_synthetic_evidence",
+    "model_id": "gpt-5.6-terra",
+    "provider": "openai",
+    "reasoning_effort": "low",
+    "repeats": 2,
+    "results": [
+      {
+        "case": "source_collision",
+        "checks": {
+          "citation_integrity": true,
+          "expected_answer_terms": true,
+          "expected_source": true
+        },
+        "duration_ms": 3056,
+        "error": null,
+        "passed": true,
+        "receipt": {
+          "api": "responses",
+          "cost": {
+            "amount": 0.001648,
+            "currency": "USD",
+            "pricing_date": "2026-09-05",
+            "source": "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+            "status": "estimated_standard_text"
+          },
+          "duration_ms": 3055,
+          "model_id": "gpt-5.6-terra",
+          "provider": "openai",
+          "reasoning_effort": "low",
+          "requested_model": "gpt-5.6-terra",
+          "response_id": "resp_0c18bcbdb5dc2fb1016a9c2f3f57f487d0897a8fa88a83eb58",
+          "status": "complete",
+          "usage": {
+            "cached_input_tokens": 0,
+            "input_tokens": 464,
+            "output_tokens": 60,
+            "reasoning_tokens": 0,
+            "total_tokens": 524
+          },
+          "version": "1.0"
+        },
+        "trial": 1
+      },
+      {
+        "case": "source_collision",
+        "checks": {
+          "citation_integrity": true,
+          "expected_answer_terms": true,
+          "expected_source": true
+        },
+        "duration_ms": 1571,
+        "error": null,
+        "passed": true,
+        "receipt": {
+          "api": "responses",
+          "cost": {
+            "amount": 0.001648,
+            "currency": "USD",
+            "pricing_date": "2026-09-05",
+            "source": "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+            "status": "estimated_standard_text"
+          },
+          "duration_ms": 1571,
+          "model_id": "gpt-5.6-terra",
+          "provider": "openai",
+          "reasoning_effort": "low",
+          "requested_model": "gpt-5.6-terra",
+          "response_id": "resp_0e7e94a677ade884016a9c2f41050c87d083d7d166bbea8c73",
+          "status": "complete",
+          "usage": {
+            "cached_input_tokens": 0,
+            "input_tokens": 464,
+            "output_tokens": 60,
+            "reasoning_tokens": 0,
+            "total_tokens": 524
+          },
+          "version": "1.0"
+        },
+        "trial": 2
+      },
+      {
+        "case": "documented_change",
+        "checks": {
+          "citation_integrity": true,
+          "expected_answer_terms": true,
+          "expected_source": true
+        },
+        "duration_ms": 1888,
+        "error": null,
+        "passed": true,
+        "receipt": {
+          "api": "responses",
+          "cost": {
+            "amount": 0.001816,
+            "currency": "USD",
+            "pricing_date": "2026-09-05",
+            "source": "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+            "status": "estimated_standard_text"
+          },
+          "duration_ms": 1887,
+          "model_id": "gpt-5.6-terra",
+          "provider": "openai",
+          "reasoning_effort": "low",
+          "requested_model": "gpt-5.6-terra",
+          "response_id": "resp_0b390eb495eb454f016a9c2f42a93087d099a6bc0d7e5e72ca",
+          "status": "complete",
+          "usage": {
+            "cached_input_tokens": 0,
+            "input_tokens": 464,
+            "output_tokens": 74,
+            "reasoning_tokens": 0,
+            "total_tokens": 538
+          },
+          "version": "1.0"
+        },
+        "trial": 1
+      },
+      {
+        "case": "documented_change",
+        "checks": {
+          "citation_integrity": true,
+          "expected_answer_terms": true,
+          "expected_source": true
+        },
+        "duration_ms": 1592,
+        "error": null,
+        "passed": true,
+        "receipt": {
+          "api": "responses",
+          "cost": {
+            "amount": 0.001876,
+            "currency": "USD",
+            "pricing_date": "2026-09-05",
+            "source": "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+            "status": "estimated_standard_text"
+          },
+          "duration_ms": 1591,
+          "model_id": "gpt-5.6-terra",
+          "provider": "openai",
+          "reasoning_effort": "low",
+          "requested_model": "gpt-5.6-terra",
+          "response_id": "resp_060ace299f810a9e016a9c2f44631c87d0841bdceca38bf21c",
+          "status": "complete",
+          "usage": {
+            "cached_input_tokens": 0,
+            "input_tokens": 464,
+            "output_tokens": 79,
+            "reasoning_tokens": 0,
+            "total_tokens": 543
+          },
+          "version": "1.0"
+        },
+        "trial": 2
+      },
+      {
+        "case": "absent_fact",
+        "checks": {
+          "admits_unknown": true,
+          "citation_integrity": true
+        },
+        "duration_ms": 1316,
+        "error": null,
+        "passed": true,
+        "receipt": {
+          "api": "responses",
+          "cost": {
+            "amount": 0.001412,
+            "currency": "USD",
+            "pricing_date": "2026-09-05",
+            "source": "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+            "status": "estimated_standard_text"
+          },
+          "duration_ms": 1316,
+          "model_id": "gpt-5.6-terra",
+          "provider": "openai",
+          "reasoning_effort": "low",
+          "requested_model": "gpt-5.6-terra",
+          "response_id": "resp_0b543480d3700dff016a9c2f45fad887d087025dd832915454",
+          "status": "complete",
+          "usage": {
+            "cached_input_tokens": 0,
+            "input_tokens": 466,
+            "output_tokens": 40,
+            "reasoning_tokens": 0,
+            "total_tokens": 506
+          },
+          "version": "1.0"
+        },
+        "trial": 1
+      },
+      {
+        "case": "absent_fact",
+        "checks": {
+          "admits_unknown": true,
+          "citation_integrity": true
+        },
+        "duration_ms": 1173,
+        "error": null,
+        "passed": true,
+        "receipt": {
+          "api": "responses",
+          "cost": {
+            "amount": 0.001328,
+            "currency": "USD",
+            "pricing_date": "2026-09-05",
+            "source": "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+            "status": "estimated_standard_text"
+          },
+          "duration_ms": 1172,
+          "model_id": "gpt-5.6-terra",
+          "provider": "openai",
+          "reasoning_effort": "low",
+          "requested_model": "gpt-5.6-terra",
+          "response_id": "resp_0745b630c235ba8d016a9c2f47491487d0816e9f29b6b5ab6d",
+          "status": "complete",
+          "usage": {
+            "cached_input_tokens": 0,
+            "input_tokens": 466,
+            "output_tokens": 33,
+            "reasoning_tokens": 0,
+            "total_tokens": 499
+          },
+          "version": "1.0"
+        },
+        "trial": 2
+      },
+      {
+        "case": "prior_answer_not_proof",
+        "checks": {
+          "admits_unknown": true,
+          "citation_integrity": true
+        },
+        "duration_ms": 1235,
+        "error": null,
+        "passed": true,
+        "receipt": {
+          "api": "responses",
+          "cost": {
+            "amount": 0.00138,
+            "currency": "USD",
+            "pricing_date": "2026-09-05",
+            "source": "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+            "status": "estimated_standard_text"
+          },
+          "duration_ms": 1235,
+          "model_id": "gpt-5.6-terra",
+          "provider": "openai",
+          "reasoning_effort": "low",
+          "requested_model": "gpt-5.6-terra",
+          "response_id": "resp_08daaae5cb797b44016a9c2f4874fc87d09671c139fb1a157e",
+          "status": "complete",
+          "usage": {
+            "cached_input_tokens": 0,
+            "input_tokens": 396,
+            "output_tokens": 49,
+            "reasoning_tokens": 0,
+            "total_tokens": 445
+          },
+          "version": "1.0"
+        },
+        "trial": 1
+      },
+      {
+        "case": "prior_answer_not_proof",
+        "checks": {
+          "admits_unknown": true,
+          "citation_integrity": true
+        },
+        "duration_ms": 1098,
+        "error": null,
+        "passed": true,
+        "receipt": {
+          "api": "responses",
+          "cost": {
+            "amount": 0.001224,
+            "currency": "USD",
+            "pricing_date": "2026-09-05",
+            "source": "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+            "status": "estimated_standard_text"
+          },
+          "duration_ms": 1098,
+          "model_id": "gpt-5.6-terra",
+          "provider": "openai",
+          "reasoning_effort": "low",
+          "requested_model": "gpt-5.6-terra",
+          "response_id": "resp_04ce5aa8f9743c69016a9c2f49b3f487d0a573560364aaed92",
+          "status": "complete",
+          "usage": {
+            "cached_input_tokens": 0,
+            "input_tokens": 396,
+            "output_tokens": 36,
+            "reasoning_tokens": 0,
+            "total_tokens": 432
+          },
+          "version": "1.0"
+        },
+        "trial": 2
+      },
+      {
+        "case": "chronology",
+        "checks": {
+          "citation_integrity": true,
+          "expected_answer_terms": true
+        },
+        "duration_ms": 2206,
+        "error": null,
+        "passed": true,
+        "receipt": {
+          "api": "responses",
+          "cost": {
+            "amount": 0.002712,
+            "currency": "USD",
+            "pricing_date": "2026-09-05",
+            "source": "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+            "status": "estimated_standard_text"
+          },
+          "duration_ms": 2206,
+          "model_id": "gpt-5.6-terra",
+          "provider": "openai",
+          "reasoning_effort": "low",
+          "requested_model": "gpt-5.6-terra",
+          "response_id": "resp_0d15ddde464b9183016a9c2f4acd5087d0b7748866bce9fae5",
+          "status": "complete",
+          "usage": {
+            "cached_input_tokens": 0,
+            "input_tokens": 402,
+            "output_tokens": 159,
+            "reasoning_tokens": 58,
+            "total_tokens": 561
+          },
+          "version": "1.0"
+        },
+        "trial": 1
+      },
+      {
+        "case": "chronology",
+        "checks": {
+          "citation_integrity": true,
+          "expected_answer_terms": true
+        },
+        "duration_ms": 1586,
+        "error": null,
+        "passed": true,
+        "receipt": {
+          "api": "responses",
+          "cost": {
+            "amount": 0.001704,
+            "currency": "USD",
+            "pricing_date": "2026-09-05",
+            "source": "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+            "status": "estimated_standard_text"
+          },
+          "duration_ms": 1586,
+          "model_id": "gpt-5.6-terra",
+          "provider": "openai",
+          "reasoning_effort": "low",
+          "requested_model": "gpt-5.6-terra",
+          "response_id": "resp_03ca167f68bad30b016a9c2f4d004c87d0a3bd9bec882f0d8b",
+          "status": "complete",
+          "usage": {
+            "cached_input_tokens": 0,
+            "input_tokens": 402,
+            "output_tokens": 75,
+            "reasoning_tokens": 0,
+            "total_tokens": 477
+          },
+          "version": "1.0"
+        },
+        "trial": 2
+      }
+    ],
+    "suite_version": "stage3-evidence-1",
+    "version": "1.0"
+  }
 }

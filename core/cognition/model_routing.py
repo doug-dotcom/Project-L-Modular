@@ -72,5 +72,5 @@ class MeasuredModelRouter:
 
 def configured_adapter(client, model_id, environ):
     return MeasuredModelRouter(client, model_id,
-        routes_path=environ.get("L_MODEL_ROUTES_PATH", str(Path(__file__).resolve().parents[2] / "../configs/model_routes.json")),
+        routes_path=environ.get("L_MODEL_ROUTES_PATH", str(Path(__file__).resolve().parents[2] / "configs/model_routes.json")),
         api=environ.get("L_MODEL_API", "auto"), reasoning_effort=environ.get("L_REASONING_EFFORT", "low"))
