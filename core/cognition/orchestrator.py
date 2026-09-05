@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from agents.quinn.quinn import curate_principles
-from core.cognition.longitudinal import build_longitudinal_packet
 from core.cognition.experience_abstraction import build_experience_abstraction
 from core.cognition.learning_engine import build_learning_observation
+from core.cognition.multi_agent import build_multi_agent_packet, run_parallel_foundation
 from core.cognition.rike import needs_structured_reasoning, reason
 from governance.cognitive_guardrails import assess_cognitive_packet
 from core.cognition.controller import finalise_cognition_plan, plan_cognition
@@ -34,8 +34,13 @@ def run_cognitive_core(
             f"STATUS: {capability_packet.get('status')}\n"
             f"RESULT: {str(capability_packet.get('reply'))[:12000]}"
         )
-    mary = build_longitudinal_packet(message, evidence_context)
-    quinn = curate_principles(message)
+    foundation = run_parallel_foundation(
+        message,
+        evidence_context,
+        structured_reasoning_required=bool(cognitive_plan["needs"]["structured_reasoning"]),
+    )
+    mary = foundation["outputs"]["mary"]
+    quinn = foundation["outputs"]["quinn"]
     rike_required = bool(cognitive_plan["needs"]["structured_reasoning"] or mary["active"])
 
     if rike_required:
@@ -79,7 +84,7 @@ def run_cognitive_core(
     guardrails = assess_cognitive_packet(rike, mary, confidence_dimensions)
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "9.0",
+        "version": "10.0",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "route": {
@@ -93,6 +98,13 @@ def run_cognitive_core(
         "rike": rike,
         "guardrails": guardrails,
     }
+    packet["multi_agent"] = build_multi_agent_packet(
+        cognitive_plan,
+        rhee_packet or {},
+        capability_packet,
+        foundation,
+        rike,
+    )
     abstraction = build_experience_abstraction(message, mary, rike, quinn, guardrails)
     packet["experience_abstraction"] = abstraction
     packet["route"]["experience_abstraction"] = (

@@ -13,6 +13,7 @@ from typing import Callable
 from agents.rhee.rhee_v3 import calculate_memory_score, format_memory_packet
 from core.cognition.controller import plan_cognition
 from core.cognition.longitudinal import build_longitudinal_packet
+from core.cognition.multi_agent import build_multi_agent_packet, run_parallel_foundation
 from core.cognition.reflection import reflect_on_task
 from core.cognition.uncertainty import assess_confidence_dimensions
 from governance.cognitive_guardrails import assess_cognitive_packet
@@ -33,6 +34,7 @@ BENCHMARK_DIMENSIONS = (
     "false_memory_rate",
     "over_connection_rate",
     "reflective_metacognition",
+    "governed_multi_agent_cognition",
 )
 
 REFERENCE_TIME = datetime(2026, 9, 5, tzinfo=timezone.utc)
@@ -394,6 +396,41 @@ def _significant_task_is_reflected_without_auto_adjustment():
     return observed == expected, expected, observed
 
 
+def _multi_agent_workers_are_bounded_behind_one_voice():
+    foundation = run_parallel_foundation(
+        "Compare the pattern over time and recommend the best supported option",
+        _context(
+            (1, "2026-07-01T00:00:00+00:00", "2026-07-01 It happened."),
+            (2, "2026-08-01T00:00:00+00:00", "2026-08-01 It happened again."),
+        ),
+        structured_reasoning_required=True,
+    )
+    packet = build_multi_agent_packet(
+        {"needs": {"memory": True, "structured_reasoning": True, "longitudinal_reasoning": True}},
+        {"recall_active": True},
+        {"handled": False, "capability": "l_core", "status": "not_required"},
+        foundation,
+        {"status": "ok"},
+    )
+    observed = {
+        "one_voice": packet["one_voice"],
+        "synthesis_owner": packet["synthesis_owner"],
+        "parallel_execution": packet["parallel_execution"],
+        "governance_passed": packet["governance"]["passed"],
+        "worker_voice_authorities": sum(
+            bool(worker["voice_authority"]) for worker in packet["workers"].values()
+        ),
+    }
+    expected = {
+        "one_voice": True,
+        "synthesis_owner": "L",
+        "parallel_execution": True,
+        "governance_passed": True,
+        "worker_voice_authorities": 0,
+    }
+    return observed == expected, expected, observed
+
+
 CASES = (
     ("recall_accuracy", "direct_fact_outranks_unrelated_anchor", _recall_selects_direct_fact),
     ("chronology_accuracy", "first_and_last_seen_are_date_ordered", _chronology_tracks_bounds),
@@ -408,6 +445,7 @@ CASES = (
     ("false_memory_rate", "unsupported_claim_negative_control", _false_memory_control_is_measured),
     ("over_connection_rate", "one_observation_is_not_a_pattern", _over_connection_is_blocked),
     ("reflective_metacognition", "significant_task_receives_governed_reflection", _significant_task_is_reflected_without_auto_adjustment),
+    ("governed_multi_agent_cognition", "parallel_workers_remain_behind_one_l", _multi_agent_workers_are_bounded_behind_one_voice),
 )
 
 
