@@ -435,12 +435,12 @@
                 }
                 const result = await recoverChatResponse(requestId);
                 thinking.remove();
-                clearPendingRequest();
+                clearPendingRequest(requestId);
                 if (!result || !result.reply) throw new Error("Image response was not recovered");
                 appendChatMessage(chat, "assistant", result.reply);
             } catch (error) {
                 thinking.remove();
-                clearPendingRequest();
+                clearPendingRequest(requestId);
                 appendChatMessage(chat, "assistant error", error.message || "Picture upload failed. Please try again.");
             } finally {
                 fileInput.value = "";
@@ -468,6 +468,22 @@
         const API_URL = "/chat/start";
         const PENDING_REQUEST_KEY = "project-l-pending-request";
         let lastAssistantText = "";
+        const RECOVERY_TOKEN_KEY = "project-l-recovery-token";
+        function recoveryHeaders() {
+            let token = localStorage.getItem(RECOVERY_TOKEN_KEY);
+            if (!token) {
+                const bytes = new Uint8Array(32);
+                window.crypto.getRandomValues(bytes);
+                token = Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
+                localStorage.setItem(RECOVERY_TOKEN_KEY, token);
+            }
+            return {"X-L-Recovery-Token": token};
+        }
+        function savedTasks() {
+            try { return JSON.parse(localStorage.getItem("project-l-saved-tasks") || "[]"); }
+            catch (_) { return []; }
+        }
+
 
         const sleep = (milliseconds) =>
             new Promise(resolve => setTimeout(resolve, milliseconds));
@@ -499,11 +515,18 @@
         }
 
         function rememberPendingRequest(requestId, message, kind = "chat") {
+            const tasks = savedTasks().filter(task => task.requestId !== requestId);
+            tasks.push({requestId, message, kind, pending: true});
+            localStorage.setItem("project-l-saved-tasks", JSON.stringify(tasks.slice(-100)));
             localStorage.setItem(PENDING_REQUEST_KEY, JSON.stringify({requestId, message, kind}));
         }
 
-        function clearPendingRequest() {
-            localStorage.removeItem(PENDING_REQUEST_KEY);
+        function clearPendingRequest(requestId) {
+            const tasks = savedTasks().map(task => task.requestId === requestId ? {...task, pending: false} : task);
+            localStorage.setItem("project-l-saved-tasks", JSON.stringify(tasks));
+            let old;
+            try { old = JSON.parse(localStorage.getItem(PENDING_REQUEST_KEY) || "null"); } catch (_) {}
+            if (!requestId || old?.requestId === requestId) localStorage.removeItem(PENDING_REQUEST_KEY);
         }
 
         async function recoverChatResponse(requestId) {
@@ -512,10 +535,13 @@
                 try {
                     const response = await fetch(
                         `/chat/result/${encodeURIComponent(requestId)}`,
-                        { cache: "no-store" }
+                        { cache: "no-store", headers: recoveryHeaders() }
                     );
                     if (!response.ok) continue;
                     const data = await response.json();
+                    if (["failed", "interrupted"].includes(data.status)) {
+                        return data.result || {reply: "This task was interrupted. Its request is saved, but I have not repeated it because an action may already have happened. Please review before sending it again.", error: true};
+                    }
                     if (data.status === "ready" && data.result) {
                         return data.result;
                     }
@@ -575,8 +601,8 @@
                         method: "POST",
 
                         headers: {
-                            "Content-Type":
-                                "application/json"
+                            "Content-Type": "application/json",
+                            ...recoveryHeaders()
                         },
 
                         body: JSON.stringify({
@@ -607,7 +633,7 @@
                 // =====================================================
 
                 thinking.remove();
-                clearPendingRequest();
+                clearPendingRequest(requestId);
 
                 // =====================================================
                 // ASSISTANT RESPONSE
@@ -620,13 +646,13 @@
                 const recovered = await recoverChatResponse(requestId);
                 thinking.remove();
                 if (recovered && recovered.reply) {
-                    clearPendingRequest();
+                    clearPendingRequest(requestId);
                     appendChatMessage(chat, "assistant", recovered.reply);
                 } else {
                     appendChatMessage(
                         chat,
                         "assistant error",
-                        "The connection closed before L's answer could be recovered. Please try again."
+                        "I could not recover the answer yet. Check Saved answers shortly before resending the task."
                     );
                 }
             }
@@ -636,21 +662,46 @@
         }
 
         async function resumePendingRequest() {
-            let pending;
-            try {
-                pending = JSON.parse(localStorage.getItem(PENDING_REQUEST_KEY) || "null");
-            } catch (error) {
-                clearPendingRequest();
-                return;
+            let tasks = savedTasks();
+            if (!tasks.length) {
+                try {
+                    const old = JSON.parse(localStorage.getItem(PENDING_REQUEST_KEY) || "null");
+                    if (old?.requestId) tasks = [{...old, pending: true}];
+                } catch (_) {}
             }
-            if (!pending || !pending.requestId) return;
             const chat = document.getElementById("chat");
-            const thinking = appendChatMessage(chat, "assistant", "Reconnecting to L's answer...");
-            const result = await recoverChatResponse(pending.requestId);
-            thinking.remove();
-            if (result && result.reply) {
-                clearPendingRequest();
-                appendChatMessage(chat, "assistant", result.reply);
+            const button = document.createElement("button");
+            button.textContent = "Saved answers";
+            button.type = "button";
+            chat.parentElement.insertBefore(button, chat);
+            button.onclick = async () => {
+                button.disabled = true;
+                try {
+                    const recent = savedTasks().slice(-20);
+                    if (!recent.length) appendChatMessage(chat, "assistant", "Your saved answers will appear here after you send a message.");
+                    for (const task of recent) {
+                        const response = await fetch(`/chat/result/${encodeURIComponent(task.requestId)}`, {cache: "no-store", headers: recoveryHeaders()});
+                        if (!response.ok) throw new Error("unavailable");
+                        const result = await response.json();
+                        appendChatMessage(chat, "user", task.message);
+                        appendChatMessage(chat, "assistant", result.result?.reply ||
+                            (result.status === "interrupted" ? "This task was interrupted. Please review before starting it again." :
+                             result.status === "not_found" ? "This answer is unavailable in this browser." : "L is working on this saved task."));
+                    }
+                } catch (_) {
+                    appendChatMessage(chat, "assistant error", "Saved answers are temporarily unavailable. Please try again shortly.");
+                } finally { button.disabled = false; }
+            };
+            for (const pending of tasks.filter(task => task.pending)) {
+                const thinking = appendChatMessage(chat, "assistant", "Reconnecting to L's saved task...");
+                const result = await recoverChatResponse(pending.requestId);
+                thinking.remove();
+                if (result?.reply) {
+                    clearPendingRequest(pending.requestId);
+                    appendChatMessage(chat, "assistant", result.reply);
+                } else {
+                    appendChatMessage(chat, "assistant", "I could not reconnect yet. You can check Saved answers again shortly.");
+                }
                 chat.scrollTop = chat.scrollHeight;
             }
         }
