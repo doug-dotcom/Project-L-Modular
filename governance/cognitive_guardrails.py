@@ -114,6 +114,7 @@ def guardrail_prompt(assessment: dict) -> str:
         "- Current identity and current evidence outrank historical patterns. Doug today must not be collapsed into historical Doug.\n"
         "- Experience abstraction is candidate wisdom, not fact. It requires Rhee evidence, Quinn review, RIKE challenge, Mary validation and governed promotion.\n"
         "- Never store a higher-order principle without explicit Doug approval; no durable principle is a valid outcome.\n"
+        "- Stored growth requires a traceable future observation, classified outcome and confidence update; no durable lesson is a valid conclusion.\n"
         "- Preserve Doug's authority over consequential decisions.\n"
         "- Do not reveal hidden chain-of-thought; provide only a concise rationale.\n"
         f"- Pre-response review issues: {issues}."

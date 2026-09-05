@@ -113,7 +113,16 @@ def merge_llgr(existing, incoming, source_reference):
     confidence = calculate_confidence(
         occurrences, validated_occurrences, contradiction_count
     )
-    eligible = application_eligible(occurrences, confidence, contradiction_count)
+    governance = dict(merged.get("governance") or {})
+    governance.update(incoming.get("governance") or {})
+    full_cycle_complete = bool(
+        governance.get("full_learning_cycle_complete") is True
+        and governance.get("future_outcome_observed") is True
+    )
+    eligible = bool(
+        full_cycle_complete
+        and application_eligible(occurrences, confidence, contradiction_count)
+    )
 
     for key, value in incoming.items():
         if key not in {"occurrences", "confidence", "confidence_score", "trend"}:
@@ -132,7 +141,9 @@ def merge_llgr(existing, incoming, source_reference):
         "trend": calculate_trend(occurrences),
         "pattern_status": "active" if eligible else "candidate",
         "application_eligible": eligible,
+        "full_learning_cycle_complete": full_cycle_complete,
         "growth_stored": True,
+        "durable_growth_stored": eligible,
         "last_seen_at": _now(),
     })
     merged.setdefault("first_seen_at", merged["last_seen_at"])

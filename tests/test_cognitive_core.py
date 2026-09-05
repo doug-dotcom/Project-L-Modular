@@ -6,8 +6,14 @@ from types import SimpleNamespace
 from agents.quinn.quinn import curate_principles, evaluate_candidate_principle
 from core.cognition.brains_trust import select_lenses
 from core.cognition.longitudinal import build_longitudinal_packet
-from core.cognition.learning_engine import build_learning_observation, extract_user_learning
-from core.cognition.learning_engine import promote_experience_principle
+from core.cognition.learning_engine import (
+    build_learning_cycle,
+    build_learning_observation,
+    extract_user_learning,
+    promote_experience_principle,
+    promote_learning_cycle,
+    record_learning_outcome,
+)
 from core.cognition.experience_abstraction import build_experience_abstraction
 from core.cognition.memory_governance import build_memory_payload
 from core.cognition.orchestrator import run_cognitive_core
@@ -578,7 +584,7 @@ def test_learning_engine_accepts_explicit_user_learning_not_ai_inference():
 
 def test_reasoning_output_cannot_promote_itself_to_learning():
     observation = build_learning_observation({"rike": {"status": "ok"}})
-    assert observation["status"] == "awaiting_outcome"
+    assert observation["status"] == "not_required"
     assert observation["auto_promoted"] is False
 
 
@@ -637,8 +643,9 @@ def test_phase_five_rejects_overgeneralised_candidate_wisdom():
     assert "candidate_principle_overgeneralised" in evaluation["issues"]
 
 
-def test_phase_five_requires_doug_before_durable_promotion():
-    packet = {
+def _eligible_abstraction_packet():
+    return {
+        "active": True,
         "version": "1.0",
         "candidate_principle": "Reducing mental load before solving improves my execution.",
         "source_references": ["episodic_memories:1", "episodic_memories:2"],
@@ -649,44 +656,148 @@ def test_phase_five_requires_doug_before_durable_promotion():
         },
         "governance": {"promotion_eligible": True},
     }
-    assert promote_experience_principle(packet)["reason"] == "explicit_doug_approval_required"
+
+
+def test_phase_six_retires_direct_abstraction_promotion():
+    outcome = promote_experience_principle(
+        _eligible_abstraction_packet(),
+        authorisation={"authority": "Doug", "approved": True},
+    )
+    assert outcome == {
+        "stored": False,
+        "reason": "learning_engine_v2_future_observation_and_outcome_required",
+    }
+
+
+def test_phase_six_builds_the_complete_pre_outcome_cycle():
+    cycle = build_learning_cycle(
+        _eligible_abstraction_packet(),
+        reflection="The evidence suggests a bounded lesson worth testing.",
+    )
+    assert cycle["status"] == "awaiting_future_observation"
+    assert cycle["decision"] == "test_in_future"
+    assert cycle["confidence"]["current"] == 0.5
+    assert cycle["stages"]["experience"]["status"] == "complete"
+    assert cycle["stages"]["contradiction_search"]["status"] == "complete"
+    assert cycle["stages"]["validation"]["status"] == "complete"
+    assert cycle["stages"]["future_observation"]["status"] == "awaiting"
+    assert cycle["stored_growth"] is False
+    assert cycle["auto_promoted"] is False
+
+
+def test_phase_six_observed_outcome_updates_confidence_then_requires_doug():
+    cycle = build_learning_cycle(
+        _eligible_abstraction_packet(),
+        reflection="The lesson is plausible and bounded.",
+    )
+    observed = record_learning_outcome(
+        cycle,
+        observation="I paused before a difficult task and completed it without overwhelm.",
+        outcome="supported",
+        evidence_reference="raw_catchall:500",
+    )
+    assert observed["status"] == "ready_for_governed_storage"
+    assert observed["confidence"]["current"] == 0.65
+    assert observed["confidence"]["trajectory"][-1]["change"] == 0.15
+    assert promote_learning_cycle(observed)["reason"] == "explicit_doug_approval_required"
 
     calls = []
     def fake_store(candidate, source_reference=None, client=None):
         calls.append((candidate, source_reference))
         return {"stored": True, "reason": "stored"}
 
-    outcome = promote_experience_principle(
-        packet,
+    outcome = promote_learning_cycle(
+        observed,
         authorisation={"authority": "Doug", "approved": True},
         store_func=fake_store,
     )
     assert outcome["stored"] is True
-    assert outcome["source_count"] == 2
+    assert outcome["reason"] == "stored_growth"
+    assert outcome["source_count"] == 3
     assert [source for _candidate, source in calls] == [
-        "episodic_memories:1", "episodic_memories:2",
+        "episodic_memories:1", "episodic_memories:2", "raw_catchall:500",
     ]
-    assert calls[0][0]["governance"]["mary_validated"] is True
+    assert calls[0][0]["governance"]["future_outcome_observed"] is True
+    assert calls[0][0]["outcome_history"][-1]["outcome"] == "supported"
 
 
-def test_phase_five_promotion_fails_closed_on_forged_eligibility():
-    packet = {
-        "candidate_principle": "A plausible but unvalidated higher-order principle.",
-        "source_references": ["episodic_memories:1", "episodic_memories:2"],
-        "evaluations": {
-            "rhee": {"passed": True},
-            "quinn": {"passed": True},
-            "rike": {"passed": False},
-            "mary": {"passed": True},
-        },
-        "governance": {"promotion_eligible": True},
-    }
-    outcome = promote_experience_principle(
-        packet,
-        authorisation={"authority": "Doug", "approved": True},
-        store_func=lambda *_args, **_kwargs: {"stored": True},
+def test_phase_six_contradicted_outcome_can_conclude_no_durable_lesson():
+    cycle = build_learning_cycle(
+        _eligible_abstraction_packet(),
+        reflection="The lesson needs a future test.",
     )
-    assert outcome == {"stored": False, "reason": "abstraction_not_eligible"}
+    observed = record_learning_outcome(
+        cycle,
+        observation="The same adjustment failed under comparable conditions.",
+        outcome="contradicted",
+        evidence_reference="raw_catchall:501",
+    )
+    assert observed["status"] == "no_durable_lesson"
+    assert observed["decision"] == "no_durable_lesson"
+    assert observed["confidence"]["current"] == 0.25
+    assert promote_learning_cycle(
+        observed,
+        authorisation={"authority": "Doug", "approved": True},
+    ) == {"stored": False, "reason": "no_durable_lesson"}
+
+
+def test_phase_six_inconclusive_outcome_waits_for_more_evidence():
+    cycle = build_learning_cycle(
+        _eligible_abstraction_packet(),
+        reflection="The lesson needs a future test.",
+    )
+    observed = record_learning_outcome(
+        cycle,
+        observation="The result was too mixed to assess.",
+        outcome="inconclusive",
+        evidence_reference="raw_catchall:502",
+    )
+    assert observed["status"] == "awaiting_future_observation"
+    assert observed["decision"] == "defer"
+    assert observed["confidence"]["current"] == 0.5
+    assert observed["stages"]["future_observation"]["status"] == "awaiting_more_evidence"
+
+
+def test_phase_six_rejects_outcome_without_traceable_provenance():
+    cycle = build_learning_cycle(
+        _eligible_abstraction_packet(),
+        reflection="The lesson needs a future test.",
+    )
+    outcome = record_learning_outcome(
+        cycle,
+        observation="It seemed to work.",
+        outcome="supported",
+        evidence_reference="",
+    )
+    assert outcome == {
+        "engine": "learning_engine",
+        "version": "2.0",
+        "status": "rejected",
+        "reason": "future_observation_provenance_required",
+    }
+
+
+def test_phase_six_validation_chain_fails_closed():
+    packet = _eligible_abstraction_packet()
+    packet["evaluations"]["rike"]["passed"] = False
+    cycle = build_learning_cycle(packet, reflection="A reflection.")
+    assert cycle["status"] == "insufficient_evidence"
+    assert cycle["stages"]["validation"]["status"] == "incomplete"
+
+
+def test_phase_six_historical_pattern_can_end_with_no_durable_lesson():
+    packet = _eligible_abstraction_packet()
+    packet["evaluations"]["mary"].update({
+        "passed": False,
+        "lifecycle_state": "Historical",
+    })
+    packet["governance"].update({
+        "promotion_eligible": False,
+        "rejection_reasons": ["longitudinal_validation_incomplete"],
+    })
+    cycle = build_learning_cycle(packet, reflection="This reflects historical Doug.")
+    assert cycle["status"] == "no_durable_lesson"
+    assert cycle["decision"] == "no_durable_lesson"
 
 
 def test_live_memory_pipeline_executes_governance_and_controlled_learning(monkeypatch):
@@ -727,7 +838,7 @@ def test_project_l_self_audit_contract_names_live_architecture_and_boundaries():
         {"route": {"rhee": "required", "rike": "active", "mary": "not_required"}},
     )
 
-    for component in ("L", "Rhee", "RIKE", "Mary", "Quinn", "Experience Abstraction", "Carol", "Sara", "Brains Trust"):
+    for component in ("L", "Rhee", "RIKE", "Mary", "Quinn", "Experience Abstraction", "Learning Engine 2", "Carol", "Sara", "Brains Trust"):
         assert component in contract
     assert "historical intent" in contract
     assert "current runtime facts" in contract

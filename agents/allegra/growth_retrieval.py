@@ -54,7 +54,15 @@ def _normalise_record(row):
     confidence = calculate_confidence(
         occurrences, validated_occurrences, contradictions
     )
-    eligible = application_eligible(occurrences, confidence, contradictions)
+    governance = llgr.get("governance") or {}
+    full_cycle_complete = bool(
+        governance.get("full_learning_cycle_complete") is True
+        and governance.get("future_outcome_observed") is True
+    )
+    eligible = bool(
+        full_cycle_complete
+        and application_eligible(occurrences, confidence, contradictions)
+    )
 
     return {
         "id": row.get("id"),
@@ -66,6 +74,7 @@ def _normalise_record(row):
         "confidence": confidence,
         "trend": calculate_trend(occurrences),
         "application_eligible": eligible,
+        "full_learning_cycle_complete": full_cycle_complete,
         "source_references": sources,
         "contradiction_count": contradictions,
     }

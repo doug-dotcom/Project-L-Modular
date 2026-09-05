@@ -45,7 +45,10 @@ class ForbiddenClient:
         raise AssertionError("database must not be called")
 
 
-def growth_row(lesson, sources=None, validated=0, contradictions=0, adjustment=""):
+def growth_row(
+    lesson, sources=None, validated=0, contradictions=0, adjustment="",
+    full_cycle_complete=False,
+):
     return {
         "id": lesson,
         "stored_at": "2026-09-04T00:00:00+00:00",
@@ -55,6 +58,10 @@ def growth_row(lesson, sources=None, validated=0, contradictions=0, adjustment="
             "source_references": sources or [],
             "validated_occurrences": validated,
             "contradiction_count": contradictions,
+            "governance": {
+                "full_learning_cycle_complete": full_cycle_complete,
+                "future_outcome_observed": full_cycle_complete,
+            },
         },
     }
 
@@ -96,7 +103,7 @@ def test_same_source_cannot_reinforce_a_pattern_twice():
     assert replay["validated_occurrences"] == 1
 
 
-def test_two_independent_validated_sources_activate_a_pattern():
+def test_two_independent_sources_remain_candidate_without_future_outcome():
     first, _ = merge_llgr(
         {},
         {"lesson": "External certainty is being sought.", "validated": True},
@@ -110,8 +117,24 @@ def test_two_independent_validated_sources_activate_a_pattern():
 
     assert second["occurrences"] == 2
     assert second["confidence"] == 65
+    assert second["pattern_status"] == "candidate"
+    assert second["application_eligible"] is False
+
+
+def test_full_learning_cycle_can_activate_a_pattern():
+    candidate = {
+        "lesson": "External certainty is being sought.",
+        "validated": True,
+        "governance": {
+            "full_learning_cycle_complete": True,
+            "future_outcome_observed": True,
+        },
+    }
+    first, _ = merge_llgr({}, candidate, "raw_catchall:1")
+    second, _ = merge_llgr(first, candidate, "raw_catchall:2")
     assert second["pattern_status"] == "active"
     assert second["application_eligible"] is True
+    assert second["durable_growth_stored"] is True
 
 
 def test_contradictions_can_block_application():
@@ -139,11 +162,13 @@ def test_retrieval_excludes_inflated_legacy_rows_and_unrelated_patterns():
             ["raw_catchall:1", "raw_catchall:2"],
             validated=2,
             adjustment="Notice validation seeking sooner.",
+            full_cycle_complete=True,
         ),
         growth_row(
             "Protection is a recurring value.",
             ["raw_catchall:3", "raw_catchall:4"],
             validated=2,
+            full_cycle_complete=True,
         ),
     ]
 
@@ -164,6 +189,7 @@ def test_growth_context_is_clean_weighted_and_provenanced():
             ["raw_catchall:1", "raw_catchall:2"],
             validated=2,
             adjustment="Notice validation seeking sooner.",
+            full_cycle_complete=True,
         )
     ]
     context = retrieve_growth_context(query="external certainty", client=ReadClient(rows))

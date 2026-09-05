@@ -166,7 +166,7 @@ def build_architecture_audit_context(user_message, cognitive_packet):
     return f"""PROJECT L SELF-AUDIT CONTRACT (RUNTIME-AUTHORITATIVE)
 - Separate retrieved historical intent from current runtime facts and from your inference.
 - Do not describe the original intent as a generic feature-rich AI or frontier-AI competitor unless a Doug-authored record directly supports that claim.
-- Name the current architecture explicitly: L is the sole voice and synthesiser; Rhee retrieves evidence; RIKE performs structured reasoning; Mary tests longitudinal patterns; Quinn supplies advisory principles; Experience Abstraction proposes governed higher-order principles; Carol and Sara govern memory promotion and provenance.
+- Name the current architecture explicitly: L is the sole voice and synthesiser; Rhee retrieves evidence; RIKE performs structured reasoning; Mary tests longitudinal patterns; Quinn supplies advisory principles; Experience Abstraction proposes governed higher-order principles; Learning Engine 2 tests future outcomes and updates confidence; Carol and Sara govern memory promotion and provenance.
 - The historical Brains Trust is retained as bounded reasoning lenses inside RIKE, not as competing personas or separate voices.
 - Current activation route: {json.dumps(route, ensure_ascii=False)}
 - When asked to compare architectures or identify contradictions, cover: original purpose, original components, current implemented components, retained ideas, retired persona behaviour, unresolved gaps, and the best-supported next step.
@@ -221,6 +221,7 @@ def ensure_architecture_audit_grounding(user_message, reply, cognitive_packet):
         f"- **Mary** longitudinal pattern analysis: {route.get('mary', 'unknown')}.\n"
         f"- **Quinn** governed principles: {route.get('quinn', 'unknown')}.\n"
         f"- **Experience Abstraction** candidate formation: {route.get('experience_abstraction', 'unknown')}.\n"
+        "- **Learning Engine 2** requires a future observation and outcome before stored growth.\n"
         "- **Carol and Sara** govern long-term memory promotion and provenance; "
         "a recall request is not promoted as a new fact.\n"
         f"- **Brains Trust** is retained as bounded RIKE lenses, not personas. "
@@ -595,7 +596,7 @@ def cognition_status():
     return {
         "status": "ok",
         "architecture": "project_l_cognitive_core",
-        "version": "6.0",
+        "version": "7.0",
         "user_facing_voice": "L",
         "engines": {
             "metacognition": "cognitive_controller_v1",
@@ -606,7 +607,7 @@ def cognition_status():
             "experience_abstraction": "experience_abstraction_v1",
             "principles": "quinn_v2+candidate_review_v3",
             "memory_governance": "carol_v5+sara_v2",
-            "learning": "learning_engine_v1",
+            "learning": "learning_engine_v2_outcome_cycle",
         },
         "rules": {
             "selective_activation": True,
@@ -621,6 +622,8 @@ def cognition_status():
             "current_identity_outranks_history": True,
             "higher_order_principles_require_full_validation": True,
             "experience_abstraction_auto_promotion_disabled": True,
+            "future_observation_required_for_stored_growth": True,
+            "no_durable_lesson_is_valid": True,
         },
     }
 
@@ -711,7 +714,7 @@ def chat(req: ChatRequest):
 
     cognitive_packet = {
         "engine": "project_l_cognitive_core",
-        "version": "6.0",
+        "version": "7.0",
         "route": {"rike": "not_required"},
         "rike": {
             "version": "2.0",
@@ -782,6 +785,7 @@ COGNITIVE ARCHITECTURE:
 - RIKE supplies structured reasoning only when complexity warrants it.
 - Mary tracks longitudinal patterns through Candidate, Emerging, Developing, Established, Weakening, Historical and Superseded states.
 - Experience Abstraction may propose higher-order principles only after multiple dated experiences pass Rhee, Quinn, RIKE and Mary validation.
+- Learning Engine 2 runs Experience → Reflection → Candidate lesson → Evidence retrieval → Contradiction search → Validation → Adjustment → Future observation → Outcome → Confidence update → Stored growth.
 - Quinn supplies governed principles, never decisions.
 - External research, finance, email, calendar and tasks are services.
 
@@ -826,7 +830,8 @@ RESPONSE RULES:
 - Use Mary's first-seen, last-seen, supporting episodes, contradicting episodes, confidence trajectory and current relevance.
 - Current identity and current evidence outrank historical patterns; never collapse Doug today into historical Doug.
 - Treat an abstracted principle as a candidate, never a fact. It may enter durable learning only through governed promotion with Doug's explicit approval.
-- L must be allowed to conclude that no durable higher-order principle exists.
+- Do not store growth before a traceable future observation and outcome update its confidence.
+- L must be allowed to conclude that no durable lesson exists.
 - Quinn's principles are advisory and must not override evidence or Doug's agency.
 - A capability result is evidence or an action receipt, not a separate voice. Present it as L.
 - Preserve the capability status exactly. Never turn an error, draft or attempted action into a success claim.
@@ -916,6 +921,7 @@ RESPONSE RULES:
             "causal_assessment": cognitive_packet.get("rike", {}).get("causal_assessment", {}),
             "longitudinal": cognitive_packet.get("mary", {}),
             "experience_abstraction": cognitive_packet.get("experience_abstraction", {}),
+            "learning": cognitive_packet.get("learning", {}),
             "guardrails_passed": cognitive_packet.get("guardrails", {}).get("passed"),
             "guardrail_issues": cognitive_packet.get("guardrails", {}).get("issues", []),
         }
