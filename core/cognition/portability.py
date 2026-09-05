@@ -48,16 +48,19 @@ def portability_manifest() -> dict:
     }
 
 
-def reconstruction_json_schema() -> dict:
+def reconstruction_json_schema(permitted_references: list[str] | None = None) -> dict:
     """Return the strict provider-neutral schema for a portability response."""
     properties = {}
     for field in RECONSTRUCTION_FIELDS:
+        reference_items = {"type": "string"}
+        if permitted_references:
+            reference_items["enum"] = list(permitted_references)
         field_properties = {
             "summary": {"type": "string", "minLength": 1},
             "evidence_refs": {
                 "type": "array",
                 "minItems": 1,
-                "items": {"type": "string"},
+                "items": reference_items,
             },
         }
         required = ["summary", "evidence_refs"]
@@ -124,7 +127,11 @@ def build_cognitive_bootstrap(rhee_context: str, *, generated_at: str = "") -> d
         "permitted_evidence_references": list(RUNTIME_BOOTSTRAP_REFERENCES) + [
             f"memory:{memory_id}" for memory_id in memory_ids
         ],
-        "reconstruction_schema": reconstruction_json_schema(),
+        "reconstruction_schema": reconstruction_json_schema(
+            list(RUNTIME_BOOTSTRAP_REFERENCES) + [
+                f"memory:{memory_id}" for memory_id in memory_ids
+            ]
+        ),
     }
     canonical = json.dumps(bootstrap, sort_keys=True, separators=(",", ":"))
     bootstrap["bootstrap_fingerprint"] = sha256(canonical.encode("utf-8")).hexdigest()[:16]
@@ -157,7 +164,9 @@ def build_clean_model_request(bootstrap: dict) -> dict:
             "json_schema": {
                 "name": "project_l_portability_reconstruction",
                 "strict": True,
-                "schema": reconstruction_json_schema(),
+                "schema": reconstruction_json_schema(
+                    list(bootstrap.get("permitted_evidence_references") or [])
+                ),
             },
         },
     )

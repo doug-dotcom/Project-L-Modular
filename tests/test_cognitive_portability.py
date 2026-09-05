@@ -66,6 +66,8 @@ def test_phase_twelve_clean_request_has_no_conversation_history_or_hidden_contex
     assert request["temperature"] == 0.0
     assert request["response_format"]["type"] == "json_schema"
     assert request["response_format"]["json_schema"]["strict"] is True
+    ref_schema = request["response_format"]["json_schema"]["schema"]["properties"]["who_doug_is"]["properties"]["evidence_refs"]["items"]
+    assert set(ref_schema["enum"]) == set(bootstrap["permitted_evidence_references"])
     assert len(request["messages"]) == 2
     assert "zero prior Doug context" in request["messages"][0]["content"]
     assert json.loads(request["messages"][1]["content"])["bootstrap_fingerprint"]
