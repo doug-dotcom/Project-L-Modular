@@ -1036,7 +1036,7 @@ def calculate_raw_score(row, query=""):
 
     return score
 
-def build_raw_recall_packet(query, limit=40, rows=None):
+def build_raw_recall_packet(query, limit=40, rows=None, evidence_out=None):
     if rows is None:
         rows = load_all_raw_catchall()
     scored = []
@@ -1121,10 +1121,11 @@ def build_raw_recall_packet(query, limit=40, rows=None):
         lines.append(f"ROLE: {role}")
         lines.append(f"SCORE: {row.get('_score', 0)}")
         lines.append("CONTENT:")
-        if pauline_report_requested(query):
-            lines.append(content[:1200])
-        else:
-            lines.append(content[:600] if evidence_mode else content[:700])
+        excerpt = content[:1200] if pauline_report_requested(query) else content[:600 if evidence_mode else 700]
+        lines.append(excerpt)
+        if evidence_out is not None and row_id:
+            evidence_out.append({"source": f"raw_catchall:{row_id}", "quote_source": excerpt,
+                                 "role": role.lower(), "created_at": created_at})
         lines.append("")
         record_no += 1
 
@@ -1206,7 +1207,7 @@ def search_database_candidates(query, raw_limit=200, memory_limit=80):
             return None
 
 
-def build_context(user_message):
+def build_context(user_message, evidence_out=None):
     identity_context = load_identity()
     learnings_context = load_learnings(user_message=user_message)
     exhaustive = exhaustive_requested(user_message)
@@ -1226,6 +1227,7 @@ def build_context(user_message):
         user_message,
         limit=12,
         rows=raw_candidates,
+        evidence_out=evidence_out,
     )
     recent_conversation_context = load_recent_conversation()
     short_term_context, short_term_domain = load_short_term(user_message)
@@ -1240,7 +1242,7 @@ def build_context(user_message):
         for memory in recall_packet
     ))
     recall_active = bool(recall_packet)
-    long_term_context = format_memory_packet(user_message, recall_packet)
+    long_term_context = format_memory_packet(user_message, recall_packet, evidence_out=evidence_out)
 
     sections = []
 
@@ -1292,7 +1294,7 @@ def build_context(user_message):
     return "\n".join(sections)
 
 
-def format_memory_packet(query, packet):
+def format_memory_packet(query, packet, evidence_out=None):
     lines = [
         "RHEE LONG TERM RECALL PACKET",
         f"QUERY: {query}",
@@ -1318,15 +1320,25 @@ def format_memory_packet(query, packet):
             # handover needs enough of each dated report to preserve the
             # actual event and insight instead of only its introductory text.
             excerpt_limit = 1600 if pauline_report_requested(query) else 700
-            lines.append(content[:excerpt_limit])
+            excerpt = content[:excerpt_limit]
+            lines.append(excerpt)
+            if evidence_out is not None and memory.get("_table") and memory.get("id") is not None:
+                evidence_out.append({
+                    "source": f"{memory['_table']}:{memory['id']}",
+                    "quote_source": excerpt, "role": memory_source_role(memory),
+                    "created_at": safe_text(memory.get("created_at")),
+                    "raw_id": memory.get("raw_id"),
+                })
         lines.append("")
 
     return "\n".join(lines)
 
 def build_context_packet(user_message):
-    context = build_context(user_message)
+    evidence = []
+    context = build_context(user_message, evidence_out=evidence)
 
     return {
+        "evidence": evidence,
         "engine": "rhee",
         "version": "v5.0",
         "context": context,

@@ -45,6 +45,9 @@ from agents.rhee.rhee_v3 import (
 from core.cognition.orchestrator import run_cognitive_core
 from core.cognition.controller import plan_cognition
 from core.cognition.benchmark import benchmark_manifest, run_cognitive_benchmark
+from core.cognition.evidence_evaluation import (
+    evidence_mode, evidence_prompt, evaluate_answer, evaluation_manifest,
+)
 from core.cognition.reflection import reflect_on_task
 from core.cognition.learning_engine import ingest_reflective_observation
 from core.cognition.working_memory import ActiveContextService
@@ -695,7 +698,13 @@ def cognition_status():
         "model_interface": build_model_independence_packet(active_model_adapter),
         "portability_certification": portability_manifest(),
         "benchmark": benchmark_manifest(),
+        "live_evaluation": evaluation_manifest(),
     }
+
+
+@app.get("/cognition/evaluation")
+def cognition_evaluation():
+    return evaluation_manifest()
 
 
 @app.get("/cognition/benchmark")
@@ -784,6 +793,10 @@ def chat(req: ChatRequest):
 
     # The controller plans cognition before retrieval, services or generation.
     cognitive_plan = plan_cognition(user_message)
+    check_evidence = evidence_mode(user_message, cognitive_plan["needs"]["memory"])
+    if check_evidence:
+        cognitive_plan["needs"]["memory"] = True
+    evidence_audit = {"status": "not_checked", "version": "1.0"}
     log(
         "COGNITIVE PLAN: "
         f"type={cognitive_plan['problem_type']} | "
@@ -998,6 +1011,9 @@ RESPONSE RULES:
 - Join the dots, no more no less.
 """
 
+        if check_evidence:
+            system_prompt += "\n" + evidence_prompt(rhee_packet.get("evidence", []))
+
         try:
             request = build_model_request(
                 [
@@ -1011,11 +1027,17 @@ RESPONSE RULES:
                     }
                 ],
                 purpose="l_user_response",
+                response_format={"type": "json_object"} if check_evidence else None,
                 temperature=0.3 if pauline_report_requested(user_message) else 0.45,
                 max_output_tokens=3000 if pauline_report_requested(user_message) else None,
             )
             result = invoke_model(active_model_adapter, request)
             reply = result["content"]
+            if check_evidence:
+                reply, evidence_audit = evaluate_answer(
+                    reply, rhee_packet.get("evidence", []), request_id=request_id,
+                    model_id=result.get("model_id", MODEL),
+                )
             reply = ensure_architecture_audit_grounding(
                 user_message,
                 reply,
@@ -1030,6 +1052,9 @@ RESPONSE RULES:
         except Exception as e:
             log(f"OPENAI ERROR: {e}")
             reply = f"AI ERROR: {str(e)}"
+
+    cognitive_packet["evidence_evaluation"] = evidence_audit
+    log(f"EVIDENCE CHECK: {evidence_audit.get('status')} | request={request_id}")
 
     reflection = reflect_on_task(
         user_message,
@@ -1102,6 +1127,7 @@ RESPONSE RULES:
             "experience_abstraction": cognitive_packet.get("experience_abstraction", {}),
             "learning": cognitive_packet.get("learning", {}),
             "reflection": cognitive_packet.get("reflection", {}),
+            "evidence_evaluation": evidence_audit,
             "learning_feedback": cognitive_packet.get("learning_feedback", {}),
             "multi_agent": cognitive_packet.get("multi_agent", {}),
             "working_memory": cognitive_packet.get("working_memory", {}),

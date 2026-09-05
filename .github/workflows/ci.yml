@@ -79,3 +79,4 @@ jobs:
           tests/test_memory_cache_invalidation.py
           tests/test_memory_provenance.py
           tests/test_cognitive_core.py
+          tests/test_evidence_evaluation.py
