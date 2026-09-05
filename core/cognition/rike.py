@@ -8,6 +8,7 @@ import re
 from core.cognition.brains_trust import select_lenses
 from core.cognition.model_independence import (
     OpenAIChatCompletionsAdapter,
+    create_model_adapter,
     build_model_request,
     invoke_model,
 )
@@ -220,7 +221,7 @@ def reason(
     if not clean_question:
         return _fallback_packet(clean_question, evidence_context, lenses, "empty_question")
     adapter = model_adapter or (
-        OpenAIChatCompletionsAdapter(client, model) if client is not None else None
+        create_model_adapter(client, model) if client is not None else None
     )
     if adapter is None or not getattr(adapter, "available", False):
         return _fallback_packet(clean_question, evidence_context, lenses, "model_unavailable")
@@ -283,7 +284,9 @@ or token-by-token deliberation.
         data = json.loads(result["content"] or "{}")
         if not isinstance(data, dict):
             raise ValueError("RIKE response was not an object")
-        return _normalise_packet(data, clean_question, lenses, evidence_context)
+        packet = _normalise_packet(data, clean_question, lenses, evidence_context)
+        packet["model_receipt"] = result.get("receipt", {})
+        return packet
     except Exception as exc:
         return _fallback_packet(
             clean_question,

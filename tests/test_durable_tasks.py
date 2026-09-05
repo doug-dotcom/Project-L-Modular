@@ -69,6 +69,13 @@ def test_execution_exception_is_terminal_not_retried():
     assert 'private' not in str(store.finished)
 
 
+def test_provider_failure_receipt_remains_failed_and_recoverable():
+    store = FakeStore()
+    payload = {'reply': 'Please try again.', 'error': True, 'model_receipt': {'status': 'incomplete'}}
+    TaskRunner(store, lambda _: payload).run_one({'request_id': str(uuid4()), 'request': {}}, str(uuid4()))
+    assert store.finished == [('failed', payload)]
+
+
 def test_owner_secret_is_hashed_and_not_in_request_payload():
     seen = {}
     class Client:

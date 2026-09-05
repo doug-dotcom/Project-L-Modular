@@ -82,3 +82,5 @@ jobs:
           tests/test_evidence_evaluation.py
           tests/test_durable_tasks.py
           tests/test_durable_ui.py
+          tests/test_modern_models.py
+          tests/test_model_independence.py

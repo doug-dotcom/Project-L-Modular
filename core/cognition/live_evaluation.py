@@ -11,7 +11,9 @@ import json
 from time import monotonic
 
 from core.cognition.evidence_evaluation import evidence_prompt, evaluate_answer
-from core.cognition.model_independence import build_model_request, invoke_model
+from core.cognition.model_independence import build_model_request, invoke_model, model_capabilities
+
+SUITE_VERSION = "stage3-evidence-1"
 
 
 def live_cases() -> list[dict]:
@@ -35,7 +37,10 @@ def run_live_evaluation(adapter, *, repeats: int = 2) -> dict:
     if not getattr(adapter, "available", False):
         raise RuntimeError("model_adapter_unavailable")
     results = []
+    unavailable = False
     for case in live_cases():
+        if unavailable:
+            break
         for trial in range(1, repeats + 1):
             start = monotonic()
             row = {"case": case["id"], "trial": trial, "passed": False}
@@ -44,8 +49,9 @@ def run_live_evaluation(adapter, *, repeats: int = 2) -> dict:
                     [{"role": "system", "content": "You are L. These are fictional evaluation records.\n" + evidence_prompt(case["evidence"])},
                      {"role": "user", "content": case["question"]}],
                     purpose="l_live_evaluation", temperature=0.3,
-                    max_output_tokens=1000, response_format={"type": "json_object"},
+                    max_output_tokens=4096, response_format={"type": "json_object"},
                 ))
+                row["receipt"] = response.get("receipt", {})
                 reply, audit = evaluate_answer(response["content"], case["evidence"], model_id=response["model_id"])
                 blocks = json.loads(response["content"]).get("blocks", [])
                 checks = {"citation_integrity": audit["status"] in {"citation_checks_passed", "no_citations_to_check"}}
@@ -59,10 +65,16 @@ def run_live_evaluation(adapter, *, repeats: int = 2) -> dict:
                 row.update(passed=all(checks.values()), checks=checks, reply=reply, audit=audit)
             except Exception as exc:
                 row["error"] = type(exc).__name__
+                row["receipt"] = getattr(exc, "receipt", {})
+                unavailable = getattr(exc, "status_code", None) in {401, 403, 404}
             row["duration_ms"] = round((monotonic() - start) * 1000)
             results.append(row)
-    return {"version": "1.0", "executed_at": datetime.now(timezone.utc).isoformat(),
+            if unavailable:
+                break
+    return {"version": "1.0", "suite_version": SUITE_VERSION, "executed_at": datetime.now(timezone.utc).isoformat(),
             "model_id": adapter.model_id, "provider": adapter.provider,
+            "api": "responses" if adapter.__class__.__name__ == "OpenAIResponsesAdapter" else "chat_completions",
+            "reasoning_effort": getattr(adapter, "reasoning_effort", None),
             "mode": "model_with_synthetic_evidence", "repeats": repeats,
             "cases_executed": len(results), "cases_passed": sum(r["passed"] for r in results),
             "limitations": ["No production retrieval or database writes", "Answer-term checks are not a semantic judge", "No full-system certification"],

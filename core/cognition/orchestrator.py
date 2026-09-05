@@ -8,6 +8,7 @@ from core.cognition.learning_engine import build_learning_observation
 from core.cognition.multi_agent import build_multi_agent_packet, run_parallel_foundation
 from core.cognition.model_independence import (
     OpenAIChatCompletionsAdapter,
+    create_model_adapter,
     build_model_independence_packet,
 )
 from core.cognition.portability import portability_manifest
@@ -28,7 +29,7 @@ def run_cognitive_core(
     model_adapter=None,
 ) -> dict:
     resolved_adapter = model_adapter or (
-        OpenAIChatCompletionsAdapter(client, model) if client is not None else None
+        create_model_adapter(client, model) if client is not None else None
     )
     cognitive_plan = finalise_cognition_plan(
         cognitive_plan or plan_cognition(message),
