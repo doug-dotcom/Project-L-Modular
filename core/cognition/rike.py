@@ -6,6 +6,11 @@ import json
 import re
 
 from core.cognition.brains_trust import select_lenses
+from core.cognition.model_independence import (
+    OpenAIChatCompletionsAdapter,
+    build_model_request,
+    invoke_model,
+)
 
 
 REASONING_SIGNALS = (
@@ -207,13 +212,17 @@ def reason(
     quinn_packet: dict | None = None,
     client=None,
     model: str = "gpt-4o-mini",
+    model_adapter=None,
 ) -> dict:
     """Return an inspectable reasoning packet, never private chain-of-thought."""
     clean_question = str(question or "").strip()
     lenses = select_lenses(clean_question)
     if not clean_question:
         return _fallback_packet(clean_question, evidence_context, lenses, "empty_question")
-    if client is None:
+    adapter = model_adapter or (
+        OpenAIChatCompletionsAdapter(client, model) if client is not None else None
+    )
+    if adapter is None or not getattr(adapter, "available", False):
         return _fallback_packet(clean_question, evidence_context, lenses, "model_unavailable")
 
     payload = {
@@ -261,16 +270,17 @@ or token-by-token deliberation.
 """.strip()
 
     try:
-        response = client.chat.completions.create(
-            model=model,
-            response_format={"type": "json_object"},
-            messages=[
+        request = build_model_request(
+            [
                 {"role": "system", "content": system},
                 {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
             ],
+            purpose="rike_structured_reasoning",
             temperature=0.15,
+            response_format={"type": "json_object"},
         )
-        data = json.loads(response.choices[0].message.content or "{}")
+        result = invoke_model(adapter, request)
+        data = json.loads(result["content"] or "{}")
         if not isinstance(data, dict):
             raise ValueError("RIKE response was not an object")
         return _normalise_packet(data, clean_question, lenses, evidence_context)

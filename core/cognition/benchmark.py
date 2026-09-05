@@ -17,6 +17,12 @@ from core.cognition.multi_agent import build_multi_agent_packet, run_parallel_fo
 from core.cognition.reflection import reflect_on_task
 from core.cognition.uncertainty import assess_confidence_dimensions
 from core.cognition.working_memory import ActiveContextService, MAX_ITEMS
+from core.cognition.model_independence import (
+    PERSISTENT_SYSTEMS,
+    build_model_independence_packet,
+    build_model_request,
+    invoke_model,
+)
 from governance.cognitive_guardrails import assess_cognitive_packet
 
 
@@ -37,6 +43,7 @@ BENCHMARK_DIMENSIONS = (
     "reflective_metacognition",
     "governed_multi_agent_cognition",
     "cognitive_working_memory",
+    "model_independence",
 )
 
 REFERENCE_TIME = datetime(2026, 9, 5, tzinfo=timezone.utc)
@@ -480,6 +487,50 @@ def _working_memory_is_bounded_disposable_and_rebuildable():
     return observed == expected, expected, observed
 
 
+def _model_adapter_swaps_without_changing_persistent_cognition():
+    class FixtureAdapter:
+        available = True
+
+        def __init__(self, provider, model_id):
+            self.provider = provider
+            self.model_id = model_id
+
+        def generate(self, request):
+            return {"content": "provider-neutral result", "status": "complete"}
+
+    request = build_model_request(
+        [{"role": "user", "content": "Test the stable interface."}],
+        purpose="benchmark_model_swap",
+    )
+    first = FixtureAdapter("fixture_a", "model-a")
+    second = FixtureAdapter("fixture_b", "model-b")
+    first_result = invoke_model(first, request)
+    second_result = invoke_model(second, request)
+    first_packet = build_model_independence_packet(first)
+    second_packet = build_model_independence_packet(second)
+    observed = {
+        "same_result_contract": set(first_result) == set(second_result),
+        "provider_changed": first_result["provider"] != second_result["provider"],
+        "contract_unchanged": (
+            first_packet["contract_fingerprint"] == second_packet["contract_fingerprint"]
+        ),
+        "all_persistent_systems_present": len(first_packet["contract"]["persistent_systems"]) == len(PERSISTENT_SYSTEMS),
+        "persistent_systems_survive": first_packet["governance"]["persistent_systems_survive_model_swap"],
+        "model_owns_memory": first_packet["governance"]["foundation_model_owns_memory"],
+        "model_can_bypass_governance": first_packet["governance"]["foundation_model_can_bypass_governance"],
+    }
+    expected = {
+        "same_result_contract": True,
+        "provider_changed": True,
+        "contract_unchanged": True,
+        "all_persistent_systems_present": True,
+        "persistent_systems_survive": True,
+        "model_owns_memory": False,
+        "model_can_bypass_governance": False,
+    }
+    return observed == expected, expected, observed
+
+
 CASES = (
     ("recall_accuracy", "direct_fact_outranks_unrelated_anchor", _recall_selects_direct_fact),
     ("chronology_accuracy", "first_and_last_seen_are_date_ordered", _chronology_tracks_bounds),
@@ -496,6 +547,7 @@ CASES = (
     ("reflective_metacognition", "significant_task_receives_governed_reflection", _significant_task_is_reflected_without_auto_adjustment),
     ("governed_multi_agent_cognition", "parallel_workers_remain_behind_one_l", _multi_agent_workers_are_bounded_behind_one_voice),
     ("cognitive_working_memory", "active_state_is_bounded_disposable_and_rebuildable", _working_memory_is_bounded_disposable_and_rebuildable),
+    ("model_independence", "provider_swap_preserves_cognitive_contract", _model_adapter_swaps_without_changing_persistent_cognition),
 )
 
 

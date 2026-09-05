@@ -6,6 +6,10 @@ from agents.quinn.quinn import curate_principles
 from core.cognition.experience_abstraction import build_experience_abstraction
 from core.cognition.learning_engine import build_learning_observation
 from core.cognition.multi_agent import build_multi_agent_packet, run_parallel_foundation
+from core.cognition.model_independence import (
+    OpenAIChatCompletionsAdapter,
+    build_model_independence_packet,
+)
 from core.cognition.rike import needs_structured_reasoning, reason
 from governance.cognitive_guardrails import assess_cognitive_packet
 from core.cognition.controller import finalise_cognition_plan, plan_cognition
@@ -20,7 +24,11 @@ def run_cognitive_core(
     model="gpt-4o-mini",
     cognitive_plan: dict | None = None,
     working_memory_packet: dict | None = None,
+    model_adapter=None,
 ) -> dict:
+    resolved_adapter = model_adapter or (
+        OpenAIChatCompletionsAdapter(client, model) if client is not None else None
+    )
     cognitive_plan = finalise_cognition_plan(
         cognitive_plan or plan_cognition(message),
         rhee_packet,
@@ -52,6 +60,7 @@ def run_cognitive_core(
             quinn_packet=quinn,
             client=client,
             model=model,
+            model_adapter=resolved_adapter,
         )
     else:
         rike = {
@@ -85,7 +94,7 @@ def run_cognitive_core(
     guardrails = assess_cognitive_packet(rike, mary, confidence_dimensions)
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "11.0",
+        "version": "12.0",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "route": {
@@ -99,6 +108,7 @@ def run_cognitive_core(
         "rike": rike,
         "guardrails": guardrails,
         "working_memory": working_memory_packet or {},
+        "model_independence": build_model_independence_packet(resolved_adapter),
     }
     packet["multi_agent"] = build_multi_agent_packet(
         cognitive_plan,

@@ -102,7 +102,7 @@ def test_phase_ten_cognitive_core_exposes_working_memory_packet():
         client=None,
         working_memory_packet=working_memory,
     )
-    assert packet["version"] == "11.0"
+    assert packet["version"] == "12.0"
     assert packet["working_memory"] == working_memory
 
 
@@ -110,7 +110,7 @@ def test_phase_ten_live_server_contract_is_wired():
     from pathlib import Path
 
     source = (Path(__file__).resolve().parents[1] / "api" / "server.py").read_text(encoding="utf-8")
-    assert '"version": "11.0"' in source
+    assert '"version": "12.0"' in source
     assert '"working_memory": "cognitive_working_memory_v1"' in source
     assert '"working_memory_is_disposable_and_rebuildable": True' in source
     assert "active_context_service.begin_turn(" in source

@@ -116,7 +116,7 @@ def test_phase_nine_cognitive_core_exposes_governed_worker_packet():
         capability_packet={},
         client=None,
     )
-    assert packet["version"] == "11.0"
+    assert packet["version"] == "12.0"
     assert packet["multi_agent"]["one_voice"] is True
     assert packet["multi_agent"]["synthesis_owner"] == "L"
     assert packet["multi_agent"]["governance"]["passed"] is True
@@ -127,7 +127,7 @@ def test_phase_nine_live_server_contract_is_wired():
     from pathlib import Path
 
     source = (Path(__file__).resolve().parents[1] / "api" / "server.py").read_text(encoding="utf-8")
-    assert '"version": "11.0"' in source
+    assert '"version": "12.0"' in source
     assert '"multi_agent": "governed_multi_agent_cognition_v1"' in source
     assert '"one_l_multiple_bounded_workers": True' in source
     assert '"multi_agent": cognitive_packet.get("multi_agent", {})' in source
