@@ -275,6 +275,52 @@ def build_learning_observation(cognitive_packet: dict) -> dict:
     )
 
 
+def ingest_reflective_observation(reflection_packet: dict) -> dict:
+    """Accept Phase 8 observations as candidates, never as automatic learning."""
+    reflection = reflection_packet or {}
+    if not reflection.get("active"):
+        return {
+            "engine": "learning_engine",
+            "version": "2.0",
+            "channel": "reflective_metacognition",
+            "status": "not_required",
+            "auto_promoted": False,
+            "stored_growth": False,
+        }
+    source_reference = str(reflection.get("source_reference") or "").strip()
+    if not source_reference:
+        return {
+            "engine": "learning_engine",
+            "version": "2.0",
+            "channel": "reflective_metacognition",
+            "status": "rejected",
+            "reason": "reflection_provenance_required",
+            "auto_promoted": False,
+            "stored_growth": False,
+        }
+    observations = list(dict.fromkeys(
+        str(item or "").strip()
+        for item in reflection.get("observations_for_learning") or []
+        if str(item or "").strip()
+    ))
+    return {
+        "engine": "learning_engine",
+        "version": "2.0",
+        "channel": "reflective_metacognition",
+        "status": "candidate_adjustment" if observations else "observation_recorded",
+        "source_reference": source_reference[:500],
+        "observations": observations,
+        "requires_future_observation": bool(observations),
+        "requires_doug_approval_for_storage": True,
+        "auto_promoted": False,
+        "stored_growth": False,
+        "instruction": (
+            "A reflection can propose an adjustment but cannot prove one. Route any "
+            "candidate through evidence, contradiction, future observation and outcome."
+        ),
+    }
+
+
 def promote_experience_principle(
     abstraction_packet: dict,
     authorisation: dict | None = None,
@@ -359,6 +405,7 @@ def promote_learning_cycle(
 
 __all__ = [
     "build_learning_observation",
+    "ingest_reflective_observation",
     "extract_user_learning",
     "record_user_learning",
     "build_learning_cycle",

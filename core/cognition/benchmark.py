@@ -13,6 +13,7 @@ from typing import Callable
 from agents.rhee.rhee_v3 import calculate_memory_score, format_memory_packet
 from core.cognition.controller import plan_cognition
 from core.cognition.longitudinal import build_longitudinal_packet
+from core.cognition.reflection import reflect_on_task
 from core.cognition.uncertainty import assess_confidence_dimensions
 from governance.cognitive_guardrails import assess_cognitive_packet
 
@@ -31,6 +32,7 @@ BENCHMARK_DIMENSIONS = (
     "specialist_routing",
     "false_memory_rate",
     "over_connection_rate",
+    "reflective_metacognition",
 )
 
 REFERENCE_TIME = datetime(2026, 9, 5, tzinfo=timezone.utc)
@@ -345,6 +347,53 @@ def _over_connection_is_blocked():
     return observed_rate == 0.0, 0.0, observed_rate
 
 
+def _significant_task_is_reflected_without_auto_adjustment():
+    confidence = {
+        "aggregation": "prohibited",
+        "dimensions": {
+            name: {
+                "applicable": False,
+                "level": "not_applicable",
+                "score": None,
+                "basis": "Not applicable to this fixture.",
+                "limitations": [],
+            }
+            for name in ("source", "retrieval", "memory", "interpretation", "reasoning", "prediction")
+        },
+    }
+    reflection = reflect_on_task(
+        "Compare these options and recommend the safer one",
+        "Option A is better supported by the supplied evidence.",
+        {
+            "controller": {
+                "substantial": True,
+                "difficulty": "medium",
+                "needs": {
+                    "memory": False,
+                    "external_evidence": False,
+                    "structured_reasoning": True,
+                    "longitudinal_reasoning": False,
+                    "specialist": False,
+                },
+            },
+            "route": {"rike": "active"},
+            "mary": {"contradicting_episodes": []},
+            "rike": {"status": "ok", "conflicts": [], "hypotheses": []},
+            "confidence_dimensions": confidence,
+        },
+        rhee_packet={"recall_active": False, "context": "MEMORIES FOUND: 0"},
+        source_reference="benchmark:reflective_metacognition",
+    )
+    observed = {
+        "active": reflection["active"],
+        "check_count": len(reflection["checks"]),
+        "auto_adjusted": reflection["auto_adjusted"],
+        "stored_growth": reflection["stored_growth"],
+    }
+    expected = {"active": True, "check_count": 8, "auto_adjusted": False, "stored_growth": False}
+    return observed == expected, expected, observed
+
+
 CASES = (
     ("recall_accuracy", "direct_fact_outranks_unrelated_anchor", _recall_selects_direct_fact),
     ("chronology_accuracy", "first_and_last_seen_are_date_ordered", _chronology_tracks_bounds),
@@ -358,6 +407,7 @@ CASES = (
     ("specialist_routing", "specialist_activation_is_selective", _specialist_routes_only_when_earned),
     ("false_memory_rate", "unsupported_claim_negative_control", _false_memory_control_is_measured),
     ("over_connection_rate", "one_observation_is_not_a_pattern", _over_connection_is_blocked),
+    ("reflective_metacognition", "significant_task_receives_governed_reflection", _significant_task_is_reflected_without_auto_adjustment),
 )
 
 

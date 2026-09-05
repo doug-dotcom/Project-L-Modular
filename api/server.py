@@ -45,6 +45,8 @@ from agents.rhee.rhee_v3 import (
 from core.cognition.orchestrator import run_cognitive_core
 from core.cognition.controller import plan_cognition
 from core.cognition.benchmark import benchmark_manifest, run_cognitive_benchmark
+from core.cognition.reflection import reflect_on_task
+from core.cognition.learning_engine import ingest_reflective_observation
 from governance.cognitive_guardrails import guardrail_prompt
 from services.capability_router_service import route_capability
 
@@ -167,7 +169,7 @@ def build_architecture_audit_context(user_message, cognitive_packet):
     return f"""PROJECT L SELF-AUDIT CONTRACT (RUNTIME-AUTHORITATIVE)
 - Separate retrieved historical intent from current runtime facts and from your inference.
 - Do not describe the original intent as a generic feature-rich AI or frontier-AI competitor unless a Doug-authored record directly supports that claim.
-- Name the current architecture explicitly: L is the sole voice and synthesiser; Rhee retrieves evidence; RIKE performs structured reasoning; Mary tests longitudinal patterns; Quinn supplies advisory principles; Experience Abstraction proposes governed higher-order principles; Learning Engine 2 tests future outcomes and updates confidence; the Cognitive Benchmark Suite executes permanent regression cases; Carol and Sara govern memory promotion and provenance.
+- Name the current architecture explicitly: L is the sole voice and synthesiser; Rhee retrieves evidence; RIKE performs structured reasoning; Mary tests longitudinal patterns; Quinn supplies advisory principles; Experience Abstraction proposes governed higher-order principles; Learning Engine 2 tests future outcomes and updates confidence; the Cognitive Benchmark Suite executes permanent regression cases; Reflective Metacognition reviews significant completed tasks and feeds traceable candidate observations into Learning Engine 2; Carol and Sara govern memory promotion and provenance.
 - The historical Brains Trust is retained as bounded reasoning lenses inside RIKE, not as competing personas or separate voices.
 - Current activation route: {json.dumps(route, ensure_ascii=False)}
 - When asked to compare architectures or identify contradictions, cover: original purpose, original components, current implemented components, retained ideas, retired persona behaviour, unresolved gaps, and the best-supported next step.
@@ -224,6 +226,7 @@ def ensure_architecture_audit_grounding(user_message, reply, cognitive_packet):
         f"- **Experience Abstraction** candidate formation: {route.get('experience_abstraction', 'unknown')}.\n"
         "- **Learning Engine 2** requires a future observation and outcome before stored growth.\n"
         "- **Cognitive Benchmark Suite** earns its scores from executed regression cases; no score is invented.\n"
+        "- **Reflective Metacognition** reviews significant completed tasks and cannot auto-adjust or store growth.\n"
         "- **Carol and Sara** govern long-term memory promotion and provenance; "
         "a recall request is not promoted as a new fact.\n"
         f"- **Brains Trust** is retained as bounded RIKE lenses, not personas. "
@@ -598,7 +601,7 @@ def cognition_status():
     return {
         "status": "ok",
         "architecture": "project_l_cognitive_core",
-        "version": "8.0",
+        "version": "9.0",
         "user_facing_voice": "L",
         "engines": {
             "metacognition": "cognitive_controller_v1",
@@ -611,6 +614,7 @@ def cognition_status():
             "memory_governance": "carol_v5+sara_v2",
             "learning": "learning_engine_v2_outcome_cycle",
             "evaluation": "cognitive_benchmark_v1",
+            "self_evaluation": "reflective_metacognition_v1",
         },
         "rules": {
             "selective_activation": True,
@@ -629,6 +633,8 @@ def cognition_status():
             "no_durable_lesson_is_valid": True,
             "benchmark_scores_require_executed_tests": True,
             "false_memory_and_over_connection_rates_measured": True,
+            "significant_tasks_receive_post_task_reflection": True,
+            "reflection_cannot_auto_adjust_or_store_growth": True,
         },
         "benchmark": benchmark_manifest(),
     }
@@ -725,7 +731,8 @@ def chat(req: ChatRequest):
 
     cognitive_packet = {
         "engine": "project_l_cognitive_core",
-        "version": "8.0",
+        "version": "9.0",
+        "controller": cognitive_plan,
         "route": {"rike": "not_required"},
         "rike": {
             "version": "2.0",
@@ -798,6 +805,7 @@ COGNITIVE ARCHITECTURE:
 - Experience Abstraction may propose higher-order principles only after multiple dated experiences pass Rhee, Quinn, RIKE and Mary validation.
 - Learning Engine 2 runs Experience → Reflection → Candidate lesson → Evidence retrieval → Contradiction search → Validation → Adjustment → Future observation → Outcome → Confidence update → Stored growth.
 - The Cognitive Benchmark Suite tests recall, chronology, identity, patterns, contradictions, attribution, reasoning, uncertainty, routing, false memories and over-connection. Its scores exist only after cases execute.
+- Reflective Metacognition reviews significant tasks after the response and sends only visible, traceable observations into Learning Engine 2. It cannot auto-adjust behaviour or store growth.
 - Quinn supplies governed principles, never decisions.
 - External research, finance, email, calendar and tasks are services.
 
@@ -889,6 +897,24 @@ RESPONSE RULES:
             log(f"OPENAI ERROR: {e}")
             reply = f"AI ERROR: {str(e)}"
 
+    reflection = reflect_on_task(
+        user_message,
+        reply,
+        cognitive_packet,
+        rhee_packet=rhee_packet,
+        capability_packet=route,
+        source_reference=f"chat_request:{request_id}",
+    )
+    cognitive_packet["reflection"] = reflection
+    cognitive_packet["learning_feedback"] = ingest_reflective_observation(reflection)
+    if reflection.get("active"):
+        log(
+            "REFLECTIVE METACOGNITION: "
+            f"status={reflection.get('status')} | "
+            f"issues={reflection.get('issues', [])} | "
+            f"learning={cognitive_packet['learning_feedback'].get('status')}"
+        )
+
     short_term_assistant = write_live_short_term(
         short_term_domain,
         "assistant",
@@ -935,6 +961,8 @@ RESPONSE RULES:
             "longitudinal": cognitive_packet.get("mary", {}),
             "experience_abstraction": cognitive_packet.get("experience_abstraction", {}),
             "learning": cognitive_packet.get("learning", {}),
+            "reflection": cognitive_packet.get("reflection", {}),
+            "learning_feedback": cognitive_packet.get("learning_feedback", {}),
             "guardrails_passed": cognitive_packet.get("guardrails", {}).get("passed"),
             "guardrail_issues": cognitive_packet.get("guardrails", {}).get("issues", []),
         }
