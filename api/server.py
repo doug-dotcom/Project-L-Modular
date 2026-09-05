@@ -12,7 +12,7 @@ from datetime import date, datetime
 from zoneinfo import ZoneInfo
 from uuid import UUID
 
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -48,6 +48,7 @@ from core.cognition.benchmark import benchmark_manifest, run_cognitive_benchmark
 from core.cognition.evidence_evaluation import (
     evidence_mode, evidence_prompt, evaluate_answer, evaluation_manifest,
 )
+from core.cognition.durable_tasks import TaskStore, TaskRunner, CONTEXT as TASK_CONTEXT, checkpoint
 from core.cognition.reflection import reflect_on_task
 from core.cognition.learning_engine import ingest_reflective_observation
 from core.cognition.working_memory import ActiveContextService
@@ -324,6 +325,9 @@ def normalise_request_id(value):
 
 
 def store_chat_result(request_id, status, payload=None):
+    # Durable workers publish only through the owner-checked database path.
+    if getattr(TASK_CONTEXT, "task", None):
+        return
     request_id = normalise_request_id(request_id)
     if not request_id:
         return
@@ -366,34 +370,58 @@ def run_chat_worker(request_id, request):
             _chat_workers.discard(request_id)
 
 
+task_store = TaskStore(supabase)
+task_runner = TaskRunner(task_store, lambda request: chat(ChatRequest(**request)))
+
+
+@app.on_event("startup")
+def start_durable_tasks():
+    task_runner.start()
+
+
+@app.on_event("shutdown")
+def stop_durable_tasks():
+    task_runner.stop()
+
+
 @app.post("/chat/start")
-def start_chat(req: ChatRequest):
-    """Start long-running cognition outside the browser connection."""
+def start_chat(req: ChatRequest, x_l_recovery_token: str = Header(default="")):
+    """Acknowledge only after the task has been durably committed."""
     request_id = normalise_request_id(req.request_id)
     if not request_id:
-        return {"status": "invalid_request_id"}
-
-    if chat_result_status(request_id) == "ready":
-        return {"status": "ready", "request_id": request_id}
-
-    with _chat_results_lock:
-        if request_id in _chat_workers:
-            return {"status": "pending", "request_id": request_id}
-        _chat_workers.add(request_id)
-
-    store_chat_result(request_id, "pending")
-    worker = threading.Thread(
-        target=run_chat_worker,
-        args=(request_id, req),
-        daemon=True,
-        name=f"l-chat-{request_id[:8]}",
-    )
-    worker.start()
-    return {"status": "pending", "request_id": request_id}
+        raise HTTPException(400, "A valid request ID is required")
+    if not req.message.strip() or len(req.message) > 100000:
+        raise HTTPException(400, "Send a message between 1 and 100000 characters")
+    try:
+        request = {"message": req.message, "request_id": request_id,
+                   "conversation_id": req.conversation_id}
+        result = task_store.submit(request, x_l_recovery_token)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(503, "L could not save this task. Retry with the same request ID.") from exc
+    if result["status"] == "conflict":
+        raise HTTPException(409, "This request ID already belongs to a different message")
+    if result["status"] == "not_found":
+        raise HTTPException(404, "Task not found")
+    return {**result, "durable": True}
 
 
 @app.get("/chat/result/{request_id}")
-def recover_chat_result(request_id: str):
+def recover_chat_result(request_id: str, x_l_recovery_token: str = Header(default="")):
+    if isinstance(x_l_recovery_token, str) and x_l_recovery_token:
+        if not normalise_request_id(request_id):
+            return {"status": "not_found"}
+        try:
+            result = task_store.get(request_id, x_l_recovery_token)
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from exc
+        except Exception as exc:
+            raise HTTPException(503, "Saved answers are temporarily unavailable") from exc
+        if result["status"] != "not_found":
+            return result
+        # Old image tasks remain in the legacy cache; durable replies never enter it.
+
     request_id = normalise_request_id(request_id)
     if not request_id:
         return {"status": "not_found"}
@@ -782,6 +810,7 @@ def chat(req: ChatRequest):
         user_message,
     )
 
+    checkpoint("saving_user_message")
     raw_user_row = write_raw_catchall(
         "user",
         user_message
@@ -791,6 +820,7 @@ def chat(req: ChatRequest):
 
     time_context = build_time_context()
 
+    checkpoint("recalling_and_reasoning")
     # The controller plans cognition before retrieval, services or generation.
     cognitive_plan = plan_cognition(user_message)
     check_evidence = evidence_mode(user_message, cognitive_plan["needs"]["memory"])
@@ -832,6 +862,7 @@ def chat(req: ChatRequest):
     # DETERMINISTIC CAPABILITY ROUTER
     # =================================================
 
+    checkpoint("connected_actions")
     try:
         route = route_capability(user_message)
         log(f"CAPABILITY ROUTE: {route.get('capability')}")
@@ -1080,6 +1111,7 @@ RESPONSE RULES:
         unresolved=bool(route.get("status") == "error"),
     ) or working_memory_packet
 
+    checkpoint("saving_answer")
     short_term_assistant = write_live_short_term(
         short_term_domain,
         "assistant",

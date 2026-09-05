@@ -80,3 +80,5 @@ jobs:
           tests/test_memory_provenance.py
           tests/test_cognitive_core.py
           tests/test_evidence_evaluation.py
+          tests/test_durable_tasks.py
+          tests/test_durable_ui.py
