@@ -19,6 +19,7 @@ def run_cognitive_core(
     client=None,
     model="gpt-4o-mini",
     cognitive_plan: dict | None = None,
+    working_memory_packet: dict | None = None,
 ) -> dict:
     cognitive_plan = finalise_cognition_plan(
         cognitive_plan or plan_cognition(message),
@@ -84,7 +85,7 @@ def run_cognitive_core(
     guardrails = assess_cognitive_packet(rike, mary, confidence_dimensions)
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "10.0",
+        "version": "11.0",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "route": {
@@ -97,6 +98,7 @@ def run_cognitive_core(
         "quinn": quinn if rike_required else {"engine": "quinn", "status": "not_required", "principles": []},
         "rike": rike,
         "guardrails": guardrails,
+        "working_memory": working_memory_packet or {},
     }
     packet["multi_agent"] = build_multi_agent_packet(
         cognitive_plan,

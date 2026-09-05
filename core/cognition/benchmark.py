@@ -7,7 +7,7 @@ score is calculated from executed cases; no score is configured or inferred.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Callable
 
 from agents.rhee.rhee_v3 import calculate_memory_score, format_memory_packet
@@ -16,6 +16,7 @@ from core.cognition.longitudinal import build_longitudinal_packet
 from core.cognition.multi_agent import build_multi_agent_packet, run_parallel_foundation
 from core.cognition.reflection import reflect_on_task
 from core.cognition.uncertainty import assess_confidence_dimensions
+from core.cognition.working_memory import ActiveContextService, MAX_ITEMS
 from governance.cognitive_guardrails import assess_cognitive_packet
 
 
@@ -35,6 +36,7 @@ BENCHMARK_DIMENSIONS = (
     "over_connection_rate",
     "reflective_metacognition",
     "governed_multi_agent_cognition",
+    "cognitive_working_memory",
 )
 
 REFERENCE_TIME = datetime(2026, 9, 5, tzinfo=timezone.utc)
@@ -431,6 +433,53 @@ def _multi_agent_workers_are_bounded_behind_one_voice():
     return observed == expected, expected, observed
 
 
+def _working_memory_is_bounded_disposable_and_rebuildable():
+    service = ActiveContextService(ttl_seconds=60)
+    packet = service.begin_turn(
+        "benchmark",
+        "Doug approved deployment. How do we finish Phase 10?",
+        {"problem_type": "execution"},
+        {"recall_active": True, "deep_recall": True, "context": "traceable evidence"},
+        {"handled": False},
+        request_id="benchmark:working-memory",
+        now=REFERENCE_TIME,
+    )
+    for index in range(MAX_ITEMS + 4):
+        packet = service.begin_turn(
+            "benchmark",
+            f"I decided option {index} for now",
+            {"problem_type": "decision"},
+            {},
+            {},
+            now=REFERENCE_TIME,
+        )
+    expired = service.snapshot(
+        "benchmark",
+        now=REFERENCE_TIME + timedelta(seconds=61),
+    )
+    observed = {
+        "canonical_fields": all(key in packet for key in (
+            "current_goal", "active_task", "active_entities", "recent_decisions",
+            "unresolved_questions", "temporary_assumptions", "conversation_phase",
+            "active_evidence_packets",
+        )),
+        "bounded": len(packet["recent_decisions"]) == MAX_ITEMS,
+        "durable": packet["governance"]["durable"],
+        "database_writes": packet["governance"]["database_writes"],
+        "rebuildable": packet["governance"]["rebuildable"],
+        "expired_state_removed": expired == {},
+    }
+    expected = {
+        "canonical_fields": True,
+        "bounded": True,
+        "durable": False,
+        "database_writes": 0,
+        "rebuildable": True,
+        "expired_state_removed": True,
+    }
+    return observed == expected, expected, observed
+
+
 CASES = (
     ("recall_accuracy", "direct_fact_outranks_unrelated_anchor", _recall_selects_direct_fact),
     ("chronology_accuracy", "first_and_last_seen_are_date_ordered", _chronology_tracks_bounds),
@@ -446,6 +495,7 @@ CASES = (
     ("over_connection_rate", "one_observation_is_not_a_pattern", _over_connection_is_blocked),
     ("reflective_metacognition", "significant_task_receives_governed_reflection", _significant_task_is_reflected_without_auto_adjustment),
     ("governed_multi_agent_cognition", "parallel_workers_remain_behind_one_l", _multi_agent_workers_are_bounded_behind_one_voice),
+    ("cognitive_working_memory", "active_state_is_bounded_disposable_and_rebuildable", _working_memory_is_bounded_disposable_and_rebuildable),
 )
 
 

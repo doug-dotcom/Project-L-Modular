@@ -11,7 +11,7 @@ def test_phase_seven_is_exposed_by_the_live_server_contract():
 
     source = (Path(__file__).resolve().parents[1] / "api" / "server.py").read_text(encoding="utf-8")
     assert '@app.get("/cognition/benchmark")' in source
-    assert '"version": "10.0"' in source
+    assert '"version": "11.0"' in source
     assert '"evaluation": "cognitive_benchmark_v1"' in source
     assert '"benchmark_scores_require_executed_tests": True' in source
 
@@ -36,6 +36,7 @@ def test_phase_seven_manifest_covers_all_canonical_dimensions():
     assert expected.issubset(set(manifest["dimensions"]))
     assert "reflective_metacognition" in manifest["dimensions"]
     assert "governed_multi_agent_cognition" in manifest["dimensions"]
+    assert "cognitive_working_memory" in manifest["dimensions"]
     assert manifest["case_count"] >= len(expected)
     assert manifest["scoring"] == "calculated_only_from_executed_case_outcomes"
     assert manifest["external_calls"] is False
