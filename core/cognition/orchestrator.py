@@ -10,6 +10,7 @@ from core.cognition.model_independence import (
     OpenAIChatCompletionsAdapter,
     build_model_independence_packet,
 )
+from core.cognition.portability import portability_manifest
 from core.cognition.rike import needs_structured_reasoning, reason
 from governance.cognitive_guardrails import assess_cognitive_packet
 from core.cognition.controller import finalise_cognition_plan, plan_cognition
@@ -94,7 +95,7 @@ def run_cognitive_core(
     guardrails = assess_cognitive_packet(rike, mary, confidence_dimensions)
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "12.0",
+        "version": "13.0",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "route": {
@@ -109,6 +110,7 @@ def run_cognitive_core(
         "guardrails": guardrails,
         "working_memory": working_memory_packet or {},
         "model_independence": build_model_independence_packet(resolved_adapter),
+        "portability": portability_manifest(),
     }
     packet["multi_agent"] = build_multi_agent_packet(
         cognitive_plan,

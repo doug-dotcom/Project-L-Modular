@@ -146,7 +146,7 @@ def test_phase_eleven_cognitive_core_exposes_active_model_contract():
         capability_packet={},
         model_adapter=adapter,
     )
-    assert packet["version"] == "12.0"
+    assert packet["version"] == "13.0"
     assert packet["model_independence"]["status"] == "ready"
     assert packet["model_independence"]["active_adapter"]["provider"] == "provider-a"
 
@@ -161,7 +161,7 @@ def test_phase_eleven_live_model_calls_are_centralised_in_one_adapter():
     assert "client.chat.completions.create" not in server
     assert "client.chat.completions.create" not in rike
     assert adapter.count("client.chat.completions.create") == 1
-    assert '"version": "12.0"' in server
+    assert '"version": "13.0"' in server
     assert '"model_independence": "model_independence_layer_v1"' in server
     assert '"foundation_model_is_replaceable": True' in server
     assert '"model_independence": cognitive_packet.get("model_independence", {})' in server

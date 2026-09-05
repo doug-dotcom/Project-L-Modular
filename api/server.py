@@ -55,6 +55,11 @@ from core.cognition.model_independence import (
     build_model_request,
     invoke_model,
 )
+from core.cognition.portability import (
+    build_cognitive_bootstrap,
+    portability_manifest,
+    run_portability_certification,
+)
 from governance.cognitive_guardrails import guardrail_prompt
 from services.capability_router_service import route_capability
 
@@ -628,6 +633,7 @@ def health():
         "multi_agent_ready": True,
         "working_memory_ready": True,
         "model_adapter_ready": bool(active_model_adapter.available),
+        "portability_certification_ready": True,
         "capability_router_ready": True,
         "main_street": True
     }
@@ -639,7 +645,7 @@ def cognition_status():
     return {
         "status": "ok",
         "architecture": "project_l_cognitive_core",
-        "version": "12.0",
+        "version": "13.0",
         "user_facing_voice": "L",
         "engines": {
             "metacognition": "cognitive_controller_v1",
@@ -656,6 +662,7 @@ def cognition_status():
             "multi_agent": "governed_multi_agent_cognition_v1",
             "working_memory": "cognitive_working_memory_v1",
             "model_independence": "model_independence_layer_v1",
+            "portability": "cognitive_portability_certification_v1",
         },
         "rules": {
             "selective_activation": True,
@@ -682,8 +689,11 @@ def cognition_status():
             "working_memory_never_auto_promotes": True,
             "foundation_model_is_replaceable": True,
             "persistent_cognition_survives_model_swap": True,
+            "clean_model_receives_bootstrap_only": True,
+            "portability_requires_complete_traceable_reconstruction": True,
         },
         "model_interface": build_model_independence_packet(active_model_adapter),
+        "portability_certification": portability_manifest(),
         "benchmark": benchmark_manifest(),
     }
 
@@ -691,6 +701,48 @@ def cognition_status():
 @app.get("/cognition/benchmark")
 def cognition_benchmark():
     return run_cognitive_benchmark()
+
+
+@app.get("/cognition/portability-certification")
+def cognition_portability_certification():
+    """Run Phase 12 using a fresh stateless model request and L's bootstrap only."""
+    active_model_adapter = resolve_model_adapter()
+    if not active_model_adapter.available:
+        return {
+            **portability_manifest(),
+            "status": "failed",
+            "passed": False,
+            "error": "model_adapter_unavailable",
+        }
+    query = (
+        "Deep recall cognitive portability bootstrap: who Doug is, who L is, what matters, "
+        "current projects, recent changes, current and superseded patterns, communication "
+        "rules, Deep Recall behaviour and inference boundaries"
+    )
+    try:
+        rhee_packet = build_rhee_packet(query)
+        bootstrap = build_cognitive_bootstrap(
+            rhee_packet.get("context", ""),
+            generated_at=datetime.now(ZoneInfo("Australia/Brisbane")).isoformat(),
+        )
+        receipt = run_portability_certification(active_model_adapter, bootstrap)
+        receipt.pop("reconstruction", None)
+        receipt["reconstruction_exposed"] = False
+        receipt["bootstrap_receipt"] = {
+            "rhee_version": rhee_packet.get("version"),
+            "deep_recall": rhee_packet.get("deep_recall"),
+            "context_size": rhee_packet.get("context_size"),
+            "evidence_reference_count": len(bootstrap["permitted_evidence_references"]),
+            "persistent_evidence_exposed": False,
+        }
+        return receipt
+    except Exception as exc:
+        return {
+            **portability_manifest(),
+            "status": "failed",
+            "passed": False,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
 
 # =====================================================
 # CHAT - MAIN STREET
@@ -796,7 +848,7 @@ def chat(req: ChatRequest):
 
     cognitive_packet = {
         "engine": "project_l_cognitive_core",
-        "version": "12.0",
+        "version": "13.0",
         "controller": cognitive_plan,
         "route": {"rike": "not_required"},
         "rike": {
@@ -811,6 +863,7 @@ def chat(req: ChatRequest):
         "guardrails": {"passed": True, "issues": []},
         "working_memory": working_memory_packet,
         "model_independence": build_model_independence_packet(active_model_adapter),
+        "portability": portability_manifest(),
     }
 
     if not active_model_adapter.available:
@@ -880,6 +933,7 @@ COGNITIVE ARCHITECTURE:
 - Governed Multi-Agent Cognition may run independent specialists concurrently. Internal workers are bounded, advisory and inspectable; they never speak to Doug or hold decision authority. L alone synthesises the final response.
 - Cognitive Working Memory carries only the current operational thread: goal, task, entities, recent decisions, unresolved questions, temporary assumptions, conversation phase and evidence receipts. It is bounded, expires automatically and never becomes durable memory by itself.
 - The Model Independence Layer is the only live gateway to the foundation model. The model supplies replaceable inference; L's identity, memory, evidence, cognitive history and governance remain in her persistent systems.
+- Cognitive Portability Certification gives a clean stateless model L's bootstrap only and passes only when it reconstructs Doug, L, priorities, projects, changes, pattern lifecycle, communication, Deep Recall and inference boundaries with traceable evidence.
 - Quinn supplies governed principles, never decisions.
 - External research, finance, email, calendar and tasks are services.
 
@@ -1052,6 +1106,7 @@ RESPONSE RULES:
             "multi_agent": cognitive_packet.get("multi_agent", {}),
             "working_memory": cognitive_packet.get("working_memory", {}),
             "model_independence": cognitive_packet.get("model_independence", {}),
+            "portability": cognitive_packet.get("portability", {}),
             "guardrails_passed": cognitive_packet.get("guardrails", {}).get("passed"),
             "guardrail_issues": cognitive_packet.get("guardrails", {}).get("issues", []),
         }

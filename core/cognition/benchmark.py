@@ -8,6 +8,7 @@ score is calculated from executed cases; no score is configured or inferred.
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+import json
 from typing import Callable
 
 from agents.rhee.rhee_v3 import calculate_memory_score, format_memory_packet
@@ -22,6 +23,11 @@ from core.cognition.model_independence import (
     build_model_independence_packet,
     build_model_request,
     invoke_model,
+)
+from core.cognition.portability import (
+    RECONSTRUCTION_FIELDS,
+    build_cognitive_bootstrap,
+    run_portability_certification,
 )
 from governance.cognitive_guardrails import assess_cognitive_packet
 
@@ -44,6 +50,7 @@ BENCHMARK_DIMENSIONS = (
     "governed_multi_agent_cognition",
     "cognitive_working_memory",
     "model_independence",
+    "cognitive_portability",
 )
 
 REFERENCE_TIME = datetime(2026, 9, 5, tzinfo=timezone.utc)
@@ -531,6 +538,65 @@ def _model_adapter_swaps_without_changing_persistent_cognition():
     return observed == expected, expected, observed
 
 
+def _clean_model_reconstructs_l_from_bootstrap_only():
+    class CleanBootstrapAdapter:
+        available = True
+        provider = "clean_fixture"
+        model_id = "zero-context-model"
+
+        def generate(self, request):
+            bootstrap = json.loads(request["messages"][1]["content"])
+            memory_refs = [
+                ref for ref in bootstrap["permitted_evidence_references"]
+                if ref.startswith("memory:")
+            ]
+            reconstruction = {
+                field: {
+                    "summary": f"Bootstrap-only reconstruction: {field}",
+                    "evidence_refs": memory_refs[:1] or ["runtime:l_identity"],
+                }
+                for field in RECONSTRUCTION_FIELDS
+            }
+            reconstruction["who_l_is"]["evidence_refs"] = ["runtime:l_identity"]
+            reconstruction["communication_rules"]["evidence_refs"] = ["runtime:communication"]
+            reconstruction["current_vs_superseded_patterns"]["evidence_refs"] = ["runtime:pattern_lifecycle"]
+            reconstruction["deep_recall_behaviour"].update({
+                "evidence_refs": ["runtime:deep_recall"],
+                "supabase_first": True,
+                "asks_user_to_repeat_retrievable_facts": False,
+            })
+            reconstruction["inference_boundaries"].update({
+                "evidence_refs": ["runtime:inference_boundaries"],
+                "facts_separated_from_inference": True,
+                "unsupported_claims_prohibited": True,
+            })
+            return {"content": json.dumps(reconstruction), "status": "complete"}
+
+    bootstrap = build_cognitive_bootstrap(
+        "90 | memory_project_l | ID=5477 | SOURCE_ROLE=USER\nPortable cognition evidence"
+    )
+    receipt = run_portability_certification(CleanBootstrapAdapter(), bootstrap)
+    observed = {
+        "passed": receipt["passed"],
+        "prior_context_supplied": receipt["model_receipt"]["prior_context_supplied"],
+        "input_boundary": receipt["model_receipt"]["input_boundary"],
+        "fields_reconstructed": len(receipt["evaluation"]["field_checks"]),
+        "all_fields_traceable": all(
+            item["traceable"] for item in receipt["evaluation"]["field_checks"].values()
+        ),
+        "governance_faithful": all(receipt["evaluation"]["governance_checks"].values()),
+    }
+    expected = {
+        "passed": True,
+        "prior_context_supplied": False,
+        "input_boundary": "bootstrap_only",
+        "fields_reconstructed": len(RECONSTRUCTION_FIELDS),
+        "all_fields_traceable": True,
+        "governance_faithful": True,
+    }
+    return observed == expected, expected, observed
+
+
 CASES = (
     ("recall_accuracy", "direct_fact_outranks_unrelated_anchor", _recall_selects_direct_fact),
     ("chronology_accuracy", "first_and_last_seen_are_date_ordered", _chronology_tracks_bounds),
@@ -548,6 +614,7 @@ CASES = (
     ("governed_multi_agent_cognition", "parallel_workers_remain_behind_one_l", _multi_agent_workers_are_bounded_behind_one_voice),
     ("cognitive_working_memory", "active_state_is_bounded_disposable_and_rebuildable", _working_memory_is_bounded_disposable_and_rebuildable),
     ("model_independence", "provider_swap_preserves_cognitive_contract", _model_adapter_swaps_without_changing_persistent_cognition),
+    ("cognitive_portability", "clean_model_reconstructs_l_from_bootstrap_only", _clean_model_reconstructs_l_from_bootstrap_only),
 )
 
 

@@ -169,7 +169,7 @@ def test_phase_eight_live_server_contract_is_wired():
     from pathlib import Path
 
     source = (Path(__file__).resolve().parents[1] / "api" / "server.py").read_text(encoding="utf-8")
-    assert '"version": "12.0"' in source
+    assert '"version": "13.0"' in source
     assert '"self_evaluation": "reflective_metacognition_v1"' in source
     assert "reflect_on_task(" in source
     assert "ingest_reflective_observation(reflection)" in source
