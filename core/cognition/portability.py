@@ -48,6 +48,49 @@ def portability_manifest() -> dict:
     }
 
 
+def reconstruction_json_schema() -> dict:
+    """Return the strict provider-neutral schema for a portability response."""
+    properties = {}
+    for field in RECONSTRUCTION_FIELDS:
+        field_properties = {
+            "summary": {"type": "string", "minLength": 1},
+            "evidence_refs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {"type": "string"},
+            },
+        }
+        required = ["summary", "evidence_refs"]
+        if field == "deep_recall_behaviour":
+            field_properties.update({
+                "supabase_first": {"type": "boolean"},
+                "asks_user_to_repeat_retrievable_facts": {"type": "boolean"},
+            })
+            required.extend([
+                "supabase_first", "asks_user_to_repeat_retrievable_facts",
+            ])
+        if field == "inference_boundaries":
+            field_properties.update({
+                "facts_separated_from_inference": {"type": "boolean"},
+                "unsupported_claims_prohibited": {"type": "boolean"},
+            })
+            required.extend([
+                "facts_separated_from_inference", "unsupported_claims_prohibited",
+            ])
+        properties[field] = {
+            "type": "object",
+            "properties": field_properties,
+            "required": required,
+            "additionalProperties": False,
+        }
+    return {
+        "type": "object",
+        "properties": properties,
+        "required": list(RECONSTRUCTION_FIELDS),
+        "additionalProperties": False,
+    }
+
+
 def build_cognitive_bootstrap(rhee_context: str, *, generated_at: str = "") -> dict:
     """Build L's portable bootstrap from retrieved evidence plus stable rules."""
     evidence = str(rhee_context or "").strip()
@@ -81,10 +124,7 @@ def build_cognitive_bootstrap(rhee_context: str, *, generated_at: str = "") -> d
         "permitted_evidence_references": list(RUNTIME_BOOTSTRAP_REFERENCES) + [
             f"memory:{memory_id}" for memory_id in memory_ids
         ],
-        "reconstruction_schema": {
-            field: {"summary": "string", "evidence_refs": ["permitted reference"]}
-            for field in RECONSTRUCTION_FIELDS
-        },
+        "reconstruction_schema": reconstruction_json_schema(),
     }
     canonical = json.dumps(bootstrap, sort_keys=True, separators=(",", ":"))
     bootstrap["bootstrap_fingerprint"] = sha256(canonical.encode("utf-8")).hexdigest()[:16]
@@ -112,7 +152,14 @@ def build_clean_model_request(bootstrap: dict) -> dict:
         purpose="cognitive_portability_certification",
         temperature=0.0,
         max_output_tokens=2500,
-        response_format={"type": "json_object"},
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "project_l_portability_reconstruction",
+                "strict": True,
+                "schema": reconstruction_json_schema(),
+            },
+        },
     )
 
 
@@ -202,5 +249,6 @@ __all__ = [
     "evaluate_reconstruction",
     "parse_reconstruction",
     "portability_manifest",
+    "reconstruction_json_schema",
     "run_portability_certification",
 ]

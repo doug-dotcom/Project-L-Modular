@@ -55,7 +55,7 @@ def test_phase_twelve_bootstrap_contains_only_governed_input_and_traceable_refs(
     assert bootstrap["model_prior_context"] is False
     assert bootstrap["only_permitted_input"] == "this_bootstrap"
     assert "memory:5477" in bootstrap["permitted_evidence_references"]
-    assert set(bootstrap["reconstruction_schema"]) == set(RECONSTRUCTION_FIELDS)
+    assert set(bootstrap["reconstruction_schema"]["properties"]) == set(RECONSTRUCTION_FIELDS)
     assert bootstrap["bootstrap_fingerprint"]
 
 
@@ -64,7 +64,8 @@ def test_phase_twelve_clean_request_has_no_conversation_history_or_hidden_contex
     request = build_clean_model_request(bootstrap)
     assert request["purpose"] == "cognitive_portability_certification"
     assert request["temperature"] == 0.0
-    assert request["response_format"] == {"type": "json_object"}
+    assert request["response_format"]["type"] == "json_schema"
+    assert request["response_format"]["json_schema"]["strict"] is True
     assert len(request["messages"]) == 2
     assert "zero prior Doug context" in request["messages"][0]["content"]
     assert json.loads(request["messages"][1]["content"])["bootstrap_fingerprint"]
