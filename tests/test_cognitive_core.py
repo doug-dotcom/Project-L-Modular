@@ -25,13 +25,47 @@ class FakeCompletions:
             "activation_reason": "decision_with_competing_evidence",
             "evidence_summary": "Two records support option A and one conflicts.",
             "assumptions": ["The supplied goal is current."],
-            "hypotheses": [{"claim": "A", "support": "two records", "counterevidence": "one conflict"}],
+            "hypotheses": [
+                {
+                    "id": "H1",
+                    "claim": "A best fits the current evidence.",
+                    "supporting_evidence": ["Two records support A."],
+                    "contradictory_evidence": ["One older record supports B."],
+                    "assumptions": ["The supplied goal is current."],
+                    "alternative_explanations": ["The older record may reflect a changed goal."],
+                    "status": "supported",
+                },
+                {
+                    "id": "H2",
+                    "claim": "B may fit if the older goal still applies.",
+                    "supporting_evidence": ["One older record supports B."],
+                    "contradictory_evidence": ["Two current records support A."],
+                    "assumptions": ["The older goal remains relevant."],
+                    "alternative_explanations": ["The apparent conflict may be temporal change."],
+                    "status": "weakened",
+                },
+            ],
             "conflicts": ["One older record supports B."],
+            "alternative_explanations": ["The user's goal may have changed over time."],
+            "conclusion_change_evidence": ["A current explicit statement that B is now preferred."],
+            "counterfactuals": [{
+                "condition": "If the current goal matched the older record",
+                "expected_result": "B would receive greater support.",
+                "implication": "The recommendation depends on goal recency.",
+                "limitations": ["This does not prove the older goal is current."],
+            }],
             "conclusion": "A is presently better supported.",
             "confidence": {"level": "medium", "score": 0.68, "basis": "Mixed traceable evidence."},
             "uncertainties": ["The goal may have changed."],
             "recommended_action": "Confirm the current goal before acting.",
             "rationale_summary": "A has broader support, but the conflict remains material.",
+            "direct_causal_evidence": {"established": False, "basis": "No direct causal evidence."},
+            "causal_assessment": {
+                "relationship": "association",
+                "supported_causal_claim": False,
+                "basis": "The records co-occur but do not establish cause.",
+                "limitations": ["No intervention or explicit attribution is present."],
+            },
         })
         return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=content))])
 
@@ -125,6 +159,12 @@ def test_rike_returns_bounded_inspectable_packet():
     assert packet["status"] == "ok"
     assert packet["confidence"]["level"] == "medium"
     assert packet["rationale_summary"]
+    assert packet["version"] == "2.0"
+    assert len(packet["hypotheses"]) == 2
+    assert packet["counterfactuals"][0]["implication"]
+    assert packet["conclusion_change_evidence"]
+    assert packet["causal_assessment"]["relationship"] == "association"
+    assert packet["causal_assessment"]["supported_causal_claim"] is False
     system_prompt = client.chat.completions.kwargs["messages"][0]["content"]
     assert "hidden chain-of-thought" in system_prompt
     assert client.chat.completions.kwargs["temperature"] == 0.15
@@ -286,6 +326,91 @@ def test_guardrails_reject_missing_or_aggregated_confidence_dimensions():
     )
     assert "confidence_dimensions_incomplete" in assessment["issues"]
     assert "confidence_dimensions_improperly_aggregated" in assessment["issues"]
+
+
+def test_phase_three_guardrails_require_competing_hypotheses_and_counterfactuals():
+    packet = {
+        "status": "ok",
+        "evidence_summary": "One explanation was considered.",
+        "confidence": {"level": "medium"},
+        "uncertainties": ["Alternatives were not tested."],
+        "hypotheses": [{"claim": "Only hypothesis"}],
+        "counterfactuals": [],
+        "conclusion_change_evidence": [],
+        "causal_assessment": {"relationship": "association", "supported_causal_claim": False},
+        "direct_causal_evidence": {"established": False},
+    }
+    assessment = assess_cognitive_packet(packet)
+    assert "competing_hypotheses_missing" in assessment["issues"]
+    assert "hypothesis_evidence_test_incomplete" in assessment["issues"]
+    assert "counterfactual_test_missing" in assessment["issues"]
+    assert "conclusion_change_test_missing" in assessment["issues"]
+
+
+def test_phase_three_causal_gate_fails_closed_without_direct_evidence():
+    class UnsupportedCausalCompletions(FakeCompletions):
+        def create(self, **kwargs):
+            response = super().create(**kwargs)
+            data = json.loads(response.choices[0].message.content)
+            data["causal_assessment"] = {
+                "relationship": "supported_causal_claim",
+                "supported_causal_claim": True,
+                "basis": "A mechanism seems plausible.",
+                "limitations": [],
+            }
+            data["direct_causal_evidence"] = {
+                "established": False,
+                "basis": "No explicit attribution exists.",
+            }
+            response.choices[0].message.content = json.dumps(data)
+            return response
+
+    client = SimpleNamespace(chat=SimpleNamespace(completions=UnsupportedCausalCompletions()))
+    packet = reason("What caused this outcome?", evidence_context="association only", client=client)
+    assert packet["direct_causal_evidence"]["established"] is False
+    assert packet["causal_assessment"]["supported_causal_claim"] is False
+
+
+def test_phase_three_causal_gate_verifies_exact_retrieved_evidence():
+    class SupportedCausalCompletions(FakeCompletions):
+        def create(self, **kwargs):
+            response = super().create(**kwargs)
+            data = json.loads(response.choices[0].message.content)
+            data["causal_assessment"] = {
+                "relationship": "supported_causal_claim",
+                "supported_causal_claim": True,
+                "basis": "Doug explicitly attributed the decision to the commute.",
+                "limitations": [],
+            }
+            data["direct_causal_evidence"] = {
+                "established": True,
+                "basis": "Explicit user-authored attribution.",
+                "evidence_quotes": ["I left the job because the commute was unmanageable."],
+            }
+            response.choices[0].message.content = json.dumps(data)
+            return response
+
+    client = SimpleNamespace(chat=SimpleNamespace(completions=SupportedCausalCompletions()))
+    packet = reason(
+        "Why did I leave the job?",
+        evidence_context="SOURCE_ROLE=USER | I left the job because the commute was unmanageable.",
+        client=client,
+    )
+    assert packet["direct_causal_evidence"]["established"] is True
+    assert packet["direct_causal_evidence"]["verified_against_context"] is True
+    assert packet["causal_assessment"]["supported_causal_claim"] is True
+    assert assess_cognitive_packet(packet)["passed"] is True
+
+
+def test_phase_three_packet_passes_full_governance_contract():
+    packet = reason(
+        "Compare the competing explanations and test what would change the conclusion",
+        evidence_context="80 | memory_project_l | one\n79 | memory_project_l | two",
+        client=FakeClient(),
+    )
+    assessment = assess_cognitive_packet(packet)
+    assert assessment["passed"] is True
+    assert not assessment["issues"]
 
 
 def test_memory_pipeline_records_only_stages_that_really_ran():

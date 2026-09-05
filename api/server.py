@@ -594,13 +594,13 @@ def cognition_status():
     return {
         "status": "ok",
         "architecture": "project_l_cognitive_core",
-        "version": "3.0",
+        "version": "4.0",
         "user_facing_voice": "L",
         "engines": {
             "metacognition": "cognitive_controller_v1",
             "uncertainty": "multidimensional_uncertainty_v1",
             "retrieval": "rhee_v5",
-            "reasoning": "rike_v1",
+            "reasoning": "rike_v2_hypothesis_counterfactual",
             "longitudinal": "mary_v4",
             "principles": "quinn_v2",
             "memory_governance": "carol_v5+sara_v2",
@@ -612,6 +612,9 @@ def cognition_status():
             "pattern_requires_corroboration": True,
             "self_generated_learning_disabled": True,
             "doug_retains_agency": True,
+            "competing_hypotheses_required": True,
+            "counterfactuals_are_tests_not_facts": True,
+            "causal_claims_require_direct_evidence": True,
         },
     }
 
@@ -702,9 +705,17 @@ def chat(req: ChatRequest):
 
     cognitive_packet = {
         "engine": "project_l_cognitive_core",
-        "version": "1.0",
+        "version": "4.0",
         "route": {"rike": "not_required"},
-        "rike": {"status": "not_required", "confidence": {}},
+        "rike": {
+            "version": "2.0",
+            "status": "not_required",
+            "confidence": {},
+            "hypotheses": [],
+            "counterfactuals": [],
+            "conclusion_change_evidence": [],
+            "causal_assessment": {"relationship": "none", "supported_causal_claim": False},
+        },
         "guardrails": {"passed": True, "issues": []},
     }
 
@@ -799,6 +810,11 @@ RESPONSE RULES:
 - Treat the six confidence dimensions independently; never average or collapse them into an overall score.
 - When a material dimension is low, state the specific limitation naturally and limit only the affected claim.
 - A strong source score must not inflate weak retrieval, interpretation, reasoning or prediction confidence.
+- Compare RIKE's competing hypotheses; preserve material evidence for and against the leading explanation.
+- Treat counterfactuals as reasoning tests, never as evidence that an event occurred.
+- State what evidence would materially change a consequential conclusion when relevant.
+- Keep correlation, association, plausible mechanism and supported causal claims distinct.
+- Never present a causal explanation as established unless RIKE's direct causal evidence gate passed.
 - Mary may call something a pattern only when her threshold is met; otherwise call it an observation.
 - Quinn's principles are advisory and must not override evidence or Doug's agency.
 - A capability result is evidence or an action receipt, not a separate voice. Present it as L.
@@ -883,6 +899,10 @@ RESPONSE RULES:
             "confidence": cognitive_packet.get("rike", {}).get("confidence", {}),
             "confidence_dimensions": cognitive_packet.get("confidence_dimensions", {}),
             "lenses": cognitive_packet.get("rike", {}).get("lenses", []),
+            "hypotheses": cognitive_packet.get("rike", {}).get("hypotheses", []),
+            "counterfactuals": cognitive_packet.get("rike", {}).get("counterfactuals", []),
+            "conclusion_change_evidence": cognitive_packet.get("rike", {}).get("conclusion_change_evidence", []),
+            "causal_assessment": cognitive_packet.get("rike", {}).get("causal_assessment", {}),
             "guardrails_passed": cognitive_packet.get("guardrails", {}).get("passed"),
             "guardrail_issues": cognitive_packet.get("guardrails", {}).get("issues", []),
         }

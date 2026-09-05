@@ -17,6 +17,15 @@ REASONING_SIGNALS = (
     "self-audit", "audit yourself", "your capabilities",
 )
 
+HYPOTHESIS_STATUSES = {"supported", "plausible", "weakened", "insufficient"}
+CAUSAL_RELATIONSHIPS = {
+    "none",
+    "correlation",
+    "association",
+    "plausible_mechanism",
+    "supported_causal_claim",
+}
+
 
 def needs_structured_reasoning(message: str) -> bool:
     text = str(message or "").strip().lower()
@@ -34,7 +43,7 @@ def _fallback_packet(question: str, evidence_context: str, lenses: list[dict], r
     )
     return {
         "engine": "rike",
-        "version": "1.0",
+        "version": "2.0",
         "status": "degraded",
         "activation_reason": reason,
         "question": question,
@@ -43,6 +52,9 @@ def _fallback_packet(question: str, evidence_context: str, lenses: list[dict], r
         "assumptions": [],
         "hypotheses": [],
         "conflicts": [],
+        "alternative_explanations": [],
+        "conclusion_change_evidence": [],
+        "counterfactuals": [],
         "conclusion": "",
         "confidence": {
             "level": "medium" if evidence_present else "low",
@@ -56,10 +68,69 @@ def _fallback_packet(question: str, evidence_context: str, lenses: list[dict], r
             "established": False,
             "basis": "No accepted structured reasoning established a direct cause.",
         },
+        "causal_assessment": {
+            "relationship": "none",
+            "supported_causal_claim": False,
+            "basis": "No accepted structured reasoning established a causal relationship.",
+            "limitations": ["RIKE model reasoning was unavailable."],
+        },
     }
 
 
-def _normalise_packet(data: dict, question: str, lenses: list[dict]) -> dict:
+def _strings(value, limit: int = 8, length: int = 800) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [str(item)[:length] for item in value[:limit] if str(item).strip()]
+
+
+def _normalise_hypotheses(value) -> list[dict]:
+    if not isinstance(value, list):
+        return []
+    hypotheses = []
+    for index, raw in enumerate(value[:6], start=1):
+        item = raw if isinstance(raw, dict) else {"claim": raw}
+        status = str(item.get("status") or "insufficient").lower()
+        if status not in HYPOTHESIS_STATUSES:
+            status = "insufficient"
+        supporting = item.get("supporting_evidence", item.get("support", []))
+        contradictory = item.get("contradictory_evidence", item.get("counterevidence", []))
+        if not isinstance(supporting, list):
+            supporting = [supporting] if supporting else []
+        if not isinstance(contradictory, list):
+            contradictory = [contradictory] if contradictory else []
+        hypotheses.append({
+            "id": str(item.get("id") or f"H{index}")[:40],
+            "claim": str(item.get("claim") or "")[:1000],
+            "supporting_evidence": _strings(supporting),
+            "contradictory_evidence": _strings(contradictory),
+            "assumptions": _strings(item.get("assumptions")),
+            "alternative_explanations": _strings(item.get("alternative_explanations")),
+            "status": status,
+        })
+    return hypotheses
+
+
+def _normalise_counterfactuals(value) -> list[dict]:
+    if not isinstance(value, list):
+        return []
+    counterfactuals = []
+    for raw in value[:6]:
+        item = raw if isinstance(raw, dict) else {"condition": raw}
+        counterfactuals.append({
+            "condition": str(item.get("condition") or "")[:1000],
+            "expected_result": str(item.get("expected_result") or "")[:1000],
+            "implication": str(item.get("implication") or "")[:1000],
+            "limitations": _strings(item.get("limitations"), limit=4),
+        })
+    return counterfactuals
+
+
+def _normalise_packet(
+    data: dict,
+    question: str,
+    lenses: list[dict],
+    evidence_context: str = "",
+) -> dict:
     confidence = data.get("confidence") if isinstance(data.get("confidence"), dict) else {}
     level = str(confidence.get("level") or "low").lower()
     if level not in {"low", "medium", "high"}:
@@ -69,17 +140,37 @@ def _normalise_packet(data: dict, question: str, lenses: list[dict]) -> dict:
     except (TypeError, ValueError):
         score = 0.25
 
+    causal = data.get("causal_assessment") if isinstance(data.get("causal_assessment"), dict) else {}
+    relationship = str(causal.get("relationship") or "none").lower()
+    if relationship not in CAUSAL_RELATIONSHIPS:
+        relationship = "none"
+    direct = data.get("direct_causal_evidence") if isinstance(data.get("direct_causal_evidence"), dict) else {}
+    evidence_quotes = _strings(direct.get("evidence_quotes"), limit=4, length=500)
+    evidence_text = str(evidence_context or "").casefold()
+    quotes_verified = bool(evidence_quotes) and all(
+        quote.casefold() in evidence_text for quote in evidence_quotes
+    )
+    causal_supported = bool(
+        relationship == "supported_causal_claim"
+        and causal.get("supported_causal_claim") is True
+        and direct.get("established") is True
+        and quotes_verified
+    )
+
     packet = {
         "engine": "rike",
-        "version": "1.0",
+        "version": "2.0",
         "status": "ok",
         "activation_reason": str(data.get("activation_reason") or "complex_request")[:300],
         "question": question,
         "lenses": [lens["name"] for lens in lenses],
         "evidence_summary": str(data.get("evidence_summary") or "")[:1800],
         "assumptions": list(data.get("assumptions") or [])[:8],
-        "hypotheses": list(data.get("hypotheses") or [])[:6],
+        "hypotheses": _normalise_hypotheses(data.get("hypotheses")),
         "conflicts": list(data.get("conflicts") or [])[:8],
+        "alternative_explanations": _strings(data.get("alternative_explanations")),
+        "conclusion_change_evidence": _strings(data.get("conclusion_change_evidence")),
+        "counterfactuals": _normalise_counterfactuals(data.get("counterfactuals")),
         "conclusion": str(data.get("conclusion") or "")[:1500],
         "confidence": {
             "level": level,
@@ -90,12 +181,16 @@ def _normalise_packet(data: dict, question: str, lenses: list[dict]) -> dict:
         "recommended_action": str(data.get("recommended_action") or "")[:1200],
         "rationale_summary": str(data.get("rationale_summary") or "")[:1800],
         "direct_causal_evidence": {
-            "established": bool(
-                (data.get("direct_causal_evidence") or {}).get("established")
-            ) if isinstance(data.get("direct_causal_evidence"), dict) else False,
-            "basis": str(
-                (data.get("direct_causal_evidence") or {}).get("basis") or ""
-            )[:800] if isinstance(data.get("direct_causal_evidence"), dict) else "",
+            "established": causal_supported,
+            "basis": str(direct.get("basis") or "")[:800],
+            "evidence_quotes": evidence_quotes,
+            "verified_against_context": quotes_verified,
+        },
+        "causal_assessment": {
+            "relationship": relationship,
+            "supported_causal_claim": causal_supported,
+            "basis": str(causal.get("basis") or "")[:800],
+            "limitations": _strings(causal.get("limitations"), limit=6),
         },
     }
     if not packet["uncertainties"]:
@@ -129,21 +224,36 @@ def reason(
         "quinn_principles": (quinn_packet or {}).get("principles", []),
     }
     system = """
-You are RIKE, Project L's structured reasoning engine. You do not speak to Doug.
-Analyse only the supplied question, evidence, principles and constraints. Distinguish
-retrieved evidence from inference. Preserve contradictions. Do not claim that one
-event proves a pattern. Never invent a source or memory. For a question asking why
-a past personal event happened, state a cause only when the supplied evidence directly
-attributes that cause; later insights and surrounding circumstances are context, not
-causal proof. Return JSON only with:
-activation_reason, evidence_summary, assumptions, hypotheses, conflicts, conclusion,
-confidence {level: low|medium|high, score: 0..1, basis}, uncertainties,
-recommended_action, rationale_summary. Hypotheses must be concise claim/support/
-counterevidence objects. rationale_summary is a short inspectable justification, not
-hidden chain-of-thought or token-by-token deliberation.
-Also return direct_causal_evidence {established: boolean, basis: string}. Set
-established true only when the supplied evidence explicitly attributes the event to
-that cause. Similar themes, later reflections and chronological proximity are false.
+You are RIKE 2, Project L's hypothesis and counterfactual reasoning engine. You do not
+speak to Doug. Analyse only the supplied question, evidence, principles and constraints.
+Distinguish retrieved evidence from inference, preserve contradictions, and never invent
+a source or memory.
+
+Generate at least two genuinely competing hypotheses when status is ok. For each return:
+id, claim, supporting_evidence[], contradictory_evidence[], assumptions[],
+alternative_explanations[], status (supported|plausible|weakened|insufficient).
+An empty evidence list means none was found; never fill it with invented support.
+
+Expose global assumptions and alternative_explanations. Return
+conclusion_change_evidence[] stating what new evidence would materially change the
+conclusion. Return counterfactuals[] with condition, expected_result, implication and
+limitations[]. Counterfactuals are tests of reasoning, not facts about what occurred.
+
+Classify the strongest justified relationship as exactly one of: none, correlation,
+association, plausible_mechanism, supported_causal_claim. Correlation and association
+are not causation. A plausible mechanism is not a supported causal claim. Return
+causal_assessment {relationship, supported_causal_claim, basis, limitations[]} and
+direct_causal_evidence {established, basis, evidence_quotes[]}. Both causal booleans may
+be true only when evidence_quotes contains the exact supplied evidence text that explicitly
+attributes the event or outcome to that cause. Similar themes, later reflections,
+chronology and counterfactual plausibility are insufficient.
+
+Return JSON only with activation_reason, evidence_summary, assumptions, hypotheses,
+conflicts, alternative_explanations, conclusion_change_evidence, counterfactuals,
+conclusion, confidence {level: low|medium|high, score: 0..1, basis}, uncertainties,
+recommended_action, rationale_summary, direct_causal_evidence and causal_assessment.
+rationale_summary is a concise inspectable justification, never hidden chain-of-thought
+or token-by-token deliberation.
 """.strip()
 
     try:
@@ -159,7 +269,7 @@ that cause. Similar themes, later reflections and chronological proximity are fa
         data = json.loads(response.choices[0].message.content or "{}")
         if not isinstance(data, dict):
             raise ValueError("RIKE response was not an object")
-        return _normalise_packet(data, clean_question, lenses)
+        return _normalise_packet(data, clean_question, lenses, evidence_context)
     except Exception as exc:
         return _fallback_packet(
             clean_question,

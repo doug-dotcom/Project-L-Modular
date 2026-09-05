@@ -49,13 +49,22 @@ def run_cognitive_core(
     else:
         rike = {
             "engine": "rike",
-            "version": "1.0",
+            "version": "2.0",
             "status": "not_required",
             "activation_reason": "ordinary_conversation",
             "confidence": {"level": "medium", "score": 0.5, "basis": "No structured conclusion requested."},
             "evidence_summary": "Structured reasoning was not required.",
             "uncertainties": ["No structured conclusion was requested."],
             "lenses": [],
+            "hypotheses": [],
+            "counterfactuals": [],
+            "conclusion_change_evidence": [],
+            "causal_assessment": {
+                "relationship": "none",
+                "supported_causal_claim": False,
+                "basis": "No causal assessment was required.",
+                "limitations": [],
+            },
         }
 
     confidence_dimensions = assess_confidence_dimensions(
@@ -69,7 +78,7 @@ def run_cognitive_core(
     guardrails = assess_cognitive_packet(rike, mary, confidence_dimensions)
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "3.0",
+        "version": "4.0",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "route": {

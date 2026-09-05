@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from core.cognition.rike import CAUSAL_RELATIONSHIPS
+
 
 def assess_cognitive_packet(
     packet: dict,
@@ -20,6 +22,47 @@ def assess_cognitive_packet(
         issues.append("pattern_claim_requires_caution")
     if not packet.get("uncertainties"):
         issues.append("uncertainty_review_missing")
+    if packet.get("status") == "ok":
+        hypotheses = packet.get("hypotheses") or []
+        if len(hypotheses) < 2:
+            issues.append("competing_hypotheses_missing")
+        required_hypothesis_fields = {
+            "claim", "supporting_evidence", "contradictory_evidence",
+            "assumptions", "alternative_explanations", "status",
+        }
+        if any(not isinstance(item, dict) or not required_hypothesis_fields.issubset(item) for item in hypotheses):
+            issues.append("hypothesis_evidence_test_incomplete")
+        alternatives = packet.get("alternative_explanations") or []
+        hypothesis_alternatives = any(
+            isinstance(item, dict) and item.get("alternative_explanations")
+            for item in hypotheses
+        )
+        if not alternatives and not hypothesis_alternatives:
+            issues.append("alternative_explanations_missing")
+        if not packet.get("conclusion_change_evidence"):
+            issues.append("conclusion_change_test_missing")
+        counterfactuals = packet.get("counterfactuals") or []
+        if not counterfactuals or any(
+            not isinstance(item, dict)
+            or not all(item.get(field) for field in ("condition", "expected_result", "implication"))
+            for item in counterfactuals
+        ):
+            issues.append("counterfactual_test_missing")
+        causal = packet.get("causal_assessment") or {}
+        relationship = causal.get("relationship")
+        if relationship not in CAUSAL_RELATIONSHIPS:
+            issues.append("causal_relationship_unclassified")
+        direct_established = bool((packet.get("direct_causal_evidence") or {}).get("established"))
+        direct_verified = bool((packet.get("direct_causal_evidence") or {}).get("verified_against_context"))
+        causal_supported = causal.get("supported_causal_claim") is True
+        if causal_supported != direct_established:
+            issues.append("causal_evidence_inconsistent")
+        if (causal_supported or direct_established) and relationship != "supported_causal_claim":
+            issues.append("causal_claim_exceeds_classification")
+        if relationship == "supported_causal_claim" and not (causal_supported and direct_established):
+            issues.append("causal_claim_lacks_direct_evidence")
+        if direct_established and not direct_verified:
+            issues.append("causal_evidence_not_verified_against_context")
     if confidence_dimensions is not None:
         dimensions = (confidence_dimensions or {}).get("dimensions") or {}
         required = {"source", "retrieval", "memory", "interpretation", "reasoning", "prediction"}
@@ -46,6 +89,10 @@ def guardrail_prompt(assessment: dict) -> str:
         "- State material uncertainty and contradictions.\n"
         "- Keep source, retrieval, memory, interpretation, reasoning and prediction confidence separate.\n"
         "- Never collapse the confidence dimensions into one overall score.\n"
+        "- Compare competing hypotheses and preserve evidence both for and against each.\n"
+        "- Expose material assumptions, alternatives, counterfactuals and what evidence would change the conclusion.\n"
+        "- Keep correlation, association, plausible mechanism and supported causal claims distinct.\n"
+        "- Never state a supported cause unless direct causal evidence passed RIKE's causal gate.\n"
         "- Preserve Doug's authority over consequential decisions.\n"
         "- Do not reveal hidden chain-of-thought; provide only a concise rationale.\n"
         f"- Pre-response review issues: {issues}."
