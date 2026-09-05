@@ -233,7 +233,7 @@ def build_longitudinal_packet(
     trajectory = _confidence_trajectory(episodes)
     pattern_threshold_met = (
         len(supporting) >= 2
-        and state not in {"Candidate", "Weakening", "Superseded"}
+        and state not in {"Candidate", "Weakening", "Historical", "Superseded"}
     )
 
     return {
