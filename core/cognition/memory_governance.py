@@ -95,11 +95,32 @@ def mary_integrate(carol_packet: dict, sara_packet: dict) -> dict:
     content = carol_packet.get("content", "")
     lowered = content.lower()
     signals = [signal for signal in PATTERN_SIGNALS if _has_signal(lowered, signal)]
+    source = carol_packet.get("source") or {}
+    observed_at = source.get("created_at")
     return {
-        "stage": "mary_v4",
+        "stage": "mary_v5",
         "applied": bool(signals),
         "pattern_signals": signals,
-        "instruction": "Treat this as a pattern candidate until corroborated by another event.",
+        "lifecycle_state": "Candidate",
+        "first_seen": observed_at,
+        "last_seen": observed_at,
+        "supporting_episodes": [{
+            "source_table": source.get("table"),
+            "source_id": source.get("id"),
+            "observed_at": observed_at,
+        }] if signals else [],
+        "contradicting_episodes": [],
+        "confidence_trajectory": [{
+            "observed_at": observed_at,
+            "direction": "supports",
+            "confidence": 0.2,
+        }] if signals else [],
+        "current_relevance": "current",
+        "current_identity_precedence": True,
+        "instruction": (
+            "Treat this as a Candidate until independent episodes corroborate it. "
+            "Current identity and current evidence outrank historical patterns."
+        ),
     }
 
 

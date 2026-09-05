@@ -1,11 +1,14 @@
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
-from agents.quinn.quinn import curate_principles
+from agents.quinn.quinn import curate_principles, evaluate_candidate_principle
 from core.cognition.brains_trust import select_lenses
 from core.cognition.longitudinal import build_longitudinal_packet
 from core.cognition.learning_engine import build_learning_observation, extract_user_learning
+from core.cognition.learning_engine import promote_experience_principle
+from core.cognition.experience_abstraction import build_experience_abstraction
 from core.cognition.memory_governance import build_memory_payload
 from core.cognition.orchestrator import run_cognitive_core
 from core.cognition.rike import needs_structured_reasoning, reason
@@ -181,6 +184,7 @@ def test_mary_requires_multiple_traceable_observations_for_pattern():
     one = build_longitudinal_packet("Is this a pattern again?", "80 | memory_identity | one event")
     assert one["active"] is True
     assert one["pattern_threshold_met"] is False
+    assert one["lifecycle_state"] == "Candidate"
     assert one["caution"]
 
     two = build_longitudinal_packet(
@@ -188,6 +192,130 @@ def test_mary_requires_multiple_traceable_observations_for_pattern():
         "80 | memory_identity | first\n79 | memory_identity | second",
     )
     assert two["pattern_threshold_met"] is True
+    assert two["lifecycle_state"] == "Emerging"
+
+
+def test_phase_four_mary_tracks_full_lifecycle_and_confidence_trajectory():
+    context = "\n".join([
+        "90 | memory_identity | ID=1 | CREATED_AT=2026-01-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+        "2026-01-01 I started responding differently.",
+        "88 | memory_identity | ID=2 | CREATED_AT=2026-02-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+        "2026-02-01 The response happened again.",
+        "86 | memory_identity | ID=3 | CREATED_AT=2026-03-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+        "2026-03-01 The change continued.",
+        "84 | memory_identity | ID=4 | CREATED_AT=2026-04-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+        "2026-04-01 The pattern repeated.",
+    ])
+    packet = build_longitudinal_packet(
+        "Has this pattern changed over time?",
+        context,
+        now=datetime(2026, 9, 5, tzinfo=timezone.utc),
+    )
+    assert packet["lifecycle_state"] == "Established"
+    assert packet["first_seen"] == "2026-01-01"
+    assert packet["last_seen"] == "2026-04-01"
+    assert len(packet["supporting_episodes"]) == 4
+    assert not packet["contradicting_episodes"]
+    assert len(packet["confidence_trajectory"]) == 4
+    assert packet["confidence_trajectory"][-1]["confidence"] > packet["confidence_trajectory"][0]["confidence"]
+    assert packet["current_relevance"] == "current"
+    assert packet["current_identity_precedence"] is True
+    developing = build_longitudinal_packet(
+        "Has this pattern changed over time?",
+        "\n".join(context.splitlines()[:6]),
+        now=datetime(2026, 9, 5, tzinfo=timezone.utc),
+    )
+    assert developing["lifecycle_state"] == "Developing"
+
+
+def test_phase_four_mary_marks_contradicted_pattern_as_weakening():
+    context = "\n".join([
+        "90 | memory_identity | ID=1 | CREATED_AT=2026-01-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+        "2026-01-01 This happened again.",
+        "88 | memory_identity | ID=2 | CREATED_AT=2026-02-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+        "2026-02-01 This pattern continued.",
+        "86 | memory_identity | ID=3 | CREATED_AT=2026-07-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+        "2026-07-01 This no longer happens.",
+        "84 | memory_identity | ID=4 | CREATED_AT=2026-08-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+        "2026-08-01 The pattern has stopped.",
+    ])
+    packet = build_longitudinal_packet(
+        "Is this pattern still current?",
+        context,
+        now=datetime(2026, 9, 5, tzinfo=timezone.utc),
+    )
+    assert packet["lifecycle_state"] == "Weakening"
+    assert packet["pattern_threshold_met"] is False
+    assert len(packet["contradicting_episodes"]) == 2
+
+
+def test_phase_four_historical_doug_is_context_not_current_identity():
+    context = "\n".join([
+        "90 | memory_identity | ID=1 | CREATED_AT=2024-01-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+        "2024-01-01 I used to react this way.",
+        "88 | memory_identity | ID=2 | CREATED_AT=2024-02-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+        "2024-02-01 It happened again.",
+    ])
+    packet = build_longitudinal_packet(
+        "What was my pattern before?",
+        context,
+        now=datetime(2026, 9, 5, tzinfo=timezone.utc),
+    )
+    assert packet["lifecycle_state"] == "Historical"
+    assert packet["current_relevance"] == "historical"
+    assert packet["historical_evidence_use"] == "context_only"
+    assert packet["current_identity_precedence"] is True
+
+
+def test_phase_four_explicitly_superseded_pattern_stays_superseded():
+    context = "\n".join([
+        "90 | memory_identity | ID=1 | CREATED_AT=2026-01-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+        "2026-01-01 This was an old version of me.",
+        "88 | memory_identity | ID=2 | CREATED_AT=2026-08-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+        "2026-08-01 That pattern was replaced by how I respond now.",
+    ])
+    packet = build_longitudinal_packet(
+        "Has this pattern changed?",
+        context,
+        now=datetime(2026, 9, 5, tzinfo=timezone.utc),
+    )
+    assert packet["lifecycle_state"] == "Superseded"
+    assert packet["current_relevance"] == "superseded"
+    assert packet["pattern_threshold_met"] is False
+
+
+def test_phase_four_mary_keeps_episodic_and_external_evidence():
+    context = "\n".join([
+        "92 | episodic_memories | ID=7 | CREATED_AT=2026-08-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+        "2026-08-01 A dated episode happened again.",
+        "GOVERNED CAPABILITY RESULT",
+        "RESULT: Independent sources raise confidence: https://example.test/evidence",
+    ])
+    packet = build_longitudinal_packet(
+        "Has this happened over time?",
+        context,
+        now=datetime(2026, 9, 5, tzinfo=timezone.utc),
+    )
+    tables = {item["table"] for item in packet["supporting_episodes"]}
+    assert "episodic_memories" in tables
+    assert "external_source" in tables
+    assert packet["lifecycle_state"] == "Emerging"
+
+
+def test_phase_four_guardrails_require_current_identity_precedence():
+    mary = build_longitudinal_packet(
+        "Is this a pattern?",
+        "80 | memory_identity | first\n79 | memory_identity | second",
+    )
+    mary["current_identity_precedence"] = False
+    reasoning = reason(
+        "Assess this pattern and compare explanations",
+        evidence_context="80 | memory_identity | first\n79 | memory_identity | second",
+        client=FakeClient(),
+    )
+    assessment = assess_cognitive_packet(reasoning, mary)
+    assert "current_identity_precedence_missing" in assessment["issues"]
+    assert assessment["passed"] is False
 
 
 def test_quinn_is_a_versioned_advisory_principle_curator():
@@ -229,6 +357,7 @@ def test_orchestrator_selectively_connects_rhee_mary_quinn_and_rike():
         "mary": "active",
         "quinn": "advisory",
         "rike": "active",
+        "experience_abstraction": "candidate",
     }
     assert complex_packet["rike"]["status"] == "ok"
     assert complex_packet["guardrails"]["passed"] is True
@@ -423,7 +552,7 @@ def test_memory_pipeline_records_only_stages_that_really_ran():
     promotion = {"promote": True, "reason": "durable_statement", "explicit": False}
     payload, audit = build_memory_payload(row, promotion)
     assert audit["carol"]["target_table"] == "memory_project_l"
-    assert payload["processed_by"] == ["carol_v5", "sara_v2", "mary_v4"]
+    assert payload["processed_by"] == ["carol_v5", "sara_v2", "mary_v5"]
     assert payload["metadata"]["provenance"]["id"] == 77
     assert not ({"coach", "ronnie", "finlay", "chase", "mannie", "gary", "ian", "izzy"} & set(payload["processed_by"]))
 
@@ -453,6 +582,113 @@ def test_reasoning_output_cannot_promote_itself_to_learning():
     assert observation["auto_promoted"] is False
 
 
+def test_phase_five_abstracts_only_from_multiple_dated_experiences():
+    mary = build_longitudinal_packet(
+        "What higher-order principle does this pattern suggest over time?",
+        "\n".join([
+            "90 | episodic_memories | ID=1 | CREATED_AT=2026-01-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+            "2026-01-01 Slowing down helped me avoid overwhelm.",
+            "88 | episodic_memories | ID=2 | CREATED_AT=2026-03-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+            "2026-03-01 Pausing helped me solve a difficult task.",
+            "86 | episodic_memories | ID=3 | CREATED_AT=2026-06-01T00:00:00+00:00 | SOURCE_ROLE=USER",
+            "2026-06-01 Reducing the mental load helped again.",
+        ]),
+        now=datetime(2026, 9, 5, tzinfo=timezone.utc),
+    )
+    rike = reason("What principle is supported?", "dated evidence", client=FakeClient())
+    quinn = curate_principles("What principle is supported by this pattern over time?")
+    abstraction = build_experience_abstraction(
+        "What principle is supported?", mary, rike, quinn, {"passed": True}
+    )
+    assert abstraction["active"] is True
+    assert abstraction["status"] == "eligible_for_governed_promotion"
+    assert abstraction["evaluations"]["rhee"]["independent_experience_count"] == 3
+    assert abstraction["evaluations"]["quinn"]["passed"] is True
+    assert abstraction["evaluations"]["rike"]["passed"] is True
+    assert abstraction["evaluations"]["mary"]["passed"] is True
+    assert abstraction["governance"]["auto_promoted"] is False
+
+
+def test_phase_five_accepts_no_candidate_as_a_valid_outcome():
+    mary = build_longitudinal_packet(
+        "What principle does this experience suggest over time?",
+        "90 | episodic_memories | ID=1 | CREATED_AT=2026-08-01T00:00:00+00:00 | SOURCE_ROLE=USER\n"
+        "2026-08-01 One experience occurred.",
+        now=datetime(2026, 9, 5, tzinfo=timezone.utc),
+    )
+    abstraction = build_experience_abstraction(
+        "What principle does this suggest?",
+        mary,
+        reason("Assess it", "one event", client=FakeClient()),
+        curate_principles("pattern"),
+        {"passed": True},
+    )
+    assert abstraction["active"] is False
+    assert abstraction["status"] == "no_candidate"
+    assert abstraction["governance"]["promotion_eligible"] is False
+
+
+def test_phase_five_rejects_overgeneralised_candidate_wisdom():
+    evaluation = evaluate_candidate_principle(
+        "This always works for everyone",
+        question="Is this a durable principle?",
+    )
+    assert evaluation["passed"] is False
+    assert "candidate_principle_overgeneralised" in evaluation["issues"]
+
+
+def test_phase_five_requires_doug_before_durable_promotion():
+    packet = {
+        "version": "1.0",
+        "candidate_principle": "Reducing mental load before solving improves my execution.",
+        "source_references": ["episodic_memories:1", "episodic_memories:2"],
+        "contradiction_references": [],
+        "evaluations": {
+            stage: {"passed": True}
+            for stage in ("rhee", "quinn", "rike", "mary")
+        },
+        "governance": {"promotion_eligible": True},
+    }
+    assert promote_experience_principle(packet)["reason"] == "explicit_doug_approval_required"
+
+    calls = []
+    def fake_store(candidate, source_reference=None, client=None):
+        calls.append((candidate, source_reference))
+        return {"stored": True, "reason": "stored"}
+
+    outcome = promote_experience_principle(
+        packet,
+        authorisation={"authority": "Doug", "approved": True},
+        store_func=fake_store,
+    )
+    assert outcome["stored"] is True
+    assert outcome["source_count"] == 2
+    assert [source for _candidate, source in calls] == [
+        "episodic_memories:1", "episodic_memories:2",
+    ]
+    assert calls[0][0]["governance"]["mary_validated"] is True
+
+
+def test_phase_five_promotion_fails_closed_on_forged_eligibility():
+    packet = {
+        "candidate_principle": "A plausible but unvalidated higher-order principle.",
+        "source_references": ["episodic_memories:1", "episodic_memories:2"],
+        "evaluations": {
+            "rhee": {"passed": True},
+            "quinn": {"passed": True},
+            "rike": {"passed": False},
+            "mary": {"passed": True},
+        },
+        "governance": {"promotion_eligible": True},
+    }
+    outcome = promote_experience_principle(
+        packet,
+        authorisation={"authority": "Doug", "approved": True},
+        store_func=lambda *_args, **_kwargs: {"stored": True},
+    )
+    assert outcome == {"stored": False, "reason": "abstraction_not_eligible"}
+
+
 def test_live_memory_pipeline_executes_governance_and_controlled_learning(monkeypatch):
     from core.cognition import brain_pipeline
 
@@ -467,7 +703,7 @@ def test_live_memory_pipeline_executes_governance_and_controlled_learning(monkey
     tables = [table for table, _payload in database.inserts]
     memory_payload = next(payload for table, payload in database.inserts if table == "memory_project_l")
     assert result["status"] == "processed"
-    assert memory_payload["processed_by"] == ["carol_v5", "sara_v2", "mary_v4"]
+    assert memory_payload["processed_by"] == ["carol_v5", "sara_v2", "mary_v5"]
     assert "allegra_history" in tables
     assert result["learning"]["reason"] == "candidate_created"
 
@@ -491,7 +727,7 @@ def test_project_l_self_audit_contract_names_live_architecture_and_boundaries():
         {"route": {"rhee": "required", "rike": "active", "mary": "not_required"}},
     )
 
-    for component in ("L", "Rhee", "RIKE", "Mary", "Quinn", "Carol", "Sara", "Brains Trust"):
+    for component in ("L", "Rhee", "RIKE", "Mary", "Quinn", "Experience Abstraction", "Carol", "Sara", "Brains Trust"):
         assert component in contract
     assert "historical intent" in contract
     assert "current runtime facts" in contract

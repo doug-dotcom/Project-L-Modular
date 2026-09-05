@@ -26,7 +26,11 @@ SUPABASE_KEY = (
     or os.getenv("SUPABASE_KEY", "")
 )
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase = (
+    create_client(SUPABASE_URL, SUPABASE_KEY)
+    if SUPABASE_URL and SUPABASE_KEY
+    else None
+)
 
 RAW_TABLE = "raw_catchall"
 

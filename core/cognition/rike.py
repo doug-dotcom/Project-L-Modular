@@ -229,6 +229,10 @@ speak to Doug. Analyse only the supplied question, evidence, principles and cons
 Distinguish retrieved evidence from inference, preserve contradictions, and never invent
 a source or memory.
 
+Treat Mary's lifecycle packet as bounded longitudinal evidence. Current identity and
+current evidence outrank historical, weakening or superseded patterns. Never describe
+historical Doug as Doug's current identity without current corroboration.
+
 Generate at least two genuinely competing hypotheses when status is ok. For each return:
 id, claim, supporting_evidence[], contradictory_evidence[], assumptions[],
 alternative_explanations[], status (supported|plausible|weakened|insufficient).

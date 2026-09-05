@@ -6,6 +6,8 @@ principles that RIKE may apply and L may explain.
 
 from __future__ import annotations
 
+import re
+
 
 PRINCIPLES = (
     {"id": "Q-EVIDENCE-001", "version": "1.0", "principle": "Prefer traceable evidence over confident language.", "applies_to": ("evidence", "fact", "true", "verify", "recall", "remember"), "source": "Project L truth and provenance constitution"},
@@ -33,6 +35,37 @@ def curate_principles(question: str, limit: int = 4) -> dict:
         "principles": selected[: max(1, int(limit))],
         "authority": "advisory",
         "instruction": "Apply only relevant principles and disclose uncertainty; Quinn does not decide.",
+    }
+
+
+def evaluate_candidate_principle(
+    candidate: str,
+    question: str = "",
+    curated_packet: dict | None = None,
+) -> dict:
+    """Screen candidate wisdom without granting it authority or truth status."""
+    clean = " ".join(str(candidate or "").split()).strip()
+    packet = curated_packet or curate_principles(f"{question} {clean}")
+    words = re.findall(r"[a-z0-9']+", clean.lower())
+    overgeneralised = any(word in {"always", "never", "everyone", "everything"} for word in words)
+    issues = []
+    if len(words) < 4:
+        issues.append("candidate_principle_not_substantive")
+    if overgeneralised:
+        issues.append("candidate_principle_overgeneralised")
+    if packet.get("authority") != "advisory" or not packet.get("principles"):
+        issues.append("quinn_review_unavailable")
+    return {
+        "engine": "quinn",
+        "version": "3.0",
+        "status": "reviewed" if not issues else "revision_required",
+        "passed": not issues,
+        "issues": issues,
+        "candidate_principle": clean[:1200],
+        "relevant_principle_ids": [
+            item.get("id") for item in packet.get("principles", []) if item.get("id")
+        ],
+        "authority": "advisory",
     }
 
 

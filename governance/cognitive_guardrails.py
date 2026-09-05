@@ -5,6 +5,12 @@ from __future__ import annotations
 from core.cognition.rike import CAUSAL_RELATIONSHIPS
 
 
+MARY_LIFECYCLE_STATES = {
+    "Candidate", "Emerging", "Developing", "Established",
+    "Weakening", "Historical", "Superseded",
+}
+
+
 def assess_cognitive_packet(
     packet: dict,
     mary_packet: dict | None = None,
@@ -20,6 +26,17 @@ def assess_cognitive_packet(
         issues.append("evidence_summary_missing")
     if mary_packet.get("active") and not mary_packet.get("pattern_threshold_met"):
         issues.append("pattern_claim_requires_caution")
+    if mary_packet.get("active"):
+        if mary_packet.get("lifecycle_state") not in MARY_LIFECYCLE_STATES:
+            issues.append("pattern_lifecycle_invalid")
+        required_mary_fields = {
+            "first_seen", "last_seen", "supporting_episodes",
+            "contradicting_episodes", "confidence_trajectory", "current_relevance",
+        }
+        if not required_mary_fields.issubset(mary_packet):
+            issues.append("longitudinal_evidence_incomplete")
+        if mary_packet.get("current_identity_precedence") is not True:
+            issues.append("current_identity_precedence_missing")
     if not packet.get("uncertainties"):
         issues.append("uncertainty_review_missing")
     if packet.get("status") == "ok":
@@ -93,6 +110,10 @@ def guardrail_prompt(assessment: dict) -> str:
         "- Expose material assumptions, alternatives, counterfactuals and what evidence would change the conclusion.\n"
         "- Keep correlation, association, plausible mechanism and supported causal claims distinct.\n"
         "- Never state a supported cause unless direct causal evidence passed RIKE's causal gate.\n"
+        "- Use Mary's lifecycle state; never flatten Candidate, Emerging, Developing, Established, Weakening, Historical and Superseded.\n"
+        "- Current identity and current evidence outrank historical patterns. Doug today must not be collapsed into historical Doug.\n"
+        "- Experience abstraction is candidate wisdom, not fact. It requires Rhee evidence, Quinn review, RIKE challenge, Mary validation and governed promotion.\n"
+        "- Never store a higher-order principle without explicit Doug approval; no durable principle is a valid outcome.\n"
         "- Preserve Doug's authority over consequential decisions.\n"
         "- Do not reveal hidden chain-of-thought; provide only a concise rationale.\n"
         f"- Pre-response review issues: {issues}."

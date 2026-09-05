@@ -66,6 +66,7 @@ def record_user_learning(row: dict, client=None) -> dict:
 
 def build_learning_observation(cognitive_packet: dict) -> dict:
     rike = (cognitive_packet or {}).get("rike") or {}
+    abstraction = (cognitive_packet or {}).get("experience_abstraction") or {}
     return {
         "engine": "learning_engine",
         "version": "1.0",
@@ -73,6 +74,60 @@ def build_learning_observation(cognitive_packet: dict) -> dict:
         "auto_promoted": False,
         "reason": "A reasoning output is not proof of learning; an observed outcome or explicit Doug-authored lesson is required.",
         "reasoning_status": rike.get("status", "unknown"),
+        "experience_abstraction_status": abstraction.get("status", "not_evaluated"),
+    }
+
+
+def promote_experience_principle(
+    abstraction_packet: dict,
+    authorisation: dict | None = None,
+    client=None,
+    store_func=None,
+) -> dict:
+    """Persist a validated principle only after explicit Doug authorisation."""
+    packet = abstraction_packet or {}
+    governance = packet.get("governance") or {}
+    evaluations = packet.get("evaluations") or {}
+    validation_chain_passed = all(
+        (evaluations.get(stage) or {}).get("passed") is True
+        for stage in ("rhee", "quinn", "rike", "mary")
+    )
+    authorisation = authorisation or {}
+    if not governance.get("promotion_eligible") or not validation_chain_passed:
+        return {"stored": False, "reason": "abstraction_not_eligible"}
+    if not (
+        authorisation.get("approved") is True
+        and str(authorisation.get("authority") or "").lower() == "doug"
+    ):
+        return {"stored": False, "reason": "explicit_doug_approval_required"}
+    lesson = str(packet.get("candidate_principle") or "").strip()
+    sources = list(packet.get("source_references") or [])
+    if not lesson or len(set(sources)) < 2:
+        return {"stored": False, "reason": "insufficient_validated_provenance"}
+
+    store = store_func or store_llgr
+    outcomes = []
+    candidate = {
+        "lesson": lesson,
+        "validated": True,
+        "evidence": sources,
+        "reflection": ["Phase 5 governed experience abstraction"],
+        "contradiction_count": len(packet.get("contradiction_references") or []),
+        "abstraction_version": packet.get("version", "1.0"),
+        "governance": {
+            "authorised_by": "Doug",
+            "quinn_reviewed": True,
+            "rike_challenged": True,
+            "mary_validated": True,
+        },
+    }
+    for source in dict.fromkeys(sources):
+        outcomes.append(store(candidate, source_reference=source, client=client))
+    return {
+        "stored": any(item.get("stored") for item in outcomes),
+        "reason": "governed_principle_promoted",
+        "source_count": len(set(sources)),
+        "outcomes": outcomes,
     }
 
 
@@ -80,6 +135,7 @@ __all__ = [
     "build_learning_observation",
     "extract_user_learning",
     "record_user_learning",
+    "promote_experience_principle",
     "retrieve_growth_context",
     "retrieve_growth_records",
 ]

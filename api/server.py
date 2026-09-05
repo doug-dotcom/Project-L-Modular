@@ -166,7 +166,7 @@ def build_architecture_audit_context(user_message, cognitive_packet):
     return f"""PROJECT L SELF-AUDIT CONTRACT (RUNTIME-AUTHORITATIVE)
 - Separate retrieved historical intent from current runtime facts and from your inference.
 - Do not describe the original intent as a generic feature-rich AI or frontier-AI competitor unless a Doug-authored record directly supports that claim.
-- Name the current architecture explicitly: L is the sole voice and synthesiser; Rhee retrieves evidence; RIKE performs structured reasoning; Mary tests longitudinal patterns; Quinn supplies advisory principles; Carol and Sara govern memory promotion and provenance.
+- Name the current architecture explicitly: L is the sole voice and synthesiser; Rhee retrieves evidence; RIKE performs structured reasoning; Mary tests longitudinal patterns; Quinn supplies advisory principles; Experience Abstraction proposes governed higher-order principles; Carol and Sara govern memory promotion and provenance.
 - The historical Brains Trust is retained as bounded reasoning lenses inside RIKE, not as competing personas or separate voices.
 - Current activation route: {json.dumps(route, ensure_ascii=False)}
 - When asked to compare architectures or identify contradictions, cover: original purpose, original components, current implemented components, retained ideas, retired persona behaviour, unresolved gaps, and the best-supported next step.
@@ -220,6 +220,7 @@ def ensure_architecture_audit_grounding(user_message, reply, cognitive_packet):
         f"- **RIKE** structured reasoning: {route.get('rike', 'unknown')}.\n"
         f"- **Mary** longitudinal pattern analysis: {route.get('mary', 'unknown')}.\n"
         f"- **Quinn** governed principles: {route.get('quinn', 'unknown')}.\n"
+        f"- **Experience Abstraction** candidate formation: {route.get('experience_abstraction', 'unknown')}.\n"
         "- **Carol and Sara** govern long-term memory promotion and provenance; "
         "a recall request is not promoted as a new fact.\n"
         f"- **Brains Trust** is retained as bounded RIKE lenses, not personas. "
@@ -594,15 +595,16 @@ def cognition_status():
     return {
         "status": "ok",
         "architecture": "project_l_cognitive_core",
-        "version": "4.0",
+        "version": "6.0",
         "user_facing_voice": "L",
         "engines": {
             "metacognition": "cognitive_controller_v1",
             "uncertainty": "multidimensional_uncertainty_v1",
             "retrieval": "rhee_v5",
             "reasoning": "rike_v2_hypothesis_counterfactual",
-            "longitudinal": "mary_v4",
-            "principles": "quinn_v2",
+            "longitudinal": "mary_v5_lifecycle",
+            "experience_abstraction": "experience_abstraction_v1",
+            "principles": "quinn_v2+candidate_review_v3",
             "memory_governance": "carol_v5+sara_v2",
             "learning": "learning_engine_v1",
         },
@@ -615,6 +617,10 @@ def cognition_status():
             "competing_hypotheses_required": True,
             "counterfactuals_are_tests_not_facts": True,
             "causal_claims_require_direct_evidence": True,
+            "pattern_lifecycle_required": True,
+            "current_identity_outranks_history": True,
+            "higher_order_principles_require_full_validation": True,
+            "experience_abstraction_auto_promotion_disabled": True,
         },
     }
 
@@ -705,7 +711,7 @@ def chat(req: ChatRequest):
 
     cognitive_packet = {
         "engine": "project_l_cognitive_core",
-        "version": "4.0",
+        "version": "6.0",
         "route": {"rike": "not_required"},
         "rike": {
             "version": "2.0",
@@ -774,7 +780,8 @@ COGNITIVE ARCHITECTURE:
 - You select capabilities and synthesise; internal components never speak as personas.
 - Rhee retrieves evidence and memory.
 - RIKE supplies structured reasoning only when complexity warrants it.
-- Mary tests longitudinal patterns against events across time.
+- Mary tracks longitudinal patterns through Candidate, Emerging, Developing, Established, Weakening, Historical and Superseded states.
+- Experience Abstraction may propose higher-order principles only after multiple dated experiences pass Rhee, Quinn, RIKE and Mary validation.
 - Quinn supplies governed principles, never decisions.
 - External research, finance, email, calendar and tasks are services.
 
@@ -816,6 +823,10 @@ RESPONSE RULES:
 - Keep correlation, association, plausible mechanism and supported causal claims distinct.
 - Never present a causal explanation as established unless RIKE's direct causal evidence gate passed.
 - Mary may call something a pattern only when her threshold is met; otherwise call it an observation.
+- Use Mary's first-seen, last-seen, supporting episodes, contradicting episodes, confidence trajectory and current relevance.
+- Current identity and current evidence outrank historical patterns; never collapse Doug today into historical Doug.
+- Treat an abstracted principle as a candidate, never a fact. It may enter durable learning only through governed promotion with Doug's explicit approval.
+- L must be allowed to conclude that no durable higher-order principle exists.
 - Quinn's principles are advisory and must not override evidence or Doug's agency.
 - A capability result is evidence or an action receipt, not a separate voice. Present it as L.
 - Preserve the capability status exactly. Never turn an error, draft or attempted action into a success claim.
@@ -903,6 +914,8 @@ RESPONSE RULES:
             "counterfactuals": cognitive_packet.get("rike", {}).get("counterfactuals", []),
             "conclusion_change_evidence": cognitive_packet.get("rike", {}).get("conclusion_change_evidence", []),
             "causal_assessment": cognitive_packet.get("rike", {}).get("causal_assessment", {}),
+            "longitudinal": cognitive_packet.get("mary", {}),
+            "experience_abstraction": cognitive_packet.get("experience_abstraction", {}),
             "guardrails_passed": cognitive_packet.get("guardrails", {}).get("passed"),
             "guardrail_issues": cognitive_packet.get("guardrails", {}).get("issues", []),
         }

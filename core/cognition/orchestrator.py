@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from agents.quinn.quinn import curate_principles
 from core.cognition.longitudinal import build_longitudinal_packet
+from core.cognition.experience_abstraction import build_experience_abstraction
 from core.cognition.learning_engine import build_learning_observation
 from core.cognition.rike import needs_structured_reasoning, reason
 from governance.cognitive_guardrails import assess_cognitive_packet
@@ -78,7 +79,7 @@ def run_cognitive_core(
     guardrails = assess_cognitive_packet(rike, mary, confidence_dimensions)
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "4.0",
+        "version": "6.0",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "route": {
@@ -92,5 +93,10 @@ def run_cognitive_core(
         "rike": rike,
         "guardrails": guardrails,
     }
+    abstraction = build_experience_abstraction(message, mary, rike, quinn, guardrails)
+    packet["experience_abstraction"] = abstraction
+    packet["route"]["experience_abstraction"] = (
+        "candidate" if abstraction["active"] else "not_required"
+    )
     packet["learning"] = build_learning_observation(packet)
     return packet
