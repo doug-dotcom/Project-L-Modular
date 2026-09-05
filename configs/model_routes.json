@@ -1,0 +1,5 @@
+{
+  "enabled": false,
+  "reason": "Keep the configured baseline until candidate trials have been reviewed.",
+  "recall_evaluation": {}
+}

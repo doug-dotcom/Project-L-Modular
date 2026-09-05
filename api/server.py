@@ -54,11 +54,13 @@ from core.cognition.learning_engine import ingest_reflective_observation
 from core.cognition.working_memory import ActiveContextService
 from core.cognition.model_independence import (
     OpenAIChatCompletionsAdapter,
+    ModelGenerationError,
     UnavailableModelAdapter,
     build_model_independence_packet,
     build_model_request,
     invoke_model,
 )
+from core.cognition.model_routing import MeasuredModelRouter, configured_adapter
 from core.cognition.portability import (
     build_cognitive_bootstrap,
     portability_manifest,
@@ -101,7 +103,7 @@ SUPABASE_KEY = (
 
 client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 model_adapter = (
-    OpenAIChatCompletionsAdapter(client, MODEL)
+    configured_adapter(client, MODEL, os.environ)
     if client is not None
     else UnavailableModelAdapter(MODEL)
 )
@@ -111,16 +113,16 @@ active_context_service = ActiveContextService()
 
 def resolve_model_adapter():
     """Return the configured adapter, refreshing only the OpenAI transport if needed."""
-    if model_adapter.available and not isinstance(model_adapter, OpenAIChatCompletionsAdapter):
+    if model_adapter.available and not isinstance(model_adapter, (OpenAIChatCompletionsAdapter, MeasuredModelRouter)):
         return model_adapter
     if client is not None:
         if (
-            isinstance(model_adapter, OpenAIChatCompletionsAdapter)
+            isinstance(model_adapter, (OpenAIChatCompletionsAdapter, MeasuredModelRouter))
             and model_adapter.client is client
             and model_adapter.model_id == MODEL
         ):
             return model_adapter
-        return OpenAIChatCompletionsAdapter(client, MODEL)
+        return configured_adapter(client, MODEL, os.environ)
     return model_adapter
 
 # =====================================================
@@ -581,6 +583,7 @@ def analyse_image_worker(request_id, image_bytes, content_type, prompt):
             "reply": reply,
             "server": "vx",
             "attachment": {"type": "image", "analysed": True},
+            "model_receipt": result.get("receipt", {}),
         })
     except Exception as exc:
         log(f"IMAGE ANALYSIS ERROR: {exc}")
@@ -827,6 +830,7 @@ def chat(req: ChatRequest):
     if check_evidence:
         cognitive_plan["needs"]["memory"] = True
     evidence_audit = {"status": "not_checked", "version": "1.0"}
+    response_model_receipt = {"status": "not_invoked"}
     log(
         "COGNITIVE PLAN: "
         f"type={cognitive_plan['problem_type']} | "
@@ -1058,11 +1062,14 @@ RESPONSE RULES:
                     }
                 ],
                 purpose="l_user_response",
+                routing_purpose=("l_report_response" if pauline_report_requested(user_message) else
+                                 "l_recall_response" if check_evidence else "l_conversation_response"),
                 response_format={"type": "json_object"} if check_evidence else None,
                 temperature=0.3 if pauline_report_requested(user_message) else 0.45,
-                max_output_tokens=3000 if pauline_report_requested(user_message) else None,
+                max_output_tokens=8192 if pauline_report_requested(user_message) else None,
             )
             result = invoke_model(active_model_adapter, request)
+            response_model_receipt = result.get("receipt", {"status": "complete", "model_id": result.get("model_id")})
             reply = result["content"]
             if check_evidence:
                 reply, evidence_audit = evaluate_answer(
@@ -1081,8 +1088,13 @@ RESPONSE RULES:
             )
 
         except Exception as e:
-            log(f"OPENAI ERROR: {e}")
-            reply = f"AI ERROR: {str(e)}"
+            log(f"OPENAI ERROR: {type(e).__name__}")
+            failure_receipt = getattr(e, "receipt", {"status": "failed", "error_type": type(e).__name__})
+            payload = {"reply": "I couldn't complete that answer. Please try again.", "server": "vx",
+                       "error": True, "model_receipt": failure_receipt,
+                       "cognition": {"evidence_evaluation": {"status": "not_checked"}, "model_receipt": failure_receipt}}
+            store_chat_result(request_id, "ready", payload)
+            return payload
 
     cognitive_packet["evidence_evaluation"] = evidence_audit
     log(f"EVIDENCE CHECK: {evidence_audit.get('status')} | request={request_id}")
@@ -1164,6 +1176,8 @@ RESPONSE RULES:
             "multi_agent": cognitive_packet.get("multi_agent", {}),
             "working_memory": cognitive_packet.get("working_memory", {}),
             "model_independence": cognitive_packet.get("model_independence", {}),
+            "model_receipt": response_model_receipt,
+            "reasoning_model_receipt": cognitive_packet.get("rike", {}).get("model_receipt", {}),
             "portability": cognitive_packet.get("portability", {}),
             "guardrails_passed": cognitive_packet.get("guardrails", {}).get("passed"),
             "guardrail_issues": cognitive_packet.get("guardrails", {}).get("issues", []),

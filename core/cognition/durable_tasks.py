@@ -121,7 +121,8 @@ class TaskRunner:
             # Retry only the idempotent result write, never the cognition/actions.
             for attempt in range(3):
                 try:
-                    if not self.store.finish(request_id, worker, payload):
+                    if not self.store.finish(request_id, worker, payload,
+                                             status='failed' if payload.get('error') else 'ready'):
                         LOG.warning('Task result rejected: lease lost')
                     break
                 except Exception:
