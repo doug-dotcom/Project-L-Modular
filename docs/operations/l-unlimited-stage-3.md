@@ -46,6 +46,26 @@ operator route file. These are server configuration, never chat-controlled field
 Rollback: disable the route file or revert the stage commit. No schema migration
 is required; Stage 2 saves the receipts within its existing answer JSON.
 
+## Executed provider trial and routing decision
+
+Railway deployment `907fdfcf-a74b-4e17-86c5-cad5e1b1cfb6` executed the
+comparison with L's existing provider account. Results (five cases, two repeats):
+
+| Model | Checks passed | Median seconds | Estimated USD for 10 trials |
+| --- | --- | --- | --- |
+| GPT-4o-mini | 4/10 | 1.106 | 0.001043 |
+| GPT-5.6 Terra | 10/10 | 1.579 | 0.016748 |
+| GPT-5.6 Sol | 10/10 | 1.738 | 0.031896 |
+| GPT-6 Astra | 10/10 | 2.046 | 0.073040 |
+
+All 40 requests completed with usage receipts. The baseline's six failures were
+four contract/citation failures and two answer-term failures; these are not a
+general intelligence or full-system score. Terra was the fastest and cheapest
+passing candidate and is enabled for evidence recall. Full sanitised receipts
+are in `l-stage3-provider-trials.json`. No personal memory or credentials appear
+in that file. The temporary Railway pre-deploy comparison command was removed
+after this one run, so future deployments do not repeat billable trials.
+
 ## Provider references checked 5 September 2026
 
 - https://developers.openai.com/api/docs/guides/migrate-to-responses

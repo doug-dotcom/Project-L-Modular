@@ -11,7 +11,7 @@ from core.cognition.model_independence import (
     ModelGenerationError, OpenAIResponsesAdapter, OpenAIChatCompletionsAdapter,
     build_model_request, create_model_adapter, invoke_model, model_capabilities,
 )
-from core.cognition.model_routing import MeasuredModelRouter, REQUIRED_CASES, eligible_report
+from core.cognition.model_routing import MeasuredModelRouter, REQUIRED_CASES, eligible_report, configured_adapter
 
 
 def request(**kwargs):
@@ -133,6 +133,11 @@ def test_router_uses_validated_recall_only_and_does_not_retry_failure(tmp_path):
         with pytest.raises(AttributeError):
             invoke_model(router, request(routing_purpose=purpose))
     assert seen == ["l_recall_response"]
+
+
+def test_default_router_finds_the_packaged_configuration():
+    router = configured_adapter(NS(), "gpt-4o-mini", {})
+    assert router.routing_manifest.get("configuration") != "missing_or_invalid"
 
 
 def test_failed_generation_never_writes_assistant_memory(monkeypatch):
