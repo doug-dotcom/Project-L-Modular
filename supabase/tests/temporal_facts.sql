@@ -6,7 +6,7 @@ declare u uuid:=gen_random_uuid(); other_owner uuid:=gen_random_uuid();
  unrelated_id uuid:=gen_random_uuid(); deps jsonb; snap jsonb; before_unrelated jsonb; result jsonb;
 begin
  perform public.l_fact_write(u,old_id,'project cedar','status','prototype','2026-06-01',null,
-  '2026-06-01T12:00:00Z','fixture:old','Project Cedar was a prototype in June.','document','assert');
+  '2026-06-01T01:00:00+10:00','fixture:old','Project Cedar was a prototype in June.','document','assert');
  perform public.l_fact_write(u,live_id,'project cedar','status','live','2026-07-01',null,
   '2026-07-01T12:00:00Z','fixture:live','Project Cedar is live from July.','document','transition',old_id);
  perform public.l_fact_write(u,unrelated_id,'project birch','colour','green','2026-06-01',null,
@@ -36,11 +36,11 @@ begin
  assert public.l_fact_freshness(u,'[]',array['unknown'])->>'status'='unchanged';
  -- Same id and identical original request is idempotent even after its validity was closed.
  result:=public.l_fact_write(u,old_id,'project cedar','status','prototype','2026-06-01',null,
-  '2026-06-01T12:00:00Z','fixture:old','Project Cedar was a prototype in June.','document','assert');
+  '2026-06-01T01:00:00+10:00','fixture:old','Project Cedar was a prototype in June.','document','assert');
  assert result->>'status'='already_recorded';
  begin
   perform public.l_fact_write(u,old_id,'project cedar','status','prototype','2026-06-01','2026-06-20',
-   '2026-06-01T12:00:00Z','fixture:old','Project Cedar was a prototype in June.','document','assert');
+   '2026-06-01T01:00:00+10:00','fixture:old','Project Cedar was a prototype in June.','document','assert');
   raise exception 'TEST: conflicting id accepted';
  exception when others then
   if sqlerrm='TEST: conflicting id accepted' then raise; end if;

@@ -81,7 +81,7 @@ begin
  if p_action not in ('assert','transition','correct') or p_action is null then
   raise exception 'Invalid fact action';
  end if;
- if p_from is null or p_observed is null or p_from>p_observed::date then
+ if p_from is null or p_observed is null or p_from>(p_observed at time zone 'Australia/Brisbane')::date then
   raise exception 'Explicit effective and observation dates required; future claims are not facts';
  end if;
  if (p_action='assert')<>(p_replaces is null) then raise exception 'Replacement target required only for changes'; end if;
