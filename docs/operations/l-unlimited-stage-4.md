@@ -79,6 +79,10 @@ rejection, idempotency and deletion-request non-erasure. It leaves no personal o
 synthetic fact rows behind. Python regressions exercise Rhee, dates, source authority,
 freshness failures and saved-payload immutability.
 
+`python -m scripts.check_l_temporal_models` is an explicit operator-only provider
+smoke test: three synthetic evidence requests, no database access. It is not a
+recurring deployment command. Runtime receipts, not this document, establish its results.
+
 Apply `supabase/create_temporal_facts.sql` as one recorded backend migration before
 deploying the application. Rollback application code if needed; retain the additive
 tables/history, never delete personal facts to roll back code.

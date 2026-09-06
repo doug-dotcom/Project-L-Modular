@@ -162,3 +162,41 @@ def test_schema_restricts_all_new_mutations_and_has_no_legacy_updates():
     assert 'update public.raw_catchall' not in sql.lower()
     assert 'delete from' not in sql.lower()
     assert 'for update' in sql.lower()
+
+
+@pytest.mark.parametrize('status', ['unavailable', 'needs_clarification'])
+def test_chat_does_not_generate_or_save_assistant_when_timeline_unavailable(monkeypatch, status):
+    from api import server
+    saved = []
+    monkeypatch.setattr(server, 'build_rhee_packet', lambda _: {
+        'context': '', 'temporal_memory': {'status': status}})
+    monkeypatch.setattr(server, 'write_raw_catchall', lambda role, content, **kw: saved.append(role))
+    monkeypatch.setattr(server, 'write_live_short_term', lambda *a: {'saved': True})
+    monkeypatch.setattr(server, 'run_brain_pipeline', lambda _: None)
+    result = server.chat(server.ChatRequest(message='Deep recall Project Cedar status'))
+    assert result['error']
+    assert 'assistant' not in saved
+
+
+def test_correction_during_generation_withholds_answer_before_memory_write(monkeypatch):
+    from api import server
+    saved = []
+    class Adapter:
+        available = True
+        provider = 'test'
+        model_id = 'test'
+        def generate(self, request):
+            return {'content': json.dumps({'blocks': [{'kind': 'unknown', 'text': 'No fact known.'}]})}
+    monkeypatch.setattr(server, 'resolve_model_adapter', lambda: Adapter())
+    monkeypatch.setattr(server, 'build_rhee_packet', lambda _: {'context': '', 'evidence': [],
+        'temporal_memory': {'status': 'checked', 'dependencies': [], 'terms': ['cedar']}})
+    monkeypatch.setattr(server, 'snapshot_freshness', lambda *a: {'status': 'superseded'})
+    monkeypatch.setattr(server, 'route_capability', lambda _: {'handled': False, 'status': 'not_required'})
+    monkeypatch.setattr(server, 'run_cognitive_core', lambda *a, **kw: {})
+    monkeypatch.setattr(server, 'write_raw_catchall', lambda role, content, **kw: saved.append(role))
+    monkeypatch.setattr(server, 'write_live_short_term', lambda *a: {'saved': True})
+    monkeypatch.setattr(server, 'run_brain_pipeline', lambda _: None)
+    result = server.chat(server.ChatRequest(message='Deep recall Project Cedar status'))
+    assert result['error']
+    assert 'timeline changed' in result['reply']
+    assert 'assistant' not in saved
