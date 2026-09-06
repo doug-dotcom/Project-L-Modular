@@ -86,3 +86,4 @@ jobs:
           tests/test_model_independence.py
           tests/test_temporal_memory.py
           tests/test_recall_planner.py
+          tests/test_voice_input.py
