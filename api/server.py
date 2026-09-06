@@ -16,6 +16,7 @@ from fastapi import FastAPI, UploadFile, File, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
 from dotenv import load_dotenv
@@ -63,6 +64,7 @@ from core.cognition.model_independence import (
 from core.cognition.model_routing import MeasuredModelRouter, configured_adapter
 from core.cognition.temporal_memory import snapshot_freshness, temporal_manifest
 from core.cognition.recall_planner import coverage_notice, planner_manifest
+from core.cognition.voice_input import audio_format, transcribe_draft, voice_manifest, MAX_AUDIO_BYTES
 from core.cognition.portability import (
     build_cognitive_bootstrap,
     portability_manifest,
@@ -543,6 +545,26 @@ IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 
 
+@app.post('/voice/transcribe')
+async def transcribe_voice(file: UploadFile = File(...)):
+    """An explicit upload returns editable text; never starts chat or writes memory."""
+    try:
+        audio_format(file.content_type)
+        data = await file.read(MAX_AUDIO_BYTES + 1)
+        if not data or len(data) > MAX_AUDIO_BYTES:
+            raise ValueError('Use a non-empty recording under 10 MB.')
+        return await run_in_threadpool(transcribe_draft, client, data, file.content_type)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    except BlockingIOError as exc:
+        raise HTTPException(429, 'Transcription is busy. Keep your recording and retry shortly.') from exc
+    except Exception as exc:
+        # Audio, transcripts, and upstream exception details must not enter logs.
+        raise HTTPException(503, 'Transcription could not finish. Keep your recording and retry when connected.') from exc
+    finally:
+        await file.close()
+
+
 def analyse_image_worker(request_id, image_bytes, content_type, prompt):
     user_prompt = (prompt or "Tell me what you can see in this picture.").strip()
     memory_message = f"Doug attached an image and asked: {user_prompt}"
@@ -739,6 +761,7 @@ def cognition_status():
         "live_evaluation": evaluation_manifest(),
         "temporal_memory": temporal_manifest(),
         "recall_planner": planner_manifest(),
+        "spoken_conversation": voice_manifest(),
     }
 
 
@@ -1170,7 +1193,8 @@ RESPONSE RULES:
         reply
     )
 
-    if voice_enabled():
+    # Browser playback is user-controlled. Server-host audio is explicit legacy opt-in.
+    if os.getenv('L_SERVER_SPEAKER', 'false').lower() == 'true' and voice_enabled():
         try:
             speak(reply)
         except Exception as e:

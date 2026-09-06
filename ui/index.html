@@ -29,6 +29,17 @@
         * {
             box-sizing: border-box;
         }
+        #voicePanel { padding: 8px 16px; background: #18263d; max-height: 28vh; overflow-y: auto; flex-shrink: 0; }
+        #voicePanel summary { cursor: pointer; padding: 6px; font-size: 17px; }
+        #voicePanel button { min-height: 44px; padding: 8px 12px; margin: 3px; border-radius: 10px; border: 1px solid #64748b; background: #263b59; color: white; }
+        #voicePanel button:disabled { opacity: .45; }
+        #voiceStatus, #voicePanel p { margin: 6px 0; font-size: 14px; line-height: 1.4; }
+        #voicePanel a { color: #93c5fd; }
+        #chat { min-height: 0; }
+        #message { min-width: 0; }
+        #inputBar { flex-shrink: 0; }
+        #inputBar #uploadBtn, #inputBar #voiceToggle { min-width: 44px; }
+        @supports (height: 100dvh) { body { height: 100dvh; } }
 
         html,
         body {
@@ -322,6 +333,25 @@
          INPUT BAR
     ===================================================== -->
 
+    <details id="voicePanel">
+        <summary>🎙️ Spoken conversation</summary>
+        <p>Record → review transcript → Send. Audio is sent to OpenAI only when you choose Transcribe. L does not save the recording.</p>
+        <div>
+            <button id="recordVoice" type="button">Record</button>
+            <button id="pauseVoice" type="button" disabled>Pause</button>
+            <button id="resumeVoice" type="button" disabled>Resume</button>
+            <button id="finishVoice" type="button" disabled>Finish &amp; transcribe</button>
+            <button id="retryVoice" type="button" disabled>Transcribe recording</button>
+            <button id="discardVoice" type="button" disabled>Discard recording</button>
+            <a id="downloadVoice" hidden>Download recording</a>
+        </div>
+        <div id="voiceStatus" role="status" aria-live="polite">Nothing recorded. You control when your thought is sent.</div>
+        <label><input id="readVoiceReplies" type="checkbox"> Read new replies aloud using this device’s synthetic voice</label>
+        <button id="pauseReply" type="button" disabled>Pause reply</button>
+        <button id="resumeReply" type="button" disabled title="Resumes from the beginning of the interrupted sentence">Resume reply</button>
+        <p>Changing apps pauses voice. Resume explicitly when you return. Unsent text stays in this browser; an untranscribed recording may be lost if the page closes.</p>
+        <button id="clearVoiceDraft" type="button">Clear text draft</button>
+    </details>
     <div id="inputBar">
 
         <!-- =====================================================
@@ -407,6 +437,7 @@
 
         async function submitImage(file) {
             if (!file) return;
+            if (window.lVoice && !window.lVoice.canSend()) return;
             const chat = document.getElementById("chat");
             const input = document.getElementById("message");
             const prompt = input.value.trim() || "Tell me what you can see in this picture.";
@@ -576,6 +607,7 @@
                 input.value.trim();
 
             if (!message) return;
+            if (window.lVoice && !window.lVoice.canSend()) return;
 
             // =====================================================
             // USER MESSAGE
@@ -584,6 +616,7 @@
             appendChatMessage(chat, "user", message);
 
             input.value = "";
+            window.lVoice?.saveDraft();
 
             // =====================================================
             // THINKING MESSAGE
@@ -652,6 +685,7 @@
                 // =====================================================
 
                 appendChatMessage(chat, "assistant", data.reply);
+                window.lVoice?.onReply(data.reply, !data.error);
 
             } catch (err) {
                 thinking.textContent = "L is still thinking...";
@@ -660,6 +694,7 @@
                 if (recovered && recovered.reply) {
                     clearPendingRequest(requestId);
                     appendChatMessage(chat, "assistant", recovered.reply);
+                    window.lVoice?.onReply(recovered.reply, !recovered.error);
                 } else {
                     appendChatMessage(
                         chat,
@@ -723,49 +758,8 @@
     </script>
 
 
-<script>
-
-document
-.addEventListener(
-"DOMContentLoaded",
-() => {
-
-    const btn =
-        document.getElementById(
-            "voiceToggle"
-        );
-
-    if(!btn){
-        return;
-    }
-
-    if (!("speechSynthesis" in window)) {
-        btn.disabled = true;
-        btn.title = "Text-to-speech is unavailable in this browser";
-        return;
-    }
-
-    btn.title = "Read L's latest reply aloud";
-    btn.onclick = () => {
-        if (window.speechSynthesis.speaking) {
-            window.speechSynthesis.cancel();
-            btn.innerText = "🔊";
-            return;
-        }
-        if (!lastAssistantText) return;
-        const utterance = new SpeechSynthesisUtterance(lastAssistantText);
-        utterance.lang = "en-AU";
-        const voices = window.speechSynthesis.getVoices();
-        utterance.voice = voices.find(voice => voice.lang === "en-AU") ||
-            voices.find(voice => voice.lang.startsWith("en")) || null;
-        utterance.onend = utterance.onerror = () => { btn.innerText = "🔊"; };
-        btn.innerText = "⏹️";
-        window.speechSynthesis.speak(utterance);
-    };
-
-});
-
-</script>
+<script src="/ui/voice.js"></script>
+<script src="/ui/voice-controls.js"></script>
 
 </body>
 
