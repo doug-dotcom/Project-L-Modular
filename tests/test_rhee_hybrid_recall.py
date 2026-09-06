@@ -274,8 +274,10 @@ def test_raw_packet_puts_affirmative_dated_evidence_first(monkeypatch):
 def test_context_packet_is_bounded_and_reports_recall(monkeypatch):
     monkeypatch.setattr(rhee, "supabase", None)
     packet = rhee.build_context_packet("How is Luella?")
-    assert packet["recall_active"] is True
-    assert "local_" in packet["context"]
+    # Stage 5 live entry must fail closed, not silently scan a stale offline corpus.
+    assert packet['recall_plan']['status'] == 'unavailable'
+    assert packet["recall_active"] is False
+    assert "Indexed recall unavailable" in packet["context"]
     assert len(packet["context"]) < 30000
 
 

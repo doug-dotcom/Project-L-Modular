@@ -5,12 +5,14 @@ import os
 import json
 import re
 import time
+from datetime import date, timedelta
 from pathlib import Path
 
 from memory.identity_core.context_builder import build_identity_context
 from core.cognition.learning_engine import retrieve_growth_context
 from memory.retrieval.cache_state import cache_generation
 from core.cognition.temporal_memory import build_temporal_packet
+from core.cognition.recall_planner import plan_recall, retrieve_period
 from memory.retrieval.provenance import (
     annotate_memory_provenance,
     build_raw_role_index,
@@ -1208,7 +1210,9 @@ def search_database_candidates(query, raw_limit=200, memory_limit=80):
             return None
 
 
-def build_context(user_message, evidence_out=None):
+def build_context(user_message, evidence_out=None, recall_plan=None, receipt_out=None):
+    started = time.monotonic()
+    recall_plan = recall_plan or plan_recall(user_message)
     identity_context = load_identity()
     learnings_context = load_learnings(user_message=user_message)
     exhaustive = exhaustive_requested(user_message)
@@ -1218,15 +1222,20 @@ def build_context(user_message, evidence_out=None):
         user_message,
         # Raw evidence contains questions and historical failed answers that
         # Python deliberately down-ranks, so retain a wider candidate pool.
-        raw_limit=200 if exhaustive else 100,
-        memory_limit=160 if pauline_report else (120 if exhaustive else 40),
+        raw_limit=recall_plan['raw_candidates'],
+        memory_limit=recall_plan['memory_candidates'],
     )
-    raw_candidates = candidates["raw"] if candidates is not None else None
-    memory_candidates = candidates["memories"] if candidates is not None else None
+    # Bounded pilot: do not turn an indexed-query failure into a full-corpus scan.
+    if candidates is None:
+        if receipt_out is not None:
+            receipt_out.update(status='unavailable')
+        return 'Indexed recall unavailable; no complete-memory claim is warranted.'
+    raw_candidates = candidates['raw']
+    memory_candidates = candidates['memories']
 
     continuity_context = build_raw_recall_packet(
         user_message,
-        limit=12,
+        limit=6 if recall_plan['mode'] == 'focused' else 12,
         rows=raw_candidates,
         evidence_out=evidence_out,
     )
@@ -1235,7 +1244,7 @@ def build_context(user_message, evidence_out=None):
 
     recall_packet = build_recall_packet(
         user_message,
-        limit=36 if pauline_report else (20 if deep_recall else 12),
+        limit=6 if recall_plan['mode'] == 'focused' else (20 if deep_recall else 12),
         database_memories=memory_candidates,
     )
     print("LONG TERM RECORDS SENT: " + ",".join(
@@ -1292,6 +1301,12 @@ def build_context(user_message, evidence_out=None):
         sections.append(long_term_context or "No long term context found.")
         sections.append("")
 
+    if receipt_out is not None:
+        elapsed = round((time.monotonic() - started) * 1000)
+        receipt_out.update(status='checked' if elapsed <= recall_plan['retrieval_budget_ms'] else 'budget_exceeded',
+                           latency_ms=elapsed, raw_candidates_returned=len(raw_candidates),
+                           memory_candidates_returned=len(memory_candidates),
+                           source_count=len(evidence_out or []))
     return "\n".join(sections)
 
 
@@ -1336,19 +1351,37 @@ def format_memory_packet(query, packet, evidence_out=None):
 
 def build_context_packet(user_message):
     evidence = []
-    context = build_context(user_message, evidence_out=evidence)
-    temporal = build_temporal_packet(supabase, user_message)
+    try:
+        plan = plan_recall(user_message)
+    except ValueError as error:
+        return {'context': '', 'evidence': [], 'recall_plan': {'status': 'needs_clarification',
+                'message': str(error)}, 'recall_active': False}
+    receipt = {**plan, 'status': 'checked'}
+    if plan['mode'] == 'period_review':
+        period = retrieve_period(supabase, user_message, plan, database_search_terms(user_message),
+                                 is_historical_memory_artifact)
+        context, evidence, receipt = period['context'], period['evidence'], period['receipt']
+    else:
+        context = build_context(user_message, evidence_out=evidence, recall_plan=plan, receipt_out=receipt)
+    if plan['period']:
+        temporal = build_temporal_packet(supabase, user_message, window_override={
+            'mode': 'historical', 'from': plan['period']['from'],
+            'to': (date.fromisoformat(plan['period']['through']) + timedelta(days=1)).isoformat(),
+            'assumption': plan['assumption']})
+    else:
+        temporal = build_temporal_packet(supabase, user_message)
     context += '\n\n' + temporal['context']
     evidence.extend(temporal['evidence'])
 
     return {
         "evidence": evidence,
+        "recall_plan": receipt,
         "temporal_memory": temporal['receipt'],
         "engine": "rhee",
         "version": "v5.0",
         "context": context,
         "context_size": len(context),
-        "recall_active": "LONG TERM RECALL ACTIVE: True" in context,
+        "recall_active": bool(evidence) or "LONG TERM RECALL ACTIVE: True" in context,
         "deep_recall": deep_recall_requested(user_message),
         "short_term_domain": classify_short_term_domain(user_message),
     }

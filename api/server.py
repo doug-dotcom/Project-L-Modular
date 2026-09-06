@@ -62,6 +62,7 @@ from core.cognition.model_independence import (
 )
 from core.cognition.model_routing import MeasuredModelRouter, configured_adapter
 from core.cognition.temporal_memory import snapshot_freshness, temporal_manifest
+from core.cognition.recall_planner import coverage_notice, planner_manifest
 from core.cognition.portability import (
     build_cognitive_bootstrap,
     portability_manifest,
@@ -162,7 +163,7 @@ def subtract_calendar_months(value, months):
     return date(year, month, day)
 
 
-def build_pauline_report_context(user_message, time_context=None):
+def build_pauline_report_context(user_message, time_context=None, recall_plan=None):
     if not pauline_report_requested(user_message):
         return "No Pauline report requested."
     try:
@@ -170,10 +171,15 @@ def build_pauline_report_context(user_message, time_context=None):
     except ValueError:
         today = datetime.now(ZoneInfo("Australia/Brisbane")).date()
     period_start = subtract_calendar_months(today, 6)
+    period = (recall_plan or {}).get('period')
+    period_end = today
+    if period:
+        period_start = date.fromisoformat(period['from'])
+        period_end = date.fromisoformat(period['through'])
     clean_date = date(2025, 12, 11)
     sober_days = (today - clean_date).days
     return f"""PAULINE SIX-MONTH REPORT CONTRACT
-- Reporting period: {period_start.isoformat()} through {today.isoformat()} (Australia/Brisbane).
+- Reporting period: {period_start.isoformat()} through {period_end.isoformat()} (Australia/Brisbane).
 - Doug's verified clean and sober date is 2025-12-11; current elapsed days: {sober_days}.
 - Do not repeat a stored historical day count as current. Recalculate from the clean date.
 - Use only supplied retrieved evidence. Separate verified facts, Doug's reflections and cautious synthesis.
@@ -732,6 +738,7 @@ def cognition_status():
         "benchmark": benchmark_manifest(),
         "live_evaluation": evaluation_manifest(),
         "temporal_memory": temporal_manifest(),
+        "recall_planner": planner_manifest(),
     }
 
 
@@ -856,6 +863,13 @@ def chat(req: ChatRequest):
             }
         )
         rhee_context = rhee_packet.get("context", "")
+        recall_receipt = rhee_packet.get('recall_plan', {})
+        if recall_receipt.get('status') in ('unavailable', 'needs_clarification', 'budget_exceeded'):
+            reply = (recall_receipt.get('message') if recall_receipt.get('status') == 'needs_clarification'
+                     else 'I could not complete the bounded evidence search. Please try again or narrow the reporting period.')
+            payload = {'reply': reply, 'error': True, 'cognition': {'recall_plan': recall_receipt}}
+            store_chat_result(request_id, 'ready', payload)
+            return payload
         if rhee_packet.get('temporal_memory', {}).get('status') in ('unavailable', 'needs_clarification'):
             reply = ('Please provide a valid calendar date for that recall.'
                      if rhee_packet['temporal_memory']['status'] == 'needs_clarification' else
@@ -956,6 +970,7 @@ def chat(req: ChatRequest):
         pauline_report_context = build_pauline_report_context(
             user_message,
             time_context,
+            rhee_packet.get('recall_plan'),
         )
 
         system_prompt = f"""
@@ -1107,6 +1122,9 @@ RESPONSE RULES:
             return payload
 
     cognitive_packet["evidence_evaluation"] = evidence_audit
+    notice = coverage_notice(rhee_packet.get('recall_plan'))
+    if notice:
+        reply += '\n\n' + notice
     temporal_receipt = rhee_packet.get('temporal_memory')
     if temporal_receipt and snapshot_freshness(supabase, temporal_receipt).get('status') != 'unchanged':
         payload = {'reply': 'The fact timeline changed while I was preparing this answer, or its freshness could not be checked. Please ask again.',
@@ -1190,6 +1208,7 @@ RESPONSE RULES:
             "reflection": cognitive_packet.get("reflection", {}),
             "evidence_evaluation": evidence_audit,
             "temporal_memory": rhee_packet.get('temporal_memory'),
+            "recall_plan": rhee_packet.get('recall_plan'),
             "learning_feedback": cognitive_packet.get("learning_feedback", {}),
             "multi_agent": cognitive_packet.get("multi_agent", {}),
             "working_memory": cognitive_packet.get("working_memory", {}),
