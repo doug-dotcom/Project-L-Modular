@@ -58,11 +58,11 @@ def select_intervals(timeline, window):
             and (not f.get('effective_to') or f['effective_to'] > window['from'])]
 
 
-def build_temporal_packet(client, message, *, today=None, user_id=None):
+def build_temporal_packet(client, message, *, today=None, user_id=None, window_override=None):
     owner = user_id or memory_owner()
     terms = query_terms(message)
     try:
-        window = query_window(message, today)
+        window = window_override or query_window(message, today)
     except ValueError:
         return {'receipt': {'version': '1.0', 'status': 'needs_clarification'},
                 'evidence': [], 'context': 'The requested calendar date is invalid; ask for a valid date.'}
