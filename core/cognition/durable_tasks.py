@@ -47,6 +47,11 @@ class TaskStore:
         if not rows:
             return {'status': 'not_found'}
         row = rows[0]
+        temporal = (row.get('result') or {}).get('cognition', {}).get('temporal_memory')
+        if temporal:
+            from core.cognition.temporal_memory import snapshot_freshness
+            # Preserve the original payload/receipt. Freshness is a separate read-time annotation.
+            row['freshness'] = snapshot_freshness(self.client, temporal)
         # A stopped process is visible even before the dispatcher next sweeps leases.
         if row['status'] == 'running' and row.get('lease_until'):
             from datetime import datetime, timezone

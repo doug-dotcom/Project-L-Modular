@@ -125,7 +125,11 @@ def evaluate_answer(raw: str, rows: list[dict], *, request_id: str = "", model_i
                 issues.append("quote_not_in_cited_source")
                 continue
             # Prevent reusing L's own prior answer as proof of a personal fact.
-            if kind == "fact" and all(str(row.get("role", "")).lower() != "user" for row in matches):
+            if kind == "fact" and all(
+                str(row.get("role", "")).lower() != "user" and not (
+                    source.startswith('l_temporal_facts:') and row.get('authority') == 'operator_curated'
+                ) for row in matches
+            ):
                 issues.append("no_user_record_support")
                 continue
             checked.append({"source": source, "quote": quote,
