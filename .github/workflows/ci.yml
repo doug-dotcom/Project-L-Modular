@@ -87,3 +87,4 @@ jobs:
           tests/test_temporal_memory.py
           tests/test_recall_planner.py
           tests/test_voice_input.py
+          tests/test_account_documents.py

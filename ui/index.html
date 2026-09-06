@@ -11,6 +11,8 @@
     >
 
     <title>Project L</title>
+    <script src="/ui/account.js?v=stage7"></script>
+    <link rel="stylesheet" href="/ui/account-evidence.css?v=stage7">
 
     <link
         rel="icon"
@@ -308,6 +310,7 @@
 </head>
 
 <body>
+    <div id="accountFallback" style="padding:24px">Loading secure sign-in… If this message remains, reload the page and check your connection. JavaScript is required to use L.</div>
 
     <!-- =====================================================
          HEADER
@@ -333,6 +336,24 @@
          INPUT BAR
     ===================================================== -->
 
+    <details id="evidencePanel">
+        <summary>📎 Private files <span id="accountLabel"></span></summary>
+        <button type="button" id="signOutL">Sign out</button>
+        <p>Save a PDF or still image, revisit its original, or ask L about one selected page. Uploading does not add facts to your personal memory. Questions send the selected page to OpenAI.</p>
+        <input type="file" id="evidenceUpload" accept="application/pdf,image/jpeg,image/png,image/webp" aria-label="Save a private file">
+        <p>Up to 20 files, 5 MB each; PDFs up to 30 pages. Text extraction may miss tables and layout. Scanned-PDF OCR is not enabled.</p>
+        <button type="button" id="refreshFiles">Refresh files</button>
+        <select id="evidenceFiles" aria-label="Choose a saved file"><option value="">Choose a saved file</option></select>
+        <label>Page <input id="evidencePage" type="number" min="1" max="30" value="1"></label>
+        <button type="button" id="openOriginal">Download original</button>
+        <pre id="evidencePreview"></pre>
+        <textarea id="evidenceQuestion" maxlength="4000" placeholder="Ask L about this page…" aria-label="Question about the selected page"></textarea>
+        <button type="button" id="askEvidence">Ask L about this page</button>
+        <div id="evidenceStatus" role="status" aria-live="polite"></div>
+        <pre id="evidenceAnswer"></pre>
+        <button type="button" id="evidenceHistory">Saved file answers</button>
+        <div id="evidenceTasks"></div>
+    </details>
     <details id="voicePanel">
         <summary>🎙️ Spoken conversation</summary>
         <p>Record → review transcript → Send. Audio is sent to OpenAI only when you choose Transcribe. L does not save the recording.</p>
@@ -378,7 +399,7 @@
         <input
             type="file"
             id="fileInput"
-            accept="image/jpeg,image/png,image/webp,image/gif"
+            accept="application/pdf,image/jpeg,image/png,image/webp"
             style="display:none;"
         />
 
@@ -479,13 +500,13 @@
             }
         }
 
-        fileInput.onchange = () => submitImage(fileInput.files[0]);
+        fileInput.onchange = () => window.lEvidenceUpload ? window.lEvidenceUpload(fileInput.files[0]) : submitImage(fileInput.files[0]);
 
         document.addEventListener("dragover", event => event.preventDefault());
         document.addEventListener("drop", event => {
             event.preventDefault();
             const file = event.dataTransfer && event.dataTransfer.files[0];
-            if (file) submitImage(file);
+            if (file) { if (window.lEvidenceUpload) window.lEvidenceUpload(file); else submitImage(file); }
         });
 
     </script>
@@ -758,6 +779,7 @@
     </script>
 
 
+<script src="/ui/evidence.js?v=stage7"></script>
 <script src="/ui/voice.js"></script>
 <script src="/ui/voice-controls.js"></script>
 

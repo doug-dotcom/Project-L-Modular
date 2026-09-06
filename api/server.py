@@ -12,9 +12,9 @@ from datetime import date, datetime
 from zoneinfo import ZoneInfo
 from uuid import UUID
 
-from fastapi import FastAPI, UploadFile, File, Header, HTTPException
+from fastapi import FastAPI, UploadFile, File, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel
@@ -50,6 +50,9 @@ from core.cognition.evidence_evaluation import (
     evidence_mode, evidence_prompt, evaluate_answer, evaluation_manifest,
 )
 from core.cognition.durable_tasks import TaskStore, TaskRunner, CONTEXT as TASK_CONTEXT, checkpoint
+from core.cognition.account_access import require_account
+from core.cognition.document_evidence import EvidenceStore, answer_from_document
+from api.account_documents import routes as account_document_routes
 from core.cognition.reflection import reflect_on_task
 from core.cognition.learning_engine import ingest_reflective_observation
 from core.cognition.working_memory import ActiveContextService
@@ -297,11 +300,28 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://project-l-modular-production.up.railway.app", "https://www.shinesystems.com.au", "https://shinesystems.com.au"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
 )
+
+
+@app.middleware('http')
+async def account_boundary(request: Request, call_next):
+    public_paths = {'/', '/health', '/account/config', '/account/login', '/account/signup', '/account/refresh'}
+    path = request.url.path
+    if path not in public_paths and not path.startswith('/ui/') and request.method != 'OPTIONS':
+        try:
+            request.state.account = await run_in_threadpool(
+                require_account, supabase, request.headers.get('authorization', ''))
+        except HTTPException as exc:
+            return JSONResponse({'detail': exc.detail}, status_code=exc.status_code, headers={'Cache-Control': 'no-store'})
+    response = await call_next(request)
+    response.headers['Cache-Control'] = 'no-store'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['Referrer-Policy'] = 'no-referrer'
+    return response
 
 UI_PATH = ROOT / "ui"
 
@@ -382,7 +402,16 @@ def run_chat_worker(request_id, request):
 
 
 task_store = TaskStore(supabase)
-task_runner = TaskRunner(task_store, lambda request: chat(ChatRequest(**request)))
+
+
+def execute_durable_request(request):
+    if request.get('kind') == 'document_evidence':
+        return answer_from_document(EvidenceStore(supabase), resolve_model_adapter(), request)
+    return chat(ChatRequest(**request))
+
+
+task_runner = TaskRunner(task_store, execute_durable_request)
+app.include_router(account_document_routes(supabase, task_store))
 
 
 @app.on_event("startup")

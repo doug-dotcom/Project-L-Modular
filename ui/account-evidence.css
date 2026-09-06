@@ -1,0 +1,16 @@
+html:not([data-account="ready"]) body > :not(#accountGate):not(#accountFallback):not(script) { display:none !important; }
+html[data-account="ready"] #accountGate, html[data-account="ready"] #accountFallback { display:none; }
+#accountGate { max-width:460px; margin:5vh auto; padding:24px; overflow-y:auto; max-height:90dvh; }
+#accountGate h1 { color:#22c55e; }
+#accountGate label { display:block; margin-top:18px; }
+#accountGate input { display:block; width:100%; margin-top:6px; padding:12px; font-size:17px; border-radius:10px; }
+#accountGate button, #evidencePanel button { padding:10px 12px; min-height:44px; margin:5px 3px; border-radius:10px; border:1px solid #64748b; background:#263b59; color:white; font-size:16px; }
+#accountGate button:disabled, #evidencePanel button:disabled { opacity:.5; }
+#evidencePanel { padding:8px 16px; background:#18263d; flex-shrink:0; max-height:45dvh; overflow-y:auto; }
+#evidencePanel summary { padding:6px; cursor:pointer; font-size:17px; }
+#evidencePanel p { font-size:14px; line-height:1.4; }
+#evidencePanel select, #evidencePanel textarea, #evidencePanel input { max-width:100%; font-size:16px; padding:8px; }
+#evidencePanel select, #evidencePanel textarea { width:100%; }
+#evidencePage { width:70px; }
+#evidencePreview, #evidenceAnswer { white-space:pre-wrap; overflow-wrap:anywhere; font:15px/1.5 Arial,sans-serif; max-height:28vh; overflow-y:auto; }
+#evidencePreview { color:#cbd5e1; }

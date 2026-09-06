@@ -1,0 +1,47 @@
+# Stage 7: persistent document and image evidence
+
+Incremental implementation of the newer ten-stage roadmap. This is separate from the old twelve-phase programme.
+
+## Sign-in and ownership
+
+All L API routes now require a remotely verified Supabase Auth bearer token, except the public shell, static assets, health and sign-in/registration/refresh endpoints. CORS is restricted to L's three configured web origins. Responses use no-store to avoid stale pages and cached private responses. The main API, original download and source-question routes have the same account boundary.
+
+The authorised email is configured server-side with L_OWNER_EMAIL and in the backend-only l_account_config table. A confirmed, non-anonymous Auth user with an active auth.sessions row may activate this owner slot once. The resulting immutable Auth user ID is checked on subsequent access; editing user_metadata cannot grant access. Banned users and expired/revoked sessions are denied. Missing configuration fails closed.
+
+The browser uses a same-origin authentication proxy. The publishable key stays server-side; the service key never reaches the client. Access/refresh tokens are kept in tab-scoped sessionStorage, refreshed once for concurrent requests in the same tab, and attached only to same-origin requests. Passwords are cleared after successful submission. Sign-out revokes the current provider session before clearing browser tokens. Different devices sign in separately to the same account.
+
+Registration requires explicit user action, email confirmation and a password of at least twelve characters. No account was silently email-confirmed or given an assistant-chosen password. Supabase's live settings confirmed email registration enabled, confirmations required, and social/anonymous sign-in disabled. Email delivery and the first human sign-in remain an acceptance gate. The confirmation link may use the project's existing Site URL; after confirming, the user can return to L and sign in. This change does not reconfigure global Supabase Auth email delivery, redirects, or unrelated applications.
+
+This is still Doug's personal L: other verified accounts cannot access the shared personal cognition endpoints. It is not a general multi-user conversion of the legacy memory system. Existing chat recovery capabilities remain valid only behind the account boundary; their browser-scoped history is not migrated to account history. New file questions have a server-derived account task namespace usable across devices. Rotation of the backend service key changes that task namespace, so preserve/migrate it before rotating.
+
+## Persistent sources
+
+The plus button and Private files panel accept still JPEG/PNG/WebP and PDF. Originals and extracted page records commit atomically in l_evidence_documents. Originals are base64-encoded, not additionally encrypted by this code, within the private database. The small pilot uses Postgres rather than a public object bucket: up to twenty files, five MiB each, PDFs up to thirty pages. Move larger collections to private object storage in a later increment.
+
+Every source row has an Auth user_id, immutable document ID, SHA-256, filename, physical page count, byte count, original bytes, extraction and timestamp. A transaction advisory lock enforces the per-owner quota and duplicate-file identity. The database recomputes original hashes. Reuploading identical bytes returns the existing ID even under a new filename. The backend checks both user_id and document ID on every lookup. The table has RLS and an owner predicate, but anon/authenticated direct Data API privileges remain revoked: reads use the server's live-session validation. No public download URLs are produced.
+
+Parsing happens in a subprocess capped at 384 MiB address space, ten CPU seconds and fifteen seconds wall time, with at most two parsers per process. Still images are checked for MIME/format, animation and a sixteen-megapixel cap. Encrypted, malformed or oversized PDFs fail. Text extraction retains physical page order with twenty thousand characters per page; truncation and empty text are explicit. Scanned-PDF OCR, Word files, spreadsheets, GIF/animated uploads and multi-file synthesis are not included in this increment.
+
+Source questions use the existing durable task queue and model adapter with purpose l_document_evidence. Only the selected page is sent to the configured baseline model. No document text or image interpretation is automatically written to global personal memory or fed through a promotion pipeline. Question answers persist in the account's durable task results. The user can revisit the original and recover those results after refresh/restart or on another signed-in device. An ambiguous failed submission retains its request ID in the tab so retrying the same question is idempotent; no model call is automatically replayed after an interrupted task.
+
+Text answers must include exact source substrings. Invalid/empty quotations produce an explicit inability to verify support. This checks source membership, not semantic entailment of every claim. The server attaches the actual document ID, hash and selected physical page; it does not trust model-generated page references. Image answers are labelled as model interpretations, not verified OCR or independently confirmed facts. Blank/scanned PDF pages produce a source limitation without calling the model. Original downloads use attachment disposition and no-sniff/no-store headers.
+
+The UI currently supports download and retrieval, not user-facing deletion or broad semantic search. Removing sources and corresponding derived question results requires a scoped backend operation. Backups may retain deleted data according to the existing Supabase retention policy. Nothing here claims provider-side deletion of content.
+
+## Verification and rollout
+
+- Recovered the complete Stage 7 implementation from local commit `c5f3d1c`, based on deployed Stage 6 commit `4d705fa0559676769b1aa355dda66a206952b49b`. The active local CI suite was rerun: **282 passed**. The transactional SQL ownership, session-revocation, integrity, deduplication and direct-access checks were rerun successfully; fixtures were rolled back.
+- Publication scope: 17 changed files covering account/session verification, protected API routes, document parsing and evidence, sign-in/file UI, pinned parser dependencies, tests, migration source, provider-trial script and this operations guide. No production credentials, uploaded originals or private memory records are added by this change.
+- Public publication remains blocked by automatic approval review pending explicit approval of this exact disclosure. The GitHub tree creation was rejected; no Stage 7 branch, PR, merge or deployment was completed. GitHub and Railway still show the Stage 6 release. Existing Stage 7 database tables are present with no saved originals.
+- Remaining release gates: configure the existing owner email and publishable key on the L service without an early deployment; publish the reviewed files; pass GitHub CI; merge; run the six synthetic provider trials once before activation; remove the one-off pre-deploy command; verify live release assets and unauthenticated access denial. Email confirmation and first owner sign-in require the human owner and are not claimed as tested.
+- The local browser preview could not open in this environment (`ERR_BLOCKED_BY_CLIENT`). Browser VM tests passed within the 282-test suite; live screen verification remains part of rollout.
+
+- Local account/parser/ownership/source tests, browser VM checks and existing regression suite.
+- Transactional SQL tests create two synthetic users/sessions, verify owner binding, wrong account/session rejection, source integrity, same-original deduplication, revoked-session rejection and denied direct API privileges, then roll back all fixtures.
+- Security advisors were reviewed for new tables/functions. l_account_config intentionally uses deny-by-default RLS with no client policy; its informational no-policy notice is expected. This is not a clean bill of health for unrelated legacy tables.
+- scripts/check_l_document_models.py runs six synthetic-only provider trials: three physical-page questions and three image colour questions. It reports executed pass counts, trial variation, median/p95 latency and estimated cost/task. It does not write to the database or use Doug's files. It must run once as a deployment gate, then the pre-deploy command must be removed.
+- Live checks: health, correct release assets, unauthenticated private endpoints denied, plus human email confirmation, sign-in, file upload/download, selected-page question and second-device recovery. Human tests must not be reported as passed until performed.
+
+The prior version could not revisit a persisted original; this adds that capability. Six synthetic trials are a small smoke sample, not a broad comparative-quality benchmark. Real PDFs with layout/tables and real iPhone behaviour require acceptance testing. Stage 6's outstanding phone voice tests and the parked Shine domain issue remain separate.
+
+Roll back application code only with care: the old release removes this authentication boundary. Do not expose new originals through an old endpoint. The additive Stage 7 tables can remain private and dormant. Do not disable RLS or reset owner binding to recover from a sign-in problem.
