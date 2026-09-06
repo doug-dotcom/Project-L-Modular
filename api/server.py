@@ -61,6 +61,7 @@ from core.cognition.model_independence import (
     invoke_model,
 )
 from core.cognition.model_routing import MeasuredModelRouter, configured_adapter
+from core.cognition.temporal_memory import snapshot_freshness, temporal_manifest
 from core.cognition.portability import (
     build_cognitive_bootstrap,
     portability_manifest,
@@ -730,6 +731,7 @@ def cognition_status():
         "portability_certification": portability_manifest(),
         "benchmark": benchmark_manifest(),
         "live_evaluation": evaluation_manifest(),
+        "temporal_memory": temporal_manifest(),
     }
 
 
@@ -854,6 +856,14 @@ def chat(req: ChatRequest):
             }
         )
         rhee_context = rhee_packet.get("context", "")
+        if rhee_packet.get('temporal_memory', {}).get('status') in ('unavailable', 'needs_clarification'):
+            reply = ('Please provide a valid calendar date for that recall.'
+                     if rhee_packet['temporal_memory']['status'] == 'needs_clarification' else
+                     'I could not check whether the relevant facts have changed. Please try this recall again shortly.')
+            payload = {'reply': reply,
+                       'error': True, 'cognition': {'temporal_memory': rhee_packet['temporal_memory']}}
+            store_chat_result(request_id, 'ready', payload)
+            return payload
         log(f"RHEE CONTEXT SIZE: {len(rhee_context)}")
         log(f"RHEE RECALL ACTIVE: {rhee_packet.get('recall_active')}")
         log(f"RHEE DEEP RECALL: {rhee_packet.get('deep_recall', False)}")
@@ -1097,6 +1107,13 @@ RESPONSE RULES:
             return payload
 
     cognitive_packet["evidence_evaluation"] = evidence_audit
+    temporal_receipt = rhee_packet.get('temporal_memory')
+    if temporal_receipt and snapshot_freshness(supabase, temporal_receipt).get('status') != 'unchanged':
+        payload = {'reply': 'The fact timeline changed while I was preparing this answer, or its freshness could not be checked. Please ask again.',
+                   'error': True, 'cognition': {'temporal_memory': temporal_receipt,
+                                               'model_receipt': response_model_receipt}}
+        store_chat_result(request_id, 'ready', payload)
+        return payload
     log(f"EVIDENCE CHECK: {evidence_audit.get('status')} | request={request_id}")
 
     reflection = reflect_on_task(
@@ -1172,6 +1189,7 @@ RESPONSE RULES:
             "learning": cognitive_packet.get("learning", {}),
             "reflection": cognitive_packet.get("reflection", {}),
             "evidence_evaluation": evidence_audit,
+            "temporal_memory": rhee_packet.get('temporal_memory'),
             "learning_feedback": cognitive_packet.get("learning_feedback", {}),
             "multi_agent": cognitive_packet.get("multi_agent", {}),
             "working_memory": cognitive_packet.get("working_memory", {}),

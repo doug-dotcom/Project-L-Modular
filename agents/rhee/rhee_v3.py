@@ -10,6 +10,7 @@ from pathlib import Path
 from memory.identity_core.context_builder import build_identity_context
 from core.cognition.learning_engine import retrieve_growth_context
 from memory.retrieval.cache_state import cache_generation
+from core.cognition.temporal_memory import build_temporal_packet
 from memory.retrieval.provenance import (
     annotate_memory_provenance,
     build_raw_role_index,
@@ -1336,9 +1337,13 @@ def format_memory_packet(query, packet, evidence_out=None):
 def build_context_packet(user_message):
     evidence = []
     context = build_context(user_message, evidence_out=evidence)
+    temporal = build_temporal_packet(supabase, user_message)
+    context += '\n\n' + temporal['context']
+    evidence.extend(temporal['evidence'])
 
     return {
         "evidence": evidence,
+        "temporal_memory": temporal['receipt'],
         "engine": "rhee",
         "version": "v5.0",
         "context": context,

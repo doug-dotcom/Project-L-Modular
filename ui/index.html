@@ -543,13 +543,25 @@
                         return data.result || {reply: "This task was interrupted. Its request is saved, but I have not repeated it because an action may already have happened. Please review before sending it again.", error: true};
                     }
                     if (data.status === "ready" && data.result) {
-                        return data.result;
+                        return {...data.result, reply: savedAnswerText(data)};
                     }
                 } catch (error) {
                     // The next bounded poll may recover from a transient drop.
                 }
             }
             return null;
+        }
+
+        function savedAnswerText(envelope) {
+            const reply = envelope.result?.reply || "";
+            const status = envelope.freshness?.status;
+            if (status === "superseded") {
+                return "Saved answer — relevant facts have since changed. This is the original answer, not a current one. Ask again for an updated answer.\n\n" + reply;
+            }
+            if (status === "unavailable") {
+                return "Saved answer — I could not check whether its supporting facts have changed.\n\n" + reply;
+            }
+            return reply;
         }
 
         async function sendMessage() {
@@ -684,7 +696,7 @@
                         if (!response.ok) throw new Error("unavailable");
                         const result = await response.json();
                         appendChatMessage(chat, "user", task.message);
-                        appendChatMessage(chat, "assistant", result.result?.reply ||
+                        appendChatMessage(chat, "assistant", savedAnswerText(result) ||
                             (result.status === "interrupted" ? "This task was interrupted. Please review before starting it again." :
                              result.status === "not_found" ? "This answer is unavailable in this browser." : "L is working on this saved task."));
                     }
@@ -758,4 +770,3 @@ document
 </body>
 
 </html>
-
