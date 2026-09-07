@@ -62,7 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.lEvidenceUpload = async file => {
         if (!file || busy) return;
         if (window.lVoice && !window.lVoice.canSend()) return;
-        el('evidencePanel').open = true;
+        if (window.lChatTools) window.lChatTools.show('files');
+        else el('evidencePanel').open = true;
         if (file.size > 5*1024*1024) { status('Choose a file under 5 MB.'); return; }
         busy = true; status('Saving your original and reading its pages…');
         try {

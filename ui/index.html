@@ -336,7 +336,14 @@
          INPUT BAR
     ===================================================== -->
 
-    <details id="evidencePanel">
+    <section id="chatTools" hidden aria-label="Chat tools">
+        <div id="chatToolsActions">
+            <button type="button" id="attachFileAction">📎 Upload file</button>
+            <button type="button" id="privateFilesAction" aria-controls="evidencePanel" aria-expanded="false">Private files</button>
+            <button type="button" id="spokenAction" aria-controls="voicePanel" aria-expanded="false">🎙️ Spoken conversation</button>
+            <button type="button" id="closeChatTools" aria-label="Close chat tools">✕</button>
+        </div>
+    <details id="evidencePanel" hidden>
         <summary>📎 Private files <span id="accountLabel"></span></summary>
         <button type="button" id="signOutL">Sign out</button>
         <p>Save a PDF or still image, revisit its original, or ask L about one selected page. Uploading does not add facts to your personal memory. Questions send the selected page to OpenAI.</p>
@@ -354,7 +361,7 @@
         <button type="button" id="evidenceHistory">Saved file answers</button>
         <div id="evidenceTasks"></div>
     </details>
-    <details id="voicePanel">
+    <details id="voicePanel" hidden>
         <summary>🎙️ Spoken conversation</summary>
         <p>Record → review transcript → Send. Audio is sent to OpenAI only when you choose Transcribe. L does not save the recording.</p>
         <div>
@@ -373,6 +380,16 @@
         <p>Changing apps pauses voice. Resume explicitly when you return. Unsent text stays in this browser; an untranscribed recording may be lost if the page closes.</p>
         <button id="clearVoiceDraft" type="button">Clear text draft</button>
     </details>
+    </section>
+    <style>
+        #chatTools[hidden], #chatTools [hidden] { display:none !important; }
+        #chatTools { flex-shrink:0; max-height:45dvh; overflow-y:auto; overscroll-behavior:contain; background:#18263d; border-top:1px solid #334155; }
+        #chatToolsActions { display:flex; flex-wrap:wrap; gap:6px; padding:10px 12px; }
+        #chatToolsActions button { min-height:44px; padding:8px 12px; border-radius:12px; border:1px solid #64748b; background:#263b59; color:white; font-size:15px; }
+        #chatToolsActions button[aria-expanded="true"] { border-color:#22c55e; background:#204735; }
+        #closeChatTools { margin-left:auto; }
+        #chatTools #evidencePanel, #chatTools #voicePanel { max-height:none; overflow:visible; }
+    </style>
     <div id="inputBar">
 
         <!-- =====================================================
@@ -381,6 +398,10 @@
 
         <button
             id="uploadBtn"
+            type="button"
+            aria-label="Open chat tools"
+            aria-controls="chatTools"
+            aria-expanded="false"
             style="
                 width:50px;
                 height:50px;
@@ -450,11 +471,6 @@
 
         const fileInput =
             document.getElementById("fileInput");
-
-        uploadBtn.onclick = () => {
-
-            fileInput.click();
-        };
 
         async function submitImage(file) {
             if (!file) return;
@@ -779,7 +795,8 @@
     </script>
 
 
-<script src="/ui/evidence.js?v=stage7"></script>
+<script src="/ui/chat-tools.js?v=1"></script>
+<script src="/ui/evidence.js?v=stage7-tools1"></script>
 <script src="/ui/voice.js"></script>
 <script src="/ui/voice-controls.js"></script>
 
