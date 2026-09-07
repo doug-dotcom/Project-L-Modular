@@ -145,6 +145,10 @@ def test_account_recovery_browser():
     subprocess.run(['node','tests/account_recovery.test.cjs'],check=True,capture_output=True,text=True)
 
 
+def test_chat_tools_browser():
+    subprocess.run(['node','tests/chat_tools.test.cjs'],check=True,capture_output=True,text=True)
+
+
 @pytest.mark.parametrize('header', ['', 'Bearer forged-token'])
 def test_password_change_requires_verified_session(header):
     from api.server import app
