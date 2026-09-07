@@ -139,3 +139,59 @@ def test_public_page_is_available_but_api_key_is_not_exposed():
 
 def test_account_browser_boundary():
     subprocess.run(['node','tests/account_session.test.cjs'],check=True,capture_output=True,text=True)
+
+
+def test_account_recovery_browser():
+    subprocess.run(['node','tests/account_recovery.test.cjs'],check=True,capture_output=True,text=True)
+
+
+@pytest.mark.parametrize('header', ['', 'Bearer forged-token'])
+def test_password_change_requires_verified_session(header):
+    from api.server import app
+    response = TestClient(app).post('/account/password', headers={'Authorization':header},
+                                    json={'password':'synthetic-new-password'})
+    assert response.status_code == 401
+    assert response.headers['cache-control'] == 'no-store'
+
+
+def test_recovery_owner_only_and_fixed_redirect(monkeypatch):
+    from fastapi import FastAPI
+    import api.account_documents as module
+    calls=[]
+    monkeypatch.setenv('L_OWNER_EMAIL','owner@example.com')
+    monkeypatch.setattr(module,'auth_request',lambda *args,**kw: calls.append((args,kw)) or {})
+    app=FastAPI(); app.include_router(module.routes(None,None)); client=TestClient(app)
+    other=client.post('/account/recover',json={'email':'other@example.com'})
+    assert other.status_code==200 and not calls
+    owner=client.post('/account/recover',json={'email':' OWNER@example.com '},headers={'Host':'attacker.example'})
+    assert owner.json()==other.json()
+    from urllib.parse import parse_qs, urlsplit
+    assert parse_qs(urlsplit(calls[0][0][0]).query)['redirect_to']==[module.ACCOUNT_REDIRECT]
+    assert calls[0][0][1]=={'email':'owner@example.com'}
+
+
+def test_password_update_uses_user_token_and_revokes_sessions(monkeypatch):
+    from fastapi import FastAPI
+    import api.account_documents as module
+    calls=[]
+    monkeypatch.setattr(module,'auth_request',lambda *args,**kw: calls.append((args,kw)) or {})
+    # Router unit test; real application middleware is covered separately above.
+    app=FastAPI(); app.include_router(module.routes(None,None)); client=TestClient(app)
+    assert client.post('/account/password',json={'password':'short'},headers={'Authorization':'Bearer synthetic'}).status_code==422
+    assert not calls
+    response=client.post('/account/password',json={'password':'synthetic-new-password'},headers={'Authorization':'Bearer synthetic'})
+    assert response.json()=={'password_updated':True,'signed_out':True}
+    assert calls[0]==(('user',{'password':'synthetic-new-password'}),{'token':'synthetic','method':'PUT'})
+    assert calls[1]==(('logout?scope=global',),{'token':'synthetic'})
+
+
+@pytest.mark.parametrize('code,expected',[('invalid_credentials','Forgot password'),('email_not_confirmed','Confirm your email'),('secret-upstream-body','Account request')])
+def test_auth_errors_use_allowlisted_messages(monkeypatch,code,expected):
+    import httpx
+    from core.cognition.account_access import auth_request
+    monkeypatch.setenv('SUPABASE_URL','https://example.supabase.co')
+    monkeypatch.setenv('SUPABASE_PUBLISHABLE_KEY','synthetic')
+    monkeypatch.setattr(httpx.Client,'request',lambda *a,**kw:httpx.Response(400,json={'error_code':code,'message':'secret-upstream-body'}))
+    with pytest.raises(HTTPException) as error: auth_request('token?grant_type=password',{})
+    assert expected in error.value.detail
+    assert 'secret-upstream-body' not in error.value.detail

@@ -2,6 +2,7 @@
 import base64
 import os
 from uuid import UUID
+from urllib.parse import urlencode
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
@@ -18,6 +19,18 @@ class Login(BaseModel):
 
 class Refresh(BaseModel):
     refresh_token: str = Field(min_length=1, max_length=8192)
+
+
+class Recovery(BaseModel):
+    email: str = Field(min_length=3, max_length=254)
+
+
+class NewPassword(BaseModel):
+    password: str = Field(min_length=12, max_length=256)
+
+
+# Fixed deployment target: never trust a caller-supplied Host or redirect URL.
+ACCOUNT_REDIRECT = 'https://project-l-modular-production.up.railway.app/'
 
 
 class Question(BaseModel):
@@ -49,10 +62,31 @@ def routes(client, tasks):
         if len(body.password) < 12:
             raise HTTPException(400, 'Choose a password of at least 12 characters.')
         # Only an explicit user action sends the confirmation email. No admin confirmation.
-        result = auth_request('signup', {'email': owner_email(body.email), 'password': body.password})
+        result = auth_request('signup?' + urlencode({'redirect_to': ACCOUNT_REDIRECT}),
+                              {'email': owner_email(body.email), 'password': body.password})
         if result.get('access_token'):
             return result
         return {'confirmation_required': True}
+
+    @router.post('/account/recover')
+    def recover(body: Recovery):
+        # Do not send mail to other accounts or reveal whether they exist.
+        if body.email.strip().casefold() == os.getenv('L_OWNER_EMAIL', '').strip().casefold():
+            auth_request('recover?' + urlencode({'redirect_to': ACCOUNT_REDIRECT}),
+                         {'email': body.email.strip().lower()})
+        return {'message': 'If this is your L account email, a reset email has been requested. Open the newest email and choose Reset password.'}
+
+    @router.post('/account/password')
+    def password(request: Request, body: NewPassword):
+        # The account middleware remotely verifies identity AND active session first.
+        bearer = request.headers['authorization'][7:]
+        auth_request('user', {'password': body.password}, token=bearer, method='PUT')
+        signed_out = True
+        try:
+            auth_request('logout?scope=global', token=bearer)
+        except HTTPException:
+            signed_out = False
+        return {'password_updated': True, 'signed_out': signed_out}
 
     @router.post('/account/refresh')
     def refresh(body: Refresh):

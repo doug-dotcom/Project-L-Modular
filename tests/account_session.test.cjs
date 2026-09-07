@@ -20,7 +20,7 @@ const document={documentElement:{dataset:{}},getElementById:element,
     createElement:()=>({}),body:{appendChild(){}},addEventListener:(name,fn)=>listeners.push(fn)};
 const window={fetch:nativeFetch,dispatchEvent(){}};
 const context={window,document,location,sessionStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},
-    URL,Headers,Request,Response,AbortSignal,CustomEvent:class {},console};
+    URL,URLSearchParams,Headers,Request,Response,AbortSignal,CustomEvent:class {},console};
 vm.createContext(context);
 vm.runInContext(fs.readFileSync('ui/account.js','utf8'),context);
 (async()=>{

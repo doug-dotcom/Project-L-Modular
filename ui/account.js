@@ -3,6 +3,21 @@
     const nativeFetch = window.fetch.bind(window);
     const key = 'l-account-session-v1';
     let session = null, refreshing = null;
+    let recoveryToken = null, linkNotice = '';
+    // Consume and remove auth fragments before any application code runs.
+    const fragment = new URL(location.href).hash.slice(1);
+    const authLink = new URLSearchParams(fragment);
+    if (authLink.has('access_token') || authLink.has('error') || authLink.has('error_code')) {
+        const cleanURL = new URL(location.href); cleanURL.hash = '';
+        window.history.replaceState(null, '', cleanURL.href);
+        if (authLink.has('error') || authLink.has('error_code')) {
+            linkNotice = 'This email link has expired or could not be verified. Use Forgot password to request a new one.';
+        } else if (authLink.get('type') === 'recovery') {
+            recoveryToken = authLink.get('access_token');
+        } else {
+            linkNotice = 'Email confirmation received. Sign in below.';
+        }
+    }
     let resolveReady;
     const ready = new Promise(resolve => { resolveReady = resolve; });
     const persist = value => {
@@ -10,6 +25,7 @@
         try { if (value) sessionStorage.setItem(key, JSON.stringify(value)); else sessionStorage.removeItem(key); } catch (_) {}
     };
     try { session = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch (_) {}
+    if (recoveryToken || linkNotice) persist(null);
     function locked(message) {
         document.documentElement.dataset.account = 'locked';
         window.lVoice?.background();
@@ -39,6 +55,7 @@
         }
         await ready;
         const token = await access();
+        if (recoveryToken) return new Response(JSON.stringify({detail:'Finish resetting your password first.'}), {status:401});
         if (!token) { locked(); return new Response(JSON.stringify({detail:'Please sign in to L.'}), {status:401, headers:{'Content-Type':'application/json'}}); }
         const headers = new Headers(options.headers || (input instanceof Request ? input.headers : undefined));
         headers.set('Authorization', 'Bearer ' + token);
@@ -63,7 +80,12 @@
         gate.innerHTML = '<h1>Sign in to L</h1><p>Your private companion and saved files.</p>' +
             '<form id="accountForm"><label>Email<input id="accountEmail" type="email" autocomplete="username" required></label>' +
             '<label>Password<input id="accountPassword" type="password" autocomplete="current-password" minlength="8" maxlength="256" required></label>' +
-            '<button type="submit">Sign in</button><button id="createLAccount" type="button">Create my L login</button></form>' +
+            '<button type="submit">Sign in</button><button id="createLAccount" type="button">Create my L login</button>' +
+            '<button id="forgotLPassword" type="button">Forgot password</button></form>' +
+            '<form id="resetPasswordForm" hidden><h2>Choose a new password</h2>' +
+            '<label>New password<input id="newLPassword" type="password" autocomplete="new-password" minlength="12" maxlength="256" required></label>' +
+            '<label>Confirm new password<input id="confirmLPassword" type="password" autocomplete="new-password" minlength="12" maxlength="256" required></label>' +
+            '<button id="saveLPassword" type="submit">Save new password</button></form>' +
             '<p id="accountStatus" role="status" aria-live="polite">Use the email chosen for your L account. A new password needs at least 12 characters.</p>';
         document.body.appendChild(gate);
         document.getElementById('accountFallback')?.remove?.();
@@ -88,6 +110,39 @@
         }
         document.getElementById('accountForm').onsubmit = event => { event.preventDefault(); submit(false); };
         document.getElementById('createLAccount').onclick = () => submit(true);
+        document.getElementById('forgotLPassword').onclick = async () => {
+            const email = document.getElementById('accountEmail');
+            if (!email.reportValidity()) return;
+            const button = document.getElementById('forgotLPassword');
+            button.disabled = true;
+            try {
+                const result = await call('/account/recover', {email:email.value});
+                document.getElementById('accountPassword').value = '';
+                locked(result.message);
+            } catch (error) { locked(error.message); }
+            finally { button.disabled = false; }
+        };
+        document.getElementById('resetPasswordForm').onsubmit = async event => {
+            event.preventDefault();
+            const form = document.getElementById('resetPasswordForm');
+            if (!form.reportValidity() || !recoveryToken) return;
+            const password = document.getElementById('newLPassword');
+            const confirm = document.getElementById('confirmLPassword');
+            if (password.value !== confirm.value) { locked('The two passwords do not match.'); return; }
+            const button = document.getElementById('saveLPassword'); button.disabled = true;
+            try {
+                const response = await nativeFetch('/account/password', {method:'POST', cache:'no-store',
+                    headers:{'Content-Type':'application/json', Authorization:'Bearer '+recoveryToken},
+                    body:JSON.stringify({password:password.value}), signal:AbortSignal.timeout(20000)});
+                const result = await response.json();
+                if (!response.ok) throw new Error(typeof result.detail === 'string' ? result.detail : 'Password reset failed. Request a new reset email.');
+                recoveryToken = null; persist(null); password.value = ''; confirm.value = '';
+                form.hidden = true; document.getElementById('accountForm').hidden = false;
+                locked(result.signed_out ? 'Password updated. Sign in with your new password.' :
+                    'Password updated. Sign in with your new password. Signing out other sessions could not be confirmed.');
+            } catch (error) { locked(error.message); }
+            finally { button.disabled = false; }
+        };
         document.getElementById('signOutL').onclick = async () => {
             try {
                 const response = await window.fetch('/account/logout', {method:'POST'});
@@ -95,7 +150,21 @@
                 persist(null); location.reload();
             } catch (error) { document.getElementById('evidenceStatus').textContent = error.message; }
         };
-        try { await verify(); } catch (_) { locked('Could not verify your session. Sign in when connected.'); }
+        try {
+            if (recoveryToken) {
+                locked('Checking your reset link…');
+                const response = await nativeFetch('/account/me', {headers:{Authorization:'Bearer '+recoveryToken}, cache:'no-store'});
+                if (!response.ok) {
+                    recoveryToken = null;
+                    locked('This reset link has expired or is not valid for L. Use Forgot password to request a new one.');
+                } else {
+                    document.getElementById('accountForm').hidden = true;
+                    document.getElementById('resetPasswordForm').hidden = false;
+                    locked('Choose a new password of at least 12 characters.');
+                }
+            } else if (linkNotice) { locked(linkNotice); }
+            else { await verify(); }
+        } catch (_) { recoveryToken = null; locked('Could not verify your session. Request a new reset link or sign in when connected.'); }
         finally { resolveReady(); }
     });
 })();
