@@ -9,7 +9,7 @@ import jwt
 from fastapi import HTTPException
 
 
-def auth_request(path, payload=None, token=None):
+def auth_request(path, payload=None, token=None, method='POST'):
     url = os.getenv('SUPABASE_URL', '').rstrip('/')
     key = os.getenv('SUPABASE_PUBLISHABLE_KEY', '')
     if not url or not key:
@@ -19,11 +19,24 @@ def auth_request(path, payload=None, token=None):
         headers['Authorization'] = 'Bearer ' + token
     try:
         with httpx.Client(timeout=15) as client:
-            response = client.post(url + '/auth/v1/' + path, json=payload, headers=headers)
+            response = client.request(method, url + '/auth/v1/' + path, json=payload, headers=headers)
         if response.status_code >= 400:
             # Never expose provider bodies (may include account/session details).
-            raise HTTPException(429 if response.status_code == 429 else 400,
-                                'Sign-in could not finish. Check your details and email confirmation, then try again.')
+            messages = {
+                'invalid_credentials': 'Email or password was not accepted. Use Forgot password to reset your password.',
+                'email_not_confirmed': 'Confirm your email using the newest confirmation email, then sign in.',
+                'same_password': 'Choose a different new password.',
+                'weak_password': 'Choose a stronger password of at least 12 characters.',
+                'otp_expired': 'This link has expired or already been used. Request a new reset email.',
+            }
+            try:
+                code = response.json().get('error_code', '')
+            except (ValueError, AttributeError):
+                code = ''
+            message = messages.get(code, 'Account request could not finish. Please try again.')
+            if response.status_code == 429:
+                message = 'Too many requests. Please wait before requesting another email or trying again.'
+            raise HTTPException(429 if response.status_code == 429 else 400, message)
         return response.json() if response.content else {}
     except httpx.HTTPError as exc:
         raise HTTPException(503, 'Account service is temporarily unavailable.') from exc

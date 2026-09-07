@@ -309,7 +309,7 @@ app.add_middleware(
 
 @app.middleware('http')
 async def account_boundary(request: Request, call_next):
-    public_paths = {'/', '/health', '/account/config', '/account/login', '/account/signup', '/account/refresh'}
+    public_paths = {'/', '/health', '/account/config', '/account/login', '/account/signup', '/account/refresh', '/account/recover'}
     path = request.url.path
     if path not in public_paths and not path.startswith('/ui/') and request.method != 'OPTIONS':
         try:
