@@ -17,13 +17,13 @@
     <link
         rel="icon"
         type="image/png"
-        href="/ui/icon.png"
+        href="/ui/shine-l-icon.png?v=1"
     >
 
     <link
         rel="apple-touch-icon"
         sizes="180x180"
-        href="/ui/icon.png"
+        href="/ui/shine-l-icon.png?v=1"
     >
 
     <style>
@@ -757,8 +757,10 @@
             const button = document.createElement("button");
             button.textContent = "Saved answers";
             button.type = "button";
-            chat.parentElement.insertBefore(button, chat);
+            button.id = 'savedAnswersAction';
+            document.getElementById('chatToolsActions').insertBefore(button, document.getElementById('closeChatTools'));
             button.onclick = async () => {
+                window.lChatTools?.close();
                 button.disabled = true;
                 try {
                     const recent = savedTasks().slice(-20);
