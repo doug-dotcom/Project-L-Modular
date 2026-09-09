@@ -39,6 +39,8 @@ load_dotenv()
 # SHOPS
 # =====================================================
 
+from core.cognition.memory_intake import memory_intake_kind, intake_receipt
+
 from agents.rhee.rhee_v3 import (
     build_context_packet as build_rhee_packet
 )
@@ -879,6 +881,13 @@ def chat(req: ChatRequest):
         "user",
         user_message
     )
+
+    intake_kind = memory_intake_kind(user_message)
+    if intake_kind:
+        payload = intake_receipt(intake_kind, raw_user_row)
+        store_chat_result(request_id, "ready", payload)
+        run_brain_pipeline(raw_user_row)
+        return payload
 
     run_brain_pipeline(raw_user_row)
 
