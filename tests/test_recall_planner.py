@@ -199,3 +199,43 @@ def test_schema_is_backend_read_only_and_budgeted():
     assert 'security invoker' in sql and "statement_timeout = '8s'" in sql
     assert 'from public, anon, authenticated' in sql
     assert 'update public.' not in sql and 'delete from' not in sql
+
+
+def test_memory_intake_distinguishes_updates_from_report_requests():
+    from core.cognition.memory_intake import memory_intake_kind
+    assert memory_intake_kind('Please save this update: I enjoyed my day.') == 'supplied_update'
+    assert memory_intake_kind('Daily report for L\n' + 'A supplied journal entry. ' * 20) == 'supplied_update'
+    assert memory_intake_kind('Paste this, Doug:\nL, this is my daily update—not a request to generate a report. Please save the update I just sent to memory.') == 'previous_update'
+    for query in ['Generate a report for the last six months', 'Review my history', 'Do not save this update', 'Daily report for L please']:
+        assert memory_intake_kind(query) is None
+
+
+def test_memory_intake_only_acknowledges_verified_write():
+    from core.cognition.memory_intake import intake_receipt
+    assert intake_receipt('supplied_update', {'id': 42})['memory_intake']['status'] == 'saved'
+    for row in [None, {}, {'content': 'unconfirmed'}]:
+        assert intake_receipt('supplied_update', row)['error'] is True
+    receipt = intake_receipt('previous_update', {'id': 43})
+    assert receipt['memory_intake']['previous_update_status'] == 'not_verified'
+    assert 'cannot confirm the earlier update' in receipt['reply']
+
+
+def test_chat_intake_bypasses_failing_search():
+    import ast
+    from core.cognition.memory_intake import memory_intake_kind, intake_receipt
+    source = Path('api/server.py').read_text()
+    fn = next(n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name == 'chat')
+    fn.decorator_list = []
+    fn.args.args[0].annotation = None
+    def fail(*args, **kwargs):
+        raise AssertionError('Intake must not run retrieval or generation')
+    env = {name: lambda *a, **k: None for name in ['resolve_model_adapter', 'store_chat_result', 'log', 'checkpoint', 'run_brain_pipeline']}
+    env.update(normalise_request_id=lambda x: x, classify_short_term_domain=lambda x: 'general',
+               write_live_short_term=lambda *a: {'saved': True}, write_raw_catchall=lambda *a: {'id': 12},
+               memory_intake_kind=memory_intake_kind, intake_receipt=intake_receipt,
+               build_time_context=fail, build_rhee_packet=fail)
+    exec(compile(ast.Module(body=[fn], type_ignores=[]), '<chat>', 'exec'), env)
+    req = SimpleNamespace(message='Please save this update: A good day.', request_id='test', conversation_id='test')
+    assert env['chat'](req)['memory_intake']['status'] == 'saved'
+    env['write_raw_catchall'] = lambda *a: None
+    assert env['chat'](req)['error'] is True
