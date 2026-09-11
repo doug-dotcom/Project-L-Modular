@@ -6,6 +6,7 @@ Only its hash is persisted. In-flight work is never automatically replayed.
 import hashlib
 import json
 import logging
+import random
 import threading
 from uuid import UUID, uuid4
 
@@ -98,14 +99,28 @@ class TaskRunner:
 
     def loop(self):
         worker = str(uuid4())
+        failures = 0
         while not self.stop_event.is_set():
             try:
                 task = self.store.claim(worker)
+                if failures:
+                    LOG.info('Durable task dispatcher recovered after %d failed polls', failures)
+                failures = 0
                 if task:
                     self.run_one(task, worker)
                     continue
-            except Exception:
-                LOG.warning('Durable task dispatcher unavailable', exc_info=False)
+            except Exception as exc:
+                failures += 1
+                # Do not log exception text: it may contain request data or credentials.
+                # No immediate RPC retry: a timed-out claim may already own a task.
+                delay = min(60, 3 * (2 ** min(failures - 1, 5)))
+                delay = min(60, delay + random.uniform(0, delay * 0.2))
+                LOG.warning(
+                    'Durable task dispatcher unavailable: error_type=%s failures=%d retry_in=%.1fs',
+                    type(exc).__name__, failures, delay,
+                )
+                self.stop_event.wait(delay)
+                continue
             self.stop_event.wait(3)
 
     def run_one(self, task, worker):

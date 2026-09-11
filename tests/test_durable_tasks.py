@@ -140,3 +140,58 @@ def test_get_database_outage_does_not_fall_back_to_cached_answer(monkeypatch):
     with pytest.raises(HTTPException) as exc:
         server.recover_chat_result(str(uuid4()), 'x' * 64)
     assert exc.value.status_code == 503
+
+class PollEvent:
+    def __init__(self, stop_after):
+        self.waits = []
+        self.stop_after = stop_after
+    def is_set(self):
+        return len(self.waits) >= self.stop_after
+    def wait(self, seconds):
+        self.waits.append(seconds)
+        return self.is_set()
+
+
+def test_dispatcher_backs_off_caps_and_resets_after_recovery(monkeypatch, caplog):
+    from core.cognition import durable_tasks
+    monkeypatch.setattr(durable_tasks.random, 'uniform', lambda a, b: 0)
+    class Store:
+        calls = 0
+        def claim(self, worker):
+            self.calls += 1
+            if self.calls <= 7 or self.calls == 9:
+                raise ConnectionError('secret-token must never enter logs')
+            return None
+    store = Store()
+    runner = TaskRunner(store, lambda request: None)
+    runner.stop_event = PollEvent(9)
+    with caplog.at_level('INFO'):
+        runner.loop()
+    assert runner.stop_event.waits == [3, 6, 12, 24, 48, 60, 60, 3, 3]
+    assert store.calls == 9
+    assert 'error_type=ConnectionError' in caplog.text
+    assert 'recovered after 7 failed polls' in caplog.text
+    assert 'secret-token' not in caplog.text
+
+
+def test_uncertain_claim_is_not_replayed(monkeypatch):
+    from core.cognition import durable_tasks
+    monkeypatch.setattr(durable_tasks.random, 'uniform', lambda a, b: 0)
+    effects = []
+    class Store(FakeStore):
+        calls = 0
+        def claim(self, worker):
+            self.calls += 1
+            if self.calls == 1:
+                # The database committed this claim but its response was lost.
+                raise TimeoutError('response lost')
+            if self.calls == 2:
+                return {'request_id': str(uuid4()), 'request': {'message': 'next task'}}
+            return None
+    store = Store()
+    runner = TaskRunner(store, lambda request: effects.append(request['message']) or {'reply': 'done'})
+    runner.stop_event = PollEvent(2)
+    runner.loop()
+    assert effects == ['next task']
+    assert len(store.finished) == 1
+    assert runner.stop_event.waits == [3, 3]
