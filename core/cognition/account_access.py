@@ -49,23 +49,30 @@ def require_account(client, authorization):
     if len(token) > 8192 or client is None:
         raise HTTPException(401, 'Please sign in to L.')
     try:
-        # Remote validation first. Unverified decoding below is ONLY for session lookup.
-        user = client.auth.get_user(token).user
+        # Validate the exact bearer token against Supabase Auth over its REST endpoint.
+        # This avoids mutating or depending on the shared server-side Supabase auth client.
+        user = auth_request('user', token=token, method='GET')
         claims = jwt.decode(token, options={'verify_signature': False})
-        user_id = str(UUID(str(user.id)))
-        session_id = str(UUID(claims.get('session_id', '')))
-        if claims.get('sub') != user_id or not user.email_confirmed_at or user.is_anonymous:
+        user_id = str(UUID(str(user.get('id', ''))))
+        session_id = str(UUID(str(claims.get('session_id', ''))))
+        email = str(user.get('email') or '')
+        confirmed = bool(user.get('email_confirmed_at') or user.get('confirmed_at'))
+        anonymous = bool(user.get('is_anonymous', False))
+        if str(claims.get('sub') or '') != user_id or not confirmed or anonymous:
             raise ValueError('Unverified account')
         allowed = os.getenv('L_OWNER_EMAIL', '').strip().casefold()
-        if not allowed or str(user.email).casefold() != allowed:
+        if not allowed or email.casefold() != allowed:
             raise HTTPException(403, 'This account does not have access to this L.')
         # Also rejects revoked sessions immediately and binds access to one provisioned owner.
         allowed_session = client.rpc('l_account_session_valid', {
             'p_user': user_id, 'p_session': session_id}).execute().data
         if allowed_session is not True:
             raise HTTPException(403, 'This L account is not activated, or the session has ended.')
-        return {'user_id': user_id, 'email': user.email}
-    except HTTPException:
+        return {'user_id': user_id, 'email': email}
+    except HTTPException as exc:
+        # A bearer token rejected by Supabase is an authentication failure, not a bad form request.
+        if exc.status_code == 400 and exc.detail == 'Account request could not finish. Please try again.':
+            raise HTTPException(401, 'Your session could not be verified. Please sign in again.') from exc
         raise
     except Exception as exc:
         raise HTTPException(401, 'Your session could not be verified. Please sign in again.') from exc
