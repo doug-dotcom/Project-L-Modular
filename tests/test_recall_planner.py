@@ -48,6 +48,21 @@ def test_focused_is_smaller_than_deep_and_period():
     assert deep['contradiction_review'] and not deep['full_scan_fallback']
 
 
+def test_yesterday_resolves_to_single_day_fast_path():
+    plan = plan_recall("Hey L, are you able to recall yesterday's reports please", date(2026, 9, 12))
+    assert plan['mode'] == 'period_review'
+    assert plan['period'] == {
+        'from': '2026-09-11',
+        'through': '2026-09-11',
+        'timezone': 'Australia/Brisbane',
+    }
+    assert plan['period_source'] == 'yesterday'
+    assert plan['raw_candidates'] == 24
+    assert plan['memory_candidates'] == 12
+    assert plan['retrieval_budget_ms'] == 10000
+    assert not plan['gap_search'] and not plan['contradiction_review']
+
+
 def test_rolling_six_months_includes_partial_edge_months():
     plan = plan_recall('Report for Pauline over the last six months', TODAY)
     windows = month_windows(plan['period'])
@@ -121,11 +136,13 @@ def test_malformed_or_missing_month_is_not_a_gap(payload):
     assert run(payload)['receipt']['status'] == 'unavailable'
 
 
-def test_timeout_does_not_publish_partial_confident_context():
-    times = iter([0, 13])
+def test_late_bounded_result_preserves_evidence_and_marks_timing():
+    times = iter([0, 46])
     packet = run(clock=lambda: next(times))
-    assert packet['receipt']['status'] == 'budget_exceeded'
-    assert packet['evidence'] == [] and packet['context'] == ''
+    assert packet['receipt']['status'] == 'checked'
+    assert packet['receipt']['budget_exceeded'] is True
+    assert packet['receipt']['timing_status'] == 'late_bounded_result'
+    assert packet['evidence'] and packet['context']
 
 
 def test_db_failure_no_private_error_or_retry():
