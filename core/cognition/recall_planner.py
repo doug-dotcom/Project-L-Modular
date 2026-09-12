@@ -12,7 +12,7 @@ import re
 import time
 from zoneinfo import ZoneInfo
 
-VERSION = '1.0'
+VERSION = '1.1'
 
 
 def months_before(day, count):
@@ -20,18 +20,43 @@ def months_before(day, count):
     return date(year, month + 1, min(day.day, calendar.monthrange(year, month + 1)[1]))
 
 
+def relative_day_period(text, today):
+    """Resolve simple recent-time language before any broad memory search.
+
+    These phrases describe a bounded calendar window, so they should never
+    trigger a corpus-wide recall merely because the user omitted an ISO date.
+    """
+    if re.search(r"\byesterday(?:'s|s)?\b|\blast night\b", text):
+        target = today - timedelta(days=1)
+        return target, target, 'yesterday'
+    if re.search(r"\btoday(?:'s|s)?\b|\bthis morning\b|\bthis afternoon\b|\btonight\b", text):
+        return today, today, 'today'
+    return None
+
+
 def plan_recall(query, today=None):
     today = today or datetime.now(ZoneInfo('Australia/Brisbane')).date()
     text = str(query).lower()
-    review = bool(re.search(r'\b(report|review|timeline|chronology|history|summary)\b', text))
+    review = bool(re.search(r'\b(reports?|review|timeline|chronology|history|summar(?:y|ies))\b', text))
     explicit = re.search(r'\b(?:from|between)\s+(\d{4}-\d{2}-\d{2})\s+(?:to|through|and)\s+(\d{4}-\d{2}-\d{2})\b', text)
     relative = re.search(r'\b(?:last|past)\s+(\d+|one|two|three|six|twelve)\s+months?\b', text)
     six = bool(re.search(r'\bsix[- ]month|\b6[- ]month', text))
+    recent_day = relative_day_period(text, today)
     period = None
     assumption = None
-    if review and (explicit or relative or six or 'pauline' in text or 'psychologist' in text):
+    period_source = None
+
+    if recent_day:
+        start, end, period_source = recent_day
+        period = {
+            'from': start.isoformat(),
+            'through': end.isoformat(),
+            'timezone': 'Australia/Brisbane',
+        }
+    elif review and (explicit or relative or six or 'pauline' in text or 'psychologist' in text):
         if explicit:
             start, end = (date.fromisoformat(value) for value in explicit.groups())
+            period_source = 'explicit'
         else:
             number = relative.group(1) if relative else 'six'
             count = {'one': 1, 'two': 2, 'three': 3, 'six': 6, 'twelve': 12}.get(number)
@@ -39,20 +64,60 @@ def plan_recall(query, today=None):
             if not 1 <= count <= 12:
                 raise ValueError('Please request a period of one to twelve months.')
             start, end = months_before(today, count), today
+            period_source = 'relative_months'
             if not relative and not six:
                 assumption = 'No period specified: using the last six calendar months.'
         if start > end or (end - start).days > 366:
             raise ValueError('Please provide an ordered reporting period of at most one year.')
         period = {'from': start.isoformat(), 'through': end.isoformat(), 'timezone': 'Australia/Brisbane'}
-    deep = review or bool(re.search(r'\b(deep recall|compare|contradiction|conflict|changed|missing)\b', text))
+
+    short_relative = period_source in ('yesterday', 'today')
+    deep_signal = bool(re.search(r'\b(deep recall|compare|contradiction|conflict|changed|missing)\b', text))
+    deep = deep_signal or (review and not short_relative)
     mode = 'period_review' if period else ('investigate' if deep else 'focused')
-    return {'version': VERSION, 'mode': mode, 'period': period, 'assumption': assumption,
-            'raw_candidates': 200 if deep else 40, 'memory_candidates': 120 if deep else 24,
-            'selected_per_month': 6, 'candidates_per_month': 24,
-            'evidence_char_budget': 60000 if period else (36000 if deep else 18000),
-            'retrieval_budget_ms': 12000 if deep else 6000,
-            'gap_search': bool(period), 'contradiction_review': deep,
-            'full_scan_fallback': False}
+
+    # Budgets are target latency guardrails, not permission to discard a valid
+    # bounded result that arrives slightly late. Recent-day recall gets the
+    # smallest search shape; ordinary focused recall has enough headroom for
+    # observed production latency without becoming an unbounded scan.
+    if short_relative:
+        raw_candidates = 24
+        memory_candidates = 12
+        selected_per_month = 8
+        candidates_per_month = 16
+        evidence_char_budget = 24000
+        retrieval_budget_ms = 10000
+    elif deep:
+        raw_candidates = 200
+        memory_candidates = 120
+        selected_per_month = 6
+        candidates_per_month = 24
+        evidence_char_budget = 60000 if period else 36000
+        retrieval_budget_ms = 45000
+    else:
+        raw_candidates = 32
+        memory_candidates = 18
+        selected_per_month = 6
+        candidates_per_month = 20
+        evidence_char_budget = 18000
+        retrieval_budget_ms = 15000
+
+    return {
+        'version': VERSION,
+        'mode': mode,
+        'period': period,
+        'period_source': period_source,
+        'assumption': assumption,
+        'raw_candidates': raw_candidates,
+        'memory_candidates': memory_candidates,
+        'selected_per_month': selected_per_month,
+        'candidates_per_month': candidates_per_month,
+        'evidence_char_budget': evidence_char_budget,
+        'retrieval_budget_ms': retrieval_budget_ms,
+        'gap_search': bool(period) and not short_relative,
+        'contradiction_review': deep,
+        'full_scan_fallback': False,
+    }
 
 
 def month_windows(period):
@@ -69,9 +134,10 @@ def month_windows(period):
 
 def period_terms(query, terms):
     # Do not let generic report/date words swamp topical evidence.
-    stop = {'report', 'review', 'summary', 'history', 'timeline', 'chronology', 'last', 'past',
-            'six', 'months', 'month', 'based', 'full', 'write', 'through', 'between',
-            'from', 'give', 'make', 'create', 'personal', 'life'}
+    stop = {'report', 'reports', 'review', 'summary', 'summaries', 'history', 'timeline', 'chronology',
+            'last', 'past', 'today', 'todays', "today's", 'yesterday', 'yesterdays', "yesterday's",
+            'night', 'morning', 'afternoon', 'six', 'months', 'month', 'based', 'full', 'write',
+            'through', 'between', 'from', 'give', 'make', 'create', 'personal', 'life'}
     return list(dict.fromkeys(t for t in terms if t not in stop and not t.isdigit()))[:24]
 
 
@@ -103,12 +169,19 @@ def retrieve_period(client, query, plan, terms, is_artifact, clock=time.monotoni
     except Exception:
         receipt.update(status='unavailable', latency_ms=round((clock() - started) * 1000))
         return {'context': '', 'evidence': [], 'receipt': receipt}
+
     elapsed = round((clock() - started) * 1000)
     receipt['latency_ms'] = elapsed
     receipt['budget_exceeded'] = elapsed > plan['retrieval_budget_ms']
-    if receipt['budget_exceeded']:
-        receipt['status'] = 'budget_exceeded'
-        return {'context': '', 'evidence': [], 'receipt': receipt}
+    receipt['timing_status'] = (
+        'late_bounded_result' if receipt['budget_exceeded'] else 'within_budget'
+    )
+    # A completed bounded database query is still valid evidence. The old path
+    # discarded the entire result solely because it arrived after the target
+    # latency, causing a false "could not complete" error even when candidates
+    # were already present. Preserve the bounded result and surface its timing
+    # in the receipt instead.
+
     by_month = {m.get('month'): m for m in result['months'] if isinstance(m, dict)}
     evidence, groups, used = [], [], 0
     for window in month_windows(plan['period']):
@@ -191,5 +264,7 @@ def coverage_notice(receipt):
 def planner_manifest():
     return {'version': VERSION, 'stage': 5, 'status': 'bounded_pilot',
             'modes': ['focused', 'investigate', 'period_review'],
+            'relative_day_fast_path': True,
+            'late_bounded_evidence_preserved': True,
             'max_period_days': 366, 'persistent_summaries': False,
             'complete_recall_certified': False}
