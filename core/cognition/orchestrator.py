@@ -12,6 +12,7 @@ from core.cognition.model_independence import (
     create_model_adapter,
     build_model_independence_packet,
 )
+from core.cognition.personal_timeline import build_personal_timeline_packet
 from core.cognition.portability import portability_manifest
 from core.cognition.relationship_intelligence import build_relationship_packet
 from core.cognition.rike import needs_structured_reasoning, reason
@@ -47,6 +48,7 @@ def run_cognitive_core(
             f"STATUS: {capability_packet.get('status')}\n"
             f"RESULT: {str(capability_packet.get('reply'))[:12000]}"
         )
+
     foundation = run_parallel_foundation(
         message,
         evidence_context,
@@ -103,9 +105,11 @@ def run_cognitive_core(
         rhee_packet or {},
     )
     relationship = build_relationship_packet(message, evidence_context)
+    timeline = build_personal_timeline_packet(message, evidence_context)
+
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "13.2",
+        "version": "13.3",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "route": {
@@ -115,12 +119,14 @@ def run_cognitive_core(
             "rike": "active" if rike_required else "not_required",
             "anticipation": "prepared" if anticipation["active"] else "not_required",
             "relationship_intelligence": "active" if relationship["active"] else "not_required",
+            "personal_timeline": "active" if timeline["active"] else "not_required",
         },
         "mary": mary,
         "quinn": quinn if rike_required else {"engine": "quinn", "status": "not_required", "principles": []},
         "rike": rike,
         "anticipation": anticipation,
         "relationship_intelligence": relationship,
+        "personal_timeline": timeline,
         "guardrails": guardrails,
         "working_memory": working_memory_packet or {},
         "model_independence": build_model_independence_packet(resolved_adapter),
