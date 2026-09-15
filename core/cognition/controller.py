@@ -10,10 +10,11 @@ from __future__ import annotations
 import re
 
 from core.cognition.decision_memory import decision_recall_requested
+from core.cognition.relationship_intelligence import relationship_query_requested
 from core.cognition.rike import needs_structured_reasoning
 
 
-CONTROLLER_VERSION = "1.3"
+CONTROLLER_VERSION = "1.4"
 
 
 def _has(text: str, signals: tuple[str, ...]) -> bool:
@@ -84,12 +85,14 @@ def _life_pattern_signal(text: str) -> bool:
 
 def plan_cognition(message: str) -> dict:
     """Return an inspectable, fail-closed plan without invoking any specialist."""
-    text = " ".join(str(message or "").strip().lower().split())
+    raw_text = str(message or "").strip()
+    text = " ".join(raw_text.lower().split())
 
     continuity_signal = _continuity_signal(text)
     life_pattern_signal = _life_pattern_signal(text)
     decision_signal = decision_recall_requested(text)
-    recall_signal = continuity_signal or life_pattern_signal or decision_signal or _has(text, (
+    relationship_signal = relationship_query_requested(raw_text)
+    recall_signal = continuity_signal or life_pattern_signal or decision_signal or relationship_signal or _has(text, (
         "remember", "recall", "deep recall", "what do you know", "tell me about my",
         "my recovery", "my family", "my history", "my journey", "my project",
         "we discussed", "we decided", "we built", "earlier", "last time", "again",
@@ -120,6 +123,8 @@ def plan_cognition(message: str) -> dict:
         problem_type = "life_pattern"
     elif decision_signal:
         problem_type = "decision_recall"
+    elif relationship_signal:
+        problem_type = "relationship_intelligence"
     elif longitudinal_signal:
         problem_type = "longitudinal"
     elif recall_signal:
@@ -134,7 +139,7 @@ def plan_cognition(message: str) -> dict:
     substantial = problem_type != "conversation" or len(text.split()) >= 18
     memory_required = recall_signal or longitudinal_signal
     external_evidence_required = current_evidence_signal or high_stakes
-    difficulty_score = sum((substantial, structured, longitudinal_signal, high_stakes, action_signal, life_pattern_signal, decision_signal))
+    difficulty_score = sum((substantial, structured, longitudinal_signal, high_stakes, action_signal, life_pattern_signal, decision_signal, relationship_signal))
     difficulty = "high" if difficulty_score >= 3 else "medium" if difficulty_score >= 1 else "low"
 
     known = []
@@ -149,6 +154,8 @@ def plan_cognition(message: str) -> dict:
         unknown.append("cross_domain_pattern_evidence_until_retrieved")
     if decision_signal:
         unknown.append("decision_rationale_until_retrieved")
+    if relationship_signal:
+        unknown.append("relationship_evidence_until_retrieved")
     if external_evidence_required:
         unknown.append("current_external_facts_until_capability_returns")
     else:
@@ -171,6 +178,7 @@ def plan_cognition(message: str) -> dict:
             "continuity": continuity_signal,
             "life_pattern": life_pattern_signal,
             "decision_memory": decision_signal,
+            "relationship_intelligence": relationship_signal,
             "specialist": external_evidence_required or action_signal,
         },
         "signals": {
@@ -178,6 +186,7 @@ def plan_cognition(message: str) -> dict:
             "continuity": continuity_signal,
             "life_pattern": life_pattern_signal,
             "decision_memory": decision_signal,
+            "relationship_intelligence": relationship_signal,
             "longitudinal": longitudinal_signal,
             "current_evidence": current_evidence_signal,
             "action": action_signal,
@@ -205,6 +214,9 @@ def finalise_cognition_plan(plan: dict, rhee_packet: dict, capability_packet: di
             if result.get("needs", {}).get("decision_memory"):
                 result["known"].append("decision_evidence_retrieved")
                 result["unknown"] = [item for item in result["unknown"] if item != "decision_rationale_until_retrieved"]
+            if result.get("needs", {}).get("relationship_intelligence"):
+                result["known"].append("relationship_evidence_retrieved")
+                result["unknown"] = [item for item in result["unknown"] if item != "relationship_evidence_until_retrieved"]
         else:
             result["unknown"].append("relevant_personal_evidence_not_found")
     capability = capability_packet or {}
