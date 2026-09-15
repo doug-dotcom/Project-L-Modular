@@ -1,6 +1,6 @@
 """Deterministic metacognitive planning for Project L.
 
-The controller plans cognition before retrieval or model generation.  It does not
+The controller plans cognition before retrieval or model generation. It does not
 answer Doug, infer personal facts, or call tools; it only declares which bounded
 systems a request has earned.
 """
@@ -12,18 +12,52 @@ import re
 from core.cognition.rike import needs_structured_reasoning
 
 
-CONTROLLER_VERSION = "1.0"
+CONTROLLER_VERSION = "1.1"
 
 
 def _has(text: str, signals: tuple[str, ...]) -> bool:
     return any(signal in text for signal in signals)
 
 
+def _continuity_signal(text: str) -> bool:
+    """Detect turns whose meaning depends on a previously active thread.
+
+    These turns must retrieve memory even when they are very short (for example
+    Doug's common "go" / "next go" workflow). This keeps continuity grounded in
+    stored evidence instead of asking the model to guess what came before.
+    """
+    if not text:
+        return False
+    if re.fullmatch(
+        r"(?:go|next\s+go|go\s+again|keep\s+going|continue|carry\s+on|resume|pick\s+it\s+up|"
+        r"let'?s\s+keep\s+going|let'?s\s+continue)[\s.!👊👍🥳😂🙏]*",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return True
+    return _has(text, (
+        "pick up where we left off",
+        "where we left off",
+        "where were we",
+        "what were we doing",
+        "continue from before",
+        "continue from last time",
+        "keep building",
+        "keep working on",
+        "back to what we were doing",
+        "resume the last",
+        "resume our",
+        "next layer",
+        "another layer",
+    ))
+
+
 def plan_cognition(message: str) -> dict:
     """Return an inspectable, fail-closed plan without invoking any specialist."""
     text = " ".join(str(message or "").strip().lower().split())
 
-    recall_signal = _has(text, (
+    continuity_signal = _continuity_signal(text)
+    recall_signal = continuity_signal or _has(text, (
         "remember", "recall", "deep recall", "what do you know", "tell me about my",
         "my recovery", "my family", "my history", "my journey", "my project",
         "we discussed", "we decided", "we built", "earlier", "last time", "again",
@@ -73,6 +107,8 @@ def plan_cognition(message: str) -> dict:
         unknown.append("relevant_personal_evidence_until_retrieved")
     else:
         known.append("personal_memory_not_required")
+    if continuity_signal:
+        unknown.append("prior_thread_until_retrieved")
     if external_evidence_required:
         unknown.append("current_external_facts_until_capability_returns")
     else:
@@ -92,10 +128,12 @@ def plan_cognition(message: str) -> dict:
             "external_evidence": external_evidence_required,
             "structured_reasoning": structured or high_stakes,
             "longitudinal_reasoning": longitudinal_signal,
+            "continuity": continuity_signal,
             "specialist": external_evidence_required or action_signal,
         },
         "signals": {
             "recall": recall_signal,
+            "continuity": continuity_signal,
             "longitudinal": longitudinal_signal,
             "current_evidence": current_evidence_signal,
             "action": action_signal,
@@ -114,6 +152,9 @@ def finalise_cognition_plan(plan: dict, rhee_packet: dict, capability_packet: di
         if (rhee_packet or {}).get("recall_active"):
             result["known"].append("personal_evidence_retrieved")
             result["unknown"] = [item for item in result["unknown"] if item != marker]
+            if result.get("needs", {}).get("continuity"):
+                result["known"].append("prior_thread_evidence_retrieved")
+                result["unknown"] = [item for item in result["unknown"] if item != "prior_thread_until_retrieved"]
         else:
             result["unknown"].append("relevant_personal_evidence_not_found")
     capability = capability_packet or {}
