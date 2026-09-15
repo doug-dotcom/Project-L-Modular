@@ -8,6 +8,7 @@ import json
 import logging
 import random
 import threading
+import traceback
 from uuid import UUID, uuid4
 
 LOG = logging.getLogger(__name__)
@@ -150,7 +151,18 @@ class TaskRunner:
                         LOG.warning('Task result could not be persisted')
                     else:
                         done.wait(1)
-        except Exception:
+        except Exception as exc:
+            # Safe production diagnostic: type + final source location only. Never log
+            # exception text, request content, retrieved evidence, tokens or credentials.
+            frames = traceback.extract_tb(exc.__traceback__)
+            last = frames[-1] if frames else None
+            LOG.error(
+                'Durable task failed: error_type=%s source=%s:%s function=%s',
+                type(exc).__name__,
+                last.filename.rsplit('/', 1)[-1].rsplit('\\', 1)[-1] if last else 'unknown',
+                last.lineno if last else 'unknown',
+                last.name if last else 'unknown',
+            )
             try:
                 self.store.finish(request_id, worker, {
                     'reply': 'This task stopped before completion. Please review any actions before starting it again.',
