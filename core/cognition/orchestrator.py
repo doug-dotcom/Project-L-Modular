@@ -17,6 +17,7 @@ from core.cognition.personal_timeline import build_personal_timeline_packet
 from core.cognition.portability import portability_manifest
 from core.cognition.relationship_intelligence import build_relationship_packet
 from core.cognition.rike import needs_structured_reasoning, reason
+from core.cognition.state_aware_response import build_state_aware_response_packet
 from governance.cognitive_guardrails import assess_cognitive_packet
 from core.cognition.controller import finalise_cognition_plan, plan_cognition
 from core.cognition.uncertainty import assess_confidence_dimensions
@@ -112,13 +113,18 @@ def run_cognitive_core(
     )
     relationship = build_relationship_packet(message, evidence_context)
     timeline = build_personal_timeline_packet(message, evidence_context)
+    state_aware = build_state_aware_response_packet(
+        message,
+        working_memory_packet or {},
+    )
 
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "13.4",
+        "version": "13.5",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "confidence_evidence": confidence_evidence,
+        "state_aware_response": state_aware,
         "route": {
             "rhee": "required" if cognitive_plan["needs"]["memory"] else "not_required",
             "mary": "active" if mary["active"] else "not_required",
@@ -128,6 +134,7 @@ def run_cognitive_core(
             "relationship_intelligence": "active" if relationship["active"] else "not_required",
             "personal_timeline": "active" if timeline["active"] else "not_required",
             "confidence_evidence": "active",
+            "state_aware_response": "active" if state_aware["active"] else "neutral",
         },
         "mary": mary,
         "quinn": quinn if rike_required else {"engine": "quinn", "status": "not_required", "principles": []},
