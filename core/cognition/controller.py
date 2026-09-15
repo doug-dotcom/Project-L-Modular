@@ -14,9 +14,10 @@ from core.cognition.personal_research import personal_research_requested
 from core.cognition.personal_timeline import timeline_query_requested
 from core.cognition.relationship_intelligence import relationship_query_requested
 from core.cognition.rike import needs_structured_reasoning
+from core.cognition.what_matters_now import what_matters_now_requested
 
 
-CONTROLLER_VERSION = "1.6"
+CONTROLLER_VERSION = "1.7"
 
 
 def _has(text: str, signals: tuple[str, ...]) -> bool:
@@ -64,17 +65,18 @@ def plan_cognition(message: str) -> dict:
     relationship_signal = relationship_query_requested(raw_text)
     timeline_signal = timeline_query_requested(raw_text)
     research_signal = personal_research_requested(raw_text)
+    what_matters_signal = what_matters_now_requested(raw_text)
 
     recall_signal = (
         continuity_signal or life_pattern_signal or decision_signal or relationship_signal
-        or timeline_signal or research_signal or _has(text, (
+        or timeline_signal or research_signal or what_matters_signal or _has(text, (
             "remember", "recall", "deep recall", "what do you know", "tell me about my",
             "my recovery", "my family", "my history", "my journey", "my project",
             "we discussed", "we decided", "we built", "earlier", "last time", "again",
             "still", "continue", "update it", "same as before", "our plan", "our project",
         ))
     )
-    longitudinal_signal = life_pattern_signal or timeline_signal or _has(text, (
+    longitudinal_signal = life_pattern_signal or timeline_signal or what_matters_signal or _has(text, (
         "pattern", "over time", "timeline", "changed", "progress", "last six months",
         "last 6 months", "weekly report", "report for pauline", "journey",
     ))
@@ -87,7 +89,7 @@ def plan_cognition(message: str) -> dict:
         r"\b(?:send|delete|create|schedule|book|upload|download|add|remove|cancel)\b",
         text,
     ))
-    structured = needs_structured_reasoning(text) or longitudinal_signal or research_signal
+    structured = needs_structured_reasoning(text) or longitudinal_signal or research_signal or what_matters_signal
     high_stakes = _has(text, (
         "medical", "diagnosis", "legal", "insurance claim", "tpd", "financial advice",
         "suicide", "self-harm", "overdose", "emergency",
@@ -95,6 +97,8 @@ def plan_cognition(message: str) -> dict:
 
     if action_signal:
         problem_type = "action"
+    elif what_matters_signal:
+        problem_type = "what_matters_now"
     elif life_pattern_signal:
         problem_type = "life_pattern"
     elif decision_signal:
@@ -122,7 +126,7 @@ def plan_cognition(message: str) -> dict:
     difficulty_score = sum((
         substantial, structured, longitudinal_signal, high_stakes, action_signal,
         life_pattern_signal, decision_signal, relationship_signal, timeline_signal,
-        research_signal,
+        research_signal, what_matters_signal,
     ))
     difficulty = "high" if difficulty_score >= 3 else "medium" if difficulty_score >= 1 else "low"
 
@@ -144,6 +148,8 @@ def plan_cognition(message: str) -> dict:
         unknown.append("dated_timeline_evidence_until_retrieved")
     if research_signal:
         unknown.append("research_brief_evidence_until_retrieved")
+    if what_matters_signal:
+        unknown.append("current_priority_evidence_until_retrieved")
     if external_evidence_required:
         unknown.append("current_external_facts_until_capability_returns")
     else:
@@ -169,6 +175,7 @@ def plan_cognition(message: str) -> dict:
             "relationship_intelligence": relationship_signal,
             "personal_timeline": timeline_signal,
             "personal_research": research_signal,
+            "what_matters_now": what_matters_signal,
             "specialist": external_evidence_required or action_signal,
         },
         "signals": {
@@ -179,6 +186,7 @@ def plan_cognition(message: str) -> dict:
             "relationship_intelligence": relationship_signal,
             "personal_timeline": timeline_signal,
             "personal_research": research_signal,
+            "what_matters_now": what_matters_signal,
             "longitudinal": longitudinal_signal,
             "current_evidence": current_evidence_signal,
             "action": action_signal,
@@ -203,6 +211,7 @@ def finalise_cognition_plan(plan: dict, rhee_packet: dict, capability_packet: di
                 ("relationship_intelligence", "relationship_evidence_retrieved", "relationship_evidence_until_retrieved"),
                 ("personal_timeline", "dated_timeline_evidence_retrieved", "dated_timeline_evidence_until_retrieved"),
                 ("personal_research", "research_brief_evidence_retrieved", "research_brief_evidence_until_retrieved"),
+                ("what_matters_now", "current_priority_evidence_retrieved", "current_priority_evidence_until_retrieved"),
             )
             for need, known_value, unknown_value in mappings:
                 if result.get("needs", {}).get(need):
