@@ -1,17 +1,21 @@
-"""Project L Layer 11: cue-driven associative memory.
+"""Project L Layer 11 + 14: cue-driven memory with saturation control.
 
 The present turn may justify a bounded memory probe without Doug explicitly
-asking L to recall anything. Retrieval is not publication authority: evidence
-may inform L silently, materially change the answer, be surfaced selectively,
-or be discarded when weak, stale, intimate, irrelevant or unnecessary.
+asking L to recall anything. Layer 14 prevents ordinary conversation from
+triggering repeated near-identical probes. Retrieval remains separate from
+publication authority.
 """
 
 from __future__ import annotations
 
 import re
 
+from core.cognition.associative_saturation import AssociativeRetrievalGovernor
 
-CUE_DRIVEN_MEMORY_VERSION = "1.0"
+
+CUE_DRIVEN_MEMORY_VERSION = "1.1"
+_ASSOCIATIVE_GOVERNOR = AssociativeRetrievalGovernor()
+_ASSOCIATIVE_SCOPE = "doug_global_associative"
 
 _RECURRENCE = (
     "again", "same thing", "same feeling", "same pattern", "like before",
@@ -49,12 +53,16 @@ def _normalise(value: object) -> str:
     return " ".join(str(value or "").strip().split())
 
 
-def assess_present_cue(message: str) -> dict:
-    """Score whether an ordinary present-moment turn deserves a memory probe.
+def reset_associative_cue_state() -> None:
+    """Reset process-only saturation state. Intended for tests/runtime recovery."""
+    _ASSOCIATIVE_GOVERNOR.reset(_ASSOCIATIVE_SCOPE)
 
-    This is deliberately conservative. Explicit recall is handled elsewhere;
-    this detector is for ordinary conversation where the present itself may be
-    an associative cue.
+
+def assess_present_cue(message: str) -> dict:
+    """Score and govern whether an ordinary turn deserves a memory probe.
+
+    Explicit recall is handled independently by the cognitive controller and is
+    never dependent on this result. This path applies only to associative recall.
     """
     raw = _normalise(message)
     text = raw.casefold()
@@ -67,8 +75,10 @@ def assess_present_cue(message: str) -> dict:
             "engine": "cue_driven_external_memory",
             "version": CUE_DRIVEN_MEMORY_VERSION,
             "should_retrieve": False,
+            "raw_should_retrieve": False,
             "score": 0.0,
             "reasons": [],
+            "saturation": {"applies": False, "allowed": True, "reason": "no_material_cue"},
         }
 
     recurrence = [item for item in _RECURRENCE if item in text]
@@ -91,8 +101,6 @@ def assess_present_cue(message: str) -> dict:
         score += 0.28
         reasons.append("personal_domain_context")
 
-    # A named person/place/project inside a self-referential event is often an
-    # associative cue even when the relationship is not restated in the turn.
     names = re.findall(r"\b[A-Z][a-z]{2,}\b", raw)
     first_word = raw.split(" ", 1)[0].strip(".,!?;:") if raw else ""
     proper_names = [name for name in names if name != first_word]
@@ -100,19 +108,33 @@ def assess_present_cue(message: str) -> dict:
         score += 0.22
         reasons.append("named_person_or_place")
 
-    # Direct factual questions normally belong to explicit retrieval/routing.
-    # Recurrence language is the exception because it is itself the cue.
     if _DIRECT_QUESTION.match(text) and not recurrence:
         score = max(0.0, score - 0.25)
         reasons.append("direct_question_penalty")
 
     score = round(min(1.0, score), 2)
+    raw_should_retrieve = score >= 0.55
+    saturation = (
+        _ASSOCIATIVE_GOVERNOR.evaluate_cue(
+            _ASSOCIATIVE_SCOPE,
+            raw,
+            score,
+        )
+        if raw_should_retrieve
+        else {"applies": False, "allowed": True, "reason": "below_cue_threshold"}
+    )
+    should_retrieve = bool(raw_should_retrieve and saturation.get("allowed", True))
+    if raw_should_retrieve and not should_retrieve:
+        reasons.append("saturation_suppressed")
+
     return {
         "engine": "cue_driven_external_memory",
         "version": CUE_DRIVEN_MEMORY_VERSION,
-        "should_retrieve": score >= 0.55,
+        "should_retrieve": should_retrieve,
+        "raw_should_retrieve": raw_should_retrieve,
         "score": score,
         "reasons": reasons,
+        "saturation": saturation,
     }
 
 
@@ -143,6 +165,7 @@ def build_cue_memory_packet(
         "version": CUE_DRIVEN_MEMORY_VERSION,
         "active": associative_only,
         "cue": cue,
+        "saturation": cue.get("saturation") or {},
         "retrieval_attempted": associative_only,
         "retrieval_found_evidence": retrieved,
         "evidence_count": len(evidence),
@@ -162,6 +185,8 @@ def build_cue_memory_packet(
         "governance": {
             "retrieval_requires_explicit_recall_command": False,
             "retrieval_equals_surface_permission": False,
+            "background_retrieval_rate_limited": True,
+            "explicit_recall_never_throttled": True,
             "provenance_required": True,
             "confidence_required": True,
             "recency_considered": True,
@@ -177,4 +202,5 @@ __all__ = [
     "CUE_DRIVEN_MEMORY_VERSION",
     "assess_present_cue",
     "build_cue_memory_packet",
+    "reset_associative_cue_state",
 ]
