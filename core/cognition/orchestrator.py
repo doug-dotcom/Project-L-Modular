@@ -13,6 +13,7 @@ from core.cognition.model_independence import (
     create_model_adapter,
     build_model_independence_packet,
 )
+from core.cognition.personal_research import build_personal_research_packet
 from core.cognition.personal_timeline import build_personal_timeline_packet
 from core.cognition.portability import portability_manifest
 from core.cognition.relationship_intelligence import build_relationship_packet
@@ -117,14 +118,21 @@ def run_cognitive_core(
         message,
         working_memory_packet or {},
     )
+    personal_research = build_personal_research_packet(
+        message,
+        evidence_context,
+        confidence_evidence,
+        capability_packet,
+    )
 
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "13.5",
+        "version": "13.6",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "confidence_evidence": confidence_evidence,
         "state_aware_response": state_aware,
+        "personal_research": personal_research,
         "route": {
             "rhee": "required" if cognitive_plan["needs"]["memory"] else "not_required",
             "mary": "active" if mary["active"] else "not_required",
@@ -135,6 +143,7 @@ def run_cognitive_core(
             "personal_timeline": "active" if timeline["active"] else "not_required",
             "confidence_evidence": "active",
             "state_aware_response": "active" if state_aware["active"] else "neutral",
+            "personal_research": "active" if personal_research["active"] else "not_required",
         },
         "mary": mary,
         "quinn": quinn if rike_required else {"engine": "quinn", "status": "not_required", "principles": []},
