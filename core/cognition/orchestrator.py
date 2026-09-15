@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from agents.quinn.quinn import curate_principles
+from core.cognition.anticipation import build_anticipation_packet
 from core.cognition.experience_abstraction import build_experience_abstraction
 from core.cognition.learning_engine import build_learning_observation
 from core.cognition.multi_agent import build_multi_agent_packet, run_parallel_foundation
@@ -94,9 +95,15 @@ def run_cognitive_core(
         rike,
     )
     guardrails = assess_cognitive_packet(rike, mary, confidence_dimensions)
+    anticipation = build_anticipation_packet(
+        message,
+        working_memory_packet or {},
+        mary,
+        rhee_packet or {},
+    )
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "13.0",
+        "version": "13.1",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "route": {
@@ -104,10 +111,12 @@ def run_cognitive_core(
             "mary": "active" if mary["active"] else "not_required",
             "quinn": "advisory" if rike_required else "not_required",
             "rike": "active" if rike_required else "not_required",
+            "anticipation": "prepared" if anticipation["active"] else "not_required",
         },
         "mary": mary,
         "quinn": quinn if rike_required else {"engine": "quinn", "status": "not_required", "principles": []},
         "rike": rike,
+        "anticipation": anticipation,
         "guardrails": guardrails,
         "working_memory": working_memory_packet or {},
         "model_independence": build_model_independence_packet(resolved_adapter),
