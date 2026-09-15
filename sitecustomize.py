@@ -27,7 +27,6 @@ try:
                 tb = tb.tb_next
             source_file = Path(tb.tb_frame.f_code.co_filename).name if tb else "unknown"
             source_line = tb.tb_lineno if tb else None
-            # No exception text, request text, evidence or credentials are logged.
             print(
                 "COGNITIVE CORE DEGRADED: "
                 f"error_type={type(exc).__name__} source={source_file}:{source_line}"
@@ -86,5 +85,83 @@ try:
 
     _orchestrator.run_cognitive_core = _safe_run_cognitive_core
 except Exception:
-    # Never make interpreter startup depend on the fail-safe itself.
+    pass
+
+# Historical-cutoff recall repair. Queries such as "what do you know about me
+# before 1999" are broad life-history requests, not searches for the literal
+# words "before" and "1999". Expand them into historical cues and give Rhee a
+# deep bounded candidate budget. This changes retrieval only; it does not create
+# or promote memories.
+try:
+    import re as _re
+    import agents.rhee.rhee_v3 as _rhee
+
+    _original_expanded_query_terms = _rhee.expanded_query_terms
+    _original_deep_recall_requested = _rhee.deep_recall_requested
+    _original_exhaustive_requested = _rhee.exhaustive_requested
+    _original_plan_recall = _rhee.plan_recall
+
+    def _historical_cutoff_year(query):
+        text = _rhee.safe_text(query).lower()
+        match = _re.search(
+            r"\b(?:before|prior\s+to|earlier\s+than|pre[-\s]?)(19\d{2}|20\d{2})\b",
+            text,
+        )
+        return int(match.group(1)) if match else None
+
+    def _historical_terms(cutoff):
+        # Generic life-history cues plus calendar years. The year range lets
+        # indexed retrieval find dated records while the semantic cues recover
+        # undated childhood/adolescent memories retold later.
+        cues = {
+            "born", "birth", "baby", "child", "childhood", "young",
+            "primary", "school", "boarding", "teen", "teenage", "adolescent",
+            "friend", "family", "home", "parents", "mum", "dad", "brother",
+            "sister", "sport", "hockey", "army", "military", "enlisted",
+            "training", "kapooka", "puckapunyal", "work", "job",
+        }
+        start = 1970 if cutoff > 1970 else max(1900, cutoff - 30)
+        cues.update(str(year) for year in range(start, cutoff))
+        return cues
+
+    def _expanded_query_terms_with_history(query):
+        terms = list(_original_expanded_query_terms(query))
+        cutoff = _historical_cutoff_year(query)
+        if cutoff is None:
+            return terms
+        seen = {_rhee.safe_text(term).lower() for term in terms}
+        for term in sorted(_historical_terms(cutoff)):
+            if term not in seen:
+                terms.append(term)
+                seen.add(term)
+        return terms
+
+    def _deep_recall_with_history(query):
+        return _historical_cutoff_year(query) is not None or _original_deep_recall_requested(query)
+
+    def _exhaustive_with_history(query):
+        return _historical_cutoff_year(query) is not None or _original_exhaustive_requested(query)
+
+    def _plan_recall_with_history(query, today=None):
+        plan = _original_plan_recall(query, today=today)
+        cutoff = _historical_cutoff_year(query)
+        if cutoff is None:
+            return plan
+        plan = dict(plan)
+        plan.update({
+            "mode": "investigate",
+            "historical_cutoff_year": cutoff,
+            "raw_candidates": 300,
+            "memory_candidates": 240,
+            "evidence_char_budget": 60000,
+            "retrieval_budget_ms": 45000,
+            "contradiction_review": True,
+        })
+        return plan
+
+    _rhee.expanded_query_terms = _expanded_query_terms_with_history
+    _rhee.deep_recall_requested = _deep_recall_with_history
+    _rhee.exhaustive_requested = _exhaustive_with_history
+    _rhee.plan_recall = _plan_recall_with_history
+except Exception:
     pass
