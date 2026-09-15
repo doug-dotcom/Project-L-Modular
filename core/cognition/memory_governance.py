@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from datetime import datetime, timezone
 
+from core.cognition.decision_memory import canonical_decision_text, extract_decision_memory
+
 
 VALUE_SIGNALS = {
     "family": "Family",
@@ -128,17 +130,29 @@ def build_memory_payload(row: dict, promotion: dict) -> tuple[dict, dict]:
     carol = carol_normalise(row)
     sara = sara_govern(carol, promotion)
     mary = mary_integrate(carol, sara)
+    decision = (
+        extract_decision_memory(carol["content"])
+        if carol.get("source", {}).get("role") == "user"
+        else None
+    )
     processed = [carol["stage"], sara["stage"]]
     if mary["applied"]:
         processed.append(mary["stage"])
+    if decision:
+        processed.append("decision_memory_v1")
+
+    durable_content = carol["content"]
+    canonical_decision = canonical_decision_text(decision)
+    if canonical_decision:
+        durable_content = f"{durable_content}\n{canonical_decision}"
 
     payload = {
         "raw_id": carol["source"]["id"],
-        "content": carol["content"],
+        "content": durable_content,
         "primary_subject": carol["subjects"][0] if carol["subjects"] else None,
         "subjects": carol["subjects"],
-        "importance": sara["importance"],
-        "salience": sara["salience"],
+        "importance": max(sara["importance"], 65 if decision else 0),
+        "salience": max(sara["salience"], 60 if decision else 0),
         "anchor": sara["anchor"],
         "values": carol["values"],
         "preferences": [],
@@ -150,8 +164,9 @@ def build_memory_payload(row: dict, promotion: dict) -> tuple[dict, dict]:
             "promotion_gate": dict(promotion),
             "provenance": carol["source"],
             "mary": mary,
+            "decision_memory": decision,
         },
         "processed_by": processed,
     }
-    audit = {"carol": carol, "sara": sara, "mary": mary}
+    audit = {"carol": carol, "sara": sara, "mary": mary, "decision_memory": decision}
     return payload, audit
