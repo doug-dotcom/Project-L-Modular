@@ -5,6 +5,7 @@ from __future__ import annotations
 from agents.quinn.quinn import curate_principles
 from core.cognition.anticipation import build_anticipation_packet
 from core.cognition.confidence_evidence import build_confidence_evidence_packet
+from core.cognition.cue_driven_memory import build_cue_memory_packet
 from core.cognition.experience_abstraction import build_experience_abstraction
 from core.cognition.learning_engine import build_learning_observation
 from core.cognition.multi_agent import build_multi_agent_packet, run_parallel_foundation
@@ -106,6 +107,12 @@ def run_cognitive_core(
         rhee_packet or {},
         capability_packet,
     )
+    cue_driven_memory = build_cue_memory_packet(
+        message,
+        cognitive_plan,
+        rhee_packet or {},
+        confidence_evidence,
+    )
     guardrails = assess_cognitive_packet(rike, mary, confidence_dimensions)
     anticipation = build_anticipation_packet(
         message,
@@ -138,10 +145,11 @@ def run_cognitive_core(
 
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "13.7",
+        "version": "13.8",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "confidence_evidence": confidence_evidence,
+        "cue_driven_memory": cue_driven_memory,
         "state_aware_response": state_aware,
         "personal_research": personal_research,
         "what_matters_now": what_matters_now,
@@ -154,6 +162,7 @@ def run_cognitive_core(
             "relationship_intelligence": "active" if relationship["active"] else "not_required",
             "personal_timeline": "active" if timeline["active"] else "not_required",
             "confidence_evidence": "active",
+            "cue_driven_memory": "active" if cue_driven_memory["active"] else "not_required",
             "state_aware_response": "active" if state_aware["active"] else "neutral",
             "personal_research": "active" if personal_research["active"] else "not_required",
             "what_matters_now": "active" if what_matters_now["active"] else "not_required",
