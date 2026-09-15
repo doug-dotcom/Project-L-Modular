@@ -11,6 +11,7 @@ from core.cognition.learning_engine import build_learning_observation
 from core.cognition.memory_applicability import build_memory_applicability_packet
 from core.cognition.memory_contrast import build_memory_contrast_packet
 from core.cognition.memory_counterexample import build_memory_counterexample_packet
+from core.cognition.memory_identity_guard import build_memory_identity_guard_packet
 from core.cognition.memory_privacy import build_memory_privacy_packet
 from core.cognition.memory_relevance import build_memory_relevance_packet
 from core.cognition.memory_temporal_drift import build_memory_temporal_drift_packet
@@ -163,6 +164,12 @@ def run_cognitive_core(
         memory_temporal_drift,
         rhee_packet or {},
     )
+    memory_identity = build_memory_identity_guard_packet(
+        message,
+        cue_driven_memory,
+        memory_privacy,
+        rhee_packet or {},
+    )
     guardrails = assess_cognitive_packet(rike, mary, confidence_dimensions)
     anticipation = build_anticipation_packet(
         message,
@@ -196,7 +203,7 @@ def run_cognitive_core(
 
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "14.6",
+        "version": "14.7",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "confidence_evidence": confidence_evidence,
@@ -209,6 +216,7 @@ def run_cognitive_core(
         "memory_applicability": memory_applicability,
         "memory_temporal_drift": memory_temporal_drift,
         "memory_privacy": memory_privacy,
+        "memory_identity": memory_identity,
         "state_aware_response": state_aware,
         "personal_research": personal_research,
         "what_matters_now": what_matters_now,
@@ -233,6 +241,7 @@ def run_cognitive_core(
             "memory_applicability": memory_applicability["decision"] if memory_applicability["active"] else "not_required",
             "memory_temporal_drift": memory_temporal_drift["decision"] if memory_temporal_drift["active"] else "not_required",
             "memory_privacy": memory_privacy["decision"] if memory_privacy["active"] else "not_required",
+            "memory_identity": memory_identity["decision"] if memory_identity["active"] else "not_required",
             "state_aware_response": "active" if state_aware["active"] else "neutral",
             "personal_research": "active" if personal_research["active"] else "not_required",
             "what_matters_now": "active" if what_matters_now["active"] else "not_required",
