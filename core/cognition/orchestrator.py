@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import traceback
+
 from agents.quinn.quinn import curate_principles
 from core.cognition.anticipation import build_anticipation_packet
 from core.cognition.confidence_evidence import build_confidence_evidence_packet
@@ -36,7 +38,7 @@ from core.cognition.controller import finalise_cognition_plan, plan_cognition
 from core.cognition.uncertainty import assess_confidence_dimensions
 
 
-def run_cognitive_core(
+def _run_cognitive_core_strict(
     message: str,
     rhee_packet: dict,
     capability_packet: dict | None = None,
@@ -289,3 +291,56 @@ def run_cognitive_core(
     )
     packet["learning"] = build_learning_observation(packet)
     return packet
+
+
+def _degraded_packet(
+    cognitive_plan: dict,
+    rhee_packet: dict,
+    working_memory_packet: dict | None,
+    model_adapter,
+    exc: Exception,
+) -> dict:
+    """Preserve Rhee recall and user response when an optional cognitive layer fails.
+
+    Diagnostics deliberately contain only exception type and source location, never
+    exception text, request text, retrieved evidence, credentials or user data.
+    """
+    tb = traceback.extract_tb(exc.__traceback__)
+    last = tb[-1] if tb else None
+    diagnostic = {
+        "status": "degraded",
+        "error_type": type(exc).__name__,
+        "source_file": last.filename.rsplit("/", 1)[-1] if last else "unknown",
+        "source_line": last.lineno if last else None,
+    }
+    memory_required = bool((cognitive_plan.get("needs") or {}).get("memory"))
+    rike = {
+        "engine": "rike",
+        "version": "2.0",
+        "status": "degraded_not_run",
+        "confidence": {"level": "low", "score": 0.0, "basis": "Optional cognitive core degraded."},
+        "hypotheses": [],
+        "counterfactuals": [],
+        "conclusion_change_evidence": [],
+        "causal_assessment": {
+            "relationship": "unknown",
+            "supported_causal_claim": False,
+            "basis": "Structured reasoning was unavailable for this turn.",
+            "limitations": ["Do not make unsupported causal claims."],
+        },
+    }
+    return {
+        "engine": "project_l_cognitive_core",
+        "version": "14.9-failsafe",
+        "status": "degraded",
+        "diagnostic": diagnostic,
+        "controller": cognitive_plan,
+        "confidence_dimensions": {"status": "degraded", "dimensions": {}},
+        "confidence_evidence": {"status": "degraded"},
+        "route": {
+            "rhee": "required" if memory_required else "not_required",
+            "rike": "degraded_not_run",
+            "mary": "degraded_not_run",
+            "quinn": "degraded_not_run",
+            "experience_abstraction": "degraded_not_run",
+           
