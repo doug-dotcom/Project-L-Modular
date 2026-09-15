@@ -156,14 +156,16 @@ def run_cognitive_core(
         personal_research,
         confidence_evidence,
     )
+    saturation = cue_driven_memory.get("saturation") or {}
 
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "14.0",
+        "version": "14.1",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "confidence_evidence": confidence_evidence,
         "cue_driven_memory": cue_driven_memory,
+        "associative_saturation": saturation,
         "memory_relevance": memory_relevance,
         "memory_contrast": memory_contrast,
         "state_aware_response": state_aware,
@@ -179,6 +181,10 @@ def run_cognitive_core(
             "personal_timeline": "active" if timeline["active"] else "not_required",
             "confidence_evidence": "active",
             "cue_driven_memory": "active" if cue_driven_memory["active"] else "not_required",
+            "associative_saturation": (
+                "allowed" if saturation.get("allowed") else "suppressed"
+                if saturation.get("applies") else "not_required"
+            ),
             "memory_relevance": memory_relevance["decision"] if memory_relevance["active"] else "not_required",
             "memory_contrast": memory_contrast["decision"] if memory_contrast["active"] else "not_required",
             "state_aware_response": "active" if state_aware["active"] else "neutral",
