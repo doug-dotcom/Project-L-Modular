@@ -1,4 +1,4 @@
-"""Mary 2: bounded longitudinal intelligence over traceable evidence."""
+"""Mary 5.1: bounded longitudinal and cross-domain life-pattern intelligence."""
 
 from __future__ import annotations
 
@@ -10,7 +10,22 @@ LONGITUDINAL_SIGNALS = (
     "again", "always", "before", "change", "changed", "growth", "history",
     "keep doing", "over time", "pattern", "progress", "repeated", "trend",
     "last six months", "past six months", "last 6 months", "past 6 months",
-    "report for pauline",
+    "report for pauline", "what have you noticed", "what are you noticing",
+    "what do you notice", "join the dots", "connect the dots", "recurring theme",
+    "recurring themes", "common thread", "common threads", "what tends to happen",
+    "keeps happening", "keeps coming up", "what keeps coming up", "across my life",
+    "life pattern", "life patterns", "bigger picture", "how things connect",
+    "how these things connect", "connections between", "themes in my life",
+    "themes lately",
+)
+
+LIFE_PATTERN_SIGNALS = (
+    "what have you noticed", "what are you noticing", "what do you notice",
+    "join the dots", "connect the dots", "recurring theme", "recurring themes",
+    "common thread", "common threads", "what tends to happen", "keeps happening",
+    "keeps coming up", "what keeps coming up", "across my life", "life pattern",
+    "life patterns", "bigger picture", "how things connect", "how these things connect",
+    "connections between", "themes in my life", "themes lately",
 )
 
 LIFECYCLE_STATES = (
@@ -43,6 +58,11 @@ def needs_longitudinal_context(message: str) -> bool:
     return any(signal in text for signal in LONGITUDINAL_SIGNALS)
 
 
+def life_pattern_requested(message: str) -> bool:
+    text = str(message or "").lower()
+    return any(signal in text for signal in LIFE_PATTERN_SIGNALS)
+
+
 def _parse_datetime(text: str) -> datetime | None:
     created_match = re.search(r"CREATED_AT=([^|]+)", str(text or ""), re.I)
     candidates = [created_match.group(1).strip()] if created_match else []
@@ -58,6 +78,21 @@ def _parse_datetime(text: str) -> datetime | None:
         except (TypeError, ValueError):
             continue
     return None
+
+
+def _table_domain(table: str) -> str:
+    value = str(table or "").strip().lower()
+    if value.startswith("memory_"):
+        return value.removeprefix("memory_") or "memory"
+    if value.startswith("local_"):
+        return value.removeprefix("local_") or "local"
+    if value == "episodic_memories":
+        return "episodic"
+    if value == "identity_anchors":
+        return "identity"
+    if value == "external_source":
+        return "external"
+    return value or "unknown"
 
 
 def _evidence_blocks(context: str) -> list[dict]:
@@ -80,10 +115,12 @@ def _evidence_blocks(context: str) -> list[dict]:
             rest = match.group("rest")
             memory_id = re.search(r"\bID=([^|\s]+)", rest, re.I)
             source_role = re.search(r"\bSOURCE_ROLE=([^|\s]+)", rest, re.I)
+            table = match.group("table")
             current = {
                 "ref": clean[:500],
                 "score": float(match.group("score")),
-                "table": match.group("table"),
+                "table": table,
+                "domain": _table_domain(table),
                 "id": memory_id.group(1) if memory_id else "",
                 "source_role": source_role.group(1).upper() if source_role else "UNKNOWN",
                 "header_date": _parse_datetime(rest),
@@ -97,6 +134,7 @@ def _evidence_blocks(context: str) -> list[dict]:
                     "ref": f"external:{url[:450]}",
                     "score": 60.0,
                     "table": "external_source",
+                    "domain": "external",
                     "id": "",
                     "source_role": "EXTERNAL",
                     "header_date": _parse_datetime(clean),
@@ -112,6 +150,7 @@ def _evidence_blocks(context: str) -> list[dict]:
                 "ref": clean[:500],
                 "score": 60.0,
                 "table": "external_source",
+                "domain": "external",
                 "id": "",
                 "source_role": "EXTERNAL",
                 "header_date": _parse_datetime(clean),
@@ -142,6 +181,7 @@ def _episode(block: dict) -> dict:
     return {
         "evidence_ref": str(block.get("ref") or "")[:500],
         "table": str(block.get("table") or "")[:100],
+        "domain": str(block.get("domain") or _table_domain(block.get("table")))[:100],
         "id": str(block.get("id") or "")[:80],
         "event_date": event_date.date().isoformat() if event_date else None,
         "retrieval_score": max(0.0, min(100.0, float(block.get("score") or 0.0))),
@@ -167,6 +207,7 @@ def _confidence_trajectory(episodes: list[dict]) -> list[dict]:
         trajectory.append({
             "event_date": episode.get("event_date"),
             "evidence_ref": episode.get("evidence_ref"),
+            "domain": episode.get("domain"),
             "direction": episode["direction"],
             "confidence": round(confidence, 2),
         })
@@ -218,6 +259,7 @@ def build_longitudinal_packet(
     now: datetime | None = None,
 ) -> dict:
     active = needs_longitudinal_context(message)
+    cross_domain_requested = life_pattern_requested(message)
     reference_time = now or datetime.now(timezone.utc)
     if reference_time.tzinfo is None:
         reference_time = reference_time.replace(tzinfo=timezone.utc)
@@ -231,22 +273,40 @@ def build_longitudinal_packet(
     state = _lifecycle_state(supporting, contradicting, relevance) if active else "Candidate"
     dated = [item["event_date"] for item in episodes if item.get("event_date")]
     trajectory = _confidence_trajectory(episodes)
-    pattern_threshold_met = (
+    support_domains = sorted({
+        item.get("domain") for item in supporting
+        if item.get("domain") not in {None, "", "unknown", "external"}
+    })
+    all_domains = sorted({
+        item.get("domain") for item in episodes
+        if item.get("domain") not in {None, "", "unknown", "external"}
+    })
+    cross_domain_threshold_met = len(support_domains) >= 2
+    base_pattern_threshold = (
         len(supporting) >= 2
         and state not in {"Candidate", "Weakening", "Historical", "Superseded"}
+    )
+    pattern_threshold_met = (
+        base_pattern_threshold
+        and (cross_domain_threshold_met if cross_domain_requested else True)
     )
 
     return {
         "engine": "mary",
-        "version": "5.0",
+        "version": "5.1",
         "active": active,
         "pattern_query": str(message or "")[:1200] if active else "",
+        "pattern_scope": "cross_domain_life" if cross_domain_requested else "longitudinal_topic",
         "lifecycle_state": state,
         "first_seen": min(dated) if dated else None,
         "last_seen": max(dated) if dated else None,
         "supporting_episodes": supporting[:12],
         "contradicting_episodes": contradicting[:12],
         "confidence_trajectory": trajectory[:24],
+        "domains_observed": all_domains,
+        "supporting_domains": support_domains,
+        "cross_domain_support": len(support_domains),
+        "cross_domain_threshold_met": cross_domain_threshold_met,
         "current_relevance": relevance,
         "current_identity_precedence": True,
         "historical_evidence_use": (
@@ -257,15 +317,17 @@ def build_longitudinal_packet(
         "evidence_refs": [item["evidence_ref"] for item in episodes[:12]],
         "pattern_threshold_met": pattern_threshold_met,
         "instruction": (
-            "Compare supporting and contradicting episodes across time. Apply the lifecycle "
-            "state and confidence trajectory. Current evidence and explicit current identity "
-            "outrank historical patterns."
+            "Compare supporting and contradicting episodes across time. For a life-pattern request, "
+            "only describe a cross-domain recurring theme when supporting evidence spans at least "
+            "two independent life domains. Name the domains, preserve contradictions, and distinguish "
+            "a Candidate/Emerging observation from an Established pattern. Current evidence and explicit "
+            "current identity outrank historical patterns."
             if active else
             "Longitudinal interpretation was not required for this request."
         ),
         "caution": (
-            "Evidence does not support a current established pattern; present the lifecycle "
-            "state and limitations without collapsing Doug today into historical Doug."
+            "Evidence does not yet support the requested pattern at the governed threshold. Present "
+            "what was observed and the evidence gap; do not turn thematic similarity into a pattern."
             if active and not pattern_threshold_met else ""
         ),
     }
