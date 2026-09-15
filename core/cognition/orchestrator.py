@@ -9,6 +9,7 @@ from core.cognition.cue_driven_memory import build_cue_memory_packet
 from core.cognition.experience_abstraction import build_experience_abstraction
 from core.cognition.learning_engine import build_learning_observation
 from core.cognition.memory_applicability import build_memory_applicability_packet
+from core.cognition.memory_causal_attribution import build_memory_causal_attribution_packet
 from core.cognition.memory_contrast import build_memory_contrast_packet
 from core.cognition.memory_counterexample import build_memory_counterexample_packet
 from core.cognition.memory_emotional_salience import build_memory_emotional_salience_packet
@@ -177,6 +178,12 @@ def run_cognitive_core(
         memory_identity,
         rhee_packet or {},
     )
+    memory_causal_attribution = build_memory_causal_attribution_packet(
+        message,
+        cue_driven_memory,
+        memory_emotional_salience,
+        rhee_packet or {},
+    )
     guardrails = assess_cognitive_packet(rike, mary, confidence_dimensions)
     anticipation = build_anticipation_packet(
         message,
@@ -210,7 +217,7 @@ def run_cognitive_core(
 
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "14.8",
+        "version": "14.9",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "confidence_evidence": confidence_evidence,
@@ -225,6 +232,7 @@ def run_cognitive_core(
         "memory_privacy": memory_privacy,
         "memory_identity": memory_identity,
         "memory_emotional_salience": memory_emotional_salience,
+        "memory_causal_attribution": memory_causal_attribution,
         "state_aware_response": state_aware,
         "personal_research": personal_research,
         "what_matters_now": what_matters_now,
@@ -251,6 +259,7 @@ def run_cognitive_core(
             "memory_privacy": memory_privacy["decision"] if memory_privacy["active"] else "not_required",
             "memory_identity": memory_identity["decision"] if memory_identity["active"] else "not_required",
             "memory_emotional_salience": memory_emotional_salience["decision"] if memory_emotional_salience["active"] else "not_required",
+            "memory_causal_attribution": memory_causal_attribution["decision"] if memory_causal_attribution["active"] else "not_required",
             "state_aware_response": "active" if state_aware["active"] else "neutral",
             "personal_research": "active" if personal_research["active"] else "not_required",
             "what_matters_now": "active" if what_matters_now["active"] else "not_required",
