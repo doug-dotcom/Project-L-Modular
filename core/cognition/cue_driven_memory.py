@@ -93,7 +93,9 @@ def assess_present_cue(message: str) -> dict:
 
     # A named person/place/project inside a self-referential event is often an
     # associative cue even when the relationship is not restated in the turn.
-    proper_names = re.findall(r"(?<![.!?]\s)(?<!^)(?:\b[A-Z][a-z]{2,}\b)", raw)
+    names = re.findall(r"\b[A-Z][a-z]{2,}\b", raw)
+    first_word = raw.split(" ", 1)[0].strip(".,!?;:") if raw else ""
+    proper_names = [name for name in names if name != first_word]
     if self_reference and proper_names:
         score += 0.22
         reasons.append("named_person_or_place")
