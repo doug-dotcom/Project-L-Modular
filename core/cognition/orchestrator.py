@@ -13,6 +13,7 @@ from core.cognition.model_independence import (
     build_model_independence_packet,
 )
 from core.cognition.portability import portability_manifest
+from core.cognition.relationship_intelligence import build_relationship_packet
 from core.cognition.rike import needs_structured_reasoning, reason
 from governance.cognitive_guardrails import assess_cognitive_packet
 from core.cognition.controller import finalise_cognition_plan, plan_cognition
@@ -101,9 +102,10 @@ def run_cognitive_core(
         mary,
         rhee_packet or {},
     )
+    relationship = build_relationship_packet(message, evidence_context)
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "13.1",
+        "version": "13.2",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "route": {
@@ -112,11 +114,13 @@ def run_cognitive_core(
             "quinn": "advisory" if rike_required else "not_required",
             "rike": "active" if rike_required else "not_required",
             "anticipation": "prepared" if anticipation["active"] else "not_required",
+            "relationship_intelligence": "active" if relationship["active"] else "not_required",
         },
         "mary": mary,
         "quinn": quinn if rike_required else {"engine": "quinn", "status": "not_required", "principles": []},
         "rike": rike,
         "anticipation": anticipation,
+        "relationship_intelligence": relationship,
         "guardrails": guardrails,
         "working_memory": working_memory_packet or {},
         "model_independence": build_model_independence_packet(resolved_adapter),
