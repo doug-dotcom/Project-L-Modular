@@ -15,11 +15,12 @@ import threading
 import time
 
 
-ASSOCIATIVE_SATURATION_VERSION = "1.0"
+ASSOCIATIVE_SATURATION_VERSION = "1.1"
 COOLDOWN_SECONDS = 45
 THREAD_TTL_SECONDS = 30 * 60
 MAX_RECENT_PROBES = 6
 MAX_SIGNATURE_TERMS = 12
+IDEMPOTENCE_SECONDS = 2.0
 
 _STOP = {
     "the", "and", "for", "with", "that", "this", "from", "have", "has",
@@ -52,6 +53,9 @@ def _similarity(left: tuple[str, ...], right: tuple[str, ...]) -> float:
 class _ScopeState:
     updated_at: float
     probes: deque = field(default_factory=lambda: deque(maxlen=MAX_RECENT_PROBES))
+    last_signature: str = ""
+    last_result: dict = field(default_factory=dict)
+    last_evaluated_at: float = 0.0
 
 
 class AssociativeRetrievalGovernor:
@@ -66,44 +70,34 @@ class AssociativeRetrievalGovernor:
         self._states: dict[str, _ScopeState] = {}
         self._lock = threading.RLock()
 
-    def evaluate(
+    def evaluate_cue(
         self,
         scope_id: str,
         message: str,
-        cognitive_plan: dict | None,
+        cue_score: float,
         *,
         now: float | None = None,
     ) -> dict:
+        """Govern one already-detected associative cue before retrieval.
+
+        Repeated evaluation of the same turn is idempotent so controller and
+        evidence-policy calls cannot accidentally consume multiple cooldown slots.
+        """
         current = float(time.monotonic() if now is None else now)
-        plan = cognitive_plan or {}
-        needs = plan.get("needs") or {}
-        signals = plan.get("signals") or {}
-        associative = bool(needs.get("cue_driven_memory"))
-        explicit = bool(signals.get("explicit_recall"))
-        cue = plan.get("associative_cue") or {}
+        scope = str(scope_id or "default")[:100]
+        terms = _terms(message)
+        signature = _signature(message)
+        score = max(0.0, min(1.0, float(cue_score or 0.0)))
 
         base = {
             "engine": "associative_saturation_guard",
             "version": ASSOCIATIVE_SATURATION_VERSION,
-            "applies": associative,
-            "explicit_recall_bypass": explicit,
+            "applies": True,
+            "explicit_recall_bypass": False,
             "cooldown_seconds": self.cooldown_seconds,
             "durable": False,
             "stores_memory_content": False,
         }
-        if explicit or not associative:
-            return {
-                **base,
-                "allowed": True,
-                "reason": "explicit_recall_bypass" if explicit else "not_applicable",
-                "novelty": 1.0,
-                "recent_probe_count": 0,
-            }
-
-        scope = str(scope_id or "default")[:100]
-        terms = _terms(message)
-        signature = _signature(message)
-        cue_score = float(cue.get("score") or 0.0)
 
         with self._lock:
             state = self._states.get(scope)
@@ -114,18 +108,22 @@ class AssociativeRetrievalGovernor:
                 state = _ScopeState(updated_at=current)
                 self._states[scope] = state
 
+            if (
+                state.last_signature == signature
+                and current - state.last_evaluated_at <= IDEMPOTENCE_SECONDS
+                and state.last_result
+            ):
+                return {**state.last_result, "idempotent_reuse": True}
+
             recent = list(state.probes)
             strongest_similarity = max(
                 (_similarity(terms, item["terms"]) for item in recent),
                 default=0.0,
             )
-            seconds_since_last = (
-                current - recent[-1]["at"] if recent else None
-            )
+            seconds_since_last = current - recent[-1]["at"] if recent else None
             novelty = round(max(0.0, 1.0 - strongest_similarity), 2)
 
-            # Strongly novel or very strong cues may bypass the ordinary cooldown.
-            high_value_new_cue = cue_score >= 0.85 and novelty >= 0.45
+            high_value_new_cue = score >= 0.85 and novelty >= 0.45
             within_cooldown = (
                 seconds_since_last is not None
                 and seconds_since_last < self.cooldown_seconds
@@ -149,18 +147,19 @@ class AssociativeRetrievalGovernor:
                 })
                 state.updated_at = current
 
-            return {
+            result = {
                 **base,
                 "allowed": allowed,
                 "reason": reason,
                 "novelty": novelty,
-                "cue_score": round(cue_score, 2),
+                "cue_score": round(score, 2),
                 "strongest_recent_similarity": round(strongest_similarity, 2),
                 "seconds_since_last_probe": (
                     None if seconds_since_last is None else round(seconds_since_last, 1)
                 ),
                 "recent_probe_count": len(state.probes),
                 "high_value_new_cue": high_value_new_cue,
+                "idempotent_reuse": False,
                 "governance": {
                     "explicit_recall_never_throttled": True,
                     "background_retrieval_is_rate_limited": True,
@@ -170,14 +169,69 @@ class AssociativeRetrievalGovernor:
                     "process_memory_only": True,
                 },
             }
+            state.last_signature = signature
+            state.last_result = dict(result)
+            state.last_evaluated_at = current
+            return result
+
+    def evaluate(
+        self,
+        scope_id: str,
+        message: str,
+        cognitive_plan: dict | None,
+        *,
+        now: float | None = None,
+    ) -> dict:
+        plan = cognitive_plan or {}
+        needs = plan.get("needs") or {}
+        signals = plan.get("signals") or {}
+        associative = bool(needs.get("cue_driven_memory"))
+        explicit = bool(signals.get("explicit_recall"))
+        cue = plan.get("associative_cue") or {}
+
+        if explicit or not associative:
+            return {
+                "engine": "associative_saturation_guard",
+                "version": ASSOCIATIVE_SATURATION_VERSION,
+                "applies": associative,
+                "explicit_recall_bypass": explicit,
+                "allowed": True,
+                "reason": "explicit_recall_bypass" if explicit else "not_applicable",
+                "novelty": 1.0,
+                "recent_probe_count": 0,
+                "cooldown_seconds": self.cooldown_seconds,
+                "durable": False,
+                "stores_memory_content": False,
+            }
+
+        return self.evaluate_cue(
+            scope_id,
+            message,
+            float(cue.get("score") or 0.0),
+            now=now,
+        )
 
     def reset(self, scope_id: str) -> None:
         with self._lock:
             self._states.pop(str(scope_id or "default")[:100], None)
 
 
+def saturation_manifest() -> dict:
+    return {
+        "engine": "associative_saturation_guard",
+        "version": ASSOCIATIVE_SATURATION_VERSION,
+        "cooldown_seconds": COOLDOWN_SECONDS,
+        "thread_ttl_seconds": THREAD_TTL_SECONDS,
+        "max_recent_probes": MAX_RECENT_PROBES,
+        "durable": False,
+        "stored": "cue_signatures_and_timestamps_only",
+        "explicit_recall_bypass": True,
+    }
+
+
 __all__ = [
     "ASSOCIATIVE_SATURATION_VERSION",
     "AssociativeRetrievalGovernor",
     "COOLDOWN_SECONDS",
+    "saturation_manifest",
 ]
