@@ -19,6 +19,7 @@ from core.cognition.portability import portability_manifest
 from core.cognition.relationship_intelligence import build_relationship_packet
 from core.cognition.rike import needs_structured_reasoning, reason
 from core.cognition.state_aware_response import build_state_aware_response_packet
+from core.cognition.what_matters_now import build_what_matters_now_packet
 from governance.cognitive_guardrails import assess_cognitive_packet
 from core.cognition.controller import finalise_cognition_plan, plan_cognition
 from core.cognition.uncertainty import assess_confidence_dimensions
@@ -124,15 +125,26 @@ def run_cognitive_core(
         confidence_evidence,
         capability_packet,
     )
+    what_matters_now = build_what_matters_now_packet(
+        message,
+        working_memory_packet or {},
+        mary,
+        anticipation,
+        timeline,
+        relationship,
+        personal_research,
+        confidence_evidence,
+    )
 
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "13.6",
+        "version": "13.7",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "confidence_evidence": confidence_evidence,
         "state_aware_response": state_aware,
         "personal_research": personal_research,
+        "what_matters_now": what_matters_now,
         "route": {
             "rhee": "required" if cognitive_plan["needs"]["memory"] else "not_required",
             "mary": "active" if mary["active"] else "not_required",
@@ -144,6 +156,7 @@ def run_cognitive_core(
             "confidence_evidence": "active",
             "state_aware_response": "active" if state_aware["active"] else "neutral",
             "personal_research": "active" if personal_research["active"] else "not_required",
+            "what_matters_now": "active" if what_matters_now["active"] else "not_required",
         },
         "mary": mary,
         "quinn": quinn if rike_required else {"engine": "quinn", "status": "not_required", "principles": []},
