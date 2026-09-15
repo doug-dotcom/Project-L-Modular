@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from agents.quinn.quinn import curate_principles
 from core.cognition.anticipation import build_anticipation_packet
+from core.cognition.confidence_evidence import build_confidence_evidence_packet
 from core.cognition.experience_abstraction import build_experience_abstraction
 from core.cognition.learning_engine import build_learning_observation
 from core.cognition.multi_agent import build_multi_agent_packet, run_parallel_foundation
@@ -97,6 +98,11 @@ def run_cognitive_core(
         mary,
         rike,
     )
+    confidence_evidence = build_confidence_evidence_packet(
+        confidence_dimensions,
+        rhee_packet or {},
+        capability_packet,
+    )
     guardrails = assess_cognitive_packet(rike, mary, confidence_dimensions)
     anticipation = build_anticipation_packet(
         message,
@@ -109,9 +115,10 @@ def run_cognitive_core(
 
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "13.3",
+        "version": "13.4",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
+        "confidence_evidence": confidence_evidence,
         "route": {
             "rhee": "required" if cognitive_plan["needs"]["memory"] else "not_required",
             "mary": "active" if mary["active"] else "not_required",
@@ -120,6 +127,7 @@ def run_cognitive_core(
             "anticipation": "prepared" if anticipation["active"] else "not_required",
             "relationship_intelligence": "active" if relationship["active"] else "not_required",
             "personal_timeline": "active" if timeline["active"] else "not_required",
+            "confidence_evidence": "active",
         },
         "mary": mary,
         "quinn": quinn if rike_required else {"engine": "quinn", "status": "not_required", "principles": []},
