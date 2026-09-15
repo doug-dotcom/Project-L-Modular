@@ -11,7 +11,9 @@ import json
 import re
 import unicodedata
 
-VERSION = "1.0"
+from core.cognition.cue_driven_memory import assess_present_cue
+
+VERSION = "1.1"
 MAX_BLOCKS = 40
 MAX_CITATIONS = 8
 SOURCE = re.compile(r"[a-z][a-z0-9_]*:[A-Za-z0-9_-]+\Z")
@@ -25,12 +27,27 @@ def normalise(value: str) -> str:
 
 
 def evidence_mode(message: str, memory_required: bool = False) -> bool:
-    text = str(message).lower()
-    return memory_required or any(term in text for term in (
+    """Enable visible citation enforcement for explicit evidence/recall work.
+
+    Pure cue-driven associative retrieval is intentionally exempt from automatic
+    citation rendering: it may inform L silently. If the user explicitly asks
+    for recall/evidence, the strict publication gate remains active.
+    """
+    text = str(message or "").lower()
+    explicit = any(term in text for term in (
         "stored records", "stored memories", "record id", "supporting evidence",
         "supporting source", "supporting passage", "deep recall", "report for pauline",
-        "how i learn", "how to help me learn", "learning preferences",
+        "how i learn", "how to help me learn", "learning preferences", "recall",
+        "remember", "what do you know", "what did we decide", "why did i choose",
+        "timeline", "chronology", "what matters most", "what should i focus on",
+        "update my research", "what do we know so far",
     ))
+    if explicit:
+        return True
+    cue = assess_present_cue(message)
+    if memory_required and cue.get("should_retrieve"):
+        return False
+    return bool(memory_required)
 
 
 def evidence_index(rows: list[dict]) -> dict:
@@ -163,4 +180,5 @@ def evaluation_manifest() -> dict:
             "checks": ["answer_schema", "table_and_id", "retrieved_source_membership",
                        "quotation_in_exact_source", "user_record_support", "missing_citation"],
             "not_certified": ["semantic_truth", "complete_recall", "durable_task_recovery"],
-            "scores_require_executed_cases": True}
+            "scores_require_executed_cases": True,
+            "associative_retrieval": "may_remain_silent_until_materially_useful"}
