@@ -8,6 +8,7 @@ from core.cognition.confidence_evidence import build_confidence_evidence_packet
 from core.cognition.cue_driven_memory import build_cue_memory_packet
 from core.cognition.experience_abstraction import build_experience_abstraction
 from core.cognition.learning_engine import build_learning_observation
+from core.cognition.memory_applicability import build_memory_applicability_packet
 from core.cognition.memory_contrast import build_memory_contrast_packet
 from core.cognition.memory_counterexample import build_memory_counterexample_packet
 from core.cognition.memory_relevance import build_memory_relevance_packet
@@ -142,6 +143,12 @@ def run_cognitive_core(
         memory_value,
         rhee_packet or {},
     )
+    memory_applicability = build_memory_applicability_packet(
+        message,
+        cue_driven_memory,
+        memory_counterexample,
+        rhee_packet or {},
+    )
     guardrails = assess_cognitive_packet(rike, mary, confidence_dimensions)
     anticipation = build_anticipation_packet(
         message,
@@ -175,7 +182,7 @@ def run_cognitive_core(
 
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "14.3",
+        "version": "14.4",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "confidence_evidence": confidence_evidence,
@@ -185,6 +192,7 @@ def run_cognitive_core(
         "memory_contrast": memory_contrast,
         "memory_value": memory_value,
         "memory_counterexample": memory_counterexample,
+        "memory_applicability": memory_applicability,
         "state_aware_response": state_aware,
         "personal_research": personal_research,
         "what_matters_now": what_matters_now,
@@ -206,6 +214,7 @@ def run_cognitive_core(
             "memory_contrast": memory_contrast["decision"] if memory_contrast["active"] else "not_required",
             "memory_value": memory_value["decision"] if memory_value["active"] else "not_required",
             "memory_counterexample": memory_counterexample["decision"] if memory_counterexample["active"] else "not_required",
+            "memory_applicability": memory_applicability["decision"] if memory_applicability["active"] else "not_required",
             "state_aware_response": "active" if state_aware["active"] else "neutral",
             "personal_research": "active" if personal_research["active"] else "not_required",
             "what_matters_now": "active" if what_matters_now["active"] else "not_required",
