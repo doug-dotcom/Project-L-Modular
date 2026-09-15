@@ -12,7 +12,7 @@ import re
 from core.cognition.rike import needs_structured_reasoning
 
 
-CONTROLLER_VERSION = "1.1"
+CONTROLLER_VERSION = "1.2"
 
 
 def _has(text: str, signals: tuple[str, ...]) -> bool:
@@ -20,12 +20,7 @@ def _has(text: str, signals: tuple[str, ...]) -> bool:
 
 
 def _continuity_signal(text: str) -> bool:
-    """Detect turns whose meaning depends on a previously active thread.
-
-    These turns must retrieve memory even when they are very short (for example
-    Doug's common "go" / "next go" workflow). This keeps continuity grounded in
-    stored evidence instead of asking the model to guess what came before.
-    """
+    """Detect turns whose meaning depends on a previously active thread."""
     if not text:
         return False
     if re.fullmatch(
@@ -52,18 +47,59 @@ def _continuity_signal(text: str) -> bool:
     ))
 
 
+def _life_pattern_signal(text: str) -> bool:
+    """Detect requests to connect recurring themes across Doug's life domains.
+
+    A Life Pattern turn must earn both retrieval and longitudinal reasoning. It is
+    intentionally broader than the literal word 'pattern' so L can respond to
+    natural prompts such as 'what have you noticed about me lately?' without
+    guessing from the current conversation alone.
+    """
+    return _has(text, (
+        "what have you noticed",
+        "what are you noticing",
+        "what do you notice",
+        "join the dots",
+        "connect the dots",
+        "recurring theme",
+        "recurring themes",
+        "common thread",
+        "common threads",
+        "what tends to happen",
+        "keeps happening",
+        "keeps coming up",
+        "what keeps coming up",
+        "across my life",
+        "across my health",
+        "across recovery",
+        "across my recovery",
+        "across my projects",
+        "across family",
+        "across my family",
+        "life pattern",
+        "life patterns",
+        "bigger picture",
+        "how things connect",
+        "how these things connect",
+        "connections between",
+        "themes in my life",
+        "themes lately",
+    ))
+
+
 def plan_cognition(message: str) -> dict:
     """Return an inspectable, fail-closed plan without invoking any specialist."""
     text = " ".join(str(message or "").strip().lower().split())
 
     continuity_signal = _continuity_signal(text)
-    recall_signal = continuity_signal or _has(text, (
+    life_pattern_signal = _life_pattern_signal(text)
+    recall_signal = continuity_signal or life_pattern_signal or _has(text, (
         "remember", "recall", "deep recall", "what do you know", "tell me about my",
         "my recovery", "my family", "my history", "my journey", "my project",
         "we discussed", "we decided", "we built", "earlier", "last time", "again",
         "still", "continue", "update it", "same as before", "our plan", "our project",
     ))
-    longitudinal_signal = _has(text, (
+    longitudinal_signal = life_pattern_signal or _has(text, (
         "pattern", "over time", "timeline", "changed", "progress", "last six months",
         "last 6 months", "weekly report", "report for pauline", "journey",
     ))
@@ -84,6 +120,8 @@ def plan_cognition(message: str) -> dict:
 
     if action_signal:
         problem_type = "action"
+    elif life_pattern_signal:
+        problem_type = "life_pattern"
     elif longitudinal_signal:
         problem_type = "longitudinal"
     elif recall_signal:
@@ -98,7 +136,7 @@ def plan_cognition(message: str) -> dict:
     substantial = problem_type != "conversation" or len(text.split()) >= 18
     memory_required = recall_signal or longitudinal_signal
     external_evidence_required = current_evidence_signal or high_stakes
-    difficulty_score = sum((substantial, structured, longitudinal_signal, high_stakes, action_signal))
+    difficulty_score = sum((substantial, structured, longitudinal_signal, high_stakes, action_signal, life_pattern_signal))
     difficulty = "high" if difficulty_score >= 3 else "medium" if difficulty_score >= 1 else "low"
 
     known = []
@@ -109,6 +147,8 @@ def plan_cognition(message: str) -> dict:
         known.append("personal_memory_not_required")
     if continuity_signal:
         unknown.append("prior_thread_until_retrieved")
+    if life_pattern_signal:
+        unknown.append("cross_domain_pattern_evidence_until_retrieved")
     if external_evidence_required:
         unknown.append("current_external_facts_until_capability_returns")
     else:
@@ -129,11 +169,13 @@ def plan_cognition(message: str) -> dict:
             "structured_reasoning": structured or high_stakes,
             "longitudinal_reasoning": longitudinal_signal,
             "continuity": continuity_signal,
+            "life_pattern": life_pattern_signal,
             "specialist": external_evidence_required or action_signal,
         },
         "signals": {
             "recall": recall_signal,
             "continuity": continuity_signal,
+            "life_pattern": life_pattern_signal,
             "longitudinal": longitudinal_signal,
             "current_evidence": current_evidence_signal,
             "action": action_signal,
@@ -155,6 +197,9 @@ def finalise_cognition_plan(plan: dict, rhee_packet: dict, capability_packet: di
             if result.get("needs", {}).get("continuity"):
                 result["known"].append("prior_thread_evidence_retrieved")
                 result["unknown"] = [item for item in result["unknown"] if item != "prior_thread_until_retrieved"]
+            if result.get("needs", {}).get("life_pattern"):
+                result["known"].append("pattern_candidate_evidence_retrieved")
+                result["unknown"] = [item for item in result["unknown"] if item != "cross_domain_pattern_evidence_until_retrieved"]
         else:
             result["unknown"].append("relevant_personal_evidence_not_found")
     capability = capability_packet or {}
