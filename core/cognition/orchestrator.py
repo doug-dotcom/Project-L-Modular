@@ -8,6 +8,7 @@ from core.cognition.confidence_evidence import build_confidence_evidence_packet
 from core.cognition.cue_driven_memory import build_cue_memory_packet
 from core.cognition.experience_abstraction import build_experience_abstraction
 from core.cognition.learning_engine import build_learning_observation
+from core.cognition.memory_relevance import build_memory_relevance_packet
 from core.cognition.multi_agent import build_multi_agent_packet, run_parallel_foundation
 from core.cognition.model_independence import (
     OpenAIChatCompletionsAdapter,
@@ -113,6 +114,12 @@ def run_cognitive_core(
         rhee_packet or {},
         confidence_evidence,
     )
+    memory_relevance = build_memory_relevance_packet(
+        message,
+        cue_driven_memory,
+        rhee_packet or {},
+        confidence_evidence,
+    )
     guardrails = assess_cognitive_packet(rike, mary, confidence_dimensions)
     anticipation = build_anticipation_packet(
         message,
@@ -145,11 +152,12 @@ def run_cognitive_core(
 
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "13.8",
+        "version": "13.9",
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "confidence_evidence": confidence_evidence,
         "cue_driven_memory": cue_driven_memory,
+        "memory_relevance": memory_relevance,
         "state_aware_response": state_aware,
         "personal_research": personal_research,
         "what_matters_now": what_matters_now,
@@ -163,6 +171,7 @@ def run_cognitive_core(
             "personal_timeline": "active" if timeline["active"] else "not_required",
             "confidence_evidence": "active",
             "cue_driven_memory": "active" if cue_driven_memory["active"] else "not_required",
+            "memory_relevance": memory_relevance["decision"] if memory_relevance["active"] else "not_required",
             "state_aware_response": "active" if state_aware["active"] else "neutral",
             "personal_research": "active" if personal_research["active"] else "not_required",
             "what_matters_now": "active" if what_matters_now["active"] else "not_required",
