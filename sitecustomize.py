@@ -115,9 +115,6 @@ try:
         }
 
     def _career_terms():
-        # Semantic neighbourhood for Doug's working-life archive. These are
-        # retrieval aliases only; Rhee must still ground its answer in returned
-        # USER/canonical evidence and may not infer an unstored job or date.
         return {
             "work", "working", "career", "employment", "employer", "job", "occupation",
             "professional", "role", "position", "army", "military", "artillery", "kapooka",
@@ -146,20 +143,12 @@ try:
         return terms
 
     def _deep_recall_with_intent(query):
-        return (
-            _historical_cutoff_year(query) is not None
-            or _schooling_requested(query)
-            or _career_requested(query)
-            or _original_deep_recall_requested(query)
-        )
+        return (_historical_cutoff_year(query) is not None or _schooling_requested(query)
+                or _career_requested(query) or _original_deep_recall_requested(query))
 
     def _exhaustive_with_intent(query):
-        return (
-            _historical_cutoff_year(query) is not None
-            or _schooling_requested(query)
-            or _career_requested(query)
-            or _original_exhaustive_requested(query)
-        )
+        return (_historical_cutoff_year(query) is not None or _schooling_requested(query)
+                or _career_requested(query) or _original_exhaustive_requested(query))
 
     def _plan_recall_with_intent(query, today=None):
         plan = _original_plan_recall(query, today=today)
@@ -192,5 +181,76 @@ try:
     _rhee.deep_recall_requested = _deep_recall_with_intent
     _rhee.exhaustive_requested = _exhaustive_with_intent
     _rhee.plan_recall = _plan_recall_with_intent
+except Exception:
+    pass
+
+# Layer 2: relationship recall. Natural questions about "my relationships",
+# "people in my life", friends, partners or relationship history should search
+# the full relational neighbourhood instead of depending on one literal noun.
+try:
+    _layer2_terms_before = _rhee.expanded_query_terms
+    _layer2_deep_before = _rhee.deep_recall_requested
+    _layer2_exhaustive_before = _rhee.exhaustive_requested
+    _layer2_plan_before = _rhee.plan_recall
+
+    def _relationship_requested(query):
+        text = _rhee.safe_text(query).lower()
+        return bool(_re.search(
+            r"\b(?:relationship|relationships|relationship\s+history|people\s+in\s+my\s+life|"
+            r"friends?|friendships?|best\s+mate|mates?|partners?|partner|girlfriends?|boyfriends?|"
+            r"wife|wives|husband|fianc[eé]e?|ex(?:es)?|dating|romantic|social\s+circle)\b", text
+        ))
+
+    def _relationship_terms():
+        # Domain vocabulary, roles and known relational aliases are candidate
+        # search cues only. Returned evidence remains authoritative.
+        return {
+            "relationship", "relationships", "friend", "friends", "friendship", "mate", "mates",
+            "best mate", "partner", "girlfriend", "wife", "fiancee", "ex", "dating", "romantic",
+            "family friend", "childhood friend", "school friend", "army mate", "support", "trust",
+            "connection", "history", "met", "known", "lifelong", "married", "engaged", "separated",
+            "steven", "steve", "pampel", "wayne", "ratley", "lyndal", "tamara", "leah", "cass",
+            "cassandra", "scott", "luke", "shane", "neil", "brad", "ben", "mark", "birdy",
+            "relationship memory lock-in", "canonical relationship", "relationship profile",
+        }
+
+    def _expanded_query_terms_layer2(query):
+        terms = list(_layer2_terms_before(query))
+        if not _relationship_requested(query):
+            return terms
+        seen = {_rhee.safe_text(term).lower() for term in terms}
+        for term in sorted(_relationship_terms()):
+            if term not in seen:
+                terms.append(term)
+                seen.add(term)
+        return terms
+
+    def _deep_recall_layer2(query):
+        return _relationship_requested(query) or _layer2_deep_before(query)
+
+    def _exhaustive_layer2(query):
+        return _relationship_requested(query) or _layer2_exhaustive_before(query)
+
+    def _plan_recall_layer2(query, today=None):
+        plan = _layer2_plan_before(query, today=today)
+        if not _relationship_requested(query):
+            return plan
+        plan = dict(plan)
+        plan.update({
+            "mode": "investigate",
+            "topic_intent": "relationship_history",
+            "raw_candidates": max(int(plan.get("raw_candidates", 0)), 260),
+            "memory_candidates": max(int(plan.get("memory_candidates", 0)), 220),
+            "evidence_char_budget": max(int(plan.get("evidence_char_budget", 0)), 56000),
+            "retrieval_budget_ms": 45000,
+            "contradiction_review": True,
+            "coverage_review": True,
+        })
+        return plan
+
+    _rhee.expanded_query_terms = _expanded_query_terms_layer2
+    _rhee.deep_recall_requested = _deep_recall_layer2
+    _rhee.exhaustive_requested = _exhaustive_layer2
+    _rhee.plan_recall = _plan_recall_layer2
 except Exception:
     pass
