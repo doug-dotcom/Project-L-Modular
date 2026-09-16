@@ -105,3 +105,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer19_deep_recall_multi_angle import install as install_multi_angle
+    install_multi_angle(rhee)
