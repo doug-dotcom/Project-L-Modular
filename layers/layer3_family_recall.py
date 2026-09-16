@@ -1,0 +1,71 @@
+"""Layer 3 — family-history semantic recall.
+
+Installed from sitecustomize. This layer changes candidate retrieval only: it
+expands natural family-history questions into the relational/family vocabulary
+already present in Project L. Returned evidence remains authoritative.
+"""
+import re
+
+
+def install(rhee):
+    previous_terms = rhee.expanded_query_terms
+    previous_deep = rhee.deep_recall_requested
+    previous_exhaustive = rhee.exhaustive_requested
+    previous_plan = rhee.plan_recall
+
+    def family_requested(query):
+        text = rhee.safe_text(query).lower()
+        return bool(re.search(
+            r"\b(?:family|family\s+history|family\s+background|parents?|mother|father|mum|dad|"
+            r"siblings?|brothers?|sisters?|children|kids|grandparents?|childhood\s+home|"
+            r"growing\s+up|home\s+life|family\s+events?|family\s+timeline)\b", text
+        ))
+
+    def family_terms():
+        return {
+            "family", "family history", "family background", "parents", "mother", "father",
+            "mum", "dad", "brother", "sister", "siblings", "children", "kids", "grandparents",
+            "childhood", "growing up", "home", "home life", "family timeline", "born", "birth",
+            "hospital", "boarding", "school", "rotary", "family business", "family friend",
+            "robert", "bob", "irene", "ken", "allison", "david", "iyla", "ashton", "luella",
+            "mehlia", "struthers", "family memory", "childhood timeline", "sibling timeline",
+        }
+
+    def expanded(query):
+        terms = list(previous_terms(query))
+        if not family_requested(query):
+            return terms
+        seen = {rhee.safe_text(term).lower() for term in terms}
+        for term in sorted(family_terms()):
+            if term not in seen:
+                terms.append(term)
+                seen.add(term)
+        return terms
+
+    def deep(query):
+        return family_requested(query) or previous_deep(query)
+
+    def exhaustive(query):
+        return family_requested(query) or previous_exhaustive(query)
+
+    def plan(query, today=None):
+        result = previous_plan(query, today=today)
+        if not family_requested(query):
+            return result
+        result = dict(result)
+        result.update({
+            "mode": "investigate",
+            "topic_intent": "family_history",
+            "raw_candidates": max(int(result.get("raw_candidates", 0)), 280),
+            "memory_candidates": max(int(result.get("memory_candidates", 0)), 230),
+            "evidence_char_budget": max(int(result.get("evidence_char_budget", 0)), 58000),
+            "retrieval_budget_ms": 45000,
+            "contradiction_review": True,
+            "coverage_review": True,
+        })
+        return result
+
+    rhee.expanded_query_terms = expanded
+    rhee.deep_recall_requested = deep
+    rhee.exhaustive_requested = exhaustive
+    rhee.plan_recall = plan
