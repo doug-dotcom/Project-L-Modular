@@ -75,3 +75,5 @@ def install(rhee):
     install_health(rhee)
     from layers.layer5_life_timeline_recall import install as install_timeline
     install_timeline(rhee)
+    from layers.layer6_semantic_query_rewriter import install as install_semantic_rewriter
+    install_semantic_rewriter(rhee)
