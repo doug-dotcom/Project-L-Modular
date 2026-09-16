@@ -202,8 +202,6 @@ try:
         ))
 
     def _relationship_terms():
-        # Domain vocabulary, roles and known relational aliases are candidate
-        # search cues only. Returned evidence remains authoritative.
         return {
             "relationship", "relationships", "friend", "friends", "friendship", "mate", "mates",
             "best mate", "partner", "girlfriend", "wife", "fiancee", "ex", "dating", "romantic",
@@ -254,3 +252,11 @@ try:
     _rhee.plan_recall = _plan_recall_layer2
 except Exception:
     pass
+
+# Layer 3: family-history recall is kept in its own module so subsequent recall
+# layers can remain modular rather than making this startup shim indefinitely larger.
+try:
+    from layers.layer3_family_recall import install as _install_layer3_family
+    _install_layer3_family(_rhee)
+except Exception as _layer3_exc:
+    print(f"LAYER 3 FAMILY RECALL DEGRADED: error_type={type(_layer3_exc).__name__}")
