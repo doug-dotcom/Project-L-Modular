@@ -83,3 +83,5 @@ def install(rhee):
     install_coverage_check(rhee)
     from layers.layer9_authority_conflict import install as install_authority_conflict
     install_authority_conflict(rhee)
+    from layers.layer10_recall_confidence import install as install_recall_confidence
+    install_recall_confidence(rhee)
