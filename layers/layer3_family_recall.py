@@ -73,3 +73,5 @@ def install(rhee):
     # Chain later modular retrieval layers from this stable bootstrap point.
     from layers.layer4_health_recall import install as install_health
     install_health(rhee)
+    from layers.layer5_life_timeline_recall import install as install_timeline
+    install_timeline(rhee)
