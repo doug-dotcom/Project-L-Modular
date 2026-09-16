@@ -81,3 +81,5 @@ def install(rhee):
     install_retrieval_escalation(rhee)
     from layers.layer8_coverage_check import install as install_coverage_check
     install_coverage_check(rhee)
+    from layers.layer9_authority_conflict import install as install_authority_conflict
+    install_authority_conflict(rhee)
