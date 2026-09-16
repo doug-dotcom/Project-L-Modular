@@ -85,3 +85,5 @@ def install(rhee):
     install_authority_conflict(rhee)
     from layers.layer10_recall_confidence import install as install_recall_confidence
     install_recall_confidence(rhee)
+    from layers.late_recall_budget_hotfix import install as install_late_recall_budget_hotfix
+    install_late_recall_budget_hotfix(rhee)
