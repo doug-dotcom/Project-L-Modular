@@ -97,3 +97,5 @@ def install(rhee):
     install_deep_recall_escalation(rhee)
     from layers.layer14_deep_recall_self_audit import install as install_deep_recall_self_audit
     install_deep_recall_self_audit(rhee)
+    from layers.layer15_deep_recall_match_windows import install as install_deep_recall_match_windows
+    install_deep_recall_match_windows(rhee)
