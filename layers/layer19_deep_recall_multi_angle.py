@@ -45,9 +45,6 @@ def install(rhee):
         used = 0
         angle_counts = {}
 
-        # Layer 11 already established that explicit Deep Recall is allowed to
-        # inspect the full corpus. Here we reuse that corpus from different
-        # scoring angles rather than relying on one lexical/ranking view.
         raw_rows = list(rhee.load_all_raw_catchall())
         memories = list(rhee.load_all_memories())
 
@@ -78,19 +75,12 @@ def install(rhee):
                 excerpt = content[:1400]
                 if used + len(excerpt) > EXTRA_CHAR_BUDGET:
                     break
-                item = {
-                    "source": source,
-                    "quote_source": excerpt,
-                    "role": rhee.safe_text(row.get("role", "unknown")).lower(),
-                    "created_at": rhee.safe_text(row.get("created_at")),
-                    "deep_recall_angle": angle_name,
-                    "deep_recall_angle_score": score,
-                }
-                evidence.append(item)
-                additions.append(item)
-                seen.add(source)
-                used += len(excerpt)
-                added_here += 1
+                item = {"source": source, "quote_source": excerpt,
+                        "role": rhee.safe_text(row.get("role", "unknown")).lower(),
+                        "created_at": rhee.safe_text(row.get("created_at")),
+                        "deep_recall_angle": angle_name, "deep_recall_angle_score": score}
+                evidence.append(item); additions.append(item); seen.add(source)
+                used += len(excerpt); added_here += 1
 
             for score, memory in memory_scored[:MEMORY_PER_ANGLE]:
                 if used >= EXTRA_CHAR_BUDGET:
@@ -104,53 +94,39 @@ def install(rhee):
                 excerpt = content[:1400]
                 if used + len(excerpt) > EXTRA_CHAR_BUDGET:
                     break
-                item = {
-                    "source": source,
-                    "quote_source": excerpt,
-                    "role": rhee.memory_source_role(memory),
-                    "created_at": rhee.safe_text(memory.get("created_at")),
-                    "raw_id": memory.get("raw_id"),
-                    "deep_recall_angle": angle_name,
-                    "deep_recall_angle_score": score,
-                }
-                evidence.append(item)
-                additions.append(item)
-                seen.add(source)
-                used += len(excerpt)
-                added_here += 1
-
+                item = {"source": source, "quote_source": excerpt,
+                        "role": rhee.memory_source_role(memory),
+                        "created_at": rhee.safe_text(memory.get("created_at")),
+                        "raw_id": memory.get("raw_id"),
+                        "deep_recall_angle": angle_name, "deep_recall_angle_score": score}
+                evidence.append(item); additions.append(item); seen.add(source)
+                used += len(excerpt); added_here += 1
             angle_counts[angle_name] = added_here
 
         output = dict(result)
         output["evidence"] = evidence
         context = rhee.safe_text(output.get("context"))
         if additions:
-            lines = [
-                "DEEP RECALL MULTI-ANGLE EVIDENCE",
-                "These distinct records were recovered by rescoring the full corpus from complementary angles.",
-                "They are ordinary source-linked evidence: apply the existing provenance, conflict and chronology rules.",
-                "Do not assume an angle is complete merely because it returned records.",
-                "",
-            ]
+            lines = ["DEEP RECALL MULTI-ANGLE EVIDENCE",
+                     "These distinct records were recovered by rescoring the full corpus from complementary angles.",
+                     "They are ordinary source-linked evidence: apply the existing provenance, conflict and chronology rules.",
+                     "Do not assume an angle is complete merely because it returned records.", ""]
             for item in additions:
-                lines.append(
-                    f"SOURCE {item['source']} | ANGLE={item.get('deep_recall_angle')} | "
-                    f"ROLE={rhee.safe_text(item.get('role')).upper()} | CREATED_AT={item.get('created_at', '')}"
-                )
-                lines.append(rhee.safe_text(item.get("quote_source")))
-                lines.append("")
+                lines.append(f"SOURCE {item['source']} | ANGLE={item.get('deep_recall_angle')} | ROLE={rhee.safe_text(item.get('role')).upper()} | CREATED_AT={item.get('created_at', '')}")
+                lines.append(rhee.safe_text(item.get("quote_source"))); lines.append("")
             context += "\n\n" + "\n".join(lines)
         output["context"] = context
         output["context_size"] = len(context)
         output["recall_active"] = bool(evidence) or bool(result.get("recall_active"))
         receipt = dict(output.get("recall_plan") or {})
-        receipt.update({
-            "deep_recall_multi_angle": "applied",
-            "deep_recall_multi_angle_added": len(additions),
-            "deep_recall_multi_angle_chars": used,
-            "deep_recall_multi_angle_counts": angle_counts,
-        })
+        receipt.update({"deep_recall_multi_angle": "applied",
+                        "deep_recall_multi_angle_added": len(additions),
+                        "deep_recall_multi_angle_chars": used,
+                        "deep_recall_multi_angle_counts": angle_counts})
         output["recall_plan"] = receipt
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer20_deep_recall_gap_rescue import install as install_gap_rescue
+    install_gap_rescue(rhee)
