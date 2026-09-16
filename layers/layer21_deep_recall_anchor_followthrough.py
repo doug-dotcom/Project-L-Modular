@@ -38,7 +38,6 @@ def install(rhee):
         counts = Counter()
         for item in evidence[:80]:
             text = rhee.safe_text(item.get("quote_source"))
-            # Multi-word title-case names/places plus common all-caps organisation tokens.
             candidates = re.findall(r"\b[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,}){0,2}\b|\b[A-Z]{2,8}\b", text)
             for candidate in candidates:
                 candidate = candidate.strip()
@@ -47,7 +46,6 @@ def install(rhee):
                 if len(candidate) < 3 or candidate.isdigit():
                     continue
                 counts[candidate] += 1
-        # Prefer anchors repeated in evidence, then longer/more specific strings.
         ranked = sorted(counts.items(), key=lambda pair: (pair[1], len(pair[0])), reverse=True)
         return [name for name, _ in ranked[:MAX_ANCHORS]]
 
@@ -74,7 +72,6 @@ def install(rhee):
                 break
             angle_query = f"{base} {anchor}"
             anchor_lower = anchor.lower()
-
             raw_scored = []
             for row in raw_rows:
                 content = rhee.safe_text(row.get("content"))
@@ -84,7 +81,6 @@ def install(rhee):
                 if score > 0:
                     raw_scored.append((score, row))
             raw_scored.sort(key=lambda pair: pair[0], reverse=True)
-
             mem_scored = []
             for memory in memories:
                 content = rhee.row_content(memory)
@@ -94,77 +90,35 @@ def install(rhee):
                 if score > 0:
                     mem_scored.append((score, memory))
             mem_scored.sort(key=lambda pair: pair[0], reverse=True)
-
             added_here = 0
             for score, row in raw_scored[:RAW_PER_ANCHOR]:
-                row_id = row.get("id")
-                source = f"raw_catchall:{row_id}" if row_id is not None else ""
-                content = rhee.safe_text(row.get("content"))
-                if not source or source in seen or not content:
-                    continue
+                row_id = row.get("id"); source = f"raw_catchall:{row_id}" if row_id is not None else ""; content = rhee.safe_text(row.get("content"))
+                if not source or source in seen or not content: continue
                 excerpt = content[:1500]
-                if used + len(excerpt) > EXTRA_CHAR_BUDGET:
-                    break
-                item = {
-                    "source": source, "quote_source": excerpt,
-                    "role": rhee.safe_text(row.get("role", "unknown")).lower(),
-                    "created_at": rhee.safe_text(row.get("created_at")),
-                    "deep_recall_anchor": anchor, "deep_recall_anchor_score": score,
-                }
-                evidence.append(item); additions.append(item); seen.add(source)
-                used += len(excerpt); added_here += 1
-
+                if used + len(excerpt) > EXTRA_CHAR_BUDGET: break
+                item = {"source": source, "quote_source": excerpt, "role": rhee.safe_text(row.get("role", "unknown")).lower(), "created_at": rhee.safe_text(row.get("created_at")), "deep_recall_anchor": anchor, "deep_recall_anchor_score": score}
+                evidence.append(item); additions.append(item); seen.add(source); used += len(excerpt); added_here += 1
             for score, memory in mem_scored[:MEMORY_PER_ANCHOR]:
-                table = rhee.safe_text(memory.get("_table", "memory"))
-                memory_id = memory.get("id")
-                source = f"{table}:{memory_id}" if memory_id is not None else ""
-                content = rhee.row_content(memory)
-                if not source or source in seen or not content:
-                    continue
+                table = rhee.safe_text(memory.get("_table", "memory")); memory_id = memory.get("id"); source = f"{table}:{memory_id}" if memory_id is not None else ""; content = rhee.row_content(memory)
+                if not source or source in seen or not content: continue
                 excerpt = content[:1500]
-                if used + len(excerpt) > EXTRA_CHAR_BUDGET:
-                    break
-                item = {
-                    "source": source, "quote_source": excerpt,
-                    "role": rhee.memory_source_role(memory),
-                    "created_at": rhee.safe_text(memory.get("created_at")),
-                    "raw_id": memory.get("raw_id"),
-                    "deep_recall_anchor": anchor, "deep_recall_anchor_score": score,
-                }
-                evidence.append(item); additions.append(item); seen.add(source)
-                used += len(excerpt); added_here += 1
+                if used + len(excerpt) > EXTRA_CHAR_BUDGET: break
+                item = {"source": source, "quote_source": excerpt, "role": rhee.memory_source_role(memory), "created_at": rhee.safe_text(memory.get("created_at")), "raw_id": memory.get("raw_id"), "deep_recall_anchor": anchor, "deep_recall_anchor_score": score}
+                evidence.append(item); additions.append(item); seen.add(source); used += len(excerpt); added_here += 1
             anchor_counts[anchor] = added_here
 
-        output = dict(result)
-        output["evidence"] = evidence
+        output = dict(result); output["evidence"] = evidence
         context = rhee.safe_text(output.get("context"))
         if additions:
-            lines = [
-                "DEEP RECALL EVIDENCE-LED FOLLOW-THROUGH",
-                "These records were found by following named anchors discovered in already-retrieved evidence.",
-                "An anchor is a search lead, not a fact by itself. Use only the source-linked content as evidence.",
-                "",
-            ]
+            lines = ["DEEP RECALL EVIDENCE-LED FOLLOW-THROUGH", "These records were found by following named anchors discovered in already-retrieved evidence.", "An anchor is a search lead, not a fact by itself. Use only the source-linked content as evidence.", ""]
             for item in additions:
-                lines.append(
-                    f"SOURCE {item['source']} | ANCHOR={item.get('deep_recall_anchor')} | "
-                    f"ROLE={rhee.safe_text(item.get('role')).upper()}"
-                )
-                lines.append(rhee.safe_text(item.get("quote_source")))
-                lines.append("")
+                lines.append(f"SOURCE {item['source']} | ANCHOR={item.get('deep_recall_anchor')} | ROLE={rhee.safe_text(item.get('role')).upper()}"); lines.append(rhee.safe_text(item.get("quote_source"))); lines.append("")
             context += "\n\n" + "\n".join(lines)
-        output["context"] = context
-        output["context_size"] = len(context)
-        output["recall_active"] = bool(evidence) or bool(result.get("recall_active"))
-        receipt = dict(output.get("recall_plan") or {})
-        receipt.update({
-            "deep_recall_anchor_followthrough": "applied",
-            "deep_recall_anchors_followed": anchors,
-            "deep_recall_anchor_counts": anchor_counts,
-            "deep_recall_anchor_added": len(additions),
-            "deep_recall_anchor_chars": used,
-        })
-        output["recall_plan"] = receipt
+        output["context"] = context; output["context_size"] = len(context); output["recall_active"] = bool(evidence) or bool(result.get("recall_active"))
+        receipt = dict(output.get("recall_plan") or {}); receipt.update({"deep_recall_anchor_followthrough": "applied", "deep_recall_anchors_followed": anchors, "deep_recall_anchor_counts": anchor_counts, "deep_recall_anchor_added": len(additions), "deep_recall_anchor_chars": used}); output["recall_plan"] = receipt
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer22_deep_recall_saturation_stop import install as install_saturation_stop
+    install_saturation_stop(rhee)
