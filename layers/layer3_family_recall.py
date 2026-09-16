@@ -77,3 +77,5 @@ def install(rhee):
     install_timeline(rhee)
     from layers.layer6_semantic_query_rewriter import install as install_semantic_rewriter
     install_semantic_rewriter(rhee)
+    from layers.layer7_retrieval_escalation import install as install_retrieval_escalation
+    install_retrieval_escalation(rhee)
