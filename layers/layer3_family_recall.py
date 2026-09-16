@@ -99,3 +99,5 @@ def install(rhee):
     install_deep_recall_self_audit(rhee)
     from layers.layer15_deep_recall_match_windows import install as install_deep_recall_match_windows
     install_deep_recall_match_windows(rhee)
+    from layers.layer16_deep_recall_diversity import install as install_deep_recall_diversity
+    install_deep_recall_diversity(rhee)
