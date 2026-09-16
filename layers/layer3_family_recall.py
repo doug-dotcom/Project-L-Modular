@@ -87,3 +87,5 @@ def install(rhee):
     install_recall_confidence(rhee)
     from layers.late_recall_budget_hotfix import install as install_late_recall_budget_hotfix
     install_late_recall_budget_hotfix(rhee)
+    from layers.career_stage_coverage_repair import install as install_career_stage_coverage_repair
+    install_career_stage_coverage_repair(rhee)
