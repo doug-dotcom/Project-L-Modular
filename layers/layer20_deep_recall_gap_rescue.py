@@ -72,8 +72,6 @@ def install(rhee):
         for _, left, right in gaps:
             if used >= EXTRA_CHAR_BUDGET:
                 break
-            # Use representative years across the interval rather than creating
-            # an enormous lexical query for every year in a long life gap.
             span = right - left
             probes = sorted({left + 1, right - 1, left + span // 2})
             gap_query = f"{base} " + " ".join(str(y) for y in probes) + " during between period stage transition"
@@ -163,3 +161,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer21_deep_recall_anchor_followthrough import install as install_anchor_followthrough
+    install_anchor_followthrough(rhee)
