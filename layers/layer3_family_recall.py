@@ -79,3 +79,5 @@ def install(rhee):
     install_semantic_rewriter(rhee)
     from layers.layer7_retrieval_escalation import install as install_retrieval_escalation
     install_retrieval_escalation(rhee)
+    from layers.layer8_coverage_check import install as install_coverage_check
+    install_coverage_check(rhee)
