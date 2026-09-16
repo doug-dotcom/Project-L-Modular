@@ -86,3 +86,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer18_deep_recall_completeness_ledger import install as install_completeness_ledger
+    install_completeness_ledger(rhee)
