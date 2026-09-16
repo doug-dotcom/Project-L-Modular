@@ -89,3 +89,5 @@ def install(rhee):
     install_late_recall_budget_hotfix(rhee)
     from layers.career_stage_coverage_repair import install as install_career_stage_coverage_repair
     install_career_stage_coverage_repair(rhee)
+    from layers.layer11_true_deep_recall import install as install_true_deep_recall
+    install_true_deep_recall(rhee)
