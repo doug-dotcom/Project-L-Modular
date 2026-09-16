@@ -93,3 +93,5 @@ def install(rhee):
     install_true_deep_recall(rhee)
     from layers.layer12_deep_recall_evidence_breadth import install as install_deep_recall_evidence_breadth
     install_deep_recall_evidence_breadth(rhee)
+    from layers.layer13_deep_recall_escalation import install as install_deep_recall_escalation
+    install_deep_recall_escalation(rhee)
