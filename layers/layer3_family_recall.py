@@ -69,3 +69,7 @@ def install(rhee):
     rhee.deep_recall_requested = deep
     rhee.exhaustive_requested = exhaustive
     rhee.plan_recall = plan
+
+    # Chain later modular retrieval layers from this stable bootstrap point.
+    from layers.layer4_health_recall import install as install_health
+    install_health(rhee)
