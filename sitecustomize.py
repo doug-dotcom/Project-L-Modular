@@ -25,10 +25,8 @@ try:
                 tb = tb.tb_next
             source_file = Path(tb.tb_frame.f_code.co_filename).name if tb else "unknown"
             source_line = tb.tb_lineno if tb else None
-            print(
-                "COGNITIVE CORE DEGRADED: "
-                f"error_type={type(exc).__name__} source={source_file}:{source_line}"
-            )
+            print("COGNITIVE CORE DEGRADED: "
+                  f"error_type={type(exc).__name__} source={source_file}:{source_line}")
             rike = {
                 "engine": "rike", "version": "2.0", "status": "degraded_not_run",
                 "confidence": {"level": "low", "score": 0.0,
@@ -64,8 +62,8 @@ except Exception:
     pass
 
 # Retrieval intent repair. Rhee's FTS is deliberately lexical, so broad human
-# concepts must be expanded before candidate search. This layer handles both
-# historical cutoffs ("before 1999") and education/schooling requests.
+# concepts are expanded before candidate search. This layer handles historical
+# cutoffs, schooling/education, and career/employment history.
 try:
     import re as _re
     import agents.rhee.rhee_v3 as _rhee
@@ -89,6 +87,14 @@ try:
             r"high\s+school|boarding\s+school|teachers?|classmates?|grades?)\b", text
         ))
 
+    def _career_requested(query):
+        text = _rhee.safe_text(query).lower()
+        return bool(_re.search(
+            r"\b(?:career|careers|working\s+career|work\s+history|employment|employment\s+history|"
+            r"working\s+life|professional\s+life|professional\s+history|jobs?|employers?|occupations?)\b",
+            text,
+        ))
+
     def _historical_terms(cutoff):
         cues = {
             "born", "birth", "baby", "child", "childhood", "young", "primary", "school",
@@ -101,14 +107,25 @@ try:
         return cues
 
     def _schooling_terms():
-        # Names/places here are retrieval aliases already present in Doug's
-        # archive. They are not asserted as facts by this layer; retrieved USER
-        # evidence still governs the answer.
         return {
             "school", "schooling", "education", "primary", "teacher", "teachers", "grade",
             "class", "classmate", "friends", "boarding", "woodlawn", "alstonville", "casino",
             "st marys", "st mary's", "hsc", "ter", "report card", "rugby", "cricket", "hockey",
             "burns", "whiteside", "smith", "patterson", "wright", "searle", "duckett",
+        }
+
+    def _career_terms():
+        # Semantic neighbourhood for Doug's working-life archive. These are
+        # retrieval aliases only; Rhee must still ground its answer in returned
+        # USER/canonical evidence and may not infer an unstored job or date.
+        return {
+            "work", "working", "career", "employment", "employer", "job", "occupation",
+            "professional", "role", "position", "army", "military", "artillery", "kapooka",
+            "puckapunyal", "east timor", "ready reserve", "101 battery", "6rar", "signaller",
+            "fire support", "soldiers medallion", "jetset", "travel agency", "owner", "manager",
+            "hotel richards", "mitchell", "publican", "anz", "personal banker", "financial planner",
+            "financial planning", "adviser", "banking", "business", "promotion", "retired",
+            "disablement", "income protection", "work memory lock-in", "work history",
         }
 
     def _expanded_query_terms_with_intent(query):
@@ -119,6 +136,8 @@ try:
             additions.update(_historical_terms(cutoff))
         if _schooling_requested(query):
             additions.update(_schooling_terms())
+        if _career_requested(query):
+            additions.update(_career_terms())
         seen = {_rhee.safe_text(term).lower() for term in terms}
         for term in sorted(additions):
             if term not in seen:
@@ -130,6 +149,7 @@ try:
         return (
             _historical_cutoff_year(query) is not None
             or _schooling_requested(query)
+            or _career_requested(query)
             or _original_deep_recall_requested(query)
         )
 
@@ -137,6 +157,7 @@ try:
         return (
             _historical_cutoff_year(query) is not None
             or _schooling_requested(query)
+            or _career_requested(query)
             or _original_exhaustive_requested(query)
         )
 
@@ -144,14 +165,16 @@ try:
         plan = _original_plan_recall(query, today=today)
         cutoff = _historical_cutoff_year(query)
         school = _schooling_requested(query)
-        if cutoff is None and not school:
+        career = _career_requested(query)
+        if cutoff is None and not school and not career:
             return plan
         plan = dict(plan)
+        broad_topic = school or career
         plan.update({
             "mode": "investigate",
-            "raw_candidates": 300 if cutoff is not None else 220,
-            "memory_candidates": 240 if cutoff is not None else 180,
-            "evidence_char_budget": 60000 if cutoff is not None else 48000,
+            "raw_candidates": 300 if cutoff is not None else (260 if career else 220),
+            "memory_candidates": 240 if cutoff is not None else (220 if career else 180),
+            "evidence_char_budget": 60000 if cutoff is not None else (56000 if career else 48000),
             "retrieval_budget_ms": 45000,
             "contradiction_review": True,
         })
@@ -159,6 +182,10 @@ try:
             plan["historical_cutoff_year"] = cutoff
         if school:
             plan["topic_intent"] = "schooling_history"
+        if career:
+            plan["topic_intent"] = "career_history"
+        if broad_topic:
+            plan["coverage_review"] = True
         return plan
 
     _rhee.expanded_query_terms = _expanded_query_terms_with_intent
