@@ -28,8 +28,6 @@ def install(rhee):
             return False
         overlap = len(ta & tb)
         union = len(ta | tb)
-        # Conservative threshold: only suppress passages that are substantially
-        # the same wording/story, not merely about the same person or subject.
         return union > 0 and overlap / union >= 0.72
 
     def source_family(source):
@@ -81,3 +79,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer17_deep_recall_primary_evidence import install as install_primary_evidence
+    install_primary_evidence(rhee)
