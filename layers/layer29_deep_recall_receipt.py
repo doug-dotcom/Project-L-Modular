@@ -47,12 +47,10 @@ def install(rhee):
             "claim_evidence_contract": plan.get("deep_recall_claim_evidence_contract", "unknown"),
             "temporal_truth": plan.get("deep_recall_temporal_truth", "unknown"),
         }
-
         plan["deep_recall_receipt"] = receipt
         plan["deep_recall_receipt_version"] = 1
         output = dict(result)
         output["recall_plan"] = plan
-
         context = rhee.safe_text(output.get("context"))
         context += (
             "\n\nDEEP RECALL EXECUTION RECEIPT\n"
@@ -68,3 +66,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer30_deep_recall_question_decomposition import install as install_question_decomposition
+    install_question_decomposition(rhee)
