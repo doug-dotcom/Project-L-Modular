@@ -61,45 +61,21 @@ def install(rhee):
             excerpt = content[:1800]
             if used + len(excerpt) > CHAR_BUDGET:
                 break
-            item = {
-                "source": source,
-                "quote_source": excerpt,
-                "role": "user",
-                "created_at": rhee.safe_text(row.get("created_at")),
-                "deep_recall_correction_candidate": True,
-                "deep_recall_correction_score": score,
-            }
-            evidence.append(item)
-            additions.append(item)
-            seen.add(source)
-            used += len(excerpt)
+            item = {"source": source, "quote_source": excerpt, "role": "user", "created_at": rhee.safe_text(row.get("created_at")), "deep_recall_correction_candidate": True, "deep_recall_correction_score": score}
+            evidence.append(item); additions.append(item); seen.add(source); used += len(excerpt)
 
-        output = dict(result)
-        output["evidence"] = evidence
+        output = dict(result); output["evidence"] = evidence
         context = rhee.safe_text(output.get("context"))
         if additions:
-            lines = [
-                "DEEP RECALL CORRECTION HUNT",
-                "These Doug-authored records contain correction/clarification cues and are relevant to the recall subject.",
-                "A cue alone does not prove supersession. Compare the actual facts and chronology under the existing evidence-authority rules.",
-                "If a later Doug record clearly corrects the same fact, prefer the correction; otherwise preserve uncertainty/conflict.",
-                "",
-            ]
+            lines = ["DEEP RECALL CORRECTION HUNT", "These Doug-authored records contain correction/clarification cues and are relevant to the recall subject.", "A cue alone does not prove supersession. Compare the actual facts and chronology under the existing evidence-authority rules.", "If a later Doug record clearly corrects the same fact, prefer the correction; otherwise preserve uncertainty/conflict.", ""]
             for item in additions:
-                lines.append(f"SOURCE {item['source']} | ROLE=USER | CREATED_AT={item.get('created_at', '')}")
-                lines.append(item["quote_source"])
-                lines.append("")
+                lines.append(f"SOURCE {item['source']} | ROLE=USER | CREATED_AT={item.get('created_at', '')}"); lines.append(item["quote_source"]); lines.append("")
             context += "\n\n" + "\n".join(lines)
-        output["context"] = context
-        output["context_size"] = len(context)
-        output["recall_active"] = bool(evidence) or bool(result.get("recall_active"))
-        plan = dict(output.get("recall_plan") or {})
-        plan.update({
-            "deep_recall_correction_hunt": "applied",
-            "deep_recall_correction_candidates_added": len(additions),
-            "deep_recall_correction_chars": used,
-        })
-        output["recall_plan"] = plan
+        output["context"] = context; output["context_size"] = len(context); output["recall_active"] = bool(evidence) or bool(result.get("recall_active"))
+        plan = dict(output.get("recall_plan") or {}); plan.update({"deep_recall_correction_hunt": "applied", "deep_recall_correction_candidates_added": len(additions), "deep_recall_correction_chars": used}); output["recall_plan"] = plan
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer24_deep_recall_claim_evidence_contract import install as install_claim_evidence_contract
+    install_claim_evidence_contract(rhee)
