@@ -55,3 +55,6 @@ DEEP RECALL CLAIM-EVIDENCE CONTRACT
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer25_deep_recall_answer_depth import install as install_answer_depth
+    install_answer_depth(rhee)
