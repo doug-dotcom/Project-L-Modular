@@ -62,3 +62,6 @@ DEEP RECALL TEMPORAL-TRUTH CONTRACT
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer27_deep_recall_source_lineage import install as install_source_lineage
+    install_source_lineage(rhee)
