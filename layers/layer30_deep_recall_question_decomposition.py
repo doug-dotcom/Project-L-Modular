@@ -29,7 +29,6 @@ def install(rhee):
         subject = clean_subject(query)
         if not subject:
             return []
-        # Split only on explicit request structure. Do not invent subquestions.
         chunks = re.split(r"\s*(?:;|\n|\band then\b|\bas well as\b|\balso\b)\s*", subject, flags=re.I)
         parts = []
         seen = set()
@@ -43,44 +42,27 @@ def install(rhee):
                 seen.add(key)
             if len(parts) >= MAX_PARTS:
                 break
-        # A broad request may be one coherent dimension; keep it whole rather
-        # than mechanically splitting every occurrence of 'and'.
         return parts or [subject]
 
     def packet(query):
         result = previous_packet(query)
         if not explicit_deep(query):
             return result
-
         parts = decompose(query)
         if not parts:
             return result
-
         output = dict(result)
         plan = dict(output.get("recall_plan") or {})
-        plan.update({
-            "deep_recall_question_decomposition": "applied",
-            "deep_recall_question_parts": parts,
-            "deep_recall_question_part_count": len(parts),
-        })
+        plan.update({"deep_recall_question_decomposition": "applied", "deep_recall_question_parts": parts, "deep_recall_question_part_count": len(parts)})
         output["recall_plan"] = plan
-
-        checklist = [
-            "DEEP RECALL QUESTION-COVERAGE CHECKLIST",
-            "Before composing, verify that the answer addresses every explicit information need in Doug's request that is supported by retrieved evidence.",
-        ]
-        for index, part in enumerate(parts, 1):
-            checklist.append(f"{index}. {part}")
-        checklist.extend([
-            "Do not let strong evidence for one part hide weak or missing evidence for another part.",
-            "If one requested part remains thin after Deep Recall, answer the supported parts and identify that specific gap honestly.",
-            "Do not invent extra subquestions or expand beyond the original subject merely to make the answer broader.",
-            "A thin part means not established by this retrieval, not that the memory was never stored.",
-        ])
-
+        checklist = ["DEEP RECALL QUESTION-COVERAGE CHECKLIST", "Before composing, verify that the answer addresses every explicit information need in Doug's request that is supported by retrieved evidence."]
+        for index, part in enumerate(parts, 1): checklist.append(f"{index}. {part}")
+        checklist.extend(["Do not let strong evidence for one part hide weak or missing evidence for another part.", "If one requested part remains thin after Deep Recall, answer the supported parts and identify that specific gap honestly.", "Do not invent extra subquestions or expand beyond the original subject merely to make the answer broader.", "A thin part means not established by this retrieval, not that the memory was never stored."])
         context = rhee.safe_text(output.get("context")) + "\n\n" + "\n".join(checklist)
-        output["context"] = context
-        output["context_size"] = len(context)
+        output["context"] = context; output["context_size"] = len(context)
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer31_deep_recall_component_rescue import install as install_component_rescue
+    install_component_rescue(rhee)
