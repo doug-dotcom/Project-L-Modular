@@ -163,3 +163,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer32_deep_recall_provenance_backfill import install as install_provenance_backfill
+    install_provenance_backfill(rhee)
