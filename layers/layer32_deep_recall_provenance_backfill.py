@@ -120,3 +120,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer33_deep_recall_time_window_rescue import install as install_time_window_rescue
+    install_time_window_rescue(rhee)
