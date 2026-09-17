@@ -36,7 +36,6 @@ def install(rhee):
                 "deep_recall_correction_candidate"
             ))
         )
-
         contract = f"""
 DEEP RECALL SUBJECT-FIDELITY CONTRACT
 Original recall subject: {original_subject}
@@ -48,18 +47,16 @@ Original recall subject: {original_subject}
 - A highly ranked or repeatedly retrieved adjacent memory is not relevant by repetition alone.
 - Preserve useful cross-domain connections when evidence supports them, but label interpretation as interpretation and keep the answer centred on Doug's question.
 """.strip()
-
         output = dict(result)
         context = rhee.safe_text(output.get("context")) + "\n\n" + contract
         output["context"] = context
         output["context_size"] = len(context)
         plan = dict(output.get("recall_plan") or {})
-        plan.update({
-            "deep_recall_subject_fidelity": "applied",
-            "deep_recall_original_subject": original_subject,
-            "deep_recall_expansion_evidence_items": expansion_items,
-        })
+        plan.update({"deep_recall_subject_fidelity": "applied", "deep_recall_original_subject": original_subject, "deep_recall_expansion_evidence_items": expansion_items})
         output["recall_plan"] = plan
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer29_deep_recall_receipt import install as install_retrieval_receipt
+    install_retrieval_receipt(rhee)
