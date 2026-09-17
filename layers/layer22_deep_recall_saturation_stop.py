@@ -57,3 +57,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer23_deep_recall_correction_hunt import install as install_correction_hunt
+    install_correction_hunt(rhee)
