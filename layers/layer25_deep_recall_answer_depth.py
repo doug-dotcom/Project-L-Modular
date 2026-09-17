@@ -32,12 +32,8 @@ def install(rhee):
         evidence = list(result.get("evidence") or [])
         plan = dict(result.get("recall_plan") or {})
         source_count = len(evidence)
-        primary_count = sum(
-            1 for item in evidence
-            if rhee.safe_text(item.get("role")).lower() == "user"
-        )
+        primary_count = sum(1 for item in evidence if rhee.safe_text(item.get("role")).lower() == "user")
         broad = broad_request(query)
-
         if broad and source_count >= 20:
             depth = "detailed_structured"
         elif source_count >= 8:
@@ -61,13 +57,11 @@ Answer-depth target: {depth}. Retrieved evidence sources: {source_count}; Doug-a
         context = rhee.safe_text(output.get("context")) + "\n\n" + contract
         output["context"] = context
         output["context_size"] = len(context)
-        plan.update({
-            "deep_recall_answer_depth": depth,
-            "deep_recall_answer_depth_sources": source_count,
-            "deep_recall_answer_depth_primary_sources": primary_count,
-            "deep_recall_answer_depth_broad_request": broad,
-        })
+        plan.update({"deep_recall_answer_depth": depth, "deep_recall_answer_depth_sources": source_count, "deep_recall_answer_depth_primary_sources": primary_count, "deep_recall_answer_depth_broad_request": broad})
         output["recall_plan"] = plan
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer26_deep_recall_temporal_truth import install as install_temporal_truth
+    install_temporal_truth(rhee)
