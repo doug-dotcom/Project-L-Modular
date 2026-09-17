@@ -75,3 +75,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer28_deep_recall_subject_fidelity import install as install_subject_fidelity
+    install_subject_fidelity(rhee)
