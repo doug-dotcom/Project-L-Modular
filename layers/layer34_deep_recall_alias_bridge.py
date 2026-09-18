@@ -152,3 +152,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer35_deep_recall_transition_rescue import install as install_transition_rescue
+    install_transition_rescue(rhee)
