@@ -75,3 +75,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer46_deep_recall_chain_integrity import install as install_chain_integrity
+    install_chain_integrity(rhee)
