@@ -59,3 +59,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer43_deep_recall_context_budget_governor import install as install_context_budget_governor
+    install_context_budget_governor(rhee)
