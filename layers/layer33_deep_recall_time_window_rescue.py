@@ -160,3 +160,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer34_deep_recall_alias_bridge import install as install_alias_bridge
+    install_alias_bridge(rhee)
