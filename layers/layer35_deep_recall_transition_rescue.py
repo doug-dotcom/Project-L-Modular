@@ -140,3 +140,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer36_deep_recall_late_match_centering import install as install_late_match_centering
+    install_late_match_centering(rhee)
