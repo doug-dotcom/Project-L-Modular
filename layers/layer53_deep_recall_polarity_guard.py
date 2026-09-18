@@ -88,3 +88,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer54_deep_recall_speaker_attribution import install as install_speaker_attribution
+    install_speaker_attribution(rhee)
