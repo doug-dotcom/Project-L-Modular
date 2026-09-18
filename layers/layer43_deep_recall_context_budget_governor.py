@@ -67,3 +67,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer44_deep_recall_negative_evidence_guard import install as install_negative_evidence_guard
+    install_negative_evidence_guard(rhee)
