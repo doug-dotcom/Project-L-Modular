@@ -89,3 +89,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer40_deep_recall_final_conflict_reconciliation import install as install_final_conflict_reconciliation
+    install_final_conflict_reconciliation(rhee)
