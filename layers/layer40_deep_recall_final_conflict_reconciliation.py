@@ -86,3 +86,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer41_deep_recall_primary_singletons import install as install_primary_singletons
+    install_primary_singletons(rhee)
