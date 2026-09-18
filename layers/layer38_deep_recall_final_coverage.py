@@ -82,3 +82,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer39_deep_recall_chronology_confidence import install as install_chronology_confidence
+    install_chronology_confidence(rhee)
