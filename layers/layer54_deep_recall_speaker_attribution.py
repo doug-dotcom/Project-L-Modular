@@ -78,3 +78,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer55_deep_recall_number_unit_guard import install as install_number_unit_guard
+    install_number_unit_guard(rhee)
