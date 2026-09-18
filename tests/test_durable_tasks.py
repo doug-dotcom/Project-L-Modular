@@ -195,3 +195,57 @@ def test_uncertain_claim_is_not_replayed(monkeypatch):
     assert effects == ['next task']
     assert len(store.finished) == 1
     assert runner.stop_event.waits == [3, 3]
+
+
+def test_dedicated_task_transport_authenticates_and_does_not_retry_uncertain_claim(monkeypatch):
+    import httpx
+    from core.cognition import durable_tasks
+    requests = []
+    client_options = {}
+    real_client = httpx.Client
+
+    def respond(request):
+        requests.append(request)
+        assert request.headers['apikey'] == 'synthetic-service-key'
+        assert request.headers['authorization'] == 'Bearer synthetic-service-key'
+        if len(requests) == 1:
+            raise httpx.RemoteProtocolError('private upstream detail')
+        return httpx.Response(200, json=[])
+
+    def client(**kwargs):
+        client_options.update(kwargs)
+        return real_client(**kwargs, transport=httpx.MockTransport(respond))
+
+    monkeypatch.setattr(durable_tasks.httpx, 'Client', client)
+    db = durable_tasks.task_database_client('https://example.supabase.co', 'synthetic-service-key')
+    try:
+        store = TaskStore(db)
+        with pytest.raises(httpx.RemoteProtocolError):
+            store.claim(str(uuid4()))
+        assert len(requests) == 1, 'An uncertain claim must not be retried'
+        assert store.claim(str(uuid4())) is None
+        assert requests[0].url.path == '/rest/v1/rpc/l_task_claim'
+        assert client_options['http2'] is False
+        assert client_options['timeout'].read < 120
+        assert client_options['timeout'].pool < 120
+        assert db.options.persist_session is False
+    finally:
+        db.options.httpx_client.close()
+
+
+def test_task_transport_is_not_created_without_credentials():
+    from core.cognition.durable_tasks import task_database_client
+    assert task_database_client('', '') is None
+
+
+def test_start_enables_recovery_logs_without_enabling_http_debug(monkeypatch):
+    import logging
+    from core.cognition import durable_tasks
+    old_level = durable_tasks.LOG.level
+    try:
+        runner = TaskRunner(FakeStore(), lambda request: {}, slots=0)
+        runner.start()
+        assert durable_tasks.LOG.isEnabledFor(logging.INFO)
+        assert not durable_tasks.LOG.isEnabledFor(logging.DEBUG)
+    finally:
+        durable_tasks.LOG.setLevel(old_level)

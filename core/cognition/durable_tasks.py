@@ -11,8 +11,36 @@ import threading
 import traceback
 from uuid import UUID, uuid4
 
+import httpx
+from supabase import create_client
+from supabase.lib.client_options import SyncClientOptions
+
 LOG = logging.getLogger(__name__)
 CONTEXT = threading.local()
+
+
+def task_database_client(url, key):
+    """Isolate leases and queue polling from the shared recall HTTP/2 pool.
+
+    A protocol error cannot tell us whether a claim committed. Do not add
+    transport retries; the dispatcher keeps its backoff and no-replay rules.
+    Bound I/O well below the two-minute lease so heartbeat failures return.
+    """
+    if not url or not key:
+        return None
+    transport = httpx.Client(
+        http2=False,
+        timeout=httpx.Timeout(20, connect=5, pool=5),
+        limits=httpx.Limits(max_connections=8, max_keepalive_connections=4,
+                            keepalive_expiry=5),
+    )
+    try:
+        return create_client(url, key, options=SyncClientOptions(
+            httpx_client=transport, auto_refresh_token=False, persist_session=False,
+        ))
+    except Exception:
+        transport.close()
+        raise
 
 
 def owner_identity(token):
@@ -90,6 +118,11 @@ class TaskRunner:
     def start(self):
         if self.threads:
             return
+        # Uvicorn configures its own loggers, not the root application logger.
+        # Make recovery visible without enabling HTTP request/body debug logs.
+        logging.basicConfig(level=logging.WARNING)
+        LOG.setLevel(logging.INFO)
+        LOG.info('Durable task dispatcher starting: slots=%d', self.slots)
         for index in range(self.slots):
             thread = threading.Thread(target=self.loop, daemon=True, name=f'l-durable-{index}')
             self.threads.append(thread)
@@ -116,9 +149,13 @@ class TaskRunner:
                 # No immediate RPC retry: a timed-out claim may already own a task.
                 delay = min(60, 3 * (2 ** min(failures - 1, 5)))
                 delay = min(60, delay + random.uniform(0, delay * 0.2))
+                frames = traceback.extract_tb(exc.__traceback__)
+                last = frames[-1] if frames else None
                 LOG.warning(
-                    'Durable task dispatcher unavailable: error_type=%s failures=%d retry_in=%.1fs',
+                    'Durable task dispatcher unavailable: error_type=%s failures=%d retry_in=%.1fs source=%s:%s function=%s',
                     type(exc).__name__, failures, delay,
+                    last.filename.rsplit('/', 1)[-1].rsplit('\\', 1)[-1] if last else 'unknown',
+                    last.lineno if last else 'unknown', last.name if last else 'unknown',
                 )
                 self.stop_event.wait(delay)
                 continue

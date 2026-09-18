@@ -62,12 +62,22 @@ def token(user_id, session_id=None):
     return 'Bearer '+jwt.encode({'sub':user_id,'session_id':session_id or str(uuid4())},'synthetic-test-only-key-long-enough',algorithm='HS256')
 
 
+def stub_verified_user_endpoint(monkeypatch, client):
+    # Account validation now uses REST, so mock that boundary rather than
+    # accidentally passing negative tests because Auth is unconfigured.
+    def lookup(path, payload=None, token=None, method='POST'):
+        assert path == 'user' and method == 'GET'
+        return vars(client.auth.get_user(token).user)
+    monkeypatch.setattr('core.cognition.account_access.auth_request', lookup)
+
+
 @pytest.mark.parametrize('reason',['missing','unconfirmed','anonymous','other_email','revoked','wrong_sub','missing_owner'])
 def test_auth_rejects_untrusted_or_wrong_account(monkeypatch,reason):
     user=str(uuid4()); monkeypatch.setenv('L_OWNER_EMAIL','owner@example.com')
     if reason=='missing_owner':monkeypatch.delenv('L_OWNER_EMAIL')
     client=auth_client(user,confirmed=reason!='unconfirmed',anonymous=reason=='anonymous',
                        valid_session=reason!='revoked',email='other@example.com' if reason=='other_email' else 'owner@example.com')
+    stub_verified_user_endpoint(monkeypatch, client)
     header='' if reason=='missing' else token(str(uuid4()) if reason=='wrong_sub' else user)
     with pytest.raises(HTTPException): require_account(client,header)
 
@@ -75,7 +85,9 @@ def test_auth_rejects_untrusted_or_wrong_account(monkeypatch,reason):
 def test_valid_account_and_unforgeable_task_namespace(monkeypatch):
     user=str(uuid4()); monkeypatch.setenv('L_OWNER_EMAIL','owner@example.com')
     monkeypatch.setenv('SUPABASE_SERVICE_ROLE_KEY','synthetic-key')
-    assert require_account(auth_client(user),token(user))['user_id']==user
+    client=auth_client(user)
+    stub_verified_user_endpoint(monkeypatch, client)
+    assert require_account(client,token(user))['user_id']==user
     assert account_task_token(user)==account_task_token(user)
     assert account_task_token(user)!=account_task_token(str(uuid4()))
 
@@ -84,6 +96,7 @@ def test_server_validation_failure_cannot_fall_back_to_decode(monkeypatch):
     monkeypatch.setenv('L_OWNER_EMAIL','owner@example.com')
     def fail(_):raise RuntimeError('private token details')
     client=SimpleNamespace(auth=SimpleNamespace(get_user=fail))
+    stub_verified_user_endpoint(monkeypatch, client)
     with pytest.raises(HTTPException) as error:require_account(client,token(str(uuid4())))
     assert 'private token' not in error.value.detail
 
@@ -150,8 +163,11 @@ def test_chat_tools_browser():
 
 
 @pytest.mark.parametrize('header', ['', 'Bearer forged-token'])
-def test_password_change_requires_verified_session(header):
+def test_password_change_requires_verified_session(header, monkeypatch):
     from api.server import app
+    def reject_token(*args, **kwargs):
+        raise HTTPException(400, 'Account request could not finish. Please try again.')
+    monkeypatch.setattr('core.cognition.account_access.auth_request', reject_token)
     response = TestClient(app).post('/account/password', headers={'Authorization':header},
                                     json={'password':'synthetic-new-password'})
     assert response.status_code == 401
