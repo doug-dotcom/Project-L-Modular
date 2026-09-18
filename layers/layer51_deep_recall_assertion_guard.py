@@ -82,3 +82,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer52_deep_recall_plan_outcome_guard import install as install_plan_outcome_guard
+    install_plan_outcome_guard(rhee)
