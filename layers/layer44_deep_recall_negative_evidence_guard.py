@@ -85,3 +85,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer45_deep_recall_stale_summary_quarantine import install as install_stale_summary_quarantine
+    install_stale_summary_quarantine(rhee)
