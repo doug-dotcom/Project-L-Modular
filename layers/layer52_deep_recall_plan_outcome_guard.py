@@ -75,3 +75,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer53_deep_recall_polarity_guard import install as install_polarity_guard
+    install_polarity_guard(rhee)
