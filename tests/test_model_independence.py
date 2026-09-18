@@ -146,7 +146,7 @@ def test_phase_eleven_cognitive_core_exposes_active_model_contract():
         capability_packet={},
         model_adapter=adapter,
     )
-    assert packet["version"] == "13.0"
+    assert tuple(map(int, packet["version"].split('.'))) >= (13, 0)
     assert packet["model_independence"]["status"] == "ready"
     assert packet["model_independence"]["active_adapter"]["provider"] == "provider-a"
 

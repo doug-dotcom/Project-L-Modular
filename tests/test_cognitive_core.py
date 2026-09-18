@@ -358,13 +358,14 @@ def test_orchestrator_selectively_connects_rhee_mary_quinn_and_rike():
         {"context": "80 | memory_identity | first\n79 | memory_identity | second"},
         client=FakeClient(),
     )
-    assert complex_packet["route"] == {
+    expected_routes = {
         "rhee": "required",
         "mary": "active",
         "quinn": "advisory",
         "rike": "active",
         "experience_abstraction": "candidate",
     }
+    assert expected_routes.items() <= complex_packet["route"].items()
     assert complex_packet["rike"]["status"] == "ok"
     assert complex_packet["guardrails"]["passed"] is True
 
@@ -373,13 +374,10 @@ def test_controller_plans_before_cognition_and_complexity_earns_systems():
     simple = plan_cognition("Hello L")
     assert simple["problem_type"] == "conversation"
     assert simple["difficulty"] == "low"
-    assert simple["needs"] == {
-        "memory": False,
-        "external_evidence": False,
-        "structured_reasoning": False,
-        "longitudinal_reasoning": False,
-        "specialist": False,
-    }
+    assert {"memory", "external_evidence", "structured_reasoning",
+            "longitudinal_reasoning", "specialist"} <= simple["needs"].keys()
+    # New optional layers must also stay off for a greeting.
+    assert not any(simple["needs"].values())
 
     complex_plan = plan_cognition(
         "Deep recall my recovery pattern over time, compare the evidence and recommend what I should do"

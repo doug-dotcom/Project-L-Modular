@@ -51,7 +51,7 @@ from core.cognition.benchmark import benchmark_manifest, run_cognitive_benchmark
 from core.cognition.evidence_evaluation import (
     evidence_mode, evidence_prompt, evaluate_answer, evaluation_manifest,
 )
-from core.cognition.durable_tasks import TaskStore, TaskRunner, CONTEXT as TASK_CONTEXT, checkpoint
+from core.cognition.durable_tasks import TaskStore, TaskRunner, CONTEXT as TASK_CONTEXT, checkpoint, task_database_client
 from core.cognition.account_access import require_account
 from core.cognition.document_evidence import EvidenceStore, answer_from_document
 from api.account_documents import routes as account_document_routes
@@ -403,7 +403,7 @@ def run_chat_worker(request_id, request):
             _chat_workers.discard(request_id)
 
 
-task_store = TaskStore(supabase)
+task_store = TaskStore(task_database_client(SUPABASE_URL, SUPABASE_KEY))
 
 
 def execute_durable_request(request):
