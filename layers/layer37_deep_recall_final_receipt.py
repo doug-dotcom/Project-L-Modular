@@ -80,3 +80,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer38_deep_recall_final_coverage import install as install_final_coverage
+    install_final_coverage(rhee)
