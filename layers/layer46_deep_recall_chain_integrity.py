@@ -88,3 +88,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer47_deep_recall_interpretation_firewall import install as install_interpretation_firewall
+    install_interpretation_firewall(rhee)
