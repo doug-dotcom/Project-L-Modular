@@ -115,3 +115,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer42_deep_recall_source_attribution import install as install_source_attribution
+    install_source_attribution(rhee)
