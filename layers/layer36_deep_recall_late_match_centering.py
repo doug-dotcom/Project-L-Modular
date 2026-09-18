@@ -154,3 +154,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer37_deep_recall_final_receipt import install as install_final_receipt
+    install_final_receipt(rhee)
