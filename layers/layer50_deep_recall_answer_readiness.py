@@ -113,3 +113,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer51_deep_recall_assertion_guard import install as install_assertion_guard
+    install_assertion_guard(rhee)
