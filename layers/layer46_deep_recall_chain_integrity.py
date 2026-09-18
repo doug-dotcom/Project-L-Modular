@@ -33,6 +33,7 @@ EXPECTED = {
 # when their trigger is absent. They are checked only when the request requires
 # their trigger.
 CONDITIONAL = {
+    "component_rescue",
     "time_window_rescue",
     "transition_rescue",
     "late_match_centering",
