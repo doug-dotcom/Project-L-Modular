@@ -154,3 +154,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer60_deep_recall_event_identity_guard import install as install_event_identity_guard
+    install_event_identity_guard(rhee)
