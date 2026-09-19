@@ -108,3 +108,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer58_deep_recall_excerpt_boundary_guard import install as install_excerpt_boundary_guard
+    install_excerpt_boundary_guard(rhee)
