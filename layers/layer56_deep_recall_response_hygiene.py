@@ -123,3 +123,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer57_deep_recall_gap_claim_challenge import install as install_gap_claim_challenge
+    install_gap_claim_challenge(rhee)
