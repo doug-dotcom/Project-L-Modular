@@ -127,3 +127,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer62_deep_recall_operational_filter import install as install_operational_filter
+    install_operational_filter(rhee)
