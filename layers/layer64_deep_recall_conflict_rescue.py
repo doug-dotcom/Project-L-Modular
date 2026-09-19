@@ -163,3 +163,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer65_deep_recall_evidence_freeze import install as install_evidence_freeze
+    install_evidence_freeze(rhee)
