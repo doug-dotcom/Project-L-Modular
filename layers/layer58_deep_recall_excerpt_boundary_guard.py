@@ -84,3 +84,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer59_deep_recall_excerpt_recovery import install as install_excerpt_recovery
+    install_excerpt_recovery(rhee)
