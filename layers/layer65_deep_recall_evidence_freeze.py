@@ -104,3 +104,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer66_deep_recall_composition_manifest import install as install_composition_manifest
+    install_composition_manifest(rhee)
