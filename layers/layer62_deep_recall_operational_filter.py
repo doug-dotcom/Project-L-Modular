@@ -118,3 +118,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer63_deep_recall_final_readiness_v2 import install as install_final_readiness_v2
+    install_final_readiness_v2(rhee)
