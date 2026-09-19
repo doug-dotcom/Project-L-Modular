@@ -128,3 +128,6 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    from layers.layer64_deep_recall_conflict_rescue import install as install_conflict_rescue
+    install_conflict_rescue(rhee)
