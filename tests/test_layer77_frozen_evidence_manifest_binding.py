@@ -98,7 +98,7 @@ def test_layer77_manifest_fingerprints_exact_frozen_packet_and_itself():
     manifest, rows, version = built_manifest()
     binding = verify_frozen_evidence_binding(manifest, rows)
 
-    assert version == 4
+    assert version == 5
     assert len(manifest["manifest_sha256"]) == 64
     assert len(manifest["evidence_packet_sha256"]) == 64
     assert binding["valid"] is True
@@ -241,6 +241,6 @@ def test_layer77_live_server_preflights_frozen_binding_and_passes_it_to_repair_g
     source = (root / "api" / "server.py").read_text(encoding="utf-8")
 
     assert "verify_frozen_evidence_binding(" in source
-    assert '"reason": "frozen_evidence_binding_mismatch"' in source
+    assert '"frozen_evidence_binding_mismatch"' in source
     assert "so I've withheld it. Please try again." in source
     assert "frozen_binding=frozen_evidence_binding" in source

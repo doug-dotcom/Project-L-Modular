@@ -1156,16 +1156,28 @@ RESPONSE RULES:
                 frozen_evidence_binding = verify_frozen_evidence_binding(
                     composition_manifest,
                     evidence_rows_for_prompt,
+                    query=user_message,
                 )
                 if not frozen_evidence_binding.get("valid"):
+                    query_mismatch = (
+                        "request_query_fingerprint_mismatch"
+                        in frozen_evidence_binding.get("issues", [])
+                    )
                     evidence_audit = {
                         "status": "blocked",
-                        "reason": "frozen_evidence_binding_mismatch",
+                        "reason": (
+                            "deep_recall_query_binding_mismatch"
+                            if query_mismatch
+                            else "frozen_evidence_binding_mismatch"
+                        ),
                         "frozen_evidence_binding": frozen_evidence_binding,
                     }
                     payload = {
                         "reply": (
-                            "I couldn't verify the frozen Deep Recall evidence packet "
+                            "This frozen Deep Recall packet does not match your current "
+                            "question, so I've withheld it. Please try again."
+                            if query_mismatch
+                            else "I couldn't verify the frozen Deep Recall evidence packet "
                             "for this answer, so I've withheld it. Please try again."
                         ),
                         "server": "vx",
@@ -1246,8 +1258,8 @@ RESPONSE RULES:
                 if first_coverage is not None:
                     evidence_audit["coverage"] = first_coverage
 
-                # Layers 67–77 — one bounded repair pass for citation, coverage,
-                # claim-to-quote, atomicity, consistency and receipt failures.
+                # Layers 67–78 — one bounded repair pass for citation, coverage,
+                # claim-to-quote, atomicity, consistency and bound-receipt failures.
                 # The frozen evidence set cannot widen; conflicted facts are
                 # withheld symmetrically rather than choosing a winner.
                 if (
