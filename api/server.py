@@ -1214,6 +1214,7 @@ RESPONSE RULES:
                 "content_sha256": result.get("content_sha256"),
                 "purpose": result.get("purpose"),
                 "model_id": result.get("model_id"),
+                "request_integrity": result.get("request_integrity"),
             }
             reply = result["content"]
             if check_evidence:
@@ -1350,6 +1351,7 @@ RESPONSE RULES:
                         "content_sha256": repair_result.get("content_sha256"),
                         "purpose": repair_result.get("purpose"),
                         "model_id": repair_result.get("model_id"),
+                        "request_integrity": repair_result.get("request_integrity"),
                     }
                     repair_raw_reply = repair_result["content"]
                     repaired_reply, repaired_citation_audit = evaluate_answer(
