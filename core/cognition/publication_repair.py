@@ -1,4 +1,4 @@
-"""Layers 68–82 — publication repair quality, coverage and receipt-integrity gates.
+"""Layers 68–83 — publication repair quality, coverage and receipt-integrity gates.
 
 Layer 67 gives Deep Recall one bounded regeneration attempt after the citation
 integrity gate withholds content. Layer 68 makes that retry fail-safe: a repair
@@ -46,6 +46,11 @@ request hash through publication/repair selection.
 Layer 82 binds the provider-specific transport payload to that same verified
 request. The transport receipt is privacy-safe: only hashes, model/API identity
 and verification state are retained; prompt/evidence text is not duplicated.
+
+Layer 83 binds the return path. The adapter fingerprints the actual provider
+response text immediately after the SDK call and links it to the verified
+transport receipt. Publication requires that response hash to match the exact
+raw generation draft that entered the claim/citation gates.
 """
 
 from __future__ import annotations
@@ -677,8 +682,58 @@ def publication_receipt_integrity(
                     issues.append("generation_provider_api_invalid")
                 generation_model = str(generation.get("model_id") or "")
                 transport_model = str(transport.get("model_id") or "")
-                if generation_model and transport_model != generation_model:
-                    issues.append("generation_provider_model_mismatch")
+                if not transport_model:
+                    issues.append("generation_provider_requested_model_missing")
+
+            provider_response = generation.get("provider_response")
+            if not isinstance(provider_response, dict) or not provider_response:
+                issues.append("generation_provider_response_missing")
+            else:
+                response_payload = dict(provider_response)
+                response_receipt_sha = str(
+                    response_payload.pop("receipt_sha256", "") or ""
+                )
+                if response_receipt_sha != _canonical_sha256(response_payload):
+                    issues.append("generation_provider_response_receipt_invalid")
+                if str(provider_response.get("integrity") or "") != "verified":
+                    issues.append("generation_provider_response_unverified")
+                if provider_response.get("issues"):
+                    issues.append("generation_provider_response_has_issues")
+                if (
+                    str(provider_response.get("request_sha256") or "")
+                    != generation_request
+                ):
+                    issues.append("generation_provider_response_request_mismatch")
+                if (
+                    str(provider_response.get("content_sha256") or "")
+                    != generation_output
+                ):
+                    issues.append("generation_provider_response_content_mismatch")
+                if str(provider_response.get("status") or "") != "complete":
+                    issues.append("generation_provider_response_status_invalid")
+                response_model = str(
+                    provider_response.get("returned_model") or ""
+                )
+                if generation_model and response_model != generation_model:
+                    issues.append("generation_provider_response_model_mismatch")
+                if isinstance(transport, dict) and transport:
+                    if (
+                        str(provider_response.get("transport_receipt_sha256") or "")
+                        != str(transport.get("receipt_sha256") or "")
+                    ):
+                        issues.append("generation_provider_response_transport_mismatch")
+                    if (
+                        str(provider_response.get("api") or "")
+                        != str(transport.get("api") or "")
+                    ):
+                        issues.append("generation_provider_response_api_mismatch")
+                    if (
+                        str(provider_response.get("requested_model") or "")
+                        != str(transport.get("model_id") or "")
+                    ):
+                        issues.append(
+                            "generation_provider_response_requested_model_mismatch"
+                        )
     elif expected_generation_purpose:
         issues.append("generation_receipt_missing")
 
@@ -736,7 +791,7 @@ def choose_publication_repair(
     """Keep a Layer 67 repair only when governed quality improves safely.
 
     Layer 68 remains the default behaviour when no coverage receipts are supplied.
-    With Layers 69–82 receipts, citation quality, quote-bound structural
+    With Layers 69–83 receipts, citation quality, quote-bound structural
     coverage and bounded claim-support/consistency quality must not regress;
     at least one governed dimension must strictly improve.
     """

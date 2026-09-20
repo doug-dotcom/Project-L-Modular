@@ -193,6 +193,63 @@ def _require_verified_transport(receipt: dict) -> dict:
     return receipt
 
 
+def provider_response_receipt(
+    response,
+    content: str,
+    *,
+    status: str,
+    api: str,
+    requested_model: str,
+    request_sha256: str,
+    transport_receipt: dict,
+) -> dict:
+    """Bind provider response metadata/content hash to the verified transport."""
+    content = str(content or "")
+    requested_model = str(requested_model or "")
+    returned_model = str(_get(response, "model") or requested_model)
+    transport = dict(transport_receipt or {})
+    issues = []
+
+    transport_payload = dict(transport)
+    declared_transport_sha = str(
+        transport_payload.pop("receipt_sha256", "") or ""
+    )
+    if declared_transport_sha != _canonical_sha256(transport_payload):
+        issues.append("provider_transport_receipt_invalid")
+    if str(transport.get("integrity") or "") != "verified":
+        issues.append("provider_transport_unverified")
+    if transport.get("issues"):
+        issues.append("provider_transport_has_issues")
+    if str(transport.get("request_sha256") or "") != str(request_sha256 or ""):
+        issues.append("provider_response_request_mismatch")
+    if str(transport.get("api") or "") != str(api or ""):
+        issues.append("provider_response_api_mismatch")
+    if str(transport.get("model_id") or "") != requested_model:
+        issues.append("provider_response_requested_model_mismatch")
+
+    receipt = {
+        "version": "1.0",
+        "integrity": "verified" if not issues else "mismatch",
+        "api": str(api or ""),
+        "response_id": str(_get(response, "id") or ""),
+        "requested_model": requested_model,
+        "returned_model": returned_model,
+        "status": str(status or ""),
+        "request_sha256": str(request_sha256 or ""),
+        "transport_receipt_sha256": declared_transport_sha,
+        "content_sha256": sha256(content.encode("utf-8")).hexdigest(),
+        "issues": issues,
+    }
+    receipt["receipt_sha256"] = _canonical_sha256(receipt)
+    return receipt
+
+
+def _require_verified_provider_response(receipt: dict) -> dict:
+    if receipt.get("integrity") != "verified" or receipt.get("issues"):
+        raise ValueError("provider_response_integrity_mismatch")
+    return receipt
+
+
 def build_model_request(
     messages: list[dict],
     *,
@@ -266,6 +323,46 @@ def invoke_model(adapter: ModelAdapter, request: dict) -> dict:
 
     content_sha256 = sha256(content.encode("utf-8")).hexdigest()
     receipt = dict(result.get("receipt") or {})
+    provider_response = receipt.get("provider_response")
+    if isinstance(provider_response, dict):
+        response_payload = dict(provider_response)
+        declared_response_sha = str(
+            response_payload.pop("receipt_sha256", "") or ""
+        )
+        response_issues = []
+        if declared_response_sha != _canonical_sha256(response_payload):
+            response_issues.append("provider_response_receipt_invalid")
+        if str(provider_response.get("integrity") or "") != "verified":
+            response_issues.append("provider_response_unverified")
+        if provider_response.get("issues"):
+            response_issues.append("provider_response_has_issues")
+        if str(provider_response.get("request_sha256") or "") != actual_request_sha256:
+            response_issues.append("provider_response_request_mismatch")
+        if str(provider_response.get("content_sha256") or "") != content_sha256:
+            response_issues.append("provider_response_content_mismatch")
+        result_status = str(result.get("status") or "complete")
+        if str(provider_response.get("status") or "") != result_status:
+            response_issues.append("provider_response_status_mismatch")
+        result_model = str(
+            result.get("model_id") or getattr(adapter, "model_id", "unknown")
+        )
+        if (
+            str(provider_response.get("returned_model") or "")
+            and str(provider_response.get("returned_model") or "") != result_model
+        ):
+            response_issues.append("provider_response_model_mismatch")
+        transport = receipt.get("provider_transport")
+        if isinstance(transport, dict):
+            if (
+                str(provider_response.get("transport_receipt_sha256") or "")
+                != str(transport.get("receipt_sha256") or "")
+            ):
+                response_issues.append("provider_response_transport_mismatch")
+        else:
+            response_issues.append("provider_response_transport_missing")
+        if response_issues:
+            raise ValueError("provider_response_integrity_mismatch")
+
     receipt.update({
         "request_sha256": actual_request_sha256,
         "content_sha256": content_sha256,
@@ -406,9 +503,21 @@ class OpenAIChatCompletionsAdapter:
         choice = response.choices[0]
         finish = _get(choice, "finish_reason", "stop")
         status = "complete" if finish == "stop" and not _get(choice.message, "refusal") else "incomplete"
+        provider_content = choice.message.content or ""
+        response_receipt = _require_verified_provider_response(
+            provider_response_receipt(
+                response,
+                provider_content,
+                status=status,
+                api="chat_completions",
+                requested_model=self.model_id,
+                request_sha256=str(request.get("request_sha256") or ""),
+                transport_receipt=transport,
+            )
+        )
         return {
             "status": status,
-            "content": choice.message.content or "",
+            "content": provider_content,
             "provider": self.provider,
             "model_id": _get(response, "model") or self.model_id,
             "receipt": {
@@ -420,6 +529,7 @@ class OpenAIChatCompletionsAdapter:
                     started=started,
                 ),
                 "provider_transport": transport,
+                "provider_response": response_receipt,
             },
         }
 
@@ -468,9 +578,21 @@ class OpenAIResponsesAdapter:
             status = "refused"
         if any(_get(item, "type") not in {"message", "reasoning"} for item in outputs):
             status = "unsupported_output"
+        provider_content = _get(response, "output_text", "") or ""
+        response_receipt = _require_verified_provider_response(
+            provider_response_receipt(
+                response,
+                provider_content,
+                status=status,
+                api="responses",
+                requested_model=self.model_id,
+                request_sha256=str(request.get("request_sha256") or ""),
+                transport_receipt=transport,
+            )
+        )
         return {
             "status": status,
-            "content": _get(response, "output_text", "") or "",
+            "content": provider_content,
             "provider": self.provider,
             "model_id": _get(response, "model") or self.model_id,
             "receipt": {
@@ -485,6 +607,7 @@ class OpenAIResponsesAdapter:
                     ),
                 ),
                 "provider_transport": transport,
+                "provider_response": response_receipt,
             },
         }
 
@@ -570,5 +693,6 @@ __all__ = [
     "model_request_sha256",
     "provider_payload_sha256",
     "provider_transport_receipt",
+    "provider_response_receipt",
     "invoke_model",
 ]
