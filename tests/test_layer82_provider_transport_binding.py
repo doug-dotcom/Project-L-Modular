@@ -85,6 +85,31 @@ def valid_transport(*, request_hash="d" * 64, model_id="gpt-6-astra"):
     return receipt
 
 
+def valid_provider_response(
+    transport,
+    *,
+    requested_model="gpt-6-astra",
+    returned_model="gpt-6-astra",
+    request_hash="d" * 64,
+    content_hash="e" * 64,
+):
+    receipt = {
+        "version": "1.0",
+        "integrity": "verified",
+        "api": "responses",
+        "response_id": "resp_fixture",
+        "requested_model": requested_model,
+        "returned_model": returned_model,
+        "status": "complete",
+        "request_sha256": request_hash,
+        "transport_receipt_sha256": transport["receipt_sha256"],
+        "content_sha256": content_hash,
+        "issues": [],
+    }
+    receipt["receipt_sha256"] = canonical(receipt)
+    return receipt
+
+
 def test_layer82_chat_transport_receipt_hashes_exact_sdk_payload():
     seen = {}
 
@@ -317,7 +342,13 @@ def test_layer82_publication_rejects_transport_from_different_request():
 
 def test_layer82_publication_rejects_transport_model_mismatch():
     generation = generation_without_transport()
-    generation["provider_transport"] = valid_transport(model_id="gpt-5.6-sol")
+    transport = valid_transport(model_id="gpt-5.6-sol")
+    generation["provider_transport"] = transport
+    generation["provider_response"] = valid_provider_response(
+        transport,
+        requested_model="gpt-6-astra",
+        returned_model="gpt-6-astra",
+    )
 
     receipt = publication_receipt_integrity(
         "reply",
@@ -329,7 +360,10 @@ def test_layer82_publication_rejects_transport_model_mismatch():
     )
 
     assert receipt["valid"] is False
-    assert "generation_provider_model_mismatch" in receipt["issues"]
+    assert (
+        "generation_provider_response_requested_model_mismatch"
+        in receipt["issues"]
+    )
 
 
 def test_layer82_nested_invoke_preserves_transport_receipt():
@@ -374,5 +408,5 @@ def test_layer82_evaluation_manifest_exposes_provider_transport_binding():
         / "evidence_evaluation.py"
     ).read_text(encoding="utf-8")
 
-    assert 'VERSION = "2.2"' in source
+    assert 'VERSION = "2.3"' in source
     assert '"provider_transport_payload_binding"' in source
