@@ -43,11 +43,25 @@ def install(rhee):
             parts = [subject] if subject else [rhee.safe_text(query)]
 
         coverage = {}
+        component_sources = {}
         represented = []
         thin = []
         for part in parts:
-            supporting = sum(1 for item in evidence if score_item(item, part) > 0)
+            supporting_items = []
+            sources = []
+            seen_sources = set()
+            for item in evidence:
+                if score_item(item, part) <= 0:
+                    continue
+                supporting_items.append(item)
+                source = rhee.safe_text(item.get("source")).strip()
+                if source and source not in seen_sources:
+                    sources.append(source)
+                    seen_sources.add(source)
+
+            supporting = len(supporting_items)
             coverage[part] = supporting
+            component_sources[part] = sources[:40]
             if supporting >= MIN_SUPPORTING_ITEMS:
                 represented.append(part)
             else:
@@ -57,6 +71,7 @@ def install(rhee):
         plan.update({
             "deep_recall_final_coverage": "reconciled",
             "deep_recall_final_component_coverage": coverage,
+            "deep_recall_final_component_sources": component_sources,
             "deep_recall_final_represented_parts": represented,
             "deep_recall_final_thin_parts": thin,
             "deep_recall_final_coverage_complete": not thin,
@@ -71,7 +86,7 @@ def install(rhee):
             state = "REPRESENTED" if part in represented else "THIN"
             lines.append(f"- {state}: {part} ({coverage.get(part, 0)} supporting evidence item(s) by retrieval scoring)")
         lines.extend([
-            "A REPRESENTED component still requires claim-level evidence checking; count alone does not prove every detail.",
+            "A REPRESENTED component still requires claim-level evidence checking; count alone does not prove every detail. Its supporting source IDs are retained for the final publication gate.",
             "A THIN component means this completed retrieval did not establish enough evidence for that requested part. It does NOT mean the memory was never stored or the event never happened.",
             "Compose the supported answer fully, and identify only the remaining genuinely thin requested parts rather than repeating gaps that later rescue passes have already filled.",
         ])
