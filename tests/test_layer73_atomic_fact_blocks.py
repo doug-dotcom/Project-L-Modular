@@ -175,7 +175,7 @@ def test_layer73_checker_prompt_defines_atomicity_narrowly():
     evaluate_claim_support(raw, audit(quote), adapter)
     system = adapter.requests[0]["messages"][0]["content"]
 
-    assert "multiple details of the same event/entity" in system
+    assert "attributes of the same event/entity" in system
     assert "materially independent factual propositions" in system
     assert '"atomicity":"atomic|compound"' in system
 
