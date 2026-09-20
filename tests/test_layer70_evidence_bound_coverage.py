@@ -248,7 +248,7 @@ def test_layer70_manifest_recomputes_bindings_from_actual_frozen_packet():
     packet = rhee.build_context_packet("Deep recall my recovery timeline")
     manifest = packet["recall_plan"]["deep_recall_composition_manifest_data"]
 
-    assert packet["recall_plan"]["deep_recall_composition_manifest_version"] == 4
+    assert packet["recall_plan"]["deep_recall_composition_manifest_version"] == 5
     assert manifest["freeze_state"] == "frozen"
     assert manifest["part_sources"]["recovery timeline"] == [
         "raw_catchall:1",
