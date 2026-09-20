@@ -1217,10 +1217,10 @@ RESPONSE RULES:
                 if first_coverage is not None:
                     evidence_audit["coverage"] = first_coverage
 
-                # Layers 67–72 — one bounded repair pass for citation, coverage
-                # or claim-to-quote alignment failures. The frozen evidence set
-                # cannot widen, and semantically failed fact blocks are converted
-                # to explicit unknowns before coverage is measured or published.
+                # Layers 67–74 — one bounded repair pass for citation, coverage,
+                # claim-to-quote, atomicity or cross-block consistency failures.
+                # The frozen evidence set cannot widen; conflicted facts are
+                # withheld symmetrically rather than choosing a winner.
                 if (
                     (
                         evidence_audit.get("status") in {"partial", "blocked"}
@@ -1254,6 +1254,7 @@ RESPONSE RULES:
                             or item.get("atomicity") == "compound"
                         )
                     ]
+                    cross_block_conflicts = list(first_support.get("conflicts", []))
                     first_reply = reply
                     first_audit = dict(evidence_audit)
                     repair_request = build_model_request(
@@ -1273,8 +1274,13 @@ RESPONSE RULES:
                                     + json.dumps(failed_checks, ensure_ascii=False)
                                     + "\nMissing represented parts after first-pass publication: "
                                     + json.dumps(missing_coverage, ensure_ascii=False)
-                                    + "\nClaim-to-quote alignment failures: "
+                                    + "\nClaim-to-quote/alignment failures: "
                                     + json.dumps(failed_support, ensure_ascii=False)
+                                    + "\nCross-block conflicts requiring reconciliation: "
+                                    + json.dumps(cross_block_conflicts, ensure_ascii=False)
+                                    + "\nWhen two supported records conflict on the same event/proposition, do not "
+                                      "silently pick one. Preserve the conflict explicitly or narrow the claim so "
+                                      "each block states only what its own evidence establishes. "
                                     + "\nPreserve the covers arrays required by the Deep Recall coverage receipt. "
                                       "For each covers label, cite an exact quote from a frozen evidence excerpt "
                                       "that actually supports that represented part. Every material factual clause "
@@ -1333,6 +1339,7 @@ RESPONSE RULES:
                     evidence_audit["first_pass_failed_blocks"] = len(failed_checks)
                     evidence_audit["first_pass_missing_parts"] = missing_coverage
                     evidence_audit["first_pass_claim_support_failures"] = len(failed_support)
+                    evidence_audit["first_pass_cross_block_conflicts"] = len(cross_block_conflicts)
             reply = ensure_architecture_audit_grounding(
                 user_message,
                 reply,

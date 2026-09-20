@@ -13,7 +13,7 @@ import unicodedata
 
 from core.cognition.cue_driven_memory import assess_present_cue
 
-VERSION = "1.4"
+VERSION = "1.5"
 MAX_BLOCKS = 40
 MAX_CITATIONS = 8
 SOURCE = re.compile(r"[a-z][a-z0-9_]*:[A-Za-z0-9_-]+\Z")
@@ -74,7 +74,9 @@ Each fact block must have supporting evidence for its whole text and should cont
 one independently verifiable proposition or one coherent event/entity claim. Split
 materially independent facts into separate blocks even when both are supported.
 A valid quote alone does not prove your interpretation: check its meaning.
-Use kind=inference for an explicitly tentative interpretation, and cite its basis
+Across fact blocks, do not silently publish mutually incompatible claims about the
+same event/proposition/time scope. Preserve genuine conflicts instead of choosing
+a winner without evidence. Use kind=inference for an explicitly tentative interpretation, and cite its basis
 when available. Use kind=unknown to admit a gap. Use kind=conversation for greetings,
 general explanations, and reasoning about a hypothetical supplied in the question.
 Do not relabel a personal fact as conversation or inference to evade citation checks.
@@ -182,7 +184,8 @@ def evaluation_manifest() -> dict:
             "checks": ["answer_schema", "table_and_id", "retrieved_source_membership",
                        "quotation_in_exact_source", "user_record_support", "missing_citation",
                        "bounded_claim_to_validated_quote_alignment",
-                       "atomic_fact_block_structure"],
+                       "atomic_fact_block_structure",
+                       "cross_block_factual_consistency"],
             "not_certified": ["semantic_truth", "independent_fact_verification",
                               "complete_recall", "durable_task_recovery"],
             "scores_require_executed_cases": True,
