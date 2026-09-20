@@ -13,7 +13,7 @@ import unicodedata
 
 from core.cognition.cue_driven_memory import assess_present_cue
 
-VERSION = "1.8"
+VERSION = "1.9"
 MAX_BLOCKS = 40
 MAX_CITATIONS = 8
 SOURCE = re.compile(r"[a-z][a-z0-9_]*:[A-Za-z0-9_-]+\Z")
@@ -188,7 +188,8 @@ def evaluation_manifest() -> dict:
                        "cross_block_factual_consistency",
                        "repair_claim_support_nonregression",
                        "cryptographic_publication_receipt_binding",
-                       "frozen_evidence_manifest_binding"],
+                       "frozen_evidence_manifest_binding",
+                       "deep_recall_exact_query_binding"],
             "not_certified": ["semantic_truth", "independent_fact_verification",
                               "complete_recall", "durable_task_recovery"],
             "scores_require_executed_cases": True,
