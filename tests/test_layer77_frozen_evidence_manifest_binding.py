@@ -98,7 +98,7 @@ def test_layer77_manifest_fingerprints_exact_frozen_packet_and_itself():
     manifest, rows, version = built_manifest()
     binding = verify_frozen_evidence_binding(manifest, rows)
 
-    assert version == 4
+    assert version == 5
     assert len(manifest["manifest_sha256"]) == 64
     assert len(manifest["evidence_packet_sha256"]) == 64
     assert binding["valid"] is True
