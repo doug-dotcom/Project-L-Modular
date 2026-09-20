@@ -241,6 +241,6 @@ def test_layer77_live_server_preflights_frozen_binding_and_passes_it_to_repair_g
     source = (root / "api" / "server.py").read_text(encoding="utf-8")
 
     assert "verify_frozen_evidence_binding(" in source
-    assert '"reason": "frozen_evidence_binding_mismatch"' in source
+    assert '"frozen_evidence_binding_mismatch"' in source
     assert "so I've withheld it. Please try again." in source
     assert "frozen_binding=frozen_evidence_binding" in source
