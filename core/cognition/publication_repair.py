@@ -57,9 +57,7 @@ def coverage_contract(manifest: dict | None) -> str:
         return "DEEP RECALL COVERAGE RECEIPT: no represented parts require structural coverage labelling."
 
     raw_bindings = manifest.get("part_sources")
-    binding_available = isinstance(raw_bindings, dict) and all(
-        part in raw_bindings for part in represented
-    )
+    binding_available = isinstance(raw_bindings, dict)
     bindings = {
         part: _unique_parts(raw_bindings.get(part))[:20]
         for part in represented
@@ -99,9 +97,7 @@ def evaluate_publication_coverage(
     manifest = dict(manifest or {})
     expected = _unique_parts(manifest.get("represented_parts"))
     raw_bindings = manifest.get("part_sources")
-    binding_available = isinstance(raw_bindings, dict) and all(
-        part in raw_bindings for part in expected
-    )
+    binding_available = isinstance(raw_bindings, dict)
     allowed_sources = {
         part: set(_unique_parts(raw_bindings.get(part)))
         for part in expected
