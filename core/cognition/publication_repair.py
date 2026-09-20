@@ -1,4 +1,4 @@
-"""Layers 68–81 — publication repair quality, coverage and receipt-integrity gates.
+"""Layers 68–82 — publication repair quality, coverage and receipt-integrity gates.
 
 Layer 67 gives Deep Recall one bounded regeneration attempt after the citation
 integrity gate withholds content. Layer 68 makes that retry fail-safe: a repair
@@ -42,6 +42,10 @@ Layer 81 binds that request to the exact Deep Recall prompt composition. The
 system message must physically contain the frozen evidence contract and coverage
 contract exactly once, and the resulting prompt binding travels inside Layer 80's
 request hash through publication/repair selection.
+
+Layer 82 binds the provider-specific transport payload to that same verified
+request. The transport receipt is privacy-safe: only hashes, model/API identity
+and verification state are retained; prompt/evidence text is not duplicated.
 """
 
 from __future__ import annotations
@@ -647,6 +651,34 @@ def publication_receipt_integrity(
                     issues.append("generation_prompt_binding_mismatch")
                 if str(generation_binding.get("status") or "") != "verified":
                     issues.append("generation_prompt_binding_unverified")
+
+            transport = generation.get("provider_transport")
+            if not isinstance(transport, dict) or not transport:
+                issues.append("generation_provider_transport_missing")
+            else:
+                transport_payload = dict(transport)
+                transport_receipt_sha = str(
+                    transport_payload.pop("receipt_sha256", "") or ""
+                )
+                if transport_receipt_sha != _canonical_sha256(transport_payload):
+                    issues.append("generation_provider_transport_receipt_invalid")
+                if str(transport.get("integrity") or "") != "verified":
+                    issues.append("generation_provider_transport_unverified")
+                if transport.get("issues"):
+                    issues.append("generation_provider_transport_has_issues")
+                if str(transport.get("request_sha256") or "") != generation_request:
+                    issues.append("generation_provider_transport_request_mismatch")
+                if len(str(transport.get("payload_sha256") or "")) != 64:
+                    issues.append("generation_provider_payload_hash_invalid")
+                if str(transport.get("api") or "") not in {
+                    "responses",
+                    "chat_completions",
+                }:
+                    issues.append("generation_provider_api_invalid")
+                generation_model = str(generation.get("model_id") or "")
+                transport_model = str(transport.get("model_id") or "")
+                if generation_model and transport_model != generation_model:
+                    issues.append("generation_provider_model_mismatch")
     elif expected_generation_purpose:
         issues.append("generation_receipt_missing")
 
@@ -704,7 +736,7 @@ def choose_publication_repair(
     """Keep a Layer 67 repair only when governed quality improves safely.
 
     Layer 68 remains the default behaviour when no coverage receipts are supplied.
-    With Layers 69–81 receipts, citation quality, quote-bound structural
+    With Layers 69–82 receipts, citation quality, quote-bound structural
     coverage and bounded claim-support/consistency quality must not regress;
     at least one governed dimension must strictly improve.
     """

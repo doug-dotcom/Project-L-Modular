@@ -52,6 +52,147 @@ def model_request_sha256(request: dict | None) -> str:
     ).hexdigest()
 
 
+def _canonical_sha256(value) -> str:
+    return sha256(
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def provider_payload_sha256(payload: dict | None) -> str:
+    """Hash the exact provider transport payload without storing prompt text."""
+    return _canonical_sha256(dict(payload or {}))
+
+
+def _responses_inputs(request: dict, capabilities: dict) -> list[dict]:
+    inputs = []
+    for message in request["messages"]:
+        if message["role"] == "tool":
+            raise ValueError("tool_messages_not_supported_by_l_adapter")
+        content = message["content"]
+        if isinstance(content, list):
+            parts = []
+            for part in content:
+                if part.get("type") == "text":
+                    parts.append({"type": "input_text", "text": part["text"]})
+                elif (
+                    part.get("type") == "image_url"
+                    and capabilities["images"]
+                    and message["role"] == "user"
+                ):
+                    image = part["image_url"]
+                    parts.append({
+                        "type": "input_image",
+                        "image_url": image["url"],
+                        "detail": image.get("detail", "auto"),
+                    })
+                else:
+                    raise ValueError("unsupported_model_content")
+            content = parts
+        inputs.append({"role": message["role"], "content": content})
+    return inputs
+
+
+def _responses_format(request: dict) -> dict | None:
+    fmt = request.get("response_format")
+    if not fmt:
+        return None
+    fmt = dict(fmt)
+    if fmt["type"] == "json_schema":
+        return {"type": "json_schema", **fmt["json_schema"]}
+    return fmt
+
+
+def provider_transport_receipt(
+    request: dict,
+    payload: dict,
+    *,
+    api: str,
+    model_id: str,
+    reasoning_effort: str | None = None,
+) -> dict:
+    """Verify provider translation and return a privacy-safe transport receipt."""
+    payload = dict(payload or {})
+    capabilities = model_capabilities(model_id)
+    issues = []
+
+    if payload.get("model") != model_id:
+        issues.append("provider_model_mismatch")
+    if payload.get("store") is not False:
+        issues.append("provider_store_not_disabled")
+
+    if api == "chat_completions":
+        if payload.get("messages") != request.get("messages"):
+            issues.append("provider_messages_mismatch")
+        expected_token_key = (
+            "max_completion_tokens" if capabilities["reasoning"] else "max_tokens"
+        )
+        expected_tokens = request.get("max_output_tokens")
+        if expected_tokens is None:
+            if "max_tokens" in payload or "max_completion_tokens" in payload:
+                issues.append("provider_token_limit_unexpected")
+        elif payload.get(expected_token_key) != expected_tokens:
+            issues.append("provider_token_limit_mismatch")
+        other_token_key = (
+            "max_tokens" if expected_token_key == "max_completion_tokens"
+            else "max_completion_tokens"
+        )
+        if other_token_key in payload:
+            issues.append("provider_token_key_mismatch")
+        if capabilities["supports_temperature"]:
+            if payload.get("temperature") != request.get("temperature"):
+                issues.append("provider_temperature_mismatch")
+        elif "temperature" in payload:
+            issues.append("provider_temperature_unsupported")
+        if payload.get("response_format") != request.get("response_format"):
+            issues.append("provider_response_format_mismatch")
+
+    elif api == "responses":
+        if payload.get("input") != _responses_inputs(request, capabilities):
+            issues.append("provider_input_mismatch")
+        expected_tokens = request.get("max_output_tokens", 8192)
+        if payload.get("max_output_tokens") != expected_tokens:
+            issues.append("provider_token_limit_mismatch")
+        if capabilities["reasoning"]:
+            if payload.get("reasoning") != {"effort": reasoning_effort}:
+                issues.append("provider_reasoning_mismatch")
+            if "temperature" in payload:
+                issues.append("provider_temperature_unsupported")
+        elif capabilities["supports_temperature"]:
+            if payload.get("temperature") != request.get("temperature"):
+                issues.append("provider_temperature_mismatch")
+        expected_fmt = _responses_format(request)
+        expected_text = {"format": expected_fmt} if expected_fmt else None
+        if payload.get("text") != expected_text:
+            issues.append("provider_response_format_mismatch")
+    else:
+        issues.append("provider_api_unsupported")
+
+    receipt = {
+        "version": "1.0",
+        "integrity": "verified" if not issues else "mismatch",
+        "api": api,
+        "model_id": model_id,
+        "request_sha256": str(
+            request.get("request_sha256") or model_request_sha256(request)
+        ),
+        "payload_sha256": provider_payload_sha256(payload),
+        "issues": issues,
+    }
+    receipt["receipt_sha256"] = _canonical_sha256(receipt)
+    return receipt
+
+
+def _require_verified_transport(receipt: dict) -> dict:
+    if receipt.get("integrity") != "verified" or receipt.get("issues"):
+        raise ValueError("provider_transport_integrity_mismatch")
+    return receipt
+
+
 def build_model_request(
     messages: list[dict],
     *,
@@ -252,6 +393,14 @@ class OpenAIChatCompletionsAdapter:
             options["max_completion_tokens" if capabilities["reasoning"] else "max_tokens"] = request["max_output_tokens"]
         if request.get("response_format"):
             options["response_format"] = request["response_format"]
+        transport = _require_verified_transport(
+            provider_transport_receipt(
+                request,
+                options,
+                api="chat_completions",
+                model_id=self.model_id,
+            )
+        )
         started = monotonic()
         response = self.client.chat.completions.create(**options)
         choice = response.choices[0]
@@ -262,7 +411,16 @@ class OpenAIChatCompletionsAdapter:
             "content": choice.message.content or "",
             "provider": self.provider,
             "model_id": _get(response, "model") or self.model_id,
-            "receipt": model_receipt(response, model_id=self.model_id, api="chat_completions", status=status, started=started),
+            "receipt": {
+                **model_receipt(
+                    response,
+                    model_id=self.model_id,
+                    api="chat_completions",
+                    status=status,
+                    started=started,
+                ),
+                "provider_transport": transport,
+            },
         }
 
 
@@ -281,34 +439,27 @@ class OpenAIResponsesAdapter:
             raise ValueError("unsupported_reasoning_effort")
 
     def generate(self, request: dict) -> dict:
-        inputs = []
-        for message in request["messages"]:
-            if message["role"] == "tool":
-                raise ValueError("tool_messages_not_supported_by_l_adapter")
-            content = message["content"]
-            if isinstance(content, list):
-                parts = []
-                for part in content:
-                    if part.get("type") == "text":
-                        parts.append({"type": "input_text", "text": part["text"]})
-                    elif part.get("type") == "image_url" and self.capabilities["images"] and message["role"] == "user":
-                        image = part["image_url"]
-                        parts.append({"type": "input_image", "image_url": image["url"], "detail": image.get("detail", "auto")})
-                    else:
-                        raise ValueError("unsupported_model_content")
-                content = parts
-            inputs.append({"role": message["role"], "content": content})
+        inputs = _responses_inputs(request, self.capabilities)
         options = {"model": self.model_id, "input": inputs, "store": False,
                    "max_output_tokens": request.get("max_output_tokens", 8192)}
         if self.capabilities["reasoning"]:
             options["reasoning"] = {"effort": self.reasoning_effort}
         elif self.capabilities["supports_temperature"]:
             options["temperature"] = request["temperature"]
-        fmt = request.get("response_format")
+        fmt = _responses_format(request)
         if fmt:
-            if fmt["type"] == "json_schema":
-                fmt = {"type": "json_schema", **fmt["json_schema"]}
             options["text"] = {"format": fmt}
+        transport = _require_verified_transport(
+            provider_transport_receipt(
+                request,
+                options,
+                api="responses",
+                model_id=self.model_id,
+                reasoning_effort=(
+                    self.reasoning_effort if self.capabilities["reasoning"] else None
+                ),
+            )
+        )
         started = monotonic()
         response = self.client.responses.create(**options)
         status = "complete" if _get(response, "status") == "completed" else str(_get(response, "status") or "incomplete")
@@ -317,10 +468,25 @@ class OpenAIResponsesAdapter:
             status = "refused"
         if any(_get(item, "type") not in {"message", "reasoning"} for item in outputs):
             status = "unsupported_output"
-        return {"status": status, "content": _get(response, "output_text", "") or "",
-                "provider": self.provider, "model_id": _get(response, "model") or self.model_id,
-                "receipt": model_receipt(response, model_id=self.model_id, api="responses", status=status,
-                                         started=started, effort=self.reasoning_effort if self.capabilities["reasoning"] else None)}
+        return {
+            "status": status,
+            "content": _get(response, "output_text", "") or "",
+            "provider": self.provider,
+            "model_id": _get(response, "model") or self.model_id,
+            "receipt": {
+                **model_receipt(
+                    response,
+                    model_id=self.model_id,
+                    api="responses",
+                    status=status,
+                    started=started,
+                    effort=(
+                        self.reasoning_effort if self.capabilities["reasoning"] else None
+                    ),
+                ),
+                "provider_transport": transport,
+            },
+        }
 
 
 def create_model_adapter(client, model_id, *, api="auto", reasoning_effort="low"):
@@ -402,5 +568,7 @@ __all__ = [
     "build_model_independence_packet",
     "build_model_request",
     "model_request_sha256",
+    "provider_payload_sha256",
+    "provider_transport_receipt",
     "invoke_model",
 ]

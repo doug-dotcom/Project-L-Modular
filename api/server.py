@@ -1246,6 +1246,9 @@ RESPONSE RULES:
                 "model_id": result.get("model_id"),
                 "request_integrity": result.get("request_integrity"),
                 "context_binding": result.get("context_binding"),
+                "provider_transport": dict(
+                    (result.get("receipt") or {}).get("provider_transport") or {}
+                ),
             }
             reply = result["content"]
             if check_evidence:
@@ -1297,7 +1300,7 @@ RESPONSE RULES:
                     evidence_audit["coverage"] = first_coverage
                 evidence_audit["generation"] = first_generation_receipt
 
-                # Layers 67–81 — one bounded repair pass for citation, coverage,
+                # Layers 67–82 — one bounded repair pass for citation, coverage,
                 # claim-to-quote, atomicity, consistency and bound-receipt failures.
                 # The frozen evidence set cannot widen; conflicted facts are
                 # withheld symmetrically rather than choosing a winner.
@@ -1385,6 +1388,11 @@ RESPONSE RULES:
                         "model_id": repair_result.get("model_id"),
                         "request_integrity": repair_result.get("request_integrity"),
                         "context_binding": repair_result.get("context_binding"),
+                        "provider_transport": dict(
+                            (repair_result.get("receipt") or {}).get(
+                                "provider_transport"
+                            ) or {}
+                        ),
                     }
                     repair_raw_reply = repair_result["content"]
                     repaired_reply, repaired_citation_audit = evaluate_answer(
