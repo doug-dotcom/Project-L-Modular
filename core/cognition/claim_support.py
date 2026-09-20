@@ -1,4 +1,4 @@
-"""Layer 72 — bounded claim-to-quote alignment gate.
+"""Layers 72–73 — bounded claim-to-quote alignment and atomicity gate.
 
 Layers 70–71 prove that a Deep Recall block covers the right requested part
 with a validated quote from the right frozen evidence excerpt. They still do
@@ -11,7 +11,12 @@ unsupported or contradicted. Partial/unsupported/contradicted fact blocks are
 converted to an explicit unknown before publication and before coverage is
 measured.
 
-This is a claim/quote alignment check, not independent truth certification.
+Layer 73 uses the same bounded pass to classify whether each factual block is
+atomic or compound. A block is compound only when it bundles materially
+independent factual propositions that should be separately verifiable; multiple
+details about one event/entity may remain atomic.
+
+This is a claim/quote alignment and structure check, not independent truth certification.
 """
 from __future__ import annotations
 
@@ -24,6 +29,7 @@ from core.cognition.model_independence import build_model_request, invoke_model
 
 BLOCKING_VERDICTS = {"partial", "unsupported", "contradicted"}
 ALLOWED_VERDICTS = {"supported", *BLOCKING_VERDICTS}
+ALLOWED_ATOMICITY = {"atomic", "compound"}
 
 
 def _raw_blocks(raw: str) -> list[dict]:
@@ -107,13 +113,14 @@ def evaluate_claim_support(
     """
     candidates = build_claim_support_payload(raw, evidence_audit)
     audit = {
-        "version": "1.0",
+        "version": "2.0",
         "status": "not_required" if not candidates else "unavailable",
         "checked_blocks": len(candidates),
         "failed_blocks": [],
+        "compound_blocks": [],
         "checks": [],
         "independent_truth_certification": False,
-        "scope": "claim_to_validated_quote_alignment_only",
+        "scope": "claim_to_validated_quote_alignment_and_atomicity",
     }
     if not candidates:
         return audit
@@ -130,9 +137,18 @@ For each block classify the WHOLE factual claim:
 
 Paraphrase is allowed when meaning is preserved. Dates, numbers, negation,
 speaker identity, plan-vs-outcome status and causal wording must not be silently
-strengthened. Return JSON only:
+strengthened.
+
+Also classify ATOMICITY:
+- atomic: one independently verifiable factual proposition, including multiple
+  attributes of the same event/entity when they rise or fall together.
+- compound: two or more materially independent factual propositions that could
+  be true or false separately and should be split into separate fact blocks.
+
+Do not call a single event with its date/place/status compound merely because it
+has several details. Return JSON only:
 {"blocks":[{"block":1,"verdict":"supported|partial|unsupported|contradicted",
-"reason":"brief evidence-only reason"}]}.
+"atomicity":"atomic|compound","reason":"brief evidence-only reason"}]}.
 Do not rewrite the answer and do not add facts."""
 
     request = build_model_request(
@@ -171,9 +187,13 @@ Do not rewrite the answer and do not add facts."""
             verdict = str(item.get("verdict") or "").strip().lower()
             if verdict not in ALLOWED_VERDICTS:
                 continue
+            atomicity = str(item.get("atomicity") or "").strip().lower()
+            if atomicity not in ALLOWED_ATOMICITY:
+                atomicity = "unavailable"
             by_block[number] = {
                 "block": number,
                 "verdict": verdict,
+                "atomicity": atomicity,
                 "reason": str(item.get("reason") or "")[:500],
             }
 
@@ -186,20 +206,36 @@ Do not rewrite the answer and do not add facts."""
                 item = {
                     "block": number,
                     "verdict": "unavailable",
+                    "atomicity": "unavailable",
                     "reason": "checker_returned_no_valid_verdict",
                 }
             checks.append(item)
             if item["verdict"] in BLOCKING_VERDICTS:
                 failed.append(number)
 
+        compound = [
+            item["block"]
+            for item in checks
+            if item.get("atomicity") == "compound"
+        ]
+        atomicity_missing = [
+            item for item in checks if item.get("atomicity") == "unavailable"
+        ]
         missing = [item for item in checks if item["verdict"] == "unavailable"]
+        failed_union = list(dict.fromkeys(failed + compound))
         audit.update(
             status=(
                 "unavailable" if missing
-                else "partial" if failed
+                else "partial" if failed_union
                 else "passed"
             ),
-            failed_blocks=failed,
+            failed_blocks=failed_union,
+            compound_blocks=compound,
+            atomicity_status=(
+                "unavailable" if atomicity_missing
+                else "partial" if compound
+                else "passed"
+            ),
             checks=checks,
             model_id=result.get("model_id"),
         )
@@ -214,13 +250,17 @@ Do not rewrite the answer and do not add facts."""
 
 def apply_claim_support_gate(raw: str, support_audit: dict | None) -> str:
     """Convert only semantically failed fact blocks into explicit unknowns."""
-    failed = {
-        int(item.get("block")): str(item.get("verdict") or "")
-        for item in (support_audit or {}).get("checks", [])
-        if isinstance(item, dict)
-        and item.get("verdict") in BLOCKING_VERDICTS
-        and str(item.get("block") or "").isdigit()
-    }
+    failed = {}
+    for item in (support_audit or {}).get("checks", []):
+        if not isinstance(item, dict) or not str(item.get("block") or "").isdigit():
+            continue
+        number = int(item.get("block"))
+        verdict = str(item.get("verdict") or "")
+        atomicity = str(item.get("atomicity") or "")
+        if verdict in BLOCKING_VERDICTS:
+            failed[number] = verdict
+        elif atomicity == "compound":
+            failed[number] = "compound"
     if not failed:
         return raw
 
@@ -242,6 +282,8 @@ def apply_claim_support_gate(raw: str, support_audit: dict | None) -> str:
             text = "The cited passage conflicts with this claim, so I have withheld it."
         elif verdict == "partial":
             text = "The cited passage supports only part of this claim, so I have withheld the whole claim."
+        elif verdict == "compound":
+            text = "This fact block bundles multiple independently verifiable claims, so I have withheld it until those claims are split."
         else:
             text = "The cited passage does not establish this claim, so I have withheld it."
         revised.append({
