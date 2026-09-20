@@ -64,6 +64,12 @@ except Exception:
 # Retrieval intent repair. Rhee's FTS is deliberately lexical, so broad human
 # concepts are expanded before candidate search. This layer handles historical
 # cutoffs, schooling/education, and career/employment history.
+#
+# sitecustomize is also imported by Python during early venv/pip startup, before
+# Project L's pinned dependencies are necessarily available. Dependent recall
+# layers must not run unless the Rhee bootstrap import actually succeeded.
+_rhee = None
+_re = None
 try:
     import re as _re
     import agents.rhee.rhee_v3 as _rhee
@@ -182,12 +188,15 @@ try:
     _rhee.exhaustive_requested = _exhaustive_with_intent
     _rhee.plan_recall = _plan_recall_with_intent
 except Exception:
-    pass
+    _rhee = None
+    _re = None
 
 # Layer 2: relationship recall. Natural questions about "my relationships",
 # "people in my life", friends, partners or relationship history should search
 # the full relational neighbourhood instead of depending on one literal noun.
 try:
+    if _rhee is None or _re is None:
+        raise RuntimeError("rhee_bootstrap_unavailable")
     _layer2_terms_before = _rhee.expanded_query_terms
     _layer2_deep_before = _rhee.deep_recall_requested
     _layer2_exhaustive_before = _rhee.exhaustive_requested
@@ -255,18 +264,19 @@ except Exception:
 
 # Layer 3: family-history recall is kept in its own module so subsequent recall
 # layers can remain modular rather than making this startup shim indefinitely larger.
-try:
-    from layers.layer3_family_recall import install as _install_layer3_family
-    _install_layer3_family(_rhee)
-except Exception as _layer3_exc:
-    _tb = _layer3_exc.__traceback__
-    while _tb and _tb.tb_next:
-        _tb = _tb.tb_next
-    _source_file = Path(_tb.tb_frame.f_code.co_filename).name if _tb else "unknown"
-    _source_line = _tb.tb_lineno if _tb else None
-    print(
-        "RECALL LAYER INSTALL DEGRADED: "
-        f"error_type={type(_layer3_exc).__name__} "
-        f"source={_source_file}:{_source_line} "
-        f"detail={str(_layer3_exc)[:160]}"
-    )
+if _rhee is not None:
+    try:
+        from layers.layer3_family_recall import install as _install_layer3_family
+        _install_layer3_family(_rhee)
+    except Exception as _layer3_exc:
+        _tb = _layer3_exc.__traceback__
+        while _tb and _tb.tb_next:
+            _tb = _tb.tb_next
+        _source_file = Path(_tb.tb_frame.f_code.co_filename).name if _tb else "unknown"
+        _source_line = _tb.tb_lineno if _tb else None
+        print(
+            "RECALL LAYER INSTALL DEGRADED: "
+            f"error_type={type(_layer3_exc).__name__} "
+            f"source={_source_file}:{_source_line} "
+            f"detail={str(_layer3_exc)[:160]}"
+        )
