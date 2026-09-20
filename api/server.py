@@ -51,7 +51,11 @@ from core.cognition.benchmark import benchmark_manifest, run_cognitive_benchmark
 from core.cognition.evidence_evaluation import (
     evidence_mode, evidence_prompt, evaluate_answer, evaluation_manifest,
 )
-from core.cognition.publication_repair import choose_publication_repair
+from core.cognition.publication_repair import (
+    choose_publication_repair,
+    coverage_contract,
+    evaluate_publication_coverage,
+)
 from core.cognition.durable_tasks import TaskStore, TaskRunner, CONTEXT as TASK_CONTEXT, checkpoint, task_database_client
 from core.cognition.account_access import require_account
 from core.cognition.document_evidence import EvidenceStore, answer_from_document
@@ -1133,8 +1137,15 @@ RESPONSE RULES:
 - Join the dots, no more no less.
 """
 
+        composition_manifest = (
+            (rhee_packet.get("recall_plan") or {}).get("deep_recall_composition_manifest_data")
+            if rhee_packet.get("deep_recall", False)
+            else {}
+        )
         if check_evidence:
             system_prompt += "\n" + evidence_prompt(rhee_packet.get("evidence", []))
+            if rhee_packet.get("deep_recall", False):
+                system_prompt += "\n" + coverage_contract(composition_manifest)
 
         try:
             request = build_model_request(
@@ -1165,15 +1176,30 @@ RESPONSE RULES:
                     first_raw_reply, evidence_rows, request_id=request_id,
                     model_id=result.get("model_id", MODEL),
                 )
+                first_coverage = (
+                    evaluate_publication_coverage(
+                        first_raw_reply,
+                        evidence_audit,
+                        composition_manifest,
+                    )
+                    if rhee_packet.get("deep_recall", False)
+                    else None
+                )
+                if first_coverage is not None:
+                    evidence_audit["coverage"] = first_coverage
 
-                # Layer 67 — one bounded repair pass for citation-gate partials.
-                # A valid Deep Recall may retrieve a complete stage but lose it
-                # during publication because one structured block used an invalid
-                # quote/source pairing. Regenerate the whole cited answer once
-                # from the SAME frozen evidence rather than replacing each failed
-                # block with opaque withholding boilerplate.
+                # Layers 67–69 — one bounded repair pass for citation-gate or
+                # structural-coverage partials. The frozen evidence set cannot
+                # widen, and Layer 69 prevents a cleaner retry from silently
+                # dropping evidence-supported requested parts.
                 if (
-                    evidence_audit.get("status") in {"partial", "blocked"}
+                    (
+                        evidence_audit.get("status") in {"partial", "blocked"}
+                        or (
+                            first_coverage is not None
+                            and first_coverage.get("status") == "partial"
+                        )
+                    )
                     and rhee_packet.get("deep_recall", False)
                 ):
                     failed_checks = [
@@ -1185,11 +1211,16 @@ RESPONSE RULES:
                         for item in evidence_audit.get("checks", [])
                         if not item.get("passed")
                     ]
+                    missing_coverage = (
+                        list(first_coverage.get("missing_parts", []))
+                        if first_coverage is not None
+                        else []
+                    )
                     first_reply = reply
                     first_audit = dict(evidence_audit)
                     repair_request = build_model_request(
                         [
-                            {"role": "system", "content": system_prompt + "\n" + evidence_prompt(evidence_rows)},
+                            {"role": "system", "content": system_prompt},
                             {
                                 "role": "user",
                                 "content": (
@@ -1202,6 +1233,9 @@ RESPONSE RULES:
                                       "block naming that gap. Do not emit generic verification/withholding boilerplate. "
                                       "Failed first-pass checks: "
                                     + json.dumps(failed_checks, ensure_ascii=False)
+                                    + "\nMissing represented parts after first-pass publication: "
+                                    + json.dumps(missing_coverage, ensure_ascii=False)
+                                    + "\nPreserve the covers arrays required by the Deep Recall coverage receipt."
                                 ),
                             },
                         ],
@@ -1215,13 +1249,22 @@ RESPONSE RULES:
                         repair_result["content"], evidence_rows, request_id=request_id,
                         model_id=repair_result.get("model_id", MODEL),
                     )
+                    repaired_coverage = evaluate_publication_coverage(
+                        repair_result["content"],
+                        repaired_audit,
+                        composition_manifest,
+                    )
+                    repaired_audit["coverage"] = repaired_coverage
                     reply, evidence_audit = choose_publication_repair(
                         first_reply,
                         first_audit,
                         repaired_reply,
                         repaired_audit,
+                        first_coverage=first_coverage,
+                        repaired_coverage=repaired_coverage,
                     )
                     evidence_audit["first_pass_failed_blocks"] = len(failed_checks)
+                    evidence_audit["first_pass_missing_parts"] = missing_coverage
             reply = ensure_architecture_audit_grounding(
                 user_message,
                 reply,
