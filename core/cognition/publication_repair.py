@@ -1,4 +1,4 @@
-"""Layers 68–78 — publication repair quality, coverage and receipt-integrity gates.
+"""Layers 68–80 — publication repair quality, coverage and receipt-integrity gates.
 
 Layer 67 gives Deep Recall one bounded regeneration attempt after the citation
 integrity gate withholds content. Layer 68 makes that retry fail-safe: a repair
@@ -33,6 +33,10 @@ closed before Deep Recall publication.
 
 Layer 78 binds the same frozen contract to the exact Deep Recall query that
 created it. A valid evidence packet cannot be replayed for a different question.
+
+Layer 80 binds each publishable draft to the exact provider-neutral model request
+that generated it. The raw model output hash must match the semantic gate's source
+draft, and first-pass/repair receipts must carry their expected generation purpose.
 """
 
 from __future__ import annotations
@@ -484,6 +488,7 @@ def publication_receipt_integrity(
     audit: dict | None,
     coverage: dict | None = None,
     expected_frozen_binding: dict | None = None,
+    expected_generation_purpose: str | None = None,
 ) -> dict:
     """Verify that all available receipts belong to the exact publication.
 
@@ -528,6 +533,30 @@ def publication_receipt_integrity(
             and publication_draft != support_publication_draft
         ):
             issues.append("claim_support_publication_draft_mismatch")
+
+    generation = audit.get("generation")
+    if isinstance(generation, dict):
+        generation_request = str(generation.get("request_sha256") or "").strip()
+        generation_output = str(generation.get("content_sha256") or "").strip()
+        generation_purpose = str(generation.get("purpose") or "").strip()
+        if len(generation_request) != 64:
+            issues.append("generation_request_receipt_invalid")
+        if len(generation_output) != 64:
+            issues.append("generation_output_receipt_invalid")
+        if (
+            isinstance(support, dict)
+            and support_draft
+            and generation_output
+            and support_draft != generation_output
+        ):
+            issues.append("generation_claim_support_draft_mismatch")
+        if (
+            expected_generation_purpose
+            and generation_purpose != expected_generation_purpose
+        ):
+            issues.append("generation_purpose_mismatch")
+    elif expected_generation_purpose:
+        issues.append("generation_receipt_missing")
 
     expected_binding = (
         dict(expected_frozen_binding or {})
@@ -582,7 +611,7 @@ def choose_publication_repair(
     """Keep a Layer 67 repair only when governed quality improves safely.
 
     Layer 68 remains the default behaviour when no coverage receipts are supplied.
-    With Layers 69–78 receipts, citation quality, quote-bound structural
+    With Layers 69–80 receipts, citation quality, quote-bound structural
     coverage and bounded claim-support/consistency quality must not regress;
     at least one governed dimension must strictly improve.
     """
@@ -601,12 +630,19 @@ def choose_publication_repair(
         baseline,
         first_coverage,
         expected_frozen_binding=frozen_binding,
+        expected_generation_purpose=(
+            "l_user_response" if frozen_binding is not None else None
+        ),
     )
     repair_integrity = publication_receipt_integrity(
         repaired_reply,
         candidate,
         repaired_coverage,
         expected_frozen_binding=frozen_binding,
+        expected_generation_purpose=(
+            "l_deep_recall_publication_repair"
+            if frozen_binding is not None else None
+        ),
     )
 
     if first_coverage is not None:
