@@ -1,4 +1,4 @@
-"""Layers 68–71 — publication repair quality and coverage gates.
+"""Layers 68–75 — publication repair quality and coverage gates.
 
 Layer 67 gives Deep Recall one bounded regeneration attempt after the citation
 integrity gate withholds content. Layer 68 makes that retry fail-safe: a repair
@@ -17,6 +17,11 @@ the retrieval pipeline itself associated with that part before evidence freeze.
 Layer 71 binds coverage one level deeper: the validated citation quote itself
 must occur inside a frozen evidence excerpt that supported the represented part.
 A correct source ID with an unrelated passage no longer satisfies coverage.
+
+Layer 75 extends repair selection across the bounded claim-support gate introduced
+by Layers 72–74. A repair may not be published if it improves citations/coverage
+while introducing new unsupported claims, compound fact blocks or cross-block
+conflicts. Semantic-gate outages are treated as lower confidence, not as success.
 """
 
 from __future__ import annotations
@@ -332,6 +337,42 @@ def coverage_quality(coverage: dict | None) -> tuple[int, int, int, int]:
     return complete, covered, -missing, -invalid
 
 
+def claim_support_quality(audit: dict | None) -> tuple[int, int, int, int] | None:
+    """Return bounded Layers 72–74 publication quality. Higher is safer.
+
+    None preserves pre-Layer-72 behaviour when no claim-support receipt exists.
+    Passed/not_required are strongest for publication; partial means the failed
+    blocks were explicitly gated and is therefore safer than unavailable, where
+    claims could not be checked. Within partial results, fewer failed,
+    conflicting and compound blocks are better.
+    """
+    if not isinstance(audit, dict) or not audit:
+        return None
+    status = str(audit.get("status") or "").strip().lower()
+    rank = {
+        "unavailable": 0,
+        "partial": 2,
+        "not_required": 3,
+        "passed": 3,
+    }.get(status, -1)
+    failed = len(set(
+        _bounded_int(value)
+        for value in audit.get("failed_blocks", [])
+        if _bounded_int(value)
+    ))
+    conflicts = len(set(
+        _bounded_int(value)
+        for value in audit.get("conflict_blocks", [])
+        if _bounded_int(value)
+    ))
+    compound = len(set(
+        _bounded_int(value)
+        for value in audit.get("compound_blocks", [])
+        if _bounded_int(value)
+    ))
+    return rank, -failed, -conflicts, -compound
+
+
 def choose_publication_repair(
     first_reply: str,
     first_audit: dict,
@@ -344,8 +385,9 @@ def choose_publication_repair(
     """Keep a Layer 67 repair only when governed quality improves safely.
 
     Layer 68 remains the default behaviour when no coverage receipts are supplied.
-    With Layers 69–71 receipts, neither citation quality nor quote-bound
-    structural coverage may regress; at least one must strictly improve.
+    With Layers 69–75 receipts, citation quality, quote-bound structural
+    coverage and bounded claim-support/consistency quality must not regress;
+    at least one governed dimension must strictly improve.
     """
     baseline = dict(first_audit or {})
     candidate = dict(repaired_audit or {})
@@ -354,6 +396,9 @@ def choose_publication_repair(
     has_coverage = first_coverage is not None or repaired_coverage is not None
     first_coverage_quality = coverage_quality(first_coverage) if has_coverage else None
     repair_coverage_quality = coverage_quality(repaired_coverage) if has_coverage else None
+    first_support_quality = claim_support_quality(baseline.get("claim_support"))
+    repair_support_quality = claim_support_quality(candidate.get("claim_support"))
+    has_support = first_support_quality is not None or repair_support_quality is not None
 
     if first_coverage is not None:
         baseline["coverage"] = dict(first_coverage)
@@ -372,6 +417,17 @@ def choose_publication_repair(
             repair_candidate_coverage_quality=list(repair_coverage_quality),
             first_pass_coverage_quality=list(first_coverage_quality),
         )
+    if has_support:
+        metadata.update(
+            repair_candidate_support_quality=(
+                list(repair_support_quality)
+                if repair_support_quality is not None else None
+            ),
+            first_pass_support_quality=(
+                list(first_support_quality)
+                if first_support_quality is not None else None
+            ),
+        )
 
     if not str(repaired_reply or "").strip():
         baseline.update(metadata)
@@ -381,42 +437,76 @@ def choose_publication_repair(
         )
         return first_reply, baseline
 
-    if not has_coverage:
-        if repair_quality <= first_quality:
+    if repair_quality < first_quality:
+        baseline.update(metadata)
+        baseline.update(
+            repair_accepted=False,
+            repair_rejection_reason="citation_quality_regressed",
+        )
+        return first_reply, baseline
+    if has_coverage and repair_coverage_quality < first_coverage_quality:
+        baseline.update(metadata)
+        baseline.update(
+            repair_accepted=False,
+            repair_rejection_reason="coverage_regressed",
+        )
+        return first_reply, baseline
+
+    if has_support:
+        # A missing semantic receipt on one side is lower confidence than a
+        # successfully evaluated receipt. Preserve the safer first pass.
+        if first_support_quality is not None and repair_support_quality is None:
             baseline.update(metadata)
             baseline.update(
                 repair_accepted=False,
-                repair_rejection_reason="quality_not_improved",
+                repair_rejection_reason="claim_support_missing_on_repair",
             )
             return first_reply, baseline
-    else:
-        if repair_quality < first_quality:
+        if (
+            first_support_quality is not None
+            and repair_support_quality is not None
+            and repair_support_quality < first_support_quality
+        ):
             baseline.update(metadata)
             baseline.update(
                 repair_accepted=False,
-                repair_rejection_reason="citation_quality_regressed",
+                repair_rejection_reason="claim_support_regressed",
             )
             return first_reply, baseline
-        if repair_coverage_quality < first_coverage_quality:
-            baseline.update(metadata)
-            baseline.update(
-                repair_accepted=False,
-                repair_rejection_reason="coverage_regressed",
-            )
-            return first_reply, baseline
-        if repair_quality == first_quality and repair_coverage_quality == first_coverage_quality:
-            baseline.update(metadata)
-            baseline.update(
-                repair_accepted=False,
-                repair_rejection_reason="quality_not_improved",
-            )
-            return first_reply, baseline
+
+    citation_improved = repair_quality > first_quality
+    coverage_improved = (
+        has_coverage and repair_coverage_quality > first_coverage_quality
+    )
+    support_improved = (
+        has_support
+        and first_support_quality is not None
+        and repair_support_quality is not None
+        and repair_support_quality > first_support_quality
+    )
+    support_added = (
+        has_support
+        and first_support_quality is None
+        and repair_support_quality is not None
+    )
+
+    if not (citation_improved or coverage_improved or support_improved or support_added):
+        baseline.update(metadata)
+        baseline.update(
+            repair_accepted=False,
+            repair_rejection_reason="quality_not_improved",
+        )
+        return first_reply, baseline
 
     candidate.update(metadata)
     candidate.update(
         repair_accepted=True,
         repair_acceptance_reason=(
-            "audited_quality_and_coverage_nonregression"
+            "audited_quality_coverage_and_claim_support_nonregression"
+            if has_support and has_coverage
+            else "audited_quality_and_claim_support_nonregression"
+            if has_support
+            else "audited_quality_and_coverage_nonregression"
             if has_coverage
             else "audited_quality_improved"
         ),
