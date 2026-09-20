@@ -1209,6 +1209,12 @@ RESPONSE RULES:
             )
             result = invoke_model(active_model_adapter, request)
             response_model_receipt = result.get("receipt", {"status": "complete", "model_id": result.get("model_id")})
+            first_generation_receipt = {
+                "request_sha256": result.get("request_sha256"),
+                "content_sha256": result.get("content_sha256"),
+                "purpose": result.get("purpose"),
+                "model_id": result.get("model_id"),
+            }
             reply = result["content"]
             if check_evidence:
                 evidence_rows = rhee_packet.get("evidence", [])
@@ -1257,8 +1263,9 @@ RESPONSE RULES:
                 )
                 if first_coverage is not None:
                     evidence_audit["coverage"] = first_coverage
+                evidence_audit["generation"] = first_generation_receipt
 
-                # Layers 67–78 — one bounded repair pass for citation, coverage,
+                # Layers 67–80 — one bounded repair pass for citation, coverage,
                 # claim-to-quote, atomicity, consistency and bound-receipt failures.
                 # The frozen evidence set cannot widen; conflicted facts are
                 # withheld symmetrically rather than choosing a winner.
@@ -1338,6 +1345,12 @@ RESPONSE RULES:
                         temperature=0.2,
                     )
                     repair_result = invoke_model(active_model_adapter, repair_request)
+                    repair_generation_receipt = {
+                        "request_sha256": repair_result.get("request_sha256"),
+                        "content_sha256": repair_result.get("content_sha256"),
+                        "purpose": repair_result.get("purpose"),
+                        "model_id": repair_result.get("model_id"),
+                    }
                     repair_raw_reply = repair_result["content"]
                     repaired_reply, repaired_citation_audit = evaluate_answer(
                         repair_raw_reply, evidence_rows, request_id=request_id,
@@ -1373,6 +1386,7 @@ RESPONSE RULES:
                         evidence_rows=evidence_rows,
                     )
                     repaired_audit["coverage"] = repaired_coverage
+                    repaired_audit["generation"] = repair_generation_receipt
                     reply, evidence_audit = choose_publication_repair(
                         first_reply,
                         first_audit,
