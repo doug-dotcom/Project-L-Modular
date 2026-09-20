@@ -174,6 +174,11 @@ def evaluate_publication_coverage(
             continue
         number = _bounded_int(item.get("block"))
         passed_blocks.add(number)
+        source_citations = {
+            str(citation.get("source") or "").strip()
+            for citation in item.get("citations", [])
+            if isinstance(citation, dict) and citation.get("source")
+        }
         citations = {
             (
                 str(citation.get("source") or "").strip(),
@@ -185,7 +190,7 @@ def evaluate_publication_coverage(
             and citation.get("quote_sha256")
         }
         passed_block_citations[number] = citations
-        passed_block_sources[number] = {source for source, _quote_hash in citations}
+        passed_block_sources[number] = source_citations
 
     try:
         data = json.loads(raw)
