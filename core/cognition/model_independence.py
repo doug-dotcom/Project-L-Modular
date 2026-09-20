@@ -38,6 +38,20 @@ class ModelAdapter(Protocol):
         """Return the standard model-result contract."""
 
 
+def model_request_sha256(request: dict | None) -> str:
+    """Hash the exact provider-neutral request, excluding its self-hash field."""
+    payload = dict(request or {})
+    payload.pop("request_sha256", None)
+    return sha256(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+
+
 def build_model_request(
     messages: list[dict],
     *,
@@ -73,21 +87,39 @@ def build_model_request(
         request["response_format"] = dict(response_format)
     if routing_purpose:
         request["routing_purpose"] = str(routing_purpose)
+    request["request_sha256"] = model_request_sha256(request)
     return request
 
 
 def invoke_model(adapter: ModelAdapter, request: dict) -> dict:
-    """Invoke any conforming adapter and enforce one stable result shape."""
+    """Invoke a conforming adapter and bind its output to the exact request."""
     if adapter is None or not getattr(adapter, "available", False):
         raise RuntimeError("model_adapter_unavailable")
     if request.get("interface_version") != MODEL_INTERFACE_VERSION:
         raise ValueError("model_interface_version_mismatch")
+
+    actual_request_sha256 = model_request_sha256(request)
+    declared_request_sha256 = str(request.get("request_sha256") or "").strip()
+    if declared_request_sha256 and declared_request_sha256 != actual_request_sha256:
+        raise ValueError("model_request_integrity_mismatch")
+    request_integrity = (
+        "verified" if declared_request_sha256 else "legacy_unbound"
+    )
+
     result = adapter.generate(request)
     if not isinstance(result, dict):
         raise TypeError("model_result_must_be_object")
     content = result.get("content")
     if not isinstance(content, str):
         raise TypeError("model_result_content_must_be_text")
+
+    content_sha256 = sha256(content.encode("utf-8")).hexdigest()
+    receipt = dict(result.get("receipt") or {})
+    receipt.update({
+        "request_sha256": actual_request_sha256,
+        "content_sha256": content_sha256,
+        "request_integrity": request_integrity,
+    })
     normalised = {
         "interface_version": MODEL_INTERFACE_VERSION,
         "status": str(result.get("status") or "complete"),
@@ -95,11 +127,13 @@ def invoke_model(adapter: ModelAdapter, request: dict) -> dict:
         "provider": str(result.get("provider") or getattr(adapter, "provider", "unknown")),
         "model_id": str(result.get("model_id") or getattr(adapter, "model_id", "unknown")),
         "purpose": str(request.get("purpose") or "general"),
+        "request_sha256": actual_request_sha256,
+        "content_sha256": content_sha256,
+        "request_integrity": request_integrity,
+        "receipt": receipt,
     }
-    if isinstance(result.get("receipt"), dict):
-        normalised["receipt"] = result["receipt"]
     if normalised["status"] != "complete" or not content.strip():
-        raise ModelGenerationError(normalised.get("receipt", {}))
+        raise ModelGenerationError(receipt)
     return normalised
 
 
@@ -303,10 +337,12 @@ def build_model_independence_packet(adapter: ModelAdapter | None) -> dict:
         "interface_version": MODEL_INTERFACE_VERSION,
         "request_fields": [
             "interface_version", "purpose", "messages", "temperature",
-            "max_output_tokens", "response_format",
+            "max_output_tokens", "response_format", "routing_purpose",
+            "request_sha256",
         ],
         "result_fields": [
             "interface_version", "status", "content", "provider", "model_id", "purpose",
+            "request_sha256", "content_sha256", "request_integrity", "receipt",
         ],
         "persistent_systems": list(PERSISTENT_SYSTEMS),
         "replaceable_layer": "foundation_model_adapter",
@@ -347,5 +383,6 @@ __all__ = [
     "UnavailableModelAdapter",
     "build_model_independence_packet",
     "build_model_request",
+    "model_request_sha256",
     "invoke_model",
 ]
