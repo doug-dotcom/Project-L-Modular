@@ -539,6 +539,9 @@ def publication_receipt_integrity(
         generation_request = str(generation.get("request_sha256") or "").strip()
         generation_output = str(generation.get("content_sha256") or "").strip()
         generation_purpose = str(generation.get("purpose") or "").strip()
+        generation_request_integrity = str(
+            generation.get("request_integrity") or ""
+        ).strip()
         if len(generation_request) != 64:
             issues.append("generation_request_receipt_invalid")
         if len(generation_output) != 64:
@@ -555,6 +558,11 @@ def publication_receipt_integrity(
             and generation_purpose != expected_generation_purpose
         ):
             issues.append("generation_purpose_mismatch")
+        if (
+            expected_generation_purpose
+            and generation_request_integrity != "verified"
+        ):
+            issues.append("generation_request_not_verified")
     elif expected_generation_purpose:
         issues.append("generation_receipt_missing")
 
