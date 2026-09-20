@@ -58,6 +58,7 @@ from core.cognition.publication_repair import (
 )
 from core.cognition.claim_support import (
     apply_claim_support_gate,
+    bind_claim_support_to_publication,
     evaluate_claim_support,
 )
 from core.cognition.durable_tasks import TaskStore, TaskRunner, CONTEXT as TASK_CONTEXT, checkpoint, task_database_client
@@ -1193,6 +1194,10 @@ RESPONSE RULES:
                     first_raw_reply,
                     first_support,
                 )
+                first_support = bind_claim_support_to_publication(
+                    first_support,
+                    first_publish_raw,
+                )
                 if first_publish_raw != first_raw_reply:
                     reply, evidence_audit = evaluate_answer(
                         first_publish_raw,
@@ -1310,6 +1315,10 @@ RESPONSE RULES:
                     repaired_publish_raw = apply_claim_support_gate(
                         repair_raw_reply,
                         repaired_support,
+                    )
+                    repaired_support = bind_claim_support_to_publication(
+                        repaired_support,
+                        repaired_publish_raw,
                     )
                     if repaired_publish_raw != repair_raw_reply:
                         repaired_reply, repaired_audit = evaluate_answer(
