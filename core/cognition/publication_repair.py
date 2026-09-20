@@ -1,4 +1,4 @@
-"""Layers 68–76 — publication repair quality, coverage and receipt-integrity gates.
+"""Layers 68–77 — publication repair quality, coverage and receipt-integrity gates.
 
 Layer 67 gives Deep Recall one bounded regeneration attempt after the citation
 integrity gate withholds content. Layer 68 makes that retry fail-safe: a repair
@@ -26,6 +26,10 @@ conflicts. Semantic-gate outages are treated as lower confidence, not as success
 Layer 76 hash-binds the live publication receipts. A repair cannot replace the
 first pass unless the rendered reply, citation audit, coverage audit and bounded
 claim-support receipt all identify the exact drafts they actually evaluated.
+
+Layer 77 binds that publication chain to Layer 66's exact frozen evidence packet
+and composition manifest. A stale, reconstructed or mutated frozen packet fails
+closed before Deep Recall publication.
 """
 
 from __future__ import annotations
@@ -63,6 +67,73 @@ def _unique_parts(values: Any) -> list[str]:
             parts.append(label)
             seen.add(label)
     return parts
+
+
+def _canonical_sha256(value: Any) -> str:
+    return sha256(
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            default=str,
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def composition_manifest_sha256(manifest: dict | None) -> str:
+    manifest = dict(manifest or {})
+    manifest.pop("manifest_sha256", None)
+    return _canonical_sha256(manifest)
+
+
+def frozen_evidence_packet_sha256(rows: list[dict] | None) -> str:
+    return _canonical_sha256(list(rows or []))
+
+
+def verify_frozen_evidence_binding(
+    manifest: dict | None,
+    evidence_rows: list[dict] | None,
+) -> dict:
+    """Verify Layer 66's exact manifest and ordered frozen evidence packet."""
+    manifest = dict(manifest or {})
+    expected_manifest = str(manifest.get("manifest_sha256") or "").strip()
+    expected_evidence = str(manifest.get("evidence_packet_sha256") or "").strip()
+
+    # Pre-Layer-77 manifests remain readable. Live v4 manifests carry both
+    # fingerprints and fail closed if either disappears or changes.
+    if not expected_manifest and not expected_evidence:
+        return {
+            "version": "1.0",
+            "status": "legacy_unbound",
+            "valid": True,
+            "issues": [],
+            "manifest_sha256": "",
+            "evidence_packet_sha256": "",
+        }
+
+    actual_manifest = composition_manifest_sha256(manifest)
+    actual_evidence = frozen_evidence_packet_sha256(evidence_rows)
+    issues = []
+    if not expected_manifest:
+        issues.append("manifest_fingerprint_missing")
+    elif expected_manifest != actual_manifest:
+        issues.append("manifest_fingerprint_mismatch")
+    if not expected_evidence:
+        issues.append("evidence_packet_fingerprint_missing")
+    elif expected_evidence != actual_evidence:
+        issues.append("evidence_packet_fingerprint_mismatch")
+
+    return {
+        "version": "1.0",
+        "status": "verified" if not issues else "mismatch",
+        "valid": not issues,
+        "issues": issues,
+        "manifest_sha256": expected_manifest,
+        "actual_manifest_sha256": actual_manifest,
+        "evidence_packet_sha256": expected_evidence,
+        "actual_evidence_packet_sha256": actual_evidence,
+    }
 
 
 def coverage_contract(manifest: dict | None) -> str:
@@ -119,6 +190,7 @@ def evaluate_publication_coverage(
     citation-gate-passing non-unknown blocks count toward coverage.
     """
     manifest = dict(manifest or {})
+    frozen_binding = verify_frozen_evidence_binding(manifest, evidence_rows)
     expected = _unique_parts(manifest.get("represented_parts"))
     raw_bindings = manifest.get("part_sources")
     binding_available = isinstance(raw_bindings, dict)
@@ -171,8 +243,15 @@ def evaluate_publication_coverage(
         "source_mismatches": [],
         "quote_bound": quote_binding_declared,
         "quote_mismatches": [],
+        "frozen_evidence_binding": frozen_binding,
         "complete": not expected,
     }
+    if not frozen_binding.get("valid"):
+        audit.update(
+            status="blocked",
+            complete=False,
+        )
+        return audit
     if not expected:
         return audit
 
@@ -382,6 +461,7 @@ def publication_receipt_integrity(
     reply: str,
     audit: dict | None,
     coverage: dict | None = None,
+    expected_frozen_binding: dict | None = None,
 ) -> dict:
     """Verify that all available receipts belong to the exact publication.
 
@@ -427,8 +507,35 @@ def publication_receipt_integrity(
         ):
             issues.append("claim_support_publication_draft_mismatch")
 
+    expected_binding = (
+        dict(expected_frozen_binding or {})
+        if isinstance(expected_frozen_binding, dict)
+        else None
+    )
+    coverage_binding = (
+        dict((coverage or {}).get("frozen_evidence_binding") or {})
+        if isinstance(coverage, dict)
+        else {}
+    )
+    if expected_binding is not None and expected_binding.get("status") != "legacy_unbound":
+        if not expected_binding.get("valid"):
+            issues.append("expected_frozen_binding_invalid")
+        if not coverage_binding:
+            issues.append("coverage_frozen_binding_missing")
+        else:
+            if (
+                str(coverage_binding.get("actual_manifest_sha256") or "")
+                != str(expected_binding.get("actual_manifest_sha256") or "")
+            ):
+                issues.append("coverage_manifest_binding_mismatch")
+            if (
+                str(coverage_binding.get("actual_evidence_packet_sha256") or "")
+                != str(expected_binding.get("actual_evidence_packet_sha256") or "")
+            ):
+                issues.append("coverage_evidence_binding_mismatch")
+
     return {
-        "version": "1.0",
+        "version": "2.0",
         "valid": not issues,
         "issues": issues,
     }
@@ -442,11 +549,12 @@ def choose_publication_repair(
     *,
     first_coverage: dict | None = None,
     repaired_coverage: dict | None = None,
+    frozen_binding: dict | None = None,
 ) -> tuple[str, dict]:
     """Keep a Layer 67 repair only when governed quality improves safely.
 
     Layer 68 remains the default behaviour when no coverage receipts are supplied.
-    With Layers 69–76 receipts, citation quality, quote-bound structural
+    With Layers 69–77 receipts, citation quality, quote-bound structural
     coverage and bounded claim-support/consistency quality must not regress;
     at least one governed dimension must strictly improve.
     """
@@ -461,10 +569,16 @@ def choose_publication_repair(
     repair_support_quality = claim_support_quality(candidate.get("claim_support"))
     has_support = first_support_quality is not None or repair_support_quality is not None
     first_integrity = publication_receipt_integrity(
-        first_reply, baseline, first_coverage
+        first_reply,
+        baseline,
+        first_coverage,
+        expected_frozen_binding=frozen_binding,
     )
     repair_integrity = publication_receipt_integrity(
-        repaired_reply, candidate, repaired_coverage
+        repaired_reply,
+        candidate,
+        repaired_coverage,
+        expected_frozen_binding=frozen_binding,
     )
 
     if first_coverage is not None:

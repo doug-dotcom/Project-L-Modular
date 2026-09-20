@@ -11,6 +11,7 @@ key fidelity guards. It does not add, remove or mutate evidence.
 Ordinary Recall is unchanged.
 """
 from hashlib import sha256
+import json
 
 
 def install(rhee):
@@ -102,6 +103,16 @@ def install(rhee):
             part_sources[part] = sources
             part_evidence[part] = bindings
 
+        evidence_packet_sha256 = sha256(
+            json.dumps(
+                evidence,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+                default=str,
+            ).encode("utf-8")
+        ).hexdigest()
+
         manifest = {
             "freeze_state": frozen or "missing",
             "source_count": len(source_ids),
@@ -117,12 +128,23 @@ def install(rhee):
             "excerpt_recovery": rhee.safe_text(plan.get("deep_recall_excerpt_recovery", "unknown")),
             "readiness": rhee.safe_text(plan.get("deep_recall_evidence_freeze_final_readiness", "unknown")),
             "source_ids": source_ids[:120],
+            "evidence_packet_sha256": evidence_packet_sha256,
         }
+        manifest_sha256 = sha256(
+            json.dumps(
+                manifest,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+                default=str,
+            ).encode("utf-8")
+        ).hexdigest()
+        manifest["manifest_sha256"] = manifest_sha256
 
         output = dict(result)
         plan.update({
             "deep_recall_composition_manifest": "created",
-            "deep_recall_composition_manifest_version": 3,
+            "deep_recall_composition_manifest_version": 4,
             "deep_recall_composition_manifest_data": manifest,
         })
         output["recall_plan"] = plan
@@ -133,6 +155,7 @@ def install(rhee):
             f"represented parts={len(manifest['represented_parts'])}; thin parts={len(manifest['thin_parts'])}; "
             f"operational sources removed={manifest['operational_removed']}.",
             "The evidence set is frozen. This manifest is the final composition checklist, not a retrieval instruction.",
+            "Layer 77 fingerprints the exact ordered frozen evidence packet and this composition manifest; publication must fail closed if either fingerprint changes.",
             "Answer Doug's CURRENT question using only the frozen evidence packet.",
             "Present every material represented requested part; qualify candidate/partial details; name each genuine thin part once.",
             "Preserve exact event identity, chronology, negation/polarity, speaker attribution, plan-vs-outcome status, numbers/units/currency and source provenance.",

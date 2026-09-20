@@ -55,6 +55,7 @@ from core.cognition.publication_repair import (
     choose_publication_repair,
     coverage_contract,
     evaluate_publication_coverage,
+    verify_frozen_evidence_binding,
 )
 from core.cognition.claim_support import (
     apply_claim_support_gate,
@@ -1147,9 +1148,32 @@ RESPONSE RULES:
             if rhee_packet.get("deep_recall", False)
             else {}
         )
+        frozen_evidence_binding = None
         if check_evidence:
-            system_prompt += "\n" + evidence_prompt(rhee_packet.get("evidence", []))
+            evidence_rows_for_prompt = rhee_packet.get("evidence", [])
+            system_prompt += "\n" + evidence_prompt(evidence_rows_for_prompt)
             if rhee_packet.get("deep_recall", False):
+                frozen_evidence_binding = verify_frozen_evidence_binding(
+                    composition_manifest,
+                    evidence_rows_for_prompt,
+                )
+                if not frozen_evidence_binding.get("valid"):
+                    evidence_audit = {
+                        "status": "blocked",
+                        "reason": "frozen_evidence_binding_mismatch",
+                        "frozen_evidence_binding": frozen_evidence_binding,
+                    }
+                    payload = {
+                        "reply": (
+                            "I couldn't verify the frozen Deep Recall evidence packet "
+                            "for this answer, so I've withheld it. Please try again."
+                        ),
+                        "server": "vx",
+                        "error": True,
+                        "cognition": {"evidence_evaluation": evidence_audit},
+                    }
+                    store_chat_result(request_id, "ready", payload)
+                    return payload
                 system_prompt += "\n" + coverage_contract(composition_manifest)
 
         try:
@@ -1222,8 +1246,8 @@ RESPONSE RULES:
                 if first_coverage is not None:
                     evidence_audit["coverage"] = first_coverage
 
-                # Layers 67–74 — one bounded repair pass for citation, coverage,
-                # claim-to-quote, atomicity or cross-block consistency failures.
+                # Layers 67–77 — one bounded repair pass for citation, coverage,
+                # claim-to-quote, atomicity, consistency and receipt failures.
                 # The frozen evidence set cannot widen; conflicted facts are
                 # withheld symmetrically rather than choosing a winner.
                 if (
@@ -1344,6 +1368,7 @@ RESPONSE RULES:
                         repaired_audit,
                         first_coverage=first_coverage,
                         repaired_coverage=repaired_coverage,
+                        frozen_binding=frozen_evidence_binding,
                     )
                     evidence_audit["first_pass_failed_blocks"] = len(failed_checks)
                     evidence_audit["first_pass_missing_parts"] = missing_coverage
