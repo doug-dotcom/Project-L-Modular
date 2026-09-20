@@ -1,4 +1,4 @@
-"""Layers 72–73 — bounded claim-to-quote alignment and atomicity gate.
+"""Layers 72–74 — claim alignment, atomicity and cross-block consistency gate.
 
 Layers 70–71 prove that a Deep Recall block covers the right requested part
 with a validated quote from the right frozen evidence excerpt. They still do
@@ -16,6 +16,12 @@ atomic or compound. A block is compound only when it bundles materially
 independent factual propositions that should be separately verifiable; multiple
 details about one event/entity may remain atomic.
 
+Layer 74 uses that same bounded response to identify direct conflicts between
+otherwise publishable fact blocks. Only materially incompatible claims about
+the same event/proposition/time scope count; plan→outcome, later updates and
+different dated states are not automatically conflicts. Conflicting blocks are
+withheld together rather than asking the checker to choose a winner.
+
 This is a claim/quote alignment and structure check, not independent truth certification.
 """
 from __future__ import annotations
@@ -30,6 +36,7 @@ from core.cognition.model_independence import build_model_request, invoke_model
 BLOCKING_VERDICTS = {"partial", "unsupported", "contradicted"}
 ALLOWED_VERDICTS = {"supported", *BLOCKING_VERDICTS}
 ALLOWED_ATOMICITY = {"atomic", "compound"}
+ALLOWED_CONFLICT_TYPES = {"contradiction", "timeline_collision", "status_conflict"}
 
 
 def _raw_blocks(raw: str) -> list[dict]:
@@ -113,14 +120,16 @@ def evaluate_claim_support(
     """
     candidates = build_claim_support_payload(raw, evidence_audit)
     audit = {
-        "version": "2.0",
+        "version": "3.0",
         "status": "not_required" if not candidates else "unavailable",
         "checked_blocks": len(candidates),
         "failed_blocks": [],
         "compound_blocks": [],
+        "conflict_blocks": [],
+        "conflicts": [],
         "checks": [],
         "independent_truth_certification": False,
-        "scope": "claim_to_validated_quote_alignment_and_atomicity",
+        "scope": "claim_alignment_atomicity_and_cross_block_consistency",
     }
     if not candidates:
         return audit
@@ -146,10 +155,25 @@ Also classify ATOMICITY:
   be true or false separately and should be split into separate fact blocks.
 
 Do not call a single event with its date/place/status compound merely because it
-has several details. Return JSON only:
+has several details.
+
+Also perform CROSS-BLOCK CONSISTENCY using ONLY the supplied claims and quotes.
+Report a conflict only when two or more otherwise factual blocks make materially
+incompatible claims about the SAME event, proposition and relevant time/scope.
+Do NOT mark these as conflicts merely because they differ:
+- a plan/intention followed by a later outcome,
+- an earlier state followed by a later update,
+- two distinct events or people,
+- different dates that can both be true,
+- one block being more detailed than another without incompatibility.
+Do not choose which side is true.
+
+Return JSON only:
 {"blocks":[{"block":1,"verdict":"supported|partial|unsupported|contradicted",
-"atomicity":"atomic|compound","reason":"brief evidence-only reason"}]}.
-Do not rewrite the answer and do not add facts."""
+"atomicity":"atomic|compound","reason":"brief evidence-only reason"}],
+"conflicts":[{"blocks":[1,2],"type":"contradiction|timeline_collision|status_conflict",
+"reason":"brief evidence-only reason"}]}.
+Return "conflicts":[] when none are present. Do not rewrite the answer and do not add facts."""
 
     request = build_model_request(
         [
@@ -197,6 +221,45 @@ Do not rewrite the answer and do not add facts."""
                 "reason": str(item.get("reason") or "")[:500],
             }
 
+        conflicts_declared = "conflicts" in data
+        raw_conflicts = data.get("conflicts", [])
+        parsed_conflicts = []
+        conflict_blocks = []
+        candidate_blocks = {candidate["block"] for candidate in candidates}
+        if isinstance(raw_conflicts, list):
+            seen_conflicts = set()
+            for raw_conflict in raw_conflicts:
+                if not isinstance(raw_conflict, dict):
+                    continue
+                raw_numbers = raw_conflict.get("blocks")
+                if not isinstance(raw_numbers, list):
+                    continue
+                numbers = []
+                for value in raw_numbers:
+                    try:
+                        number = int(value)
+                    except (TypeError, ValueError):
+                        continue
+                    if number in candidate_blocks and number not in numbers:
+                        numbers.append(number)
+                if len(numbers) < 2:
+                    continue
+                conflict_type = str(raw_conflict.get("type") or "").strip().lower()
+                if conflict_type not in ALLOWED_CONFLICT_TYPES:
+                    continue
+                key = (tuple(sorted(numbers)), conflict_type)
+                if key in seen_conflicts:
+                    continue
+                seen_conflicts.add(key)
+                parsed_conflicts.append({
+                    "blocks": numbers,
+                    "type": conflict_type,
+                    "reason": str(raw_conflict.get("reason") or "")[:500],
+                })
+                for number in numbers:
+                    if number not in conflict_blocks:
+                        conflict_blocks.append(number)
+
         checks = []
         failed = []
         for candidate in candidates:
@@ -222,7 +285,7 @@ Do not rewrite the answer and do not add facts."""
             item for item in checks if item.get("atomicity") == "unavailable"
         ]
         missing = [item for item in checks if item["verdict"] == "unavailable"]
-        failed_union = list(dict.fromkeys(failed + compound))
+        failed_union = list(dict.fromkeys(failed + compound + conflict_blocks))
         audit.update(
             status=(
                 "unavailable" if missing
@@ -231,9 +294,16 @@ Do not rewrite the answer and do not add facts."""
             ),
             failed_blocks=failed_union,
             compound_blocks=compound,
+            conflict_blocks=conflict_blocks,
+            conflicts=parsed_conflicts,
             atomicity_status=(
                 "unavailable" if atomicity_missing
                 else "partial" if compound
+                else "passed"
+            ),
+            consistency_status=(
+                "unavailable" if not conflicts_declared
+                else "partial" if parsed_conflicts
                 else "passed"
             ),
             checks=checks,
@@ -261,6 +331,14 @@ def apply_claim_support_gate(raw: str, support_audit: dict | None) -> str:
             failed[number] = verdict
         elif atomicity == "compound":
             failed[number] = "compound"
+
+    for value in (support_audit or {}).get("conflict_blocks", []):
+        try:
+            number = int(value)
+        except (TypeError, ValueError):
+            continue
+        failed.setdefault(number, "cross_block_conflict")
+
     if not failed:
         return raw
 
@@ -284,6 +362,8 @@ def apply_claim_support_gate(raw: str, support_audit: dict | None) -> str:
             text = "The cited passage supports only part of this claim, so I have withheld the whole claim."
         elif verdict == "compound":
             text = "This fact block bundles multiple independently verifiable claims, so I have withheld it until those claims are split."
+        elif verdict == "cross_block_conflict":
+            text = "Another supported passage in this answer conflicts with this claim, so I have withheld both sides until the conflict is reconciled."
         else:
             text = "The cited passage does not establish this claim, so I have withheld it."
         revised.append({
