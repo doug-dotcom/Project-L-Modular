@@ -52,6 +52,7 @@ from core.cognition.evidence_evaluation import (
     evidence_mode, evidence_prompt, evaluate_answer, evaluation_manifest,
 )
 from core.cognition.publication_repair import (
+    build_deep_recall_prompt_binding,
     choose_publication_repair,
     coverage_contract,
     evaluate_publication_coverage,
@@ -1149,9 +1150,11 @@ RESPONSE RULES:
             else {}
         )
         frozen_evidence_binding = None
+        deep_recall_prompt_binding = None
         if check_evidence:
             evidence_rows_for_prompt = rhee_packet.get("evidence", [])
-            system_prompt += "\n" + evidence_prompt(evidence_rows_for_prompt)
+            evidence_contract_text = evidence_prompt(evidence_rows_for_prompt)
+            system_prompt += "\n" + evidence_contract_text
             if rhee_packet.get("deep_recall", False):
                 frozen_evidence_binding = verify_frozen_evidence_binding(
                     composition_manifest,
@@ -1186,7 +1189,33 @@ RESPONSE RULES:
                     }
                     store_chat_result(request_id, "ready", payload)
                     return payload
-                system_prompt += "\n" + coverage_contract(composition_manifest)
+
+                coverage_contract_text = coverage_contract(composition_manifest)
+                system_prompt += "\n" + coverage_contract_text
+                deep_recall_prompt_binding = build_deep_recall_prompt_binding(
+                    system_prompt,
+                    evidence_contract_text,
+                    coverage_contract_text,
+                    frozen_evidence_binding,
+                )
+                if not deep_recall_prompt_binding.get("valid"):
+                    evidence_audit = {
+                        "status": "blocked",
+                        "reason": "deep_recall_prompt_binding_mismatch",
+                        "frozen_evidence_binding": frozen_evidence_binding,
+                        "prompt_binding": deep_recall_prompt_binding,
+                    }
+                    payload = {
+                        "reply": (
+                            "I couldn't verify the Deep Recall prompt composition for "
+                            "this answer, so I've withheld it. Please try again."
+                        ),
+                        "server": "vx",
+                        "error": True,
+                        "cognition": {"evidence_evaluation": evidence_audit},
+                    }
+                    store_chat_result(request_id, "ready", payload)
+                    return payload
 
         try:
             request = build_model_request(
@@ -1206,6 +1235,7 @@ RESPONSE RULES:
                 response_format={"type": "json_object"} if check_evidence else None,
                 temperature=0.3 if pauline_report_requested(user_message) else 0.45,
                 max_output_tokens=8192 if pauline_report_requested(user_message) else None,
+                context_binding=deep_recall_prompt_binding,
             )
             result = invoke_model(active_model_adapter, request)
             response_model_receipt = result.get("receipt", {"status": "complete", "model_id": result.get("model_id")})
@@ -1215,6 +1245,7 @@ RESPONSE RULES:
                 "purpose": result.get("purpose"),
                 "model_id": result.get("model_id"),
                 "request_integrity": result.get("request_integrity"),
+                "context_binding": result.get("context_binding"),
             }
             reply = result["content"]
             if check_evidence:
@@ -1266,7 +1297,7 @@ RESPONSE RULES:
                     evidence_audit["coverage"] = first_coverage
                 evidence_audit["generation"] = first_generation_receipt
 
-                # Layers 67–80 — one bounded repair pass for citation, coverage,
+                # Layers 67–81 — one bounded repair pass for citation, coverage,
                 # claim-to-quote, atomicity, consistency and bound-receipt failures.
                 # The frozen evidence set cannot widen; conflicted facts are
                 # withheld symmetrically rather than choosing a winner.
@@ -1344,6 +1375,7 @@ RESPONSE RULES:
                         routing_purpose="l_recall_response",
                         response_format={"type": "json_object"},
                         temperature=0.2,
+                        context_binding=deep_recall_prompt_binding,
                     )
                     repair_result = invoke_model(active_model_adapter, repair_request)
                     repair_generation_receipt = {
@@ -1352,6 +1384,7 @@ RESPONSE RULES:
                         "purpose": repair_result.get("purpose"),
                         "model_id": repair_result.get("model_id"),
                         "request_integrity": repair_result.get("request_integrity"),
+                        "context_binding": repair_result.get("context_binding"),
                     }
                     repair_raw_reply = repair_result["content"]
                     repaired_reply, repaired_citation_audit = evaluate_answer(
@@ -1397,6 +1430,7 @@ RESPONSE RULES:
                         first_coverage=first_coverage,
                         repaired_coverage=repaired_coverage,
                         frozen_binding=frozen_evidence_binding,
+                        prompt_binding=deep_recall_prompt_binding,
                     )
                     evidence_audit["first_pass_failed_blocks"] = len(failed_checks)
                     evidence_audit["first_pass_missing_parts"] = missing_coverage
