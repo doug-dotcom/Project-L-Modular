@@ -131,6 +131,33 @@ def test_layer70_preserves_layer69_compatibility_when_binding_map_is_absent():
     assert coverage["covered_parts"] == ["recovery timeline"]
 
 
+def test_layer70_fails_closed_when_binding_manifest_is_partial():
+    manifest = {
+        "represented_parts": ["recovery timeline", "current direction"],
+        "part_sources": {
+            "recovery timeline": ["raw_catchall:1"],
+        },
+    }
+    raw = answer(
+        fact("Timeline.", ["recovery timeline"]),
+        fact("Direction.", ["current direction"]),
+    )
+    coverage = evaluate_publication_coverage(
+        raw,
+        audit(
+            passed(1, "raw_catchall:1"),
+            passed(2, "memory_project_l:9"),
+        ),
+        manifest,
+    )
+
+    assert coverage["evidence_bound"] is True
+    assert coverage["covered_parts"] == ["recovery timeline"]
+    assert coverage["missing_parts"] == ["current direction"]
+    assert coverage["source_mismatch_count"] == 1
+    assert coverage["source_mismatches"][0]["allowed_sources"] == []
+
+
 def test_layer70_repair_gate_rejects_source_binding_regression():
     first_audit = audit(passed(1, "raw_catchall:1"))
     repaired_audit = audit(
