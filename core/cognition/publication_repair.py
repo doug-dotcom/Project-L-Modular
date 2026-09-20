@@ -631,11 +631,18 @@ def publication_receipt_integrity(
                 generation_binding_sha = str(
                     generation_binding.get("binding_sha256") or ""
                 )
+                expected_payload = dict(expected_prompt_binding)
+                expected_payload.pop("binding_sha256", None)
+                generation_payload = dict(generation_binding)
+                generation_payload.pop("binding_sha256", None)
                 if (
                     not expected_prompt_binding.get("valid")
                     or str(expected_prompt_binding.get("status") or "") != "verified"
+                    or expected_binding_sha != _canonical_sha256(expected_payload)
                 ):
                     issues.append("expected_prompt_binding_invalid")
+                if generation_binding_sha != _canonical_sha256(generation_payload):
+                    issues.append("generation_prompt_binding_receipt_invalid")
                 if generation_binding_sha != expected_binding_sha:
                     issues.append("generation_prompt_binding_mismatch")
                 if str(generation_binding.get("status") or "") != "verified":
