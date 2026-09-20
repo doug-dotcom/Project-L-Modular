@@ -248,13 +248,17 @@ def test_layer70_manifest_recomputes_bindings_from_actual_frozen_packet():
     packet = rhee.build_context_packet("Deep recall my recovery timeline")
     manifest = packet["recall_plan"]["deep_recall_composition_manifest_data"]
 
-    assert packet["recall_plan"]["deep_recall_composition_manifest_version"] == 2
+    assert packet["recall_plan"]["deep_recall_composition_manifest_version"] == 3
     assert manifest["freeze_state"] == "frozen"
     assert manifest["part_sources"]["recovery timeline"] == [
         "raw_catchall:1",
         "raw_catchall:2",
     ]
     assert "raw_catchall:99" not in manifest["part_sources"]["recovery timeline"]
+    assert len(manifest["part_evidence"]["recovery timeline"]) == 2
+    assert {
+        item["source"] for item in manifest["part_evidence"]["recovery timeline"]
+    } == {"raw_catchall:1", "raw_catchall:2"}
 
 
 def test_layer70_layer38_retains_component_source_receipt_for_observability():
