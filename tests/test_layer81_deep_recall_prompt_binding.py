@@ -60,6 +60,17 @@ class Adapter:
 
 
 def generation(binding, purpose):
+    transport = {
+        "version": "1.0",
+        "integrity": "verified",
+        "api": "responses",
+        "model_id": "fixture-model",
+        "request_sha256": "d" * 64,
+        "payload_sha256": "f" * 64,
+        "issues": [],
+    }
+    from core.cognition.publication_repair import _canonical_sha256
+    transport["receipt_sha256"] = _canonical_sha256(transport)
     return {
         "request_sha256": "d" * 64,
         "content_sha256": "e" * 64,
@@ -67,6 +78,7 @@ def generation(binding, purpose):
         "model_id": "fixture-model",
         "request_integrity": "verified",
         "context_binding": dict(binding),
+        "provider_transport": transport,
     }
 
 
