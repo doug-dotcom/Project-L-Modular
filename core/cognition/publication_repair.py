@@ -1,4 +1,4 @@
-"""Layers 68–77 — publication repair quality, coverage and receipt-integrity gates.
+"""Layers 68–78 — publication repair quality, coverage and receipt-integrity gates.
 
 Layer 67 gives Deep Recall one bounded regeneration attempt after the citation
 integrity gate withholds content. Layer 68 makes that retry fail-safe: a repair
@@ -30,6 +30,9 @@ claim-support receipt all identify the exact drafts they actually evaluated.
 Layer 77 binds that publication chain to Layer 66's exact frozen evidence packet
 and composition manifest. A stale, reconstructed or mutated frozen packet fails
 closed before Deep Recall publication.
+
+Layer 78 binds the same frozen contract to the exact Deep Recall query that
+created it. A valid evidence packet cannot be replayed for a different question.
 """
 
 from __future__ import annotations
@@ -94,26 +97,37 @@ def frozen_evidence_packet_sha256(rows: list[dict] | None) -> str:
 def verify_frozen_evidence_binding(
     manifest: dict | None,
     evidence_rows: list[dict] | None,
+    *,
+    query: str | None = None,
 ) -> dict:
-    """Verify Layer 66's exact manifest and ordered frozen evidence packet."""
+    """Verify Layer 66's manifest, frozen packet and optional exact query."""
     manifest = dict(manifest or {})
     expected_manifest = str(manifest.get("manifest_sha256") or "").strip()
     expected_evidence = str(manifest.get("evidence_packet_sha256") or "").strip()
+    expected_query = str(manifest.get("query_sha256") or "").strip()
 
-    # Pre-Layer-77 manifests remain readable. Live v4 manifests carry both
-    # fingerprints and fail closed if either disappears or changes.
-    if not expected_manifest and not expected_evidence:
+    # Pre-Layer-77 manifests remain readable. Layer 77 v4 manifests bind the
+    # packet/manifest; Layer 78 v5 additionally binds the exact query.
+    if not expected_manifest and not expected_evidence and not expected_query:
         return {
-            "version": "1.0",
+            "version": "2.0",
             "status": "legacy_unbound",
             "valid": True,
             "issues": [],
             "manifest_sha256": "",
             "evidence_packet_sha256": "",
+            "request_query_sha256": "",
+            "actual_request_query_sha256": "",
+            "query_bound": False,
+            "query_verified": False,
         }
 
     actual_manifest = composition_manifest_sha256(manifest)
     actual_evidence = frozen_evidence_packet_sha256(evidence_rows)
+    actual_query = (
+        sha256(str(query).encode("utf-8")).hexdigest()
+        if query is not None else ""
+    )
     issues = []
     if not expected_manifest:
         issues.append("manifest_fingerprint_missing")
@@ -123,9 +137,11 @@ def verify_frozen_evidence_binding(
         issues.append("evidence_packet_fingerprint_missing")
     elif expected_evidence != actual_evidence:
         issues.append("evidence_packet_fingerprint_mismatch")
+    if expected_query and query is not None and expected_query != actual_query:
+        issues.append("request_query_fingerprint_mismatch")
 
     return {
-        "version": "1.0",
+        "version": "2.0",
         "status": "verified" if not issues else "mismatch",
         "valid": not issues,
         "issues": issues,
@@ -133,6 +149,12 @@ def verify_frozen_evidence_binding(
         "actual_manifest_sha256": actual_manifest,
         "evidence_packet_sha256": expected_evidence,
         "actual_evidence_packet_sha256": actual_evidence,
+        "request_query_sha256": expected_query,
+        "actual_request_query_sha256": actual_query,
+        "query_bound": bool(expected_query),
+        "query_verified": bool(
+            expected_query and query is not None and expected_query == actual_query
+        ),
     }
 
 
@@ -533,6 +555,12 @@ def publication_receipt_integrity(
                 != str(expected_binding.get("actual_evidence_packet_sha256") or "")
             ):
                 issues.append("coverage_evidence_binding_mismatch")
+            if (
+                str(expected_binding.get("request_query_sha256") or "")
+                and str(coverage_binding.get("request_query_sha256") or "")
+                != str(expected_binding.get("request_query_sha256") or "")
+            ):
+                issues.append("coverage_query_binding_mismatch")
 
     return {
         "version": "2.0",
@@ -554,7 +582,7 @@ def choose_publication_repair(
     """Keep a Layer 67 repair only when governed quality improves safely.
 
     Layer 68 remains the default behaviour when no coverage receipts are supplied.
-    With Layers 69–77 receipts, citation quality, quote-bound structural
+    With Layers 69–78 receipts, citation quality, quote-bound structural
     coverage and bounded claim-support/consistency quality must not regress;
     at least one governed dimension must strictly improve.
     """
