@@ -56,6 +56,10 @@ from core.cognition.publication_repair import (
     coverage_contract,
     evaluate_publication_coverage,
 )
+from core.cognition.claim_support import (
+    apply_claim_support_gate,
+    evaluate_claim_support,
+)
 from core.cognition.durable_tasks import TaskStore, TaskRunner, CONTEXT as TASK_CONTEXT, checkpoint, task_database_client
 from core.cognition.account_access import require_account
 from core.cognition.document_evidence import EvidenceStore, answer_from_document
@@ -1172,13 +1176,37 @@ RESPONSE RULES:
             if check_evidence:
                 evidence_rows = rhee_packet.get("evidence", [])
                 first_raw_reply = reply
-                reply, evidence_audit = evaluate_answer(
+                reply, citation_audit = evaluate_answer(
                     first_raw_reply, evidence_rows, request_id=request_id,
                     model_id=result.get("model_id", MODEL),
                 )
+                first_support = (
+                    evaluate_claim_support(
+                        first_raw_reply,
+                        citation_audit,
+                        active_model_adapter,
+                    )
+                    if rhee_packet.get("deep_recall", False)
+                    else {"status": "not_required", "failed_blocks": [], "checks": []}
+                )
+                first_publish_raw = apply_claim_support_gate(
+                    first_raw_reply,
+                    first_support,
+                )
+                if first_publish_raw != first_raw_reply:
+                    reply, evidence_audit = evaluate_answer(
+                        first_publish_raw,
+                        evidence_rows,
+                        request_id=request_id,
+                        model_id=result.get("model_id", MODEL),
+                    )
+                else:
+                    evidence_audit = citation_audit
+                evidence_audit["claim_support"] = first_support
+
                 first_coverage = (
                     evaluate_publication_coverage(
-                        first_raw_reply,
+                        first_publish_raw,
                         evidence_audit,
                         composition_manifest,
                         evidence_rows=evidence_rows,
@@ -1189,13 +1217,14 @@ RESPONSE RULES:
                 if first_coverage is not None:
                     evidence_audit["coverage"] = first_coverage
 
-                # Layers 67–71 — one bounded repair pass for citation-gate or
-                # coverage partials. The frozen evidence set cannot widen, and
-                # the final coverage receipt must remain structurally complete,
-                # source-bound and quote-bound.
+                # Layers 67–72 — one bounded repair pass for citation, coverage
+                # or claim-to-quote alignment failures. The frozen evidence set
+                # cannot widen, and semantically failed fact blocks are converted
+                # to explicit unknowns before coverage is measured or published.
                 if (
                     (
                         evidence_audit.get("status") in {"partial", "blocked"}
+                        or first_support.get("status") == "partial"
                         or (
                             first_coverage is not None
                             and first_coverage.get("status") == "partial"
@@ -1217,6 +1246,11 @@ RESPONSE RULES:
                         if first_coverage is not None
                         else []
                     )
+                    failed_support = [
+                        item
+                        for item in first_support.get("checks", [])
+                        if item.get("verdict") in {"partial", "unsupported", "contradicted"}
+                    ]
                     first_reply = reply
                     first_audit = dict(evidence_audit)
                     repair_request = build_model_request(
@@ -1236,9 +1270,13 @@ RESPONSE RULES:
                                     + json.dumps(failed_checks, ensure_ascii=False)
                                     + "\nMissing represented parts after first-pass publication: "
                                     + json.dumps(missing_coverage, ensure_ascii=False)
+                                    + "\nClaim-to-quote alignment failures: "
+                                    + json.dumps(failed_support, ensure_ascii=False)
                                     + "\nPreserve the covers arrays required by the Deep Recall coverage receipt. "
                                       "For each covers label, cite an exact quote from a frozen evidence excerpt "
-                                      "that actually supports that represented part."
+                                      "that actually supports that represented part. Every material factual clause "
+                                      "in a fact block must be established by its validated quotes; split or omit "
+                                      "unsupported clauses rather than stretching the evidence."
                                 ),
                             },
                         ],
@@ -1248,12 +1286,32 @@ RESPONSE RULES:
                         temperature=0.2,
                     )
                     repair_result = invoke_model(active_model_adapter, repair_request)
-                    repaired_reply, repaired_audit = evaluate_answer(
-                        repair_result["content"], evidence_rows, request_id=request_id,
+                    repair_raw_reply = repair_result["content"]
+                    repaired_reply, repaired_citation_audit = evaluate_answer(
+                        repair_raw_reply, evidence_rows, request_id=request_id,
                         model_id=repair_result.get("model_id", MODEL),
                     )
+                    repaired_support = evaluate_claim_support(
+                        repair_raw_reply,
+                        repaired_citation_audit,
+                        active_model_adapter,
+                    )
+                    repaired_publish_raw = apply_claim_support_gate(
+                        repair_raw_reply,
+                        repaired_support,
+                    )
+                    if repaired_publish_raw != repair_raw_reply:
+                        repaired_reply, repaired_audit = evaluate_answer(
+                            repaired_publish_raw,
+                            evidence_rows,
+                            request_id=request_id,
+                            model_id=repair_result.get("model_id", MODEL),
+                        )
+                    else:
+                        repaired_audit = repaired_citation_audit
+                    repaired_audit["claim_support"] = repaired_support
                     repaired_coverage = evaluate_publication_coverage(
-                        repair_result["content"],
+                        repaired_publish_raw,
                         repaired_audit,
                         composition_manifest,
                         evidence_rows=evidence_rows,
@@ -1269,6 +1327,7 @@ RESPONSE RULES:
                     )
                     evidence_audit["first_pass_failed_blocks"] = len(failed_checks)
                     evidence_audit["first_pass_missing_parts"] = missing_coverage
+                    evidence_audit["first_pass_claim_support_failures"] = len(failed_support)
             reply = ensure_architecture_audit_grounding(
                 user_message,
                 reply,
