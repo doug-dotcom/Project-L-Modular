@@ -1158,10 +1158,66 @@ RESPONSE RULES:
             response_model_receipt = result.get("receipt", {"status": "complete", "model_id": result.get("model_id")})
             reply = result["content"]
             if check_evidence:
+                evidence_rows = rhee_packet.get("evidence", [])
+                first_raw_reply = reply
                 reply, evidence_audit = evaluate_answer(
-                    reply, rhee_packet.get("evidence", []), request_id=request_id,
+                    first_raw_reply, evidence_rows, request_id=request_id,
                     model_id=result.get("model_id", MODEL),
                 )
+
+                # Layer 67 — one bounded repair pass for citation-gate partials.
+                # A valid Deep Recall may retrieve a complete stage but lose it
+                # during publication because one structured block used an invalid
+                # quote/source pairing. Regenerate the whole cited answer once
+                # from the SAME frozen evidence rather than replacing each failed
+                # block with opaque withholding boilerplate.
+                if (
+                    evidence_audit.get("status") in {"partial", "blocked"}
+                    and rhee_packet.get("deep_recall", False)
+                ):
+                    failed_checks = [
+                        {
+                            "block": item.get("block"),
+                            "kind": item.get("kind"),
+                            "issues": item.get("issues", []),
+                        }
+                        for item in evidence_audit.get("checks", [])
+                        if not item.get("passed")
+                    ]
+                    repair_request = build_model_request(
+                        [
+                            {"role": "system", "content": system_prompt + "\n" + evidence_prompt(evidence_rows)},
+                            {
+                                "role": "user",
+                                "content": (
+                                    user_message
+                                    + "\n\nPUBLICATION REPAIR PASS: Your first draft lost one or more blocks at the "
+                                      "citation-integrity gate. Regenerate the COMPLETE answer from the same frozen "
+                                      "evidence. Preserve every evidence-supported requested stage. For each fact "
+                                      "block use only a retrieved source and an exact continuous quote copied from "
+                                      "that source. If a detail is genuinely unsupported, use one specific unknown "
+                                      "block naming that gap. Do not emit generic verification/withholding boilerplate. "
+                                      "Failed first-pass checks: "
+                                    + json.dumps(failed_checks, ensure_ascii=False)
+                                ),
+                            },
+                        ],
+                        purpose="l_deep_recall_publication_repair",
+                        routing_purpose="l_recall_response",
+                        response_format={"type": "json_object"},
+                        temperature=0.2,
+                    )
+                    repair_result = invoke_model(active_model_adapter, repair_request)
+                    repaired_reply, repaired_audit = evaluate_answer(
+                        repair_result["content"], evidence_rows, request_id=request_id,
+                        model_id=repair_result.get("model_id", MODEL),
+                    )
+                    repaired_audit["repair_attempted"] = True
+                    repaired_audit["first_pass_status"] = evidence_audit.get("status")
+                    repaired_audit["first_pass_failed_blocks"] = len(failed_checks)
+                    # Prefer the repair unless it leaves no publishable content.
+                    if repaired_reply.strip():
+                        reply, evidence_audit = repaired_reply, repaired_audit
             reply = ensure_architecture_audit_grounding(
                 user_message,
                 reply,
