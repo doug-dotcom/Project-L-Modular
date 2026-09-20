@@ -341,17 +341,18 @@ def claim_support_quality(audit: dict | None) -> tuple[int, int, int, int] | Non
     """Return bounded Layers 72–74 publication quality. Higher is safer.
 
     None preserves pre-Layer-72 behaviour when no claim-support receipt exists.
-    A passed checker is strongest; not_required is neutral; unavailable is lower
-    confidence; partial is weakest. Within partial results, fewer failed,
+    Passed/not_required are strongest for publication; partial means the failed
+    blocks were explicitly gated and is therefore safer than unavailable, where
+    claims could not be checked. Within partial results, fewer failed,
     conflicting and compound blocks are better.
     """
     if not isinstance(audit, dict) or not audit:
         return None
     status = str(audit.get("status") or "").strip().lower()
     rank = {
-        "partial": 0,
-        "unavailable": 1,
-        "not_required": 2,
+        "unavailable": 0,
+        "partial": 2,
+        "not_required": 3,
         "passed": 3,
     }.get(status, -1)
     failed = len(set(
@@ -436,29 +437,20 @@ def choose_publication_repair(
         )
         return first_reply, baseline
 
-    if not has_coverage:
-        if repair_quality <= first_quality:
-            baseline.update(metadata)
-            baseline.update(
-                repair_accepted=False,
-                repair_rejection_reason="quality_not_improved",
-            )
-            return first_reply, baseline
-    else:
-        if repair_quality < first_quality:
-            baseline.update(metadata)
-            baseline.update(
-                repair_accepted=False,
-                repair_rejection_reason="citation_quality_regressed",
-            )
-            return first_reply, baseline
-        if repair_coverage_quality < first_coverage_quality:
-            baseline.update(metadata)
-            baseline.update(
-                repair_accepted=False,
-                repair_rejection_reason="coverage_regressed",
-            )
-            return first_reply, baseline
+    if repair_quality < first_quality:
+        baseline.update(metadata)
+        baseline.update(
+            repair_accepted=False,
+            repair_rejection_reason="citation_quality_regressed",
+        )
+        return first_reply, baseline
+    if has_coverage and repair_coverage_quality < first_coverage_quality:
+        baseline.update(metadata)
+        baseline.update(
+            repair_accepted=False,
+            repair_rejection_reason="coverage_regressed",
+        )
+        return first_reply, baseline
 
     if has_support:
         # A missing semantic receipt on one side is lower confidence than a
