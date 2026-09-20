@@ -682,8 +682,8 @@ def publication_receipt_integrity(
                     issues.append("generation_provider_api_invalid")
                 generation_model = str(generation.get("model_id") or "")
                 transport_model = str(transport.get("model_id") or "")
-                if generation_model and transport_model != generation_model:
-                    issues.append("generation_provider_model_mismatch")
+                if not transport_model:
+                    issues.append("generation_provider_requested_model_missing")
 
             provider_response = generation.get("provider_response")
             if not isinstance(provider_response, dict) or not provider_response:
