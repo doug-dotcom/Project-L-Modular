@@ -51,6 +51,7 @@ from core.cognition.benchmark import benchmark_manifest, run_cognitive_benchmark
 from core.cognition.evidence_evaluation import (
     evidence_mode, evidence_prompt, evaluate_answer, evaluation_manifest,
 )
+from core.cognition.publication_repair import choose_publication_repair
 from core.cognition.durable_tasks import TaskStore, TaskRunner, CONTEXT as TASK_CONTEXT, checkpoint, task_database_client
 from core.cognition.account_access import require_account
 from core.cognition.document_evidence import EvidenceStore, answer_from_document
@@ -1184,6 +1185,8 @@ RESPONSE RULES:
                         for item in evidence_audit.get("checks", [])
                         if not item.get("passed")
                     ]
+                    first_reply = reply
+                    first_audit = dict(evidence_audit)
                     repair_request = build_model_request(
                         [
                             {"role": "system", "content": system_prompt + "\n" + evidence_prompt(evidence_rows)},
@@ -1212,12 +1215,13 @@ RESPONSE RULES:
                         repair_result["content"], evidence_rows, request_id=request_id,
                         model_id=repair_result.get("model_id", MODEL),
                     )
-                    repaired_audit["repair_attempted"] = True
-                    repaired_audit["first_pass_status"] = evidence_audit.get("status")
-                    repaired_audit["first_pass_failed_blocks"] = len(failed_checks)
-                    # Prefer the repair unless it leaves no publishable content.
-                    if repaired_reply.strip():
-                        reply, evidence_audit = repaired_reply, repaired_audit
+                    reply, evidence_audit = choose_publication_repair(
+                        first_reply,
+                        first_audit,
+                        repaired_reply,
+                        repaired_audit,
+                    )
+                    evidence_audit["first_pass_failed_blocks"] = len(failed_checks)
             reply = ensure_architecture_audit_grounding(
                 user_message,
                 reply,
