@@ -1249,7 +1249,10 @@ RESPONSE RULES:
                     failed_support = [
                         item
                         for item in first_support.get("checks", [])
-                        if item.get("verdict") in {"partial", "unsupported", "contradicted"}
+                        if (
+                            item.get("verdict") in {"partial", "unsupported", "contradicted"}
+                            or item.get("atomicity") == "compound"
+                        )
                     ]
                     first_reply = reply
                     first_audit = dict(evidence_audit)
@@ -1275,8 +1278,10 @@ RESPONSE RULES:
                                     + "\nPreserve the covers arrays required by the Deep Recall coverage receipt. "
                                       "For each covers label, cite an exact quote from a frozen evidence excerpt "
                                       "that actually supports that represented part. Every material factual clause "
-                                      "in a fact block must be established by its validated quotes; split or omit "
-                                      "unsupported clauses rather than stretching the evidence."
+                                      "in a fact block must be established by its validated quotes. Keep each fact "
+                                      "block to one independently verifiable proposition or one coherent event/entity "
+                                      "claim; split materially independent facts into separate blocks, each with its "
+                                      "own supporting citations and covers labels."
                                 ),
                             },
                         ],
