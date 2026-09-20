@@ -13,7 +13,7 @@ import unicodedata
 
 from core.cognition.cue_driven_memory import assess_present_cue
 
-VERSION = "1.1"
+VERSION = "1.2"
 MAX_BLOCKS = 40
 MAX_CITATIONS = 8
 SOURCE = re.compile(r"[a-z][a-z0-9_]*:[A-Za-z0-9_-]+\Z")
