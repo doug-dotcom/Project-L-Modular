@@ -10,6 +10,7 @@ requested parts, supported/thin parts, presentation anchors, conflicts/gaps and
 key fidelity guards. It does not add, remove or mutate evidence.
 Ordinary Recall is unchanged.
 """
+from hashlib import sha256
 
 
 def install(rhee):
@@ -43,22 +44,20 @@ def install(rhee):
         frozen_source_set = set(source_ids)
         raw_part_sources = dict(plan.get("deep_recall_final_component_sources") or {})
         part_sources = {}
+        part_evidence = {}
         for part in represented_parts:
             sources = []
             seen_part_sources = set()
+            bindings = []
+            seen_bindings = set()
 
-            # Layer 70 binds coverage against the final frozen packet, not only
-            # Layer 38's earlier reconciliation. This includes any valid late
-            # contradiction-rescue evidence added before Layer 65 froze the set.
+            # Layers 70–71 bind coverage against the final frozen packet, not
+            # only Layer 38's earlier reconciliation. This includes any valid
+            # late contradiction-rescue evidence added before Layer 65 froze it.
             for item in evidence:
                 source = rhee.safe_text(item.get("source")).strip()
                 text = rhee.safe_text(item.get("quote_source"))
-                if (
-                    not source
-                    or source not in frozen_source_set
-                    or source in seen_part_sources
-                    or not text
-                ):
+                if not source or source not in frozen_source_set or not text:
                     continue
                 try:
                     score = rhee.calculate_raw_score(
@@ -69,13 +68,24 @@ def install(rhee):
                     score = 0
                 if score <= 0:
                     continue
-                sources.append(source)
-                seen_part_sources.add(source)
-                if len(sources) >= 40:
-                    break
+
+                if source not in seen_part_sources and len(sources) < 40:
+                    sources.append(source)
+                    seen_part_sources.add(source)
+
+                fingerprint = sha256(text.encode("utf-8")).hexdigest()
+                binding_key = (source, fingerprint)
+                if binding_key not in seen_bindings and len(bindings) < 60:
+                    bindings.append({
+                        "source": source,
+                        "excerpt_sha256": fingerprint,
+                    })
+                    seen_bindings.add(binding_key)
 
             # Preserve Layer 38's source receipt as a bounded fallback if the
-            # scorer is unavailable during manifest construction.
+            # scorer is unavailable during manifest construction. There is no
+            # quote-level fallback: Layer 71 must fail closed if the final frozen
+            # excerpt binding could not be reconstructed.
             if not sources:
                 for source in raw_part_sources.get(part, []) or []:
                     source = rhee.safe_text(source).strip()
@@ -90,6 +100,7 @@ def install(rhee):
                         break
 
             part_sources[part] = sources
+            part_evidence[part] = bindings
 
         manifest = {
             "freeze_state": frozen or "missing",
@@ -97,6 +108,7 @@ def install(rhee):
             "question_parts": list(plan.get("deep_recall_presentation_question_parts") or plan.get("deep_recall_question_parts") or []),
             "represented_parts": represented_parts,
             "part_sources": part_sources,
+            "part_evidence": part_evidence,
             "thin_parts": list(plan.get("deep_recall_presentation_thin_parts") or plan.get("deep_recall_final_thin_parts") or []),
             "stage_anchors": list(plan.get("deep_recall_presentation_stage_anchors") or [])[:40],
             "conflict_cue_sources": list(plan.get("deep_recall_final_conflict_cue_sources") or [])[:30],
@@ -110,7 +122,7 @@ def install(rhee):
         output = dict(result)
         plan.update({
             "deep_recall_composition_manifest": "created",
-            "deep_recall_composition_manifest_version": 2,
+            "deep_recall_composition_manifest_version": 3,
             "deep_recall_composition_manifest_data": manifest,
         })
         output["recall_plan"] = plan
@@ -126,7 +138,7 @@ def install(rhee):
             "Preserve exact event identity, chronology, negation/polarity, speaker attribution, plan-vs-outcome status, numbers/units/currency and source provenance.",
             "Do not reintroduce any operational/stale assistant material that was structurally filtered before freeze.",
             "Do not let a closing interpretation replace omitted evidence-supported stages.",
-            "Keep sources close to the claims they support. A represented-part coverage claim is valid only when the answer block cites one of that part's frozen supporting sources.",
+            "Keep sources close to the claims they support. A represented-part coverage claim is valid only when the answer block cites an exact passage from one of that part's frozen supporting evidence excerpts.",
             "Finish when the current question has been fully answered. Do not append historical assistant responses or internal diagnostics.",
         ]
 
