@@ -60,6 +60,7 @@ def build_model_request(
     max_output_tokens: int | None = None,
     response_format: dict | None = None,
     routing_purpose: str | None = None,
+    context_binding: dict | None = None,
 ) -> dict:
     """Build a provider-neutral request and reject malformed context early."""
     if not isinstance(messages, list) or not messages:
@@ -87,6 +88,10 @@ def build_model_request(
         request["response_format"] = dict(response_format)
     if routing_purpose:
         request["routing_purpose"] = str(routing_purpose)
+    if context_binding is not None:
+        if not isinstance(context_binding, dict):
+            raise TypeError("model_context_binding_must_be_object")
+        request["context_binding"] = dict(context_binding)
     request["request_sha256"] = model_request_sha256(request)
     return request
 
@@ -105,6 +110,11 @@ def invoke_model(adapter: ModelAdapter, request: dict) -> dict:
     request_integrity = (
         "verified" if declared_request_sha256 else "legacy_unbound"
     )
+    verified_context_binding = (
+        dict(request["context_binding"])
+        if isinstance(request.get("context_binding"), dict)
+        else None
+    )
 
     result = adapter.generate(request)
     if not isinstance(result, dict):
@@ -120,6 +130,8 @@ def invoke_model(adapter: ModelAdapter, request: dict) -> dict:
         "content_sha256": content_sha256,
         "request_integrity": request_integrity,
     })
+    if verified_context_binding is not None:
+        receipt["context_binding"] = dict(verified_context_binding)
     normalised = {
         "interface_version": MODEL_INTERFACE_VERSION,
         "status": str(result.get("status") or "complete"),
@@ -130,6 +142,11 @@ def invoke_model(adapter: ModelAdapter, request: dict) -> dict:
         "request_sha256": actual_request_sha256,
         "content_sha256": content_sha256,
         "request_integrity": request_integrity,
+        "context_binding": (
+            dict(verified_context_binding)
+            if verified_context_binding is not None
+            else None
+        ),
         "receipt": receipt,
     }
     if normalised["status"] != "complete" or not content.strip():
@@ -338,11 +355,12 @@ def build_model_independence_packet(adapter: ModelAdapter | None) -> dict:
         "request_fields": [
             "interface_version", "purpose", "messages", "temperature",
             "max_output_tokens", "response_format", "routing_purpose",
-            "request_sha256",
+            "context_binding", "request_sha256",
         ],
         "result_fields": [
             "interface_version", "status", "content", "provider", "model_id", "purpose",
-            "request_sha256", "content_sha256", "request_integrity", "receipt",
+            "request_sha256", "content_sha256", "request_integrity",
+            "context_binding", "receipt",
         ],
         "persistent_systems": list(PERSISTENT_SYSTEMS),
         "replaceable_layer": "foundation_model_adapter",
