@@ -1,4 +1,4 @@
-"""Layers 68–80 — publication repair quality, coverage and receipt-integrity gates.
+"""Layers 68–81 — publication repair quality, coverage and receipt-integrity gates.
 
 Layer 67 gives Deep Recall one bounded regeneration attempt after the citation
 integrity gate withholds content. Layer 68 makes that retry fail-safe: a repair
@@ -37,6 +37,11 @@ created it. A valid evidence packet cannot be replayed for a different question.
 Layer 80 binds each publishable draft to the exact provider-neutral model request
 that generated it. The raw model output hash must match the semantic gate's source
 draft, and first-pass/repair receipts must carry their expected generation purpose.
+
+Layer 81 binds that request to the exact Deep Recall prompt composition. The
+system message must physically contain the frozen evidence contract and coverage
+contract exactly once, and the resulting prompt binding travels inside Layer 80's
+request hash through publication/repair selection.
 """
 
 from __future__ import annotations
@@ -160,6 +165,56 @@ def verify_frozen_evidence_binding(
             expected_query and query is not None and expected_query == actual_query
         ),
     }
+
+
+def build_deep_recall_prompt_binding(
+    system_prompt: str,
+    evidence_contract: str,
+    coverage_contract_text: str,
+    frozen_binding: dict | None,
+) -> dict:
+    """Bind exact Deep Recall prompt composition to the frozen evidence receipt."""
+    system_prompt = str(system_prompt or "")
+    evidence_contract = str(evidence_contract or "")
+    coverage_contract_text = str(coverage_contract_text or "")
+    frozen_binding = dict(frozen_binding or {})
+    issues = []
+
+    if not frozen_binding.get("valid"):
+        issues.append("frozen_binding_invalid")
+    if not evidence_contract or system_prompt.count(evidence_contract) != 1:
+        issues.append("evidence_contract_not_exactly_once")
+    if not coverage_contract_text or system_prompt.count(coverage_contract_text) != 1:
+        issues.append("coverage_contract_not_exactly_once")
+
+    binding = {
+        "version": "1.0",
+        "status": "verified" if not issues else "mismatch",
+        "valid": not issues,
+        "system_prompt_sha256": sha256(system_prompt.encode("utf-8")).hexdigest(),
+        "evidence_contract_sha256": sha256(
+            evidence_contract.encode("utf-8")
+        ).hexdigest(),
+        "coverage_contract_sha256": sha256(
+            coverage_contract_text.encode("utf-8")
+        ).hexdigest(),
+        "manifest_sha256": str(
+            frozen_binding.get("actual_manifest_sha256")
+            or frozen_binding.get("manifest_sha256")
+            or ""
+        ),
+        "evidence_packet_sha256": str(
+            frozen_binding.get("actual_evidence_packet_sha256")
+            or frozen_binding.get("evidence_packet_sha256")
+            or ""
+        ),
+        "query_sha256": str(
+            frozen_binding.get("request_query_sha256") or ""
+        ),
+        "issues": issues,
+    }
+    binding["binding_sha256"] = _canonical_sha256(binding)
+    return binding
 
 
 def coverage_contract(manifest: dict | None) -> str:
@@ -489,6 +544,7 @@ def publication_receipt_integrity(
     coverage: dict | None = None,
     expected_frozen_binding: dict | None = None,
     expected_generation_purpose: str | None = None,
+    expected_prompt_binding: dict | None = None,
 ) -> dict:
     """Verify that all available receipts belong to the exact publication.
 
@@ -563,6 +619,27 @@ def publication_receipt_integrity(
             and generation_request_integrity != "verified"
         ):
             issues.append("generation_request_not_verified")
+
+        if expected_prompt_binding is not None:
+            generation_binding = generation.get("context_binding")
+            if not isinstance(generation_binding, dict):
+                issues.append("generation_prompt_binding_missing")
+            else:
+                expected_binding_sha = str(
+                    expected_prompt_binding.get("binding_sha256") or ""
+                )
+                generation_binding_sha = str(
+                    generation_binding.get("binding_sha256") or ""
+                )
+                if (
+                    not expected_prompt_binding.get("valid")
+                    or str(expected_prompt_binding.get("status") or "") != "verified"
+                ):
+                    issues.append("expected_prompt_binding_invalid")
+                if generation_binding_sha != expected_binding_sha:
+                    issues.append("generation_prompt_binding_mismatch")
+                if str(generation_binding.get("status") or "") != "verified":
+                    issues.append("generation_prompt_binding_unverified")
     elif expected_generation_purpose:
         issues.append("generation_receipt_missing")
 
@@ -615,11 +692,12 @@ def choose_publication_repair(
     first_coverage: dict | None = None,
     repaired_coverage: dict | None = None,
     frozen_binding: dict | None = None,
+    prompt_binding: dict | None = None,
 ) -> tuple[str, dict]:
     """Keep a Layer 67 repair only when governed quality improves safely.
 
     Layer 68 remains the default behaviour when no coverage receipts are supplied.
-    With Layers 69–80 receipts, citation quality, quote-bound structural
+    With Layers 69–81 receipts, citation quality, quote-bound structural
     coverage and bounded claim-support/consistency quality must not regress;
     at least one governed dimension must strictly improve.
     """
@@ -647,6 +725,9 @@ def choose_publication_repair(
             if frozen_binding is not None and has_generation_receipt
             else None
         ),
+        expected_prompt_binding=(
+            prompt_binding if has_generation_receipt else None
+        ),
     )
     repair_integrity = publication_receipt_integrity(
         repaired_reply,
@@ -657,6 +738,9 @@ def choose_publication_repair(
             "l_deep_recall_publication_repair"
             if frozen_binding is not None and has_generation_receipt
             else None
+        ),
+        expected_prompt_binding=(
+            prompt_binding if has_generation_receipt else None
         ),
     )
 
