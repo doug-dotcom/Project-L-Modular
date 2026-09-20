@@ -1,4 +1,4 @@
-"""Layers 68–69 — publication repair quality and coverage gates.
+"""Layers 68–70 — publication repair quality and coverage gates.
 
 Layer 67 gives Deep Recall one bounded regeneration attempt after the citation
 integrity gate withholds content. Layer 68 makes that retry fail-safe: a repair
@@ -9,7 +9,12 @@ manifest already identifies evidence-supported requested parts. The generated
 JSON must now label which of those parts each publishable block covers. Repairs
 may improve citation quality or structural coverage, but they may not regress
 either dimension.
+
+Layer 70 binds coverage to evidence provenance. A block may claim a frozen
+represented-part label only when its validated citations include a source that
+the retrieval pipeline itself associated with that part before evidence freeze.
 """
+
 from __future__ import annotations
 
 import json
@@ -45,13 +50,22 @@ def _unique_parts(values: Any) -> list[str]:
 
 
 def coverage_contract(manifest: dict | None) -> str:
-    """Return the Layer 69 structural coverage contract for Deep Recall."""
+    """Return the Layers 69–70 structural/evidence coverage contract."""
     manifest = dict(manifest or {})
     represented = _unique_parts(manifest.get("represented_parts"))
     if not represented:
         return "DEEP RECALL COVERAGE RECEIPT: no represented parts require structural coverage labelling."
 
-    return (
+    raw_bindings = manifest.get("part_sources")
+    binding_available = isinstance(raw_bindings, dict) and all(
+        part in raw_bindings for part in represented
+    )
+    bindings = {
+        part: _unique_parts(raw_bindings.get(part))[:20]
+        for part in represented
+    } if binding_available else {}
+
+    contract = (
         "DEEP RECALL COVERAGE RECEIPT — for this Deep Recall only, every answer block "
         "must include a \"covers\" array. Each covers value must be copied exactly from "
         "the represented-part labels below. A represented part counts as covered only when "
@@ -60,6 +74,15 @@ def coverage_contract(manifest: dict | None) -> str:
         "these parts. Do not invent or paraphrase labels. Represented parts: "
         + json.dumps(represented, ensure_ascii=False)
     )
+    if binding_available:
+        contract += (
+            "\nLAYER 70 EVIDENCE BINDING: a covers label is valid only when that same "
+            "block has a validated citation from one of the frozen supporting source IDs "
+            "mapped to that represented part. Do not attach a part label to an unrelated "
+            "fact merely to satisfy coverage. Frozen part-to-source bindings: "
+            + json.dumps(bindings, ensure_ascii=False)
+        )
+    return contract
 
 
 def evaluate_publication_coverage(
@@ -75,8 +98,17 @@ def evaluate_publication_coverage(
     """
     manifest = dict(manifest or {})
     expected = _unique_parts(manifest.get("represented_parts"))
+    raw_bindings = manifest.get("part_sources")
+    binding_available = isinstance(raw_bindings, dict) and all(
+        part in raw_bindings for part in expected
+    )
+    allowed_sources = {
+        part: set(_unique_parts(raw_bindings.get(part)))
+        for part in expected
+    } if binding_available else {}
+
     audit = {
-        "version": "1.0",
+        "version": "2.0" if binding_available else "1.0",
         "status": "not_required" if not expected else "partial",
         "expected_parts": expected,
         "expected_count": len(expected),
@@ -86,16 +118,25 @@ def evaluate_publication_coverage(
         "missing_count": len(expected),
         "invalid_labels": [],
         "invalid_blocks": [],
+        "evidence_bound": binding_available,
+        "source_mismatches": [],
         "complete": not expected,
     }
     if not expected:
         return audit
 
-    passed_blocks = {
-        _bounded_int(item.get("block"))
-        for item in (evidence_audit or {}).get("checks", [])
-        if isinstance(item, dict) and item.get("passed")
-    }
+    passed_blocks = set()
+    passed_block_sources = {}
+    for item in (evidence_audit or {}).get("checks", []):
+        if not isinstance(item, dict) or not item.get("passed"):
+            continue
+        number = _bounded_int(item.get("block"))
+        passed_blocks.add(number)
+        passed_block_sources[number] = {
+            str(citation.get("source") or "").strip()
+            for citation in item.get("citations", [])
+            if isinstance(citation, dict) and citation.get("source")
+        }
 
     try:
         data = json.loads(raw)
@@ -111,6 +152,7 @@ def evaluate_publication_coverage(
     covered_set = set()
     invalid_labels = []
     invalid_blocks = []
+    source_mismatches = []
 
     for number, block in enumerate(blocks, 1):
         if number not in passed_blocks or not isinstance(block, dict):
@@ -131,6 +173,19 @@ def evaluate_publication_coverage(
                 if label not in invalid_labels:
                     invalid_labels.append(label)
                 continue
+
+            if binding_available:
+                cited_sources = passed_block_sources.get(number, set())
+                permitted_sources = allowed_sources.get(label, set())
+                if not cited_sources.intersection(permitted_sources):
+                    source_mismatches.append({
+                        "block": number,
+                        "part": label,
+                        "cited_sources": sorted(cited_sources)[:8],
+                        "allowed_sources": sorted(permitted_sources)[:12],
+                    })
+                    continue
+
             if label not in covered_set:
                 covered.append(label)
                 covered_set.add(label)
@@ -144,6 +199,8 @@ def evaluate_publication_coverage(
         missing_count=len(missing),
         invalid_labels=invalid_labels,
         invalid_blocks=invalid_blocks,
+        source_mismatches=source_mismatches,
+        source_mismatch_count=len(source_mismatches),
         complete=not missing,
     )
     return audit
@@ -168,7 +225,11 @@ def coverage_quality(coverage: dict | None) -> tuple[int, int, int, int]:
     complete = 1 if coverage.get("complete") else 0
     covered = _bounded_int(coverage.get("covered_count"))
     missing = _bounded_int(coverage.get("missing_count"))
-    invalid = len(coverage.get("invalid_labels") or []) + len(coverage.get("invalid_blocks") or [])
+    invalid = (
+        len(coverage.get("invalid_labels") or [])
+        + len(coverage.get("invalid_blocks") or [])
+        + _bounded_int(coverage.get("source_mismatch_count"))
+    )
     return complete, covered, -missing, -invalid
 
 
@@ -184,8 +245,8 @@ def choose_publication_repair(
     """Keep a Layer 67 repair only when governed quality improves safely.
 
     Layer 68 remains the default behaviour when no coverage receipts are supplied.
-    With Layer 69 receipts, neither citation quality nor structural coverage may
-    regress; at least one must strictly improve.
+    With Layers 69–70 receipts, neither citation quality nor evidence-bound
+    structural coverage may regress; at least one must strictly improve.
     """
     baseline = dict(first_audit or {})
     candidate = dict(repaired_audit or {})
