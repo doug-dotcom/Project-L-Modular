@@ -35,11 +35,36 @@ def install(rhee):
                 source_ids.append(source)
                 seen.add(source)
 
+        represented_parts = list(
+            plan.get("deep_recall_presentation_represented_parts")
+            or plan.get("deep_recall_final_represented_parts")
+            or []
+        )
+        frozen_source_set = set(source_ids)
+        raw_part_sources = dict(plan.get("deep_recall_final_component_sources") or {})
+        part_sources = {}
+        for part in represented_parts:
+            sources = []
+            seen_part_sources = set()
+            for source in raw_part_sources.get(part, []) or []:
+                source = rhee.safe_text(source).strip()
+                if (
+                    source
+                    and source in frozen_source_set
+                    and source not in seen_part_sources
+                ):
+                    sources.append(source)
+                    seen_part_sources.add(source)
+                if len(sources) >= 40:
+                    break
+            part_sources[part] = sources
+
         manifest = {
             "freeze_state": frozen or "missing",
             "source_count": len(source_ids),
             "question_parts": list(plan.get("deep_recall_presentation_question_parts") or plan.get("deep_recall_question_parts") or []),
-            "represented_parts": list(plan.get("deep_recall_presentation_represented_parts") or plan.get("deep_recall_final_represented_parts") or []),
+            "represented_parts": represented_parts,
+            "part_sources": part_sources,
             "thin_parts": list(plan.get("deep_recall_presentation_thin_parts") or plan.get("deep_recall_final_thin_parts") or []),
             "stage_anchors": list(plan.get("deep_recall_presentation_stage_anchors") or [])[:40],
             "conflict_cue_sources": list(plan.get("deep_recall_final_conflict_cue_sources") or [])[:30],
@@ -53,7 +78,7 @@ def install(rhee):
         output = dict(result)
         plan.update({
             "deep_recall_composition_manifest": "created",
-            "deep_recall_composition_manifest_version": 1,
+            "deep_recall_composition_manifest_version": 2,
             "deep_recall_composition_manifest_data": manifest,
         })
         output["recall_plan"] = plan
@@ -69,7 +94,7 @@ def install(rhee):
             "Preserve exact event identity, chronology, negation/polarity, speaker attribution, plan-vs-outcome status, numbers/units/currency and source provenance.",
             "Do not reintroduce any operational/stale assistant material that was structurally filtered before freeze.",
             "Do not let a closing interpretation replace omitted evidence-supported stages.",
-            "Keep sources close to the claims they support. Do not cite a source for a proposition its retrieved text does not establish.",
+            "Keep sources close to the claims they support. A represented-part coverage claim is valid only when the answer block cites one of that part's frozen supporting sources.",
             "Finish when the current question has been fully answered. Do not append historical assistant responses or internal diagnostics.",
         ]
 
