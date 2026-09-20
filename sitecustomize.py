@@ -259,4 +259,14 @@ try:
     from layers.layer3_family_recall import install as _install_layer3_family
     _install_layer3_family(_rhee)
 except Exception as _layer3_exc:
-    print(f"LAYER 3 FAMILY RECALL DEGRADED: error_type={type(_layer3_exc).__name__}")
+    _tb = _layer3_exc.__traceback__
+    while _tb and _tb.tb_next:
+        _tb = _tb.tb_next
+    _source_file = Path(_tb.tb_frame.f_code.co_filename).name if _tb else "unknown"
+    _source_line = _tb.tb_lineno if _tb else None
+    print(
+        "RECALL LAYER INSTALL DEGRADED: "
+        f"error_type={type(_layer3_exc).__name__} "
+        f"source={_source_file}:{_source_line} "
+        f"detail={str(_layer3_exc)[:160]}"
+    )
