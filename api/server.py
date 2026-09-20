@@ -1181,6 +1181,7 @@ RESPONSE RULES:
                         first_raw_reply,
                         evidence_audit,
                         composition_manifest,
+                        evidence_rows=evidence_rows,
                     )
                     if rhee_packet.get("deep_recall", False)
                     else None
@@ -1188,10 +1189,10 @@ RESPONSE RULES:
                 if first_coverage is not None:
                     evidence_audit["coverage"] = first_coverage
 
-                # Layers 67–69 — one bounded repair pass for citation-gate or
-                # structural-coverage partials. The frozen evidence set cannot
-                # widen, and Layer 69 prevents a cleaner retry from silently
-                # dropping evidence-supported requested parts.
+                # Layers 67–71 — one bounded repair pass for citation-gate or
+                # coverage partials. The frozen evidence set cannot widen, and
+                # the final coverage receipt must remain structurally complete,
+                # source-bound and quote-bound.
                 if (
                     (
                         evidence_audit.get("status") in {"partial", "blocked"}
@@ -1235,7 +1236,9 @@ RESPONSE RULES:
                                     + json.dumps(failed_checks, ensure_ascii=False)
                                     + "\nMissing represented parts after first-pass publication: "
                                     + json.dumps(missing_coverage, ensure_ascii=False)
-                                    + "\nPreserve the covers arrays required by the Deep Recall coverage receipt."
+                                    + "\nPreserve the covers arrays required by the Deep Recall coverage receipt. "
+                                      "For each covers label, cite an exact quote from a frozen evidence excerpt "
+                                      "that actually supports that represented part."
                                 ),
                             },
                         ],
@@ -1253,6 +1256,7 @@ RESPONSE RULES:
                         repair_result["content"],
                         repaired_audit,
                         composition_manifest,
+                        evidence_rows=evidence_rows,
                     )
                     repaired_audit["coverage"] = repaired_coverage
                     reply, evidence_audit = choose_publication_repair(
