@@ -1,4 +1,4 @@
-"""Layers 68–70 — publication repair quality and coverage gates.
+"""Layers 68–71 — publication repair quality and coverage gates.
 
 Layer 67 gives Deep Recall one bounded regeneration attempt after the citation
 integrity gate withholds content. Layer 68 makes that retry fail-safe: a repair
@@ -13,12 +13,19 @@ either dimension.
 Layer 70 binds coverage to evidence provenance. A block may claim a frozen
 represented-part label only when its validated citations include a source that
 the retrieval pipeline itself associated with that part before evidence freeze.
+
+Layer 71 binds coverage one level deeper: the validated citation quote itself
+must occur inside a frozen evidence excerpt that supported the represented part.
+A correct source ID with an unrelated passage no longer satisfies coverage.
 """
 
 from __future__ import annotations
 
 import json
+from hashlib import sha256
 from typing import Any
+
+from core.cognition.evidence_evaluation import normalise
 
 
 _STATUS_RANK = {
@@ -80,6 +87,12 @@ def coverage_contract(manifest: dict | None) -> str:
             "fact merely to satisfy coverage. Frozen part-to-source bindings: "
             + json.dumps(bindings, ensure_ascii=False)
         )
+    if isinstance(manifest.get("part_evidence"), dict):
+        contract += (
+            "\nLAYER 71 QUOTE BINDING: source identity alone is not enough. The exact "
+            "continuous quote used by the block must occur inside one of the frozen "
+            "evidence excerpts that supported that represented part."
+        )
     return contract
 
 
@@ -87,6 +100,8 @@ def evaluate_publication_coverage(
     raw: str,
     evidence_audit: dict | None,
     manifest: dict | None,
+    *,
+    evidence_rows: list[dict] | None = None,
 ) -> dict:
     """Measure structural coverage using only publishable evaluated blocks.
 
@@ -103,8 +118,36 @@ def evaluate_publication_coverage(
         for part in expected
     } if binding_available else {}
 
+    raw_excerpt_bindings = manifest.get("part_evidence")
+    quote_binding_declared = isinstance(raw_excerpt_bindings, dict)
+    frozen_excerpt_bindings = {
+        part: {
+            (
+                str(item.get("source") or "").strip(),
+                str(item.get("excerpt_sha256") or "").strip(),
+            )
+            for item in (raw_excerpt_bindings.get(part) or [])
+            if isinstance(item, dict)
+            and item.get("source")
+            and item.get("excerpt_sha256")
+        }
+        for part in expected
+    } if quote_binding_declared else {}
+
+    evidence_by_binding = {}
+    if quote_binding_declared:
+        for row in evidence_rows or []:
+            if not isinstance(row, dict):
+                continue
+            source = str(row.get("source") or "").strip()
+            excerpt = row.get("quote_source")
+            if not source or not isinstance(excerpt, str):
+                continue
+            fingerprint = sha256(excerpt.encode("utf-8")).hexdigest()
+            evidence_by_binding.setdefault((source, fingerprint), []).append(excerpt)
+
     audit = {
-        "version": "2.0" if binding_available else "1.0",
+        "version": "3.0" if quote_binding_declared else "2.0" if binding_available else "1.0",
         "status": "not_required" if not expected else "partial",
         "expected_parts": expected,
         "expected_count": len(expected),
@@ -116,6 +159,8 @@ def evaluate_publication_coverage(
         "invalid_blocks": [],
         "evidence_bound": binding_available,
         "source_mismatches": [],
+        "quote_bound": quote_binding_declared,
+        "quote_mismatches": [],
         "complete": not expected,
     }
     if not expected:
@@ -123,16 +168,24 @@ def evaluate_publication_coverage(
 
     passed_blocks = set()
     passed_block_sources = {}
+    passed_block_citations = {}
     for item in (evidence_audit or {}).get("checks", []):
         if not isinstance(item, dict) or not item.get("passed"):
             continue
         number = _bounded_int(item.get("block"))
         passed_blocks.add(number)
-        passed_block_sources[number] = {
-            str(citation.get("source") or "").strip()
+        citations = {
+            (
+                str(citation.get("source") or "").strip(),
+                str(citation.get("quote_sha256") or "").strip(),
+            )
             for citation in item.get("citations", [])
-            if isinstance(citation, dict) and citation.get("source")
+            if isinstance(citation, dict)
+            and citation.get("source")
+            and citation.get("quote_sha256")
         }
+        passed_block_citations[number] = citations
+        passed_block_sources[number] = {source for source, _quote_hash in citations}
 
     try:
         data = json.loads(raw)
@@ -149,6 +202,7 @@ def evaluate_publication_coverage(
     invalid_labels = []
     invalid_blocks = []
     source_mismatches = []
+    quote_mismatches = []
 
     for number, block in enumerate(blocks, 1):
         if number not in passed_blocks or not isinstance(block, dict):
@@ -160,6 +214,21 @@ def evaluate_publication_coverage(
         if not isinstance(covers, list):
             invalid_blocks.append(number)
             continue
+
+        raw_citations = block.get("citations", [])
+        validated_quotes = []
+        if isinstance(raw_citations, list):
+            accepted = passed_block_citations.get(number, set())
+            for citation in raw_citations:
+                if not isinstance(citation, dict):
+                    continue
+                source = str(citation.get("source") or "").strip()
+                quote = citation.get("quote")
+                if not source or not isinstance(quote, str) or not normalise(quote):
+                    continue
+                quote_hash = sha256(normalise(quote).encode("utf-8")).hexdigest()
+                if (source, quote_hash) in accepted:
+                    validated_quotes.append((source, quote))
 
         for value in covers:
             label = str(value or "").strip()
@@ -182,6 +251,32 @@ def evaluate_publication_coverage(
                     })
                     continue
 
+            if quote_binding_declared:
+                permitted_bindings = frozen_excerpt_bindings.get(label, set())
+                quote_supported = False
+                for source, quote in validated_quotes:
+                    for binding in permitted_bindings:
+                        if source != binding[0]:
+                            continue
+                        for excerpt in evidence_by_binding.get(binding, []):
+                            if normalise(quote) in normalise(excerpt):
+                                quote_supported = True
+                                break
+                        if quote_supported:
+                            break
+                    if quote_supported:
+                        break
+                if not quote_supported:
+                    quote_mismatches.append({
+                        "block": number,
+                        "part": label,
+                        "validated_sources": sorted(
+                            {source for source, _quote in validated_quotes}
+                        )[:8],
+                        "bound_excerpt_count": len(permitted_bindings),
+                    })
+                    continue
+
             if label not in covered_set:
                 covered.append(label)
                 covered_set.add(label)
@@ -197,6 +292,8 @@ def evaluate_publication_coverage(
         invalid_blocks=invalid_blocks,
         source_mismatches=source_mismatches,
         source_mismatch_count=len(source_mismatches),
+        quote_mismatches=quote_mismatches,
+        quote_mismatch_count=len(quote_mismatches),
         complete=not missing,
     )
     return audit
@@ -225,6 +322,7 @@ def coverage_quality(coverage: dict | None) -> tuple[int, int, int, int]:
         len(coverage.get("invalid_labels") or [])
         + len(coverage.get("invalid_blocks") or [])
         + _bounded_int(coverage.get("source_mismatch_count"))
+        + _bounded_int(coverage.get("quote_mismatch_count"))
     )
     return complete, covered, -missing, -invalid
 
@@ -241,7 +339,7 @@ def choose_publication_repair(
     """Keep a Layer 67 repair only when governed quality improves safely.
 
     Layer 68 remains the default behaviour when no coverage receipts are supplied.
-    With Layers 69–70 receipts, neither citation quality nor evidence-bound
+    With Layers 69–71 receipts, neither citation quality nor quote-bound
     structural coverage may regress; at least one must strictly improve.
     """
     baseline = dict(first_audit or {})
