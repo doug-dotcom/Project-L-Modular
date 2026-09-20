@@ -103,6 +103,10 @@ def install(rhee):
             part_sources[part] = sources
             part_evidence[part] = bindings
 
+        query_sha256 = sha256(
+            rhee.safe_text(query).encode("utf-8")
+        ).hexdigest()
+
         evidence_packet_sha256 = sha256(
             json.dumps(
                 evidence,
@@ -128,6 +132,7 @@ def install(rhee):
             "excerpt_recovery": rhee.safe_text(plan.get("deep_recall_excerpt_recovery", "unknown")),
             "readiness": rhee.safe_text(plan.get("deep_recall_evidence_freeze_final_readiness", "unknown")),
             "source_ids": source_ids[:120],
+            "query_sha256": query_sha256,
             "evidence_packet_sha256": evidence_packet_sha256,
         }
         manifest_sha256 = sha256(
@@ -144,7 +149,7 @@ def install(rhee):
         output = dict(result)
         plan.update({
             "deep_recall_composition_manifest": "created",
-            "deep_recall_composition_manifest_version": 4,
+            "deep_recall_composition_manifest_version": 5,
             "deep_recall_composition_manifest_data": manifest,
         })
         output["recall_plan"] = plan
@@ -156,6 +161,7 @@ def install(rhee):
             f"operational sources removed={manifest['operational_removed']}.",
             "The evidence set is frozen. This manifest is the final composition checklist, not a retrieval instruction.",
             "Layer 77 fingerprints the exact ordered frozen evidence packet and this composition manifest; publication must fail closed if either fingerprint changes.",
+            "Layer 78 binds this frozen contract to the exact Deep Recall query that created it; a different query requires a fresh contract.",
             "Answer Doug's CURRENT question using only the frozen evidence packet.",
             "Present every material represented requested part; qualify candidate/partial details; name each genuine thin part once.",
             "Preserve exact event identity, chronology, negation/polarity, speaker attribution, plan-vs-outcome status, numbers/units/currency and source provenance.",
