@@ -589,7 +589,7 @@ def choose_publication_repair(
     candidate.update(
         repair_accepted=True,
         repair_acceptance_reason=(
-            "audited_receipt_bound_quality_coverage_and_claim_support_nonregression"
+            "audited_quality_coverage_and_claim_support_nonregression"
             if has_support and has_coverage
             else "audited_quality_and_claim_support_nonregression"
             if has_support
