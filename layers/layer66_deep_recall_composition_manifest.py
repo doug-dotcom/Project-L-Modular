@@ -46,17 +46,49 @@ def install(rhee):
         for part in represented_parts:
             sources = []
             seen_part_sources = set()
-            for source in raw_part_sources.get(part, []) or []:
-                source = rhee.safe_text(source).strip()
+
+            # Layer 70 binds coverage against the final frozen packet, not only
+            # Layer 38's earlier reconciliation. This includes any valid late
+            # contradiction-rescue evidence added before Layer 65 froze the set.
+            for item in evidence:
+                source = rhee.safe_text(item.get("source")).strip()
+                text = rhee.safe_text(item.get("quote_source"))
                 if (
-                    source
-                    and source in frozen_source_set
-                    and source not in seen_part_sources
+                    not source
+                    or source not in frozen_source_set
+                    or source in seen_part_sources
+                    or not text
                 ):
-                    sources.append(source)
-                    seen_part_sources.add(source)
+                    continue
+                try:
+                    score = rhee.calculate_raw_score(
+                        {"content": text, "role": item.get("role", "unknown")},
+                        part,
+                    )
+                except Exception:
+                    score = 0
+                if score <= 0:
+                    continue
+                sources.append(source)
+                seen_part_sources.add(source)
                 if len(sources) >= 40:
                     break
+
+            # Preserve Layer 38's source receipt as a bounded fallback if the
+            # scorer is unavailable during manifest construction.
+            if not sources:
+                for source in raw_part_sources.get(part, []) or []:
+                    source = rhee.safe_text(source).strip()
+                    if (
+                        source
+                        and source in frozen_source_set
+                        and source not in seen_part_sources
+                    ):
+                        sources.append(source)
+                        seen_part_sources.add(source)
+                    if len(sources) >= 40:
+                        break
+
             part_sources[part] = sources
 
         manifest = {
