@@ -1,4 +1,4 @@
-"""Layers 72–74 — claim alignment, atomicity and cross-block consistency gate.
+"""Layers 72–76 — claim alignment, atomicity, consistency and receipt binding.
 
 Layers 70–71 prove that a Deep Recall block covers the right requested part
 with a validated quote from the right frozen evidence excerpt. They still do
@@ -21,6 +21,10 @@ otherwise publishable fact blocks. Only materially incompatible claims about
 the same event/proposition/time scope count; plan→outcome, later updates and
 different dated states are not automatically conflicts. Conflicting blocks are
 withheld together rather than asking the checker to choose a winner.
+
+Layer 76 cryptographically binds this semantic receipt to both the exact raw
+draft it checked and the exact post-gate publication JSON produced from it, so
+the receipt cannot be replayed against a different answer.
 
 This is a claim/quote alignment and structure check, not independent truth certification.
 """
@@ -120,8 +124,11 @@ def evaluate_claim_support(
     """
     candidates = build_claim_support_payload(raw, evidence_audit)
     audit = {
-        "version": "3.0",
+        "version": "4.0",
         "status": "not_required" if not candidates else "unavailable",
+        "draft_sha256": sha256(raw.encode()).hexdigest(),
+        "citation_audit_draft_sha256": str((evidence_audit or {}).get("draft_sha256") or ""),
+        "publication_draft_sha256": "",
         "checked_blocks": len(candidates),
         "failed_blocks": [],
         "compound_blocks": [],
@@ -316,6 +323,18 @@ Return "conflicts":[] when none are present. Do not rewrite the answer and do no
             error_type=type(exc).__name__,
         )
         return audit
+
+
+def bind_claim_support_to_publication(
+    support_audit: dict | None,
+    publication_raw: str,
+) -> dict:
+    """Bind a Layers 72–74 receipt to the exact post-gate publication JSON."""
+    bound = dict(support_audit or {})
+    bound["publication_draft_sha256"] = sha256(
+        str(publication_raw or "").encode()
+    ).hexdigest()
+    return bound
 
 
 def apply_claim_support_gate(raw: str, support_audit: dict | None) -> str:

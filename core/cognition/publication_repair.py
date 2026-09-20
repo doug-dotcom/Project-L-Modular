@@ -1,4 +1,4 @@
-"""Layers 68–75 — publication repair quality and coverage gates.
+"""Layers 68–76 — publication repair quality, coverage and receipt-integrity gates.
 
 Layer 67 gives Deep Recall one bounded regeneration attempt after the citation
 integrity gate withholds content. Layer 68 makes that retry fail-safe: a repair
@@ -22,6 +22,10 @@ Layer 75 extends repair selection across the bounded claim-support gate introduc
 by Layers 72–74. A repair may not be published if it improves citations/coverage
 while introducing new unsupported claims, compound fact blocks or cross-block
 conflicts. Semantic-gate outages are treated as lower confidence, not as success.
+
+Layer 76 hash-binds the live publication receipts. A repair cannot replace the
+first pass unless the rendered reply, citation audit, coverage audit and bounded
+claim-support receipt all identify the exact drafts they actually evaluated.
 """
 
 from __future__ import annotations
@@ -152,7 +156,8 @@ def evaluate_publication_coverage(
             evidence_by_binding.setdefault((source, fingerprint), []).append(excerpt)
 
     audit = {
-        "version": "3.0" if quote_binding_declared else "2.0" if binding_available else "1.0",
+        "version": "4.0" if quote_binding_declared else "2.0" if binding_available else "1.0",
+        "draft_sha256": sha256(str(raw or "").encode()).hexdigest(),
         "status": "not_required" if not expected else "partial",
         "expected_parts": expected,
         "expected_count": len(expected),
@@ -373,6 +378,62 @@ def claim_support_quality(audit: dict | None) -> tuple[int, int, int, int] | Non
     return rank, -failed, -conflicts, -compound
 
 
+def publication_receipt_integrity(
+    reply: str,
+    audit: dict | None,
+    coverage: dict | None = None,
+) -> dict:
+    """Verify that all available receipts belong to the exact publication.
+
+    Legacy handcrafted audits without hashes remain compatible. Live Project L
+    receipts carry hashes and must agree. Any declared hash mismatch is a hard
+    integrity failure.
+    """
+    audit = dict(audit or {})
+    coverage = dict(coverage or {}) if coverage is not None else None
+    issues = []
+
+    declared_reply = str(audit.get("reply_sha256") or "").strip()
+    if declared_reply:
+        actual_reply = sha256(str(reply or "").encode()).hexdigest()
+        if declared_reply != actual_reply:
+            issues.append("reply_hash_mismatch")
+
+    publication_draft = str(audit.get("draft_sha256") or "").strip()
+    if coverage is not None:
+        coverage_draft = str(coverage.get("draft_sha256") or "").strip()
+        if publication_draft and coverage_draft and publication_draft != coverage_draft:
+            issues.append("coverage_draft_mismatch")
+
+    support = audit.get("claim_support")
+    if isinstance(support, dict):
+        support_draft = str(support.get("draft_sha256") or "").strip()
+        support_citation_draft = str(
+            support.get("citation_audit_draft_sha256") or ""
+        ).strip()
+        support_publication_draft = str(
+            support.get("publication_draft_sha256") or ""
+        ).strip()
+        if (
+            support_draft
+            and support_citation_draft
+            and support_draft != support_citation_draft
+        ):
+            issues.append("claim_support_source_draft_mismatch")
+        if (
+            publication_draft
+            and support_publication_draft
+            and publication_draft != support_publication_draft
+        ):
+            issues.append("claim_support_publication_draft_mismatch")
+
+    return {
+        "version": "1.0",
+        "valid": not issues,
+        "issues": issues,
+    }
+
+
 def choose_publication_repair(
     first_reply: str,
     first_audit: dict,
@@ -385,7 +446,7 @@ def choose_publication_repair(
     """Keep a Layer 67 repair only when governed quality improves safely.
 
     Layer 68 remains the default behaviour when no coverage receipts are supplied.
-    With Layers 69–75 receipts, citation quality, quote-bound structural
+    With Layers 69–76 receipts, citation quality, quote-bound structural
     coverage and bounded claim-support/consistency quality must not regress;
     at least one governed dimension must strictly improve.
     """
@@ -399,6 +460,12 @@ def choose_publication_repair(
     first_support_quality = claim_support_quality(baseline.get("claim_support"))
     repair_support_quality = claim_support_quality(candidate.get("claim_support"))
     has_support = first_support_quality is not None or repair_support_quality is not None
+    first_integrity = publication_receipt_integrity(
+        first_reply, baseline, first_coverage
+    )
+    repair_integrity = publication_receipt_integrity(
+        repaired_reply, candidate, repaired_coverage
+    )
 
     if first_coverage is not None:
         baseline["coverage"] = dict(first_coverage)
@@ -428,6 +495,26 @@ def choose_publication_repair(
                 if first_support_quality is not None else None
             ),
         )
+    metadata.update(
+        first_pass_receipt_integrity=first_integrity,
+        repair_candidate_receipt_integrity=repair_integrity,
+    )
+
+    if not first_integrity["valid"]:
+        baseline.update(metadata)
+        baseline.update(
+            repair_accepted=False,
+            repair_rejection_reason="first_pass_receipt_mismatch",
+        )
+        return first_reply, baseline
+
+    if not repair_integrity["valid"]:
+        baseline.update(metadata)
+        baseline.update(
+            repair_accepted=False,
+            repair_rejection_reason="repair_receipt_mismatch",
+        )
+        return first_reply, baseline
 
     if not str(repaired_reply or "").strip():
         baseline.update(metadata)
