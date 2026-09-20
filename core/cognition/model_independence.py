@@ -102,6 +102,9 @@ def invoke_model(adapter: ModelAdapter, request: dict) -> dict:
     declared_request_sha256 = str(request.get("request_sha256") or "").strip()
     if declared_request_sha256 and declared_request_sha256 != actual_request_sha256:
         raise ValueError("model_request_integrity_mismatch")
+    request_integrity = (
+        "verified" if declared_request_sha256 else "legacy_unbound"
+    )
 
     result = adapter.generate(request)
     if not isinstance(result, dict):
@@ -115,6 +118,7 @@ def invoke_model(adapter: ModelAdapter, request: dict) -> dict:
     receipt.update({
         "request_sha256": actual_request_sha256,
         "content_sha256": content_sha256,
+        "request_integrity": request_integrity,
     })
     normalised = {
         "interface_version": MODEL_INTERFACE_VERSION,
@@ -125,6 +129,7 @@ def invoke_model(adapter: ModelAdapter, request: dict) -> dict:
         "purpose": str(request.get("purpose") or "general"),
         "request_sha256": actual_request_sha256,
         "content_sha256": content_sha256,
+        "request_integrity": request_integrity,
         "receipt": receipt,
     }
     if normalised["status"] != "complete" or not content.strip():
@@ -337,7 +342,7 @@ def build_model_independence_packet(adapter: ModelAdapter | None) -> dict:
         ],
         "result_fields": [
             "interface_version", "status", "content", "provider", "model_id", "purpose",
-            "request_sha256", "content_sha256", "receipt",
+            "request_sha256", "content_sha256", "request_integrity", "receipt",
         ],
         "persistent_systems": list(PERSISTENT_SYSTEMS),
         "replaceable_layer": "foundation_model_adapter",
