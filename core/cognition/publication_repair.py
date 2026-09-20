@@ -625,13 +625,19 @@ def choose_publication_repair(
     first_support_quality = claim_support_quality(baseline.get("claim_support"))
     repair_support_quality = claim_support_quality(candidate.get("claim_support"))
     has_support = first_support_quality is not None or repair_support_quality is not None
+    has_generation_receipt = (
+        isinstance(baseline.get("generation"), dict)
+        or isinstance(candidate.get("generation"), dict)
+    )
     first_integrity = publication_receipt_integrity(
         first_reply,
         baseline,
         first_coverage,
         expected_frozen_binding=frozen_binding,
         expected_generation_purpose=(
-            "l_user_response" if frozen_binding is not None else None
+            "l_user_response"
+            if frozen_binding is not None and has_generation_receipt
+            else None
         ),
     )
     repair_integrity = publication_receipt_integrity(
@@ -641,7 +647,8 @@ def choose_publication_repair(
         expected_frozen_binding=frozen_binding,
         expected_generation_purpose=(
             "l_deep_recall_publication_repair"
-            if frozen_binding is not None else None
+            if frozen_binding is not None and has_generation_receipt
+            else None
         ),
     )
 
