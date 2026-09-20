@@ -110,6 +110,11 @@ def invoke_model(adapter: ModelAdapter, request: dict) -> dict:
     request_integrity = (
         "verified" if declared_request_sha256 else "legacy_unbound"
     )
+    verified_context_binding = (
+        dict(request["context_binding"])
+        if isinstance(request.get("context_binding"), dict)
+        else None
+    )
 
     result = adapter.generate(request)
     if not isinstance(result, dict):
@@ -125,8 +130,8 @@ def invoke_model(adapter: ModelAdapter, request: dict) -> dict:
         "content_sha256": content_sha256,
         "request_integrity": request_integrity,
     })
-    if isinstance(request.get("context_binding"), dict):
-        receipt["context_binding"] = dict(request["context_binding"])
+    if verified_context_binding is not None:
+        receipt["context_binding"] = dict(verified_context_binding)
     normalised = {
         "interface_version": MODEL_INTERFACE_VERSION,
         "status": str(result.get("status") or "complete"),
@@ -138,8 +143,8 @@ def invoke_model(adapter: ModelAdapter, request: dict) -> dict:
         "content_sha256": content_sha256,
         "request_integrity": request_integrity,
         "context_binding": (
-            dict(request["context_binding"])
-            if isinstance(request.get("context_binding"), dict)
+            dict(verified_context_binding)
+            if verified_context_binding is not None
             else None
         ),
         "receipt": receipt,
