@@ -71,6 +71,20 @@ def generation(binding, purpose):
     }
     from core.cognition.publication_repair import _canonical_sha256
     transport["receipt_sha256"] = _canonical_sha256(transport)
+    response = {
+        "version": "1.0",
+        "integrity": "verified",
+        "api": "responses",
+        "response_id": "resp_fixture",
+        "requested_model": "fixture-model",
+        "returned_model": "fixture-model",
+        "status": "complete",
+        "request_sha256": "d" * 64,
+        "transport_receipt_sha256": transport["receipt_sha256"],
+        "content_sha256": "e" * 64,
+        "issues": [],
+    }
+    response["receipt_sha256"] = _canonical_sha256(response)
     return {
         "request_sha256": "d" * 64,
         "content_sha256": "e" * 64,
@@ -79,6 +93,7 @@ def generation(binding, purpose):
         "request_integrity": "verified",
         "context_binding": dict(binding),
         "provider_transport": transport,
+        "provider_response": response,
     }
 
 
@@ -315,5 +330,5 @@ def test_layer81_evaluation_manifest_exposes_prompt_composition_binding():
         / "evidence_evaluation.py"
     ).read_text(encoding="utf-8")
 
-    assert 'VERSION = "2.1"' in source
+    assert 'VERSION = "2.3"' in source
     assert '"deep_recall_prompt_composition_binding"' in source
