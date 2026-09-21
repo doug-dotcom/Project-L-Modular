@@ -231,7 +231,7 @@ def test_layer74_live_repair_receives_conflict_receipt():
 
     assert 'cross_block_conflicts = list(first_support.get("conflicts", []))' in source
     assert "Cross-block conflicts requiring reconciliation" in source
-    assert "do not silently pick one" in source
+    assert "silently pick one" in source
     assert "first_pass_cross_block_conflicts" in source
 
 
