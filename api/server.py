@@ -56,6 +56,9 @@ from core.cognition.publication_repair import (
     choose_publication_repair,
     coverage_contract,
     evaluate_publication_coverage,
+    final_publication_stage_receipt,
+    seal_final_publication_reply,
+    verify_final_publication_seal,
     verify_frozen_evidence_binding,
 )
 from core.cognition.claim_support import (
@@ -913,6 +916,9 @@ def chat(req: ChatRequest):
         cognitive_plan["needs"]["memory"] = True
     evidence_audit = {"status": "not_checked", "version": "1.0"}
     response_model_receipt = {"status": "not_invoked"}
+    publication_base_reply = None
+    publication_stages = []
+    publication_seal = None
     log(
         "COGNITIVE PLAN: "
         f"type={cognitive_plan['problem_type']} | "
@@ -1452,16 +1458,38 @@ RESPONSE RULES:
                     evidence_audit["first_pass_missing_parts"] = missing_coverage
                     evidence_audit["first_pass_claim_support_failures"] = len(failed_support)
                     evidence_audit["first_pass_cross_block_conflicts"] = len(cross_block_conflicts)
+            if check_evidence:
+                publication_base_reply = reply
+
+            before_architecture_grounding = reply
             reply = ensure_architecture_audit_grounding(
                 user_message,
                 reply,
                 cognitive_packet,
             )
+            if check_evidence:
+                publication_stages.append(
+                    final_publication_stage_receipt(
+                        "architecture_grounding",
+                        before_architecture_grounding,
+                        reply,
+                    )
+                )
+
+            before_causal_grounding = reply
             reply = ensure_causal_recall_grounding(
                 user_message,
                 reply,
                 cognitive_packet,
             )
+            if check_evidence:
+                publication_stages.append(
+                    final_publication_stage_receipt(
+                        "causal_grounding",
+                        before_causal_grounding,
+                        reply,
+                    )
+                )
 
         except Exception as e:
             log(f"OPENAI ERROR: {type(e).__name__}")
@@ -1474,8 +1502,17 @@ RESPONSE RULES:
 
     cognitive_packet["evidence_evaluation"] = evidence_audit
     notice = coverage_notice(rhee_packet.get('recall_plan'))
+    before_coverage_notice = reply
     if notice:
         reply += '\n\n' + notice
+    if check_evidence and publication_base_reply is not None:
+        publication_stages.append(
+            final_publication_stage_receipt(
+                "coverage_notice",
+                before_coverage_notice,
+                reply,
+            )
+        )
     temporal_receipt = rhee_packet.get('temporal_memory')
     if temporal_receipt and snapshot_freshness(supabase, temporal_receipt).get('status') != 'unchanged':
         payload = {'reply': 'The fact timeline changed while I was preparing this answer, or its freshness could not be checked. Please ask again.',
@@ -1483,6 +1520,56 @@ RESPONSE RULES:
                                                'model_receipt': response_model_receipt}}
         store_chat_result(request_id, 'ready', payload)
         return payload
+
+    if check_evidence and publication_base_reply is not None:
+        publication_seal = seal_final_publication_reply(
+            publication_base_reply,
+            reply,
+            evidence_audit,
+            publication_stages,
+        )
+        if not publication_seal.get("valid"):
+            payload = {
+                "reply": (
+                    "I couldn't verify the final publication chain for this "
+                    "evidence-backed answer, so I've withheld it. Please try again."
+                ),
+                "server": "vx",
+                "error": True,
+                "cognition": {
+                    "evidence_evaluation": {
+                        **evidence_audit,
+                        "final_publication": publication_seal,
+                    }
+                },
+            }
+            store_chat_result(request_id, "ready", payload)
+            return payload
+        evidence_audit["final_publication"] = publication_seal
+        immediate_seal_check = verify_final_publication_seal(
+            reply,
+            publication_seal,
+        )
+        if not immediate_seal_check.get("valid"):
+            payload = {
+                "reply": (
+                    "I couldn't verify the sealed final answer before reflective "
+                    "processing, so I've withheld it. Please try again."
+                ),
+                "server": "vx",
+                "error": True,
+                "cognition": {
+                    "evidence_evaluation": {
+                        **evidence_audit,
+                        "final_publication_verification": immediate_seal_check,
+                    }
+                },
+            }
+            store_chat_result(request_id, "ready", payload)
+            return payload
+        evidence_audit["final_publication_verification"] = immediate_seal_check
+        cognitive_packet["evidence_evaluation"] = evidence_audit
+
     log(f"EVIDENCE CHECK: {evidence_audit.get('status')} | request={request_id}")
 
     reflection = reflect_on_task(
@@ -1502,6 +1589,28 @@ RESPONSE RULES:
             f"issues={reflection.get('issues', [])} | "
             f"learning={cognitive_packet['learning_feedback'].get('status')}"
         )
+
+    if publication_seal is not None:
+        final_seal_check = verify_final_publication_seal(reply, publication_seal)
+        if not final_seal_check.get("valid"):
+            payload = {
+                "reply": (
+                    "I couldn't verify that the final answer remained unchanged "
+                    "after sealing, so I've withheld it. Please try again."
+                ),
+                "server": "vx",
+                "error": True,
+                "cognition": {
+                    "evidence_evaluation": {
+                        **evidence_audit,
+                        "final_publication_verification": final_seal_check,
+                    }
+                },
+            }
+            store_chat_result(request_id, "ready", payload)
+            return payload
+        evidence_audit["final_publication_prewrite_verification"] = final_seal_check
+        cognitive_packet["evidence_evaluation"] = evidence_audit
 
     cognitive_packet["working_memory"] = active_context_service.complete_turn(
         conversation_scope,

@@ -1,4 +1,4 @@
-"""Layers 68–83 — publication repair quality, coverage and receipt-integrity gates.
+"""Layers 68–84 — publication repair quality, coverage and receipt-integrity gates.
 
 Layer 67 gives Deep Recall one bounded regeneration attempt after the citation
 integrity gate withholds content. Layer 68 makes that retry fail-safe: a repair
@@ -51,6 +51,11 @@ Layer 83 binds the return path. The adapter fingerprints the actual provider
 response text immediately after the SDK call and links it to the verified
 transport receipt. Publication requires that response hash to match the exact
 raw generation draft that entered the claim/citation gates.
+
+Layer 84 seals the final user-visible publication after the only three allowed
+post-audit transforms: architecture grounding, causal grounding and coverage
+notice. The sealed reply must still match the citation-audited base, the ordered
+post-processing chain and the exact final text before any assistant-memory write.
 """
 
 from __future__ import annotations
@@ -777,6 +782,119 @@ def publication_receipt_integrity(
     }
 
 
+FINAL_PUBLICATION_STAGES = (
+    "architecture_grounding",
+    "causal_grounding",
+    "coverage_notice",
+)
+
+
+def final_publication_stage_receipt(
+    stage: str,
+    before_reply: str,
+    after_reply: str,
+) -> dict:
+    """Record one allowed deterministic post-audit publication transform."""
+    stage = str(stage or "").strip()
+    if stage not in FINAL_PUBLICATION_STAGES:
+        raise ValueError("final_publication_stage_invalid")
+    before_reply = str(before_reply or "")
+    after_reply = str(after_reply or "")
+    receipt = {
+        "version": "1.0",
+        "stage": stage,
+        "before_sha256": sha256(before_reply.encode("utf-8")).hexdigest(),
+        "after_sha256": sha256(after_reply.encode("utf-8")).hexdigest(),
+        "changed": before_reply != after_reply,
+    }
+    receipt["receipt_sha256"] = _canonical_sha256(receipt)
+    return receipt
+
+
+def seal_final_publication_reply(
+    audited_reply: str,
+    final_reply: str,
+    evidence_audit: dict | None,
+    stages: list[dict] | None,
+) -> dict:
+    """Seal the exact final reply after the complete allowed transform chain."""
+    audited_reply = str(audited_reply or "")
+    final_reply = str(final_reply or "")
+    evidence_audit = dict(evidence_audit or {})
+    stages = list(stages or [])
+    issues = []
+
+    audited_sha = sha256(audited_reply.encode("utf-8")).hexdigest()
+    final_sha = sha256(final_reply.encode("utf-8")).hexdigest()
+    evidence_reply_sha = str(evidence_audit.get("reply_sha256") or "").strip()
+
+    if len(evidence_reply_sha) != 64:
+        issues.append("evidence_reply_hash_missing")
+    elif evidence_reply_sha != audited_sha:
+        issues.append("audited_reply_hash_mismatch")
+
+    names = [str(stage.get("stage") or "") for stage in stages if isinstance(stage, dict)]
+    if names != list(FINAL_PUBLICATION_STAGES):
+        issues.append("final_publication_stage_order_mismatch")
+
+    cursor = audited_sha
+    for expected_name, stage in zip(FINAL_PUBLICATION_STAGES, stages):
+        if not isinstance(stage, dict):
+            issues.append("final_publication_stage_invalid")
+            continue
+        payload = dict(stage)
+        declared = str(payload.pop("receipt_sha256", "") or "")
+        if declared != _canonical_sha256(payload):
+            issues.append(f"{expected_name}_receipt_invalid")
+        if str(stage.get("stage") or "") != expected_name:
+            issues.append(f"{expected_name}_name_mismatch")
+        if str(stage.get("before_sha256") or "") != cursor:
+            issues.append(f"{expected_name}_chain_mismatch")
+        after_sha = str(stage.get("after_sha256") or "")
+        if len(after_sha) != 64:
+            issues.append(f"{expected_name}_after_hash_invalid")
+        else:
+            cursor = after_sha
+
+    if cursor != final_sha:
+        issues.append("final_reply_chain_mismatch")
+
+    seal = {
+        "version": "1.0",
+        "status": "sealed" if not issues else "mismatch",
+        "valid": not issues,
+        "audited_reply_sha256": audited_sha,
+        "evidence_reply_sha256": evidence_reply_sha,
+        "final_reply_sha256": final_sha,
+        "stage_count": len(stages),
+        "stages": stages,
+        "issues": issues,
+    }
+    seal["receipt_sha256"] = _canonical_sha256(seal)
+    return seal
+
+
+def verify_final_publication_seal(final_reply: str, seal: dict | None) -> dict:
+    """Re-verify the final seal immediately before assistant-side effects."""
+    seal = dict(seal or {})
+    issues = []
+    payload = dict(seal)
+    declared = str(payload.pop("receipt_sha256", "") or "")
+    if declared != _canonical_sha256(payload):
+        issues.append("final_publication_seal_receipt_invalid")
+    if not seal.get("valid") or str(seal.get("status") or "") != "sealed":
+        issues.append("final_publication_seal_not_valid")
+    final_sha = sha256(str(final_reply or "").encode("utf-8")).hexdigest()
+    if str(seal.get("final_reply_sha256") or "") != final_sha:
+        issues.append("final_publication_reply_changed_after_seal")
+    return {
+        "version": "1.0",
+        "valid": not issues,
+        "issues": issues,
+        "final_reply_sha256": final_sha,
+    }
+
+
 def choose_publication_repair(
     first_reply: str,
     first_audit: dict,
@@ -791,7 +909,7 @@ def choose_publication_repair(
     """Keep a Layer 67 repair only when governed quality improves safely.
 
     Layer 68 remains the default behaviour when no coverage receipts are supplied.
-    With Layers 69–83 receipts, citation quality, quote-bound structural
+    With Layers 69–84 receipts, citation quality, quote-bound structural
     coverage and bounded claim-support/consistency quality must not regress;
     at least one governed dimension must strictly improve.
     """
