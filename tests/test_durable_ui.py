@@ -14,10 +14,11 @@ const vm = require('node:vm');
 const storage = new Map();
 const requests = [];
 const context = {
+ AbortController, performance, clearTimeout,
  localStorage: {getItem: k => storage.get(k) || null, setItem: (k,v) => storage.set(k,v), removeItem: k => storage.delete(k)},
  window: {crypto: require('node:crypto').webcrypto},
  document: {addEventListener() {}},
- setTimeout: fn => fn(),
+ setTimeout: (fn, ms) => ms <= 2000 ? (fn(), 0) : setTimeout(fn, ms),
  fetch: async (url, options) => {requests.push({url, options}); return {ok: true, json: async () => ({status: 'interrupted'})};},
 };
 vm.createContext(context);

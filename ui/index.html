@@ -556,6 +556,31 @@
         const sleep = (milliseconds) =>
             new Promise(resolve => setTimeout(resolve, milliseconds));
 
+        const ANSWER_RECOVERY_BUDGET_MS = 120000;
+        const CHAT_REQUEST_TIMEOUT_MS = 15000;
+
+        async function fetchChatJson(url, options, timeoutMs = CHAT_REQUEST_TIMEOUT_MS) {
+            const controller = new AbortController();
+            let timer;
+            try {
+                const timeout = new Promise((_, reject) => {
+                    timer = setTimeout(() => {
+                        reject(new Error("Chat connection timed out"));
+                        controller.abort();
+                    }, timeoutMs);
+                });
+                const request = (async () => {
+                    const response = await fetch(url, {...options, signal: controller.signal});
+                    if (!response.ok) throw new Error(`Chat request returned ${response.status}`);
+                    return await response.json();
+                })();
+                // Also bound response-body reads and transports that ignore abort.
+                return await Promise.race([request, timeout]);
+            } finally {
+                clearTimeout(timer);
+            }
+        }
+
         function newChatRequestId() {
             if (window.crypto && typeof window.crypto.randomUUID === "function") {
                 return window.crypto.randomUUID();
@@ -654,15 +679,19 @@
         }
 
         async function recoverChatResponse(requestId) {
-            for (let attempt = 0; attempt < 120; attempt += 1) {
-                await sleep(2000);
+            const deadline = performance.now() + ANSWER_RECOVERY_BUDGET_MS;
+            for (let attempt = 0; attempt < 60; attempt += 1) {
+                const remaining = deadline - performance.now();
+                if (remaining <= 0) break;
+                await sleep(Math.min(2000, remaining));
+                const requestBudget = deadline - performance.now();
+                if (requestBudget <= 0) break;
                 try {
-                    const response = await fetch(
+                    const data = await fetchChatJson(
                         `/chat/result/${encodeURIComponent(requestId)}`,
-                        { cache: "no-store", headers: recoveryHeaders() }
+                        { cache: "no-store", headers: recoveryHeaders() },
+                        Math.min(CHAT_REQUEST_TIMEOUT_MS, requestBudget)
                     );
-                    if (!response.ok) continue;
-                    const data = await response.json();
                     // Terminal errors can carry a bound answer too. Verify before
                     // any rendering or voice path, regardless of envelope status.
                     if (["ready", "failed", "interrupted"].includes(data.status) &&
@@ -744,9 +773,10 @@
             chat.scrollTop =
                 chat.scrollHeight;
 
+            let recoveryAttempted = false;
             try {
 
-                const response = await fetch(
+                const start = await fetchChatJson(
                     API_URL,
                     {
                         method: "POST",
@@ -763,16 +793,11 @@
                     }
                 );
 
-                if (!response.ok) {
-                    throw new Error(`Chat request returned ${response.status}`);
-                }
-
-                const start = await response.json();
-
                 if (start.status === "invalid_request_id") {
                     throw new Error("The request could not be started");
                 }
 
+                recoveryAttempted = true;
                 const data = await recoverChatResponse(requestId);
 
                 if (!data || !data.reply) {
@@ -794,8 +819,10 @@
                 window.lVoice?.onReply(data.reply, !data.error);
 
             } catch (err) {
-                thinking.textContent = "L is still thinking...";
-                const recovered = await recoverChatResponse(requestId);
+                thinking.textContent = "Checking whether L saved your answer...";
+                // An uncertain acknowledgement may still have committed the task.
+                // Recover it once; never resubmit or restart an exhausted wait.
+                const recovered = recoveryAttempted ? null : await recoverChatResponse(requestId);
                 thinking.remove();
                 if (recovered && recovered.reply) {
                     clearPendingRequest(requestId);
@@ -805,7 +832,7 @@
                     appendChatMessage(
                         chat,
                         "assistant error",
-                        "I could not recover the answer yet. Check Saved answers shortly before resending the task."
+                        "I stopped waiting for this answer. Your request is saved in this browser; L may still be working. Check Saved answers before resending the task."
                     );
                 }
             }
@@ -833,11 +860,13 @@
                 button.disabled = true;
                 try {
                     const recent = savedTasks().slice(-20);
+                    const deadline = performance.now() + ANSWER_RECOVERY_BUDGET_MS;
                     if (!recent.length) appendChatMessage(chat, "assistant", "Your saved answers will appear here after you send a message.");
                     for (const task of recent) {
-                        const response = await fetch(`/chat/result/${encodeURIComponent(task.requestId)}`, {cache: "no-store", headers: recoveryHeaders()});
-                        if (!response.ok) throw new Error("unavailable");
-                        const result = await response.json();
+                        const remaining = deadline - performance.now();
+                        if (remaining <= 0) throw new Error("Saved answers check timed out");
+                        const result = await fetchChatJson(`/chat/result/${encodeURIComponent(task.requestId)}`,
+                            {cache: "no-store", headers: recoveryHeaders()}, Math.min(CHAT_REQUEST_TIMEOUT_MS, remaining));
                         appendChatMessage(chat, "user", task.message);
                         let savedText = "";
                         if (["ready", "failed", "interrupted"].includes(result.status) &&
