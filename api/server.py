@@ -68,6 +68,11 @@ from core.cognition.claim_support import (
     evaluate_claim_support,
 )
 from core.cognition.durable_tasks import TaskStore, TaskRunner, CONTEXT as TASK_CONTEXT, checkpoint, task_database_client
+from core.cognition.delivery_integrity import (
+    require_chat_delivery_payload,
+    seal_chat_delivery_payload,
+    verify_chat_delivery_payload,
+)
 from core.cognition.account_access import require_account
 from core.cognition.document_evidence import EvidenceStore, answer_from_document
 from api.account_documents import routes as account_document_routes
@@ -380,6 +385,11 @@ def store_chat_result(request_id, status, payload=None):
     request_id = normalise_request_id(request_id)
     if not request_id:
         return
+    if isinstance(payload, dict):
+        require_chat_delivery_payload(
+            payload,
+            expected_request_id=request_id,
+        )
     now = monotonic_time.monotonic()
     with _chat_results_lock:
         expired = [
@@ -492,7 +502,26 @@ def recover_chat_result(request_id: str, x_l_recovery_token: str = Header(defaul
             return {"status": "not_found"}
         if item["status"] != "ready":
             return {"status": "pending"}
-        return {"status": "ready", "result": item["payload"]}
+        payload = item["payload"]
+        if isinstance(payload, dict):
+            delivery = verify_chat_delivery_payload(
+                payload,
+                expected_request_id=request_id,
+            )
+            if delivery.get("bound") and not delivery.get("valid"):
+                _chat_results.pop(request_id, None)
+                return {
+                    "status": "failed",
+                    "result": {
+                        "reply": (
+                            "The saved answer failed delivery integrity "
+                            "verification. Please submit the request again."
+                        ),
+                        "error": True,
+                    },
+                    "delivery_integrity": delivery,
+                }
+        return {"status": "ready", "result": payload}
 
 # =====================================================
 # MEMORY DEPOT
@@ -1700,6 +1729,25 @@ RESPONSE RULES:
             "guardrail_issues": cognitive_packet.get("guardrails", {}).get("issues", []),
         }
     }
+    payload = seal_chat_delivery_payload(
+        payload,
+        request_id=request_id,
+    )
+    delivery_check = verify_chat_delivery_payload(
+        payload,
+        expected_request_id=request_id,
+    )
+    if not delivery_check.get("valid"):
+        payload = {
+            "reply": (
+                "I couldn't verify the final delivery payload for this answer, "
+                "so I've withheld it. Please try again."
+            ),
+            "server": "vx",
+            "error": True,
+        }
+        store_chat_result(request_id, "ready", payload)
+        return payload
     store_chat_result(request_id, "ready", payload)
     return payload
 

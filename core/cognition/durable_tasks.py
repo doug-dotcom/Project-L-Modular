@@ -15,6 +15,11 @@ import httpx
 from supabase import create_client
 from supabase.lib.client_options import SyncClientOptions
 
+from core.cognition.delivery_integrity import (
+    require_chat_delivery_payload,
+    verify_chat_delivery_payload,
+)
+
 LOG = logging.getLogger(__name__)
 CONTEXT = threading.local()
 
@@ -77,6 +82,23 @@ class TaskStore:
         if not rows:
             return {'status': 'not_found'}
         row = rows[0]
+        result_payload = row.get('result')
+        if isinstance(result_payload, dict):
+            delivery = verify_chat_delivery_payload(
+                result_payload,
+                expected_request_id=request_id,
+            )
+            row['delivery_integrity'] = delivery
+            if delivery.get('bound') and not delivery.get('valid'):
+                row['status'] = 'failed'
+                row['result'] = {
+                    'reply': (
+                        'The saved answer failed delivery integrity verification. '
+                        'Please submit the request again.'
+                    ),
+                    'error': True,
+                }
+                return {**row, 'durable': True, 'request_id': request_id}
         temporal = (row.get('result') or {}).get('cognition', {}).get('temporal_memory')
         if temporal:
             from core.cognition.temporal_memory import snapshot_freshness
@@ -97,6 +119,11 @@ class TaskStore:
         return self.rpc('l_task_progress', {'p_id': request_id, 'p_worker': worker, 'p_checkpoint': checkpoint})
 
     def finish(self, request_id, worker, payload, status='ready'):
+        if isinstance(payload, dict):
+            require_chat_delivery_payload(
+                payload,
+                expected_request_id=request_id,
+            )
         return self.rpc('l_task_finish', {'p_id': request_id, 'p_worker': worker,
                                         'p_status': status, 'p_result': payload})
 

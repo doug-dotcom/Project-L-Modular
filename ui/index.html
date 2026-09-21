@@ -597,6 +597,40 @@
             if (!requestId || old?.requestId === requestId) localStorage.removeItem(PENDING_REQUEST_KEY);
         }
 
+        async function sha256HexText(value) {
+            if (!window.crypto?.subtle) {
+                throw new Error("Browser SHA-256 is unavailable");
+            }
+            const bytes = new TextEncoder().encode(String(value ?? ""));
+            const digest = await window.crypto.subtle.digest("SHA-256", bytes);
+            return Array.from(new Uint8Array(digest))
+                .map(byte => byte.toString(16).padStart(2, "0"))
+                .join("");
+        }
+
+        async function verifyDeliveryReply(result, requestId) {
+            const receipt = result?.delivery_receipt;
+            if (!receipt) {
+                return {valid: true, bound: false, status: "legacy_unbound"};
+            }
+            try {
+                const actualReplySha = await sha256HexText(result?.reply || "");
+                const requestMatches =
+                    !requestId || String(receipt.request_id || "") === String(requestId);
+                const valid =
+                    receipt.status === "sealed" &&
+                    receipt.reply_sha256 === actualReplySha &&
+                    requestMatches;
+                return {
+                    valid,
+                    bound: true,
+                    status: valid ? "verified" : "mismatch"
+                };
+            } catch (_) {
+                return {valid: false, bound: true, status: "unavailable"};
+            }
+        }
+
         async function recoverChatResponse(requestId) {
             for (let attempt = 0; attempt < 120; attempt += 1) {
                 await sleep(2000);
@@ -611,6 +645,20 @@
                         return data.result || {reply: "This task was interrupted. Its request is saved, but I have not repeated it because an action may already have happened. Please review before sending it again.", error: true};
                     }
                     if (data.status === "ready" && data.result) {
+                        const delivery = await verifyDeliveryReply(
+                            data.result,
+                            requestId
+                        );
+                        if (!delivery.valid) {
+                            return {
+                                reply: (
+                                    "The recovered answer failed delivery integrity " +
+                                    "verification. Please submit the request again."
+                                ),
+                                error: true,
+                                delivery_integrity: delivery
+                            };
+                        }
                         return {...data.result, reply: savedAnswerText(data)};
                     }
                 } catch (error) {
@@ -770,7 +818,17 @@
                         if (!response.ok) throw new Error("unavailable");
                         const result = await response.json();
                         appendChatMessage(chat, "user", task.message);
-                        appendChatMessage(chat, "assistant", savedAnswerText(result) ||
+                        let savedText = "";
+                        if (result.status === "ready" && result.result) {
+                            const delivery = await verifyDeliveryReply(
+                                result.result,
+                                task.requestId
+                            );
+                            savedText = delivery.valid
+                                ? savedAnswerText(result)
+                                : "This saved answer failed delivery integrity verification.";
+                        }
+                        appendChatMessage(chat, "assistant", savedText ||
                             (result.status === "interrupted" ? "This task was interrupted. Please review before starting it again." :
                              result.status === "not_found" ? "This answer is unavailable in this browser." : "L is working on this saved task."));
                     }
