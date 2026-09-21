@@ -385,7 +385,7 @@ def store_chat_result(request_id, status, payload=None):
     request_id = normalise_request_id(request_id)
     if not request_id:
         return
-    if isinstance(payload, dict):
+    if payload is not None or status == "ready":
         require_chat_delivery_payload(
             payload,
             expected_request_id=request_id,
@@ -503,24 +503,23 @@ def recover_chat_result(request_id: str, x_l_recovery_token: str = Header(defaul
         if item["status"] != "ready":
             return {"status": "pending"}
         payload = item["payload"]
-        if isinstance(payload, dict):
-            delivery = verify_chat_delivery_payload(
-                payload,
-                expected_request_id=request_id,
-            )
-            if delivery.get("bound") and not delivery.get("valid"):
-                _chat_results.pop(request_id, None)
-                return {
-                    "status": "failed",
-                    "result": {
-                        "reply": (
-                            "The saved answer failed delivery integrity "
-                            "verification. Please submit the request again."
-                        ),
-                        "error": True,
-                    },
-                    "delivery_integrity": delivery,
-                }
+        delivery = verify_chat_delivery_payload(
+            payload,
+            expected_request_id=request_id,
+        )
+        if not delivery.get("valid"):
+            _chat_results.pop(request_id, None)
+            return {
+                "status": "failed",
+                "result": {
+                    "reply": (
+                        "The saved answer failed delivery integrity "
+                        "verification. Please submit the request again."
+                    ),
+                    "error": True,
+                },
+                "delivery_integrity": delivery,
+            }
         return {"status": "ready", "result": payload}
 
 # =====================================================
