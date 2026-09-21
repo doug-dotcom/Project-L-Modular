@@ -26,7 +26,7 @@ def test_layer68_rejects_worse_repair_and_keeps_safe_first_pass():
     assert reply == first
     assert final_audit["repair_attempted"] is True
     assert final_audit["repair_accepted"] is False
-    assert final_audit["repair_rejection_reason"] == "quality_not_improved"
+    assert final_audit["repair_rejection_reason"] == "citation_quality_regressed"
     assert final_audit["repair_candidate_status"] == "blocked"
 
 
