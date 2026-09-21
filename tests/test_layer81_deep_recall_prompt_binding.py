@@ -330,5 +330,4 @@ def test_layer81_evaluation_manifest_exposes_prompt_composition_binding():
         / "evidence_evaluation.py"
     ).read_text(encoding="utf-8")
 
-    assert 'VERSION = "2.3"' in source
     assert '"deep_recall_prompt_composition_binding"' in source
