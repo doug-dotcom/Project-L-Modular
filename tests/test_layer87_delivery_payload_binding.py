@@ -281,8 +281,8 @@ def test_layer87_browser_verifies_reply_hash_before_rendering_recovery():
     assert "async function verifyDeliveryReply(result, requestId)" in source
     assert 'window.crypto.subtle.digest("SHA-256", bytes)' in source
     assert source.count("await verifyDeliveryReply(") >= 2
-    assert "The recovered answer failed delivery integrity verification" in source
-    assert "This saved answer failed delivery integrity verification." in source
+    assert "recovered answer failed delivery integrity" in source
+    assert "saved answer failed delivery integrity verification" in source
 
 
 def test_layer87_durable_task_store_checks_delivery_on_write_and_read():
