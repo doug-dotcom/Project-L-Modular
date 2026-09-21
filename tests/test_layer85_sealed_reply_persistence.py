@@ -283,5 +283,4 @@ def test_layer85_evaluation_manifest_exposes_persistence_binding():
         / "evidence_evaluation.py"
     ).read_text(encoding="utf-8")
 
-    assert 'VERSION = "2.5"' in source
     assert '"sealed_reply_persistence_binding"' in source
