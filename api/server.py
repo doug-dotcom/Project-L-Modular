@@ -1546,6 +1546,28 @@ RESPONSE RULES:
             store_chat_result(request_id, "ready", payload)
             return payload
         evidence_audit["final_publication"] = publication_seal
+        immediate_seal_check = verify_final_publication_seal(
+            reply,
+            publication_seal,
+        )
+        if not immediate_seal_check.get("valid"):
+            payload = {
+                "reply": (
+                    "I couldn't verify the sealed final answer before reflective "
+                    "processing, so I've withheld it. Please try again."
+                ),
+                "server": "vx",
+                "error": True,
+                "cognition": {
+                    "evidence_evaluation": {
+                        **evidence_audit,
+                        "final_publication_verification": immediate_seal_check,
+                    }
+                },
+            }
+            store_chat_result(request_id, "ready", payload)
+            return payload
+        evidence_audit["final_publication_verification"] = immediate_seal_check
         cognitive_packet["evidence_evaluation"] = evidence_audit
 
     log(f"EVIDENCE CHECK: {evidence_audit.get('status')} | request={request_id}")
@@ -1587,7 +1609,7 @@ RESPONSE RULES:
             }
             store_chat_result(request_id, "ready", payload)
             return payload
-        evidence_audit["final_publication_verification"] = final_seal_check
+        evidence_audit["final_publication_prewrite_verification"] = final_seal_check
         cognitive_packet["evidence_evaluation"] = evidence_audit
 
     cognitive_packet["working_memory"] = active_context_service.complete_turn(
