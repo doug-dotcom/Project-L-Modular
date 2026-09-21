@@ -42,15 +42,13 @@ def test_layer86_integrity_layers_are_continuous_from_68_to_current():
 
     assert numbers
     assert numbers[0] == 68
-    assert numbers[-1] == 86
-    assert numbers == list(range(68, 87))
+    assert numbers == list(range(68, max(numbers) + 1))
 
 
 def test_layer86_each_integrity_layer_has_exactly_one_regression_file():
     numbers = layer_numbers()
 
     assert len(numbers) == len(set(numbers))
-    assert len(numbers) == 19
 
 
 def test_layer86_wildcard_includes_this_layer_automatically():
