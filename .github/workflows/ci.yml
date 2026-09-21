@@ -63,7 +63,7 @@ jobs:
           python -c
           "import fastapi, openai, supabase, tiktoken, tavily, uvicorn, yaml"
 
-      - name: Run active memory regression suite
+      - name: Run active memory and numbered-layer regression suites
         env:
           SUPABASE_URL: https://example.supabase.co
           SUPABASE_KEY: ci-placeholder
@@ -84,8 +84,7 @@ jobs:
           tests/test_durable_ui.py
           tests/test_modern_models.py
           tests/test_model_independence.py
-          tests/test_layer84_final_publication_seal.py
-          tests/test_layer85_sealed_reply_persistence.py
+          tests/test_layer*.py
           tests/test_temporal_memory.py
           tests/test_recall_planner.py
           tests/test_voice_input.py

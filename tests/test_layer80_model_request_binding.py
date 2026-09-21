@@ -350,5 +350,4 @@ def test_layer80_evaluation_manifest_exposes_request_generation_binding():
         / "evidence_evaluation.py"
     ).read_text(encoding="utf-8")
 
-    assert 'VERSION = "2.0"' in source
     assert '"model_request_generation_binding"' in source

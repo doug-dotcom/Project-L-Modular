@@ -133,7 +133,7 @@ def test_layer72_supported_claim_passes_without_rewrite():
     assert adapter.requests[0]["purpose"] == "l_deep_recall_claim_quote_alignment"
     system = adapter.requests[0]["messages"][0]["content"]
     assert "Use ONLY the exact evidence quotes" in system
-    assert "Do not use outside knowledge" in system
+    assert "outside knowledge, memory, plausibility or unstated implications." in system
 
 
 def test_layer72_partial_claim_is_withheld_as_a_whole_block():

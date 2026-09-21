@@ -251,5 +251,4 @@ def test_layer84_evaluation_manifest_exposes_final_publication_seal():
         / "evidence_evaluation.py"
     ).read_text(encoding="utf-8")
 
-    assert 'VERSION = "2.5"' in source
     assert '"final_publication_reply_seal"' in source

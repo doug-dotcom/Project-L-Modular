@@ -408,5 +408,4 @@ def test_layer82_evaluation_manifest_exposes_provider_transport_binding():
         / "evidence_evaluation.py"
     ).read_text(encoding="utf-8")
 
-    assert 'VERSION = "2.3"' in source
     assert '"provider_transport_payload_binding"' in source

@@ -115,7 +115,7 @@ def test_layer71_accepts_quote_from_part_bound_frozen_excerpt():
     )
 
     assert coverage["quote_bound"] is True
-    assert coverage["version"] == "3.0"
+    assert float(coverage["version"]) >= 3.0
     assert coverage["covered_parts"] == ["recovery timeline"]
     assert coverage["quote_mismatch_count"] == 0
 

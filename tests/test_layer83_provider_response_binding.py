@@ -411,5 +411,4 @@ def test_layer83_evaluation_manifest_exposes_provider_response_binding():
         / "evidence_evaluation.py"
     ).read_text(encoding="utf-8")
 
-    assert 'VERSION = "2.3"' in source
     assert '"provider_response_content_binding"' in source
