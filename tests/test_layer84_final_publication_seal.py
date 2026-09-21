@@ -122,7 +122,7 @@ def test_layer84_rejects_tampered_stage_receipt():
 
     assert seal["valid"] is False
     assert "causal_grounding_receipt_invalid" in seal["issues"]
-    assert "final_reply_chain_mismatch" in seal["issues"]
+    assert "coverage_notice_chain_mismatch" in seal["issues"]
 
 
 def test_layer84_rejects_base_reply_not_matching_citation_audit():
