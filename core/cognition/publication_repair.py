@@ -1,4 +1,4 @@
-"""Layers 68–84 — publication repair quality, coverage and receipt-integrity gates.
+"""Layers 68–85 — publication repair quality, coverage and receipt-integrity gates.
 
 Layer 67 gives Deep Recall one bounded regeneration attempt after the citation
 integrity gate withholds content. Layer 68 makes that retry fail-safe: a repair
@@ -56,6 +56,11 @@ Layer 84 seals the final user-visible publication after the only three allowed
 post-audit transforms: architecture grounding, causal grounding and coverage
 notice. The sealed reply must still match the citation-audited base, the ordered
 post-processing chain and the exact final text before any assistant-memory write.
+
+Layer 85 binds assistant-side persistence to that final text. Working memory,
+live short-term memory and raw catchall report reply hashes without duplicating
+the reply itself. Outages degrade gracefully, but a target that claims success
+with a different stored hash is an integrity mismatch, never a false success.
 """
 
 from __future__ import annotations
@@ -895,6 +900,98 @@ def verify_final_publication_seal(final_reply: str, seal: dict | None) -> dict:
     }
 
 
+def sealed_reply_persistence_receipt(
+    final_reply: str,
+    publication_seal: dict | None,
+    working_memory: dict | None,
+    short_term_result: dict | None,
+    raw_row: dict | None,
+) -> dict:
+    """Verify assistant persistence targets against the exact final reply hash."""
+    final_reply = str(final_reply or "")
+    final_sha = sha256(final_reply.encode("utf-8")).hexdigest()
+    publication_seal = dict(publication_seal or {})
+    working_memory = dict(working_memory or {})
+    short_term_result = dict(short_term_result or {})
+    raw_row = dict(raw_row or {}) if isinstance(raw_row, dict) else {}
+
+    issues = []
+    degraded = []
+
+    sealed_sha = str(publication_seal.get("final_reply_sha256") or "").strip()
+    if sealed_sha and sealed_sha != final_sha:
+        issues.append("persistence_final_seal_hash_mismatch")
+
+    wm_sha = str(working_memory.get("last_reply_sha256") or "").strip()
+    if not working_memory:
+        degraded.append("working_memory_unavailable")
+    elif not wm_sha:
+        degraded.append("working_memory_reply_hash_missing")
+    elif wm_sha != final_sha:
+        issues.append("working_memory_reply_hash_mismatch")
+
+    short_saved = bool(short_term_result.get("saved"))
+    short_expected = str(short_term_result.get("content_sha256") or "").strip()
+    short_stored = str(
+        short_term_result.get("stored_content_sha256") or ""
+    ).strip()
+    short_integrity = str(short_term_result.get("integrity") or "").strip()
+    if not short_saved:
+        degraded.append(
+            "short_term_not_saved:"
+            + str(short_term_result.get("reason") or "unknown")
+        )
+    else:
+        if short_expected != final_sha:
+            issues.append("short_term_input_hash_mismatch")
+        if short_integrity == "mismatch":
+            issues.append("short_term_storage_hash_mismatch")
+        elif short_integrity != "verified":
+            degraded.append("short_term_storage_unverified")
+        if short_stored and short_stored != final_sha:
+            issues.append("short_term_stored_hash_mismatch")
+
+    if not raw_row:
+        degraded.append("raw_catchall_not_saved")
+        raw_sha = ""
+    else:
+        raw_content = str(raw_row.get("content") or "")
+        raw_sha = sha256(raw_content.encode("utf-8")).hexdigest()
+        if raw_sha != final_sha:
+            issues.append("raw_catchall_content_hash_mismatch")
+        if str(raw_row.get("role") or "").strip().lower() != "assistant":
+            issues.append("raw_catchall_role_mismatch")
+
+    status = "mismatch" if issues else "degraded" if degraded else "verified"
+    receipt = {
+        "version": "1.0",
+        "status": status,
+        "valid": not issues,
+        "final_reply_sha256": final_sha,
+        "sealed_reply_sha256": sealed_sha,
+        "working_memory": {
+            "reply_sha256": wm_sha,
+            "verified": bool(wm_sha and wm_sha == final_sha),
+        },
+        "short_term": {
+            "saved": short_saved,
+            "integrity": short_integrity,
+            "content_sha256": short_expected,
+            "stored_content_sha256": short_stored,
+        },
+        "raw_catchall": {
+            "saved": bool(raw_row),
+            "content_sha256": raw_sha,
+            "role": str(raw_row.get("role") or ""),
+        },
+        "issues": issues,
+        "degraded": degraded,
+        "trusted_for_recall": status == "verified",
+    }
+    receipt["receipt_sha256"] = _canonical_sha256(receipt)
+    return receipt
+
+
 def choose_publication_repair(
     first_reply: str,
     first_audit: dict,
@@ -909,7 +1006,7 @@ def choose_publication_repair(
     """Keep a Layer 67 repair only when governed quality improves safely.
 
     Layer 68 remains the default behaviour when no coverage receipts are supplied.
-    With Layers 69–84 receipts, citation quality, quote-bound structural
+    With Layers 69–85 receipts, citation quality, quote-bound structural
     coverage and bounded claim-support/consistency quality must not regress;
     at least one governed dimension must strictly improve.
     """
