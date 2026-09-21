@@ -955,12 +955,19 @@ def sealed_reply_persistence_receipt(
         degraded.append("raw_catchall_not_saved")
         raw_sha = ""
     else:
-        raw_content = str(raw_row.get("content") or "")
-        raw_sha = sha256(raw_content.encode("utf-8")).hexdigest()
-        if raw_sha != final_sha:
-            issues.append("raw_catchall_content_hash_mismatch")
-        if str(raw_row.get("role") or "").strip().lower() != "assistant":
-            issues.append("raw_catchall_role_mismatch")
+        if "content" in raw_row:
+            raw_content = str(raw_row.get("content") or "")
+            raw_sha = sha256(raw_content.encode("utf-8")).hexdigest()
+            if raw_sha != final_sha:
+                issues.append("raw_catchall_content_hash_mismatch")
+        else:
+            raw_sha = ""
+            degraded.append("raw_catchall_storage_unverified")
+        if "role" in raw_row:
+            if str(raw_row.get("role") or "").strip().lower() != "assistant":
+                issues.append("raw_catchall_role_mismatch")
+        else:
+            degraded.append("raw_catchall_role_unverified")
 
     status = "mismatch" if issues else "degraded" if degraded else "verified"
     receipt = {
