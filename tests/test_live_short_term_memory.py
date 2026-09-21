@@ -1,3 +1,5 @@
+from hashlib import sha256
+
 from memory.continuity.live_short_term import (
     classify_short_term_domain,
     write_short_term_memory,
@@ -21,7 +23,10 @@ class FakeQuery:
 
     def execute(self):
         self.client.writes.append((self.table_name, self.payload))
-        return FakeResponse([{"id": len(self.client.writes)}])
+        return FakeResponse([{
+            "id": len(self.client.writes),
+            **self.payload,
+        }])
 
 
 class FakeSupabase:
@@ -66,8 +71,32 @@ def test_writes_both_sides_of_an_exchange_to_the_same_domain():
     user_result = write_short_term_memory(client, table_name, "user", "Luella had a brilliant day")
     assistant_result = write_short_term_memory(client, table_name, "assistant", "That sounds lovely.")
 
-    assert user_result == {"saved": True, "table": table_name, "role": "user", "id": 1}
-    assert assistant_result == {"saved": True, "table": table_name, "role": "assistant", "id": 2}
+    assert user_result == {
+        "saved": True,
+        "table": table_name,
+        "role": "user",
+        "id": 1,
+        "content_sha256": sha256(
+            b"Luella had a brilliant day"
+        ).hexdigest(),
+        "stored_content_sha256": sha256(
+            b"Luella had a brilliant day"
+        ).hexdigest(),
+        "integrity": "verified",
+    }
+    assert assistant_result == {
+        "saved": True,
+        "table": table_name,
+        "role": "assistant",
+        "id": 2,
+        "content_sha256": sha256(
+            b"That sounds lovely."
+        ).hexdigest(),
+        "stored_content_sha256": sha256(
+            b"That sounds lovely."
+        ).hexdigest(),
+        "integrity": "verified",
+    }
     assert client.writes == [
         (table_name, {"role": "user", "content": "Luella had a brilliant day"}),
         (table_name, {"role": "assistant", "content": "That sounds lovely."}),

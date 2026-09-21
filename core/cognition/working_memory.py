@@ -217,6 +217,11 @@ class ActiveContextService:
             if not unresolved and not failed:
                 state["unresolved_questions"] = []
             state["status"] = "attention_required" if failed else "active"
+            reply_text = str(reply or "")
+            state["last_reply_sha256"] = sha256(
+                reply_text.encode("utf-8")
+            ).hexdigest()
+            state["last_reply_size"] = len(reply_text)
             state["updated_at"] = current.isoformat()
             state["expires_at"] = (current + timedelta(seconds=self.ttl_seconds)).isoformat()
             self._states[scope] = deepcopy(state)

@@ -58,6 +58,7 @@ from core.cognition.publication_repair import (
     evaluate_publication_coverage,
     final_publication_stage_receipt,
     seal_final_publication_reply,
+    sealed_reply_persistence_receipt,
     verify_final_publication_seal,
     verify_frozen_evidence_binding,
 )
@@ -1625,10 +1626,26 @@ RESPONSE RULES:
         reply,
     )
 
-    write_raw_catchall(
+    raw_assistant_row = write_raw_catchall(
         "assistant",
         reply
     )
+
+    assistant_persistence = sealed_reply_persistence_receipt(
+        reply,
+        publication_seal,
+        cognitive_packet.get("working_memory", {}),
+        short_term_assistant,
+        raw_assistant_row,
+    )
+    cognitive_packet["assistant_persistence"] = assistant_persistence
+    if assistant_persistence.get("status") != "verified":
+        log(
+            "ASSISTANT PERSISTENCE: "
+            f"status={assistant_persistence.get('status')} | "
+            f"issues={assistant_persistence.get('issues', [])} | "
+            f"degraded={assistant_persistence.get('degraded', [])}"
+        )
 
     # Browser playback is user-controlled. Server-host audio is explicit legacy opt-in.
     if os.getenv('L_SERVER_SPEAKER', 'false').lower() == 'true' and voice_enabled():
@@ -1649,7 +1666,8 @@ RESPONSE RULES:
         "short_term": {
             "domain": short_term_domain,
             "user_saved": bool(short_term_user.get("saved")),
-            "assistant_saved": bool(short_term_assistant.get("saved"))
+            "assistant_saved": bool(short_term_assistant.get("saved")),
+            "assistant_integrity": short_term_assistant.get("integrity"),
         },
         "cognition": {
             "version": cognitive_packet.get("version"),
@@ -1675,6 +1693,7 @@ RESPONSE RULES:
             "working_memory": cognitive_packet.get("working_memory", {}),
             "model_independence": cognitive_packet.get("model_independence", {}),
             "model_receipt": response_model_receipt,
+            "assistant_persistence": cognitive_packet.get("assistant_persistence", {}),
             "reasoning_model_receipt": cognitive_packet.get("rike", {}).get("model_receipt", {}),
             "portability": cognitive_packet.get("portability", {}),
             "guardrails_passed": cognitive_packet.get("guardrails", {}).get("passed"),
