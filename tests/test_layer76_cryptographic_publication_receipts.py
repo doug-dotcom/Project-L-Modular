@@ -234,5 +234,5 @@ def test_layer76_coverage_receipt_hash_is_emitted_by_live_evaluator():
     ).read_text(encoding="utf-8")
 
     assert '"draft_sha256": sha256(str(raw or "").encode()).hexdigest()' in source
-    assert '"repair_candidate_receipt_integrity"' in source
-    assert '"first_pass_receipt_integrity"' in source
+    assert "repair_candidate_receipt_integrity=repair_integrity" in source
+    assert "first_pass_receipt_integrity=first_integrity" in source
