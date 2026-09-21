@@ -609,16 +609,38 @@
         }
 
         async function verifyDeliveryReply(result, requestId) {
-            const receipt = result?.delivery_receipt;
-            if (!receipt) {
+            const mismatch = {valid: false, bound: true, status: "mismatch"};
+            if (!result || typeof result !== "object" || Array.isArray(result) ||
+                typeof result.reply !== "string") return mismatch;
+            const hasReceipt = Object.hasOwn(result, "delivery_receipt");
+            const hasProtocol = Object.hasOwn(result, "delivery_protocol");
+            if (!hasReceipt && !hasProtocol) {
                 return {valid: true, bound: false, status: "legacy_unbound"};
             }
+            const receipt = result.delivery_receipt;
+            if (hasProtocol && result.delivery_protocol !== "1.0") return mismatch;
+            if (!receipt || typeof receipt !== "object" || Array.isArray(receipt)) return mismatch;
+            const fields = ["version", "status", "request_id", "reply_sha256",
+                "payload_sha256", "final_publication_receipt_sha256",
+                "assistant_persistence_receipt_sha256", "receipt_sha256"];
+            if (Object.keys(receipt).length !== fields.length ||
+                !fields.every(field => Object.hasOwn(receipt, field) && typeof receipt[field] === "string") ||
+                receipt.version !== "1.0" || receipt.status !== "sealed") return mismatch;
+            for (const field of fields.filter(field => field.endsWith("sha256"))) {
+                if (["final_publication_receipt_sha256", "assistant_persistence_receipt_sha256"].includes(field) &&
+                    receipt[field] === "") continue;
+                if (!/^[0-9a-f]{64}$/.test(receipt[field])) return mismatch;
+            }
             try {
-                const actualReplySha = await sha256HexText(result?.reply || "");
+                // Receipt fields are flat strings, so sorted JSON matches the server.
+                const receiptBody = Object.fromEntries(fields.filter(field => field !== "receipt_sha256")
+                    .sort().map(field => [field, receipt[field]]));
+                const actualReceiptSha = await sha256HexText(JSON.stringify(receiptBody));
+                const actualReplySha = await sha256HexText(result.reply);
                 const requestMatches =
-                    !requestId || String(receipt.request_id || "") === String(requestId);
+                    requestId == null || receipt.request_id === String(requestId);
                 const valid =
-                    receipt.status === "sealed" &&
+                    receipt.receipt_sha256 === actualReceiptSha &&
                     receipt.reply_sha256 === actualReplySha &&
                     requestMatches;
                 return {
@@ -641,24 +663,23 @@
                     );
                     if (!response.ok) continue;
                     const data = await response.json();
-                    if (["failed", "interrupted"].includes(data.status)) {
-                        return data.result || {reply: "This task was interrupted. Its request is saved, but I have not repeated it because an action may already have happened. Please review before sending it again.", error: true};
-                    }
-                    if (data.status === "ready" && data.result) {
-                        const delivery = await verifyDeliveryReply(
-                            data.result,
-                            requestId
-                        );
+                    // Terminal errors can carry a bound answer too. Verify before
+                    // any rendering or voice path, regardless of envelope status.
+                    if (["ready", "failed", "interrupted"].includes(data.status) &&
+                        (data.result != null || data.status === "ready")) {
+                        const delivery = await verifyDeliveryReply(data.result, requestId);
                         if (!delivery.valid) {
                             return {
-                                reply: (
-                                    "The recovered answer failed delivery integrity " +
-                                    "verification. Please submit the request again."
-                                ),
+                                reply: "The recovered answer failed delivery integrity verification. Check Saved answers before resending the task.",
                                 error: true,
                                 delivery_integrity: delivery
                             };
                         }
+                    }
+                    if (["failed", "interrupted"].includes(data.status)) {
+                        return data.result ? {...data.result, error: true} : {reply: "This task was interrupted. Its request is saved, but I have not repeated it because an action may already have happened. Please review before sending it again.", error: true};
+                    }
+                    if (data.status === "ready" && data.result) {
                         return {...data.result, reply: savedAnswerText(data)};
                     }
                 } catch (error) {
@@ -819,17 +840,19 @@
                         const result = await response.json();
                         appendChatMessage(chat, "user", task.message);
                         let savedText = "";
-                        if (result.status === "ready" && result.result) {
+                        if (["ready", "failed", "interrupted"].includes(result.status) &&
+                            (result.result != null || result.status === "ready")) {
                             const delivery = await verifyDeliveryReply(
                                 result.result,
                                 task.requestId
                             );
-                            savedText = delivery.valid
-                                ? savedAnswerText(result)
-                                : "This saved answer failed delivery integrity verification.";
+                            savedText = !delivery.valid
+                                ? "This saved answer failed delivery integrity verification."
+                                : result.status === "ready" ? savedAnswerText(result)
+                                : result.result.reply;
                         }
                         appendChatMessage(chat, "assistant", savedText ||
-                            (result.status === "interrupted" ? "This task was interrupted. Please review before starting it again." :
+                            (["failed", "interrupted"].includes(result.status) ? "This task stopped before completion. Please review before starting it again." :
                              result.status === "not_found" ? "This answer is unavailable in this browser." : "L is working on this saved task."));
                     }
                 } catch (_) {

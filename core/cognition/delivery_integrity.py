@@ -1,4 +1,4 @@
-"""Layer 87 — delivery payload binding.
+"""Layers 87–88 — delivery payload binding and strict receipt validation.
 
 Bind the final chat payload to the exact reply and request identity before it is
 cached or durably persisted, then verify the same receipt when a saved answer is
@@ -9,10 +9,24 @@ from __future__ import annotations
 
 from hashlib import sha256
 import json
+import re
 from typing import Any
 
 
 DELIVERY_RECEIPT_KEY = "delivery_receipt"
+DELIVERY_PROTOCOL_KEY = "delivery_protocol"
+RECEIPT_FIELDS = {
+    "version", "status", "request_id", "reply_sha256", "payload_sha256",
+    "final_publication_receipt_sha256", "assistant_persistence_receipt_sha256",
+    "receipt_sha256",
+}
+
+
+def _invalid_delivery(issue: str) -> dict:
+    return {
+        "version": "1.0", "status": "mismatch", "valid": False,
+        "bound": True, "issues": [issue],
+    }
 
 
 def _canonical_sha256(value: Any) -> str:
@@ -48,6 +62,8 @@ def seal_chat_delivery_payload(
 
     sealed = dict(payload)
     sealed.pop(DELIVERY_RECEIPT_KEY, None)
+    # Layer 88: new payloads explicitly require a receipt, even if it is lost.
+    sealed[DELIVERY_PROTOCOL_KEY] = "1.0"
     reply = sealed.get("reply")
     if not isinstance(reply, str):
         raise TypeError("chat_delivery_reply_must_be_text")
@@ -81,11 +97,13 @@ def verify_chat_delivery_payload(
     expected_request_id: str | None = None,
 ) -> dict:
     """Verify a sealed delivery payload without exposing reply text."""
-    payload = dict(payload or {})
+    if not isinstance(payload, dict) or not isinstance(payload.get("reply"), str):
+        return _invalid_delivery("delivery_payload_invalid")
+    payload = dict(payload)
     issues: list[str] = []
     receipt = payload.get(DELIVERY_RECEIPT_KEY)
 
-    if not isinstance(receipt, dict):
+    if DELIVERY_RECEIPT_KEY not in payload and DELIVERY_PROTOCOL_KEY not in payload:
         return {
             "version": "1.0",
             "status": "legacy_unbound",
@@ -93,6 +111,23 @@ def verify_chat_delivery_payload(
             "bound": False,
             "issues": [],
         }
+
+    # A present-but-invalid receipt must never downgrade to legacy compatibility.
+    if DELIVERY_PROTOCOL_KEY in payload and payload[DELIVERY_PROTOCOL_KEY] != "1.0":
+        return _invalid_delivery("delivery_protocol_unsupported")
+    if not isinstance(receipt, dict):
+        return _invalid_delivery("delivery_receipt_missing_or_malformed")
+    if set(receipt) != RECEIPT_FIELDS or not all(isinstance(v, str) for v in receipt.values()):
+        return _invalid_delivery("delivery_receipt_schema_invalid")
+    if receipt["version"] != "1.0" or receipt["status"] != "sealed":
+        return _invalid_delivery("delivery_receipt_schema_invalid")
+    for field in RECEIPT_FIELDS:
+        if not field.endswith("sha256"):
+            continue
+        if field in {"final_publication_receipt_sha256", "assistant_persistence_receipt_sha256"} and receipt[field] == "":
+            continue
+        if not re.fullmatch(r"[0-9a-f]{64}", receipt[field]):
+            return _invalid_delivery("delivery_receipt_schema_invalid")
 
     receipt_payload = dict(receipt)
     declared_receipt_sha = str(
@@ -161,11 +196,11 @@ def require_chat_delivery_payload(
     *,
     expected_request_id: str | None = None,
 ) -> dict:
-    """Raise when a payload claims delivery binding but does not verify."""
+    """Reject invalid payloads; accept genuine legacy answers without a receipt."""
     result = verify_chat_delivery_payload(
         payload,
         expected_request_id=expected_request_id,
     )
-    if result.get("bound") and not result.get("valid"):
+    if not result.get("valid"):
         raise ValueError("chat_delivery_integrity_mismatch")
     return result

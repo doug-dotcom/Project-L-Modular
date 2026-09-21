@@ -83,13 +83,13 @@ class TaskStore:
             return {'status': 'not_found'}
         row = rows[0]
         result_payload = row.get('result')
-        if isinstance(result_payload, dict):
+        if result_payload is not None or row['status'] == 'ready':
             delivery = verify_chat_delivery_payload(
                 result_payload,
                 expected_request_id=request_id,
             )
             row['delivery_integrity'] = delivery
-            if delivery.get('bound') and not delivery.get('valid'):
+            if not delivery.get('valid'):
                 row['status'] = 'failed'
                 row['result'] = {
                     'reply': (
@@ -119,11 +119,10 @@ class TaskStore:
         return self.rpc('l_task_progress', {'p_id': request_id, 'p_worker': worker, 'p_checkpoint': checkpoint})
 
     def finish(self, request_id, worker, payload, status='ready'):
-        if isinstance(payload, dict):
-            require_chat_delivery_payload(
-                payload,
-                expected_request_id=request_id,
-            )
+        require_chat_delivery_payload(
+            payload,
+            expected_request_id=request_id,
+        )
         return self.rpc('l_task_finish', {'p_id': request_id, 'p_worker': worker,
                                         'p_status': status, 'p_result': payload})
 
