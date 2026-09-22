@@ -390,6 +390,7 @@ def apply_claim_support_gate(raw: str, support_audit: dict | None) -> str:
             "text": text,
             "citations": [],
             "covers": [],
+            "_publication_withheld": verdict,
         })
 
     data["blocks"] = revised
