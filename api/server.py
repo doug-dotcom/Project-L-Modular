@@ -1359,7 +1359,7 @@ RESPONSE RULES:
                             "kind": item.get("kind"),
                             "issues": item.get("issues", []),
                         }
-                        for item in evidence_audit.get("checks", [])
+                        for item in citation_audit.get("checks", [])
                         if not item.get("passed")
                     ]
                     missing_coverage = (
@@ -1381,6 +1381,8 @@ RESPONSE RULES:
                     repair_request = build_model_request(
                         [
                             {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_message},
+                            {"role": "assistant", "content": first_raw_reply},
                             {
                                 "role": "user",
                                 "content": (

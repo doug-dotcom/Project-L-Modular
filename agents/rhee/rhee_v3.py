@@ -13,6 +13,7 @@ from core.cognition.learning_engine import retrieve_growth_context
 from memory.retrieval.cache_state import cache_generation
 from core.cognition.temporal_memory import build_temporal_packet
 from core.cognition.recall_planner import plan_recall, retrieve_period
+from core.cognition.recall_excerpts import recall_windows
 from memory.retrieval.provenance import (
     annotate_memory_provenance,
     build_raw_role_index,
@@ -1064,6 +1065,11 @@ def build_raw_recall_packet(query, limit=40, rows=None, evidence_out=None):
         24 if deep_recall_requested(query) else (40 if exhaustive else limit)
     )
     selected = scored[:selected_limit]
+    excerpt_budget = max(600, min(2400, 28000 // max(1, len(selected))))
+    natural_recall = (deep_recall_requested(query)
+                      and not term_in_text("deep recall", safe_text(query).lower())
+                      and not pauline_report_requested(query))
+    excerpt_terms = expanded_query_terms(query) if natural_recall else ()
 
     print("=" * 60)
     print(f"RAW ROWS SEARCHED : {len(rows)}")
@@ -1125,10 +1131,15 @@ def build_raw_recall_packet(query, limit=40, rows=None, evidence_out=None):
         lines.append(f"SCORE: {row.get('_score', 0)}")
         lines.append("CONTENT:")
         excerpt = content[:1200] if pauline_report_requested(query) else content[:600 if evidence_mode else 700]
-        lines.append(excerpt)
-        if evidence_out is not None and row_id:
-            evidence_out.append({"source": f"raw_catchall:{row_id}", "quote_source": excerpt,
-                                 "role": role.lower(), "created_at": created_at})
+        windows = (recall_windows(content, query, excerpt_terms, limit=excerpt_budget)
+                   if natural_recall else [(0, excerpt)])
+        for offset, excerpt in windows:
+            lines.append(f"EXCERPT OFFSET: {offset}")
+            lines.append(excerpt)
+            if evidence_out is not None and row_id:
+                evidence_out.append({"source": f"raw_catchall:{row_id}", "quote_source": excerpt,
+                                     "role": role.lower(), "created_at": created_at,
+                                     "excerpt_offset": offset, "truncated": len(excerpt) < len(content)})
         lines.append("")
         record_no += 1
 
@@ -1311,6 +1322,11 @@ def build_context(user_message, evidence_out=None, recall_plan=None, receipt_out
 
 
 def format_memory_packet(query, packet, evidence_out=None):
+    excerpt_budget = max(700, min(2400, 28000 // max(1, len(packet))))
+    natural_recall = (deep_recall_requested(query)
+                      and not term_in_text("deep recall", safe_text(query).lower())
+                      and not pauline_report_requested(query))
+    excerpt_terms = expanded_query_terms(query) if natural_recall else ()
     lines = [
         "RHEE LONG TERM RECALL PACKET",
         f"QUERY: {query}",
@@ -1337,14 +1353,19 @@ def format_memory_packet(query, packet, evidence_out=None):
             # actual event and insight instead of only its introductory text.
             excerpt_limit = 1600 if pauline_report_requested(query) else 700
             excerpt = content[:excerpt_limit]
-            lines.append(excerpt)
-            if evidence_out is not None and memory.get("_table") and memory.get("id") is not None:
-                evidence_out.append({
-                    "source": f"{memory['_table']}:{memory['id']}",
-                    "quote_source": excerpt, "role": memory_source_role(memory),
-                    "created_at": safe_text(memory.get("created_at")),
-                    "raw_id": memory.get("raw_id"),
-                })
+            windows = (recall_windows(content, query, excerpt_terms, limit=excerpt_budget)
+                       if natural_recall else [(0, excerpt)])
+            for offset, excerpt in windows:
+                lines.append(f"EXCERPT OFFSET: {offset}")
+                lines.append(excerpt)
+                if evidence_out is not None and memory.get("_table") and memory.get("id") is not None:
+                    evidence_out.append({
+                        "source": f"{memory['_table']}:{memory['id']}",
+                        "quote_source": excerpt, "role": memory_source_role(memory),
+                        "created_at": safe_text(memory.get("created_at")),
+                        "raw_id": memory.get("raw_id"), "excerpt_offset": offset,
+                        "truncated": len(excerpt) < len(content),
+                    })
         lines.append("")
 
     return "\n".join(lines)

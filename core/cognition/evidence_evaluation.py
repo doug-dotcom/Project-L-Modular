@@ -18,6 +18,7 @@ MAX_BLOCKS = 40
 MAX_CITATIONS = 8
 SOURCE = re.compile(r"[a-z][a-z0-9_]*:[A-Za-z0-9_-]+\Z")
 NOTICE = "I couldn't verify the supporting record for this part, so I've withheld it."
+RECALL_GAP_NOTICE = "Some details could not be verified from the retrieved records. I've included only the parts I could support."
 
 
 def normalise(value: str) -> str:
@@ -115,6 +116,7 @@ def evaluate_answer(raw: str, rows: list[dict], *, request_id: str = "", model_i
         return NOTICE, audit
 
     rendered = []
+    withheld = 0
     for number, block in enumerate(blocks, 1):
         issues = []
         if not isinstance(block, dict):
@@ -162,7 +164,10 @@ def evaluate_answer(raw: str, rows: list[dict], *, request_id: str = "", model_i
                                 "issues": sorted(set(issues)),
                                 "citations": [{"source": c["source"], "quote_sha256": c["quote_sha256"]} for c in checked]})
         if issues:
-            rendered.append(NOTICE)
+            withheld += 1
+            continue
+        if kind == "unknown" and block.get("_publication_withheld"):
+            withheld += 1
             continue
         prefix = "My interpretation: " if kind == "inference" else ""
         rendered.append(prefix + text.strip())
@@ -174,6 +179,9 @@ def evaluate_answer(raw: str, rows: list[dict], *, request_id: str = "", model_i
                  citations_checked=citation_count,
                  status="blocked" if failures == len(blocks) else "partial" if failures else
                         "citation_checks_passed" if citation_count else "no_citations_to_check")
+    if withheld:
+        rendered.append(RECALL_GAP_NOTICE if rendered else "I couldn't verify an answer from the retrieved records. The details remain uncertain.")
+    audit["publication_blocks_withheld"] = withheld
     reply = "\n\n".join(rendered)
     audit["reply_sha256"] = sha256(reply.encode()).hexdigest()
     return reply, audit
