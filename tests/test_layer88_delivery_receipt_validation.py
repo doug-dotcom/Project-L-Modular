@@ -142,11 +142,12 @@ function element() {
 }
 for (const id of ['chat', 'chatToolsActions', 'closeChatTools', 'message']) elements.set(id, element());
 const context = {
+ AbortController, performance, clearTimeout,
  TextEncoder, window: {crypto: require('node:crypto').webcrypto,
    lVoice: {canSend: () => true, saveDraft() {}, onReply: (...args) => voiced.push(args)}},
  document: {addEventListener() {}, createElement: element, getElementById: id => elements.get(id)},
  localStorage: {getItem: k => storage.get(k) || null, setItem: (k,v) => storage.set(k,v), removeItem: k => storage.delete(k)},
- setTimeout: fn => fn(),
+ setTimeout: (fn, ms) => ms <= 2000 ? (fn(), 0) : setTimeout(fn, ms),
  fetch: async (url, options) => {
    fetches++;
    // Acknowledge a new task once; subsequent requests only retrieve its result.
