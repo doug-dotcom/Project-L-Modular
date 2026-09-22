@@ -865,24 +865,29 @@
                     for (const task of recent) {
                         const remaining = deadline - performance.now();
                         if (remaining <= 0) throw new Error("Saved answers check timed out");
-                        const result = await fetchChatJson(`/chat/result/${encodeURIComponent(task.requestId)}`,
-                            {cache: "no-store", headers: recoveryHeaders()}, Math.min(CHAT_REQUEST_TIMEOUT_MS, remaining));
                         appendChatMessage(chat, "user", task.message);
-                        let savedText = "";
-                        if (["ready", "failed", "interrupted"].includes(result.status) &&
-                            (result.result != null || result.status === "ready")) {
-                            const delivery = await verifyDeliveryReply(
-                                result.result,
-                                task.requestId
-                            );
-                            savedText = !delivery.valid
-                                ? "This saved answer failed delivery integrity verification."
-                                : result.status === "ready" ? savedAnswerText(result)
-                                : result.result.reply;
+                        try {
+                            const result = await fetchChatJson(`/chat/result/${encodeURIComponent(task.requestId)}`,
+                                {cache: "no-store", headers: recoveryHeaders()}, Math.min(CHAT_REQUEST_TIMEOUT_MS, remaining));
+                            let savedText = "";
+                            if (["ready", "failed", "interrupted"].includes(result.status) &&
+                                (result.result != null || result.status === "ready")) {
+                                const delivery = await verifyDeliveryReply(
+                                    result.result,
+                                    task.requestId
+                                );
+                                savedText = !delivery.valid
+                                    ? "This saved answer failed delivery integrity verification."
+                                    : result.status === "ready" ? savedAnswerText(result)
+                                    : result.result.reply;
+                                if (delivery.valid) clearPendingRequest(task.requestId);
+                            }
+                            appendChatMessage(chat, "assistant", savedText ||
+                                (["failed", "interrupted"].includes(result.status) ? "This task stopped before completion. Please review before starting it again." :
+                                 result.status === "not_found" ? "This answer is unavailable in this browser." : "L is working on this saved task."));
+                        } catch (_) {
+                            appendChatMessage(chat, "assistant error", "This saved answer is temporarily unavailable. Your task is still saved; checking the remaining answers.");
                         }
-                        appendChatMessage(chat, "assistant", savedText ||
-                            (["failed", "interrupted"].includes(result.status) ? "This task stopped before completion. Please review before starting it again." :
-                             result.status === "not_found" ? "This answer is unavailable in this browser." : "L is working on this saved task."));
                     }
                 } catch (_) {
                     appendChatMessage(chat, "assistant error", "Saved answers are temporarily unavailable. Please try again shortly.");
