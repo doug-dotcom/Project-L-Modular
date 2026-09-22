@@ -81,7 +81,11 @@ def test_repair_receives_original_draft_and_rechecks_split_claims(monkeypatch):
     quote = "I completed Open Water. I later completed Nitrox."
     def block(text):
         return {"kind": "fact", "text": text, "citations": [{"source": "raw_catchall:91", "quote": quote}]}
-    first = json.dumps({"blocks": [block("I completed Open Water and I completed Nitrox.")]})
+    intro = "The records establish every detail of your trip."
+    first = json.dumps({"blocks": [
+        {"kind": "conversation", "text": intro, "citations": []},
+        block("I completed Open Water and I completed Nitrox.")
+    ]})
     fixed = json.dumps({"blocks": [block("I completed Open Water."), block("I later completed Nitrox.")]})
     requests = []
     class Adapter(OpenAIChatCompletionsAdapter):
@@ -96,8 +100,13 @@ def test_repair_receives_original_draft_and_rechecks_split_claims(monkeypatch):
                 assert "compound" in request["messages"][-1]["content"]
                 self.content = fixed
             elif request["purpose"] == "l_deep_recall_claim_quote_alignment":
-                count = len(json.loads(request["messages"][-1]["content"])["blocks"])
-                self.content = json.dumps({"blocks": [{"block": n, "verdict": "supported", "atomicity": "compound" if count == 1 else "atomic"} for n in range(1, count + 1)], "conflicts": []})
+                candidates = json.loads(request["messages"][-1]["content"])["blocks"]
+                facts = sum(not item.get("kind") for item in candidates)
+                self.content = json.dumps({"blocks": [{
+                    "block": item["block"], "verdict": "supported",
+                    "atomicity": "compound" if not item.get("kind") and facts == 1 else "atomic",
+                    "factual_assertion": bool(item.get("kind"))
+                } for item in candidates], "conflicts": []})
             else:
                 self.content = first
             return super().generate(request)
@@ -113,6 +122,7 @@ def test_repair_receives_original_draft_and_rechecks_split_claims(monkeypatch):
     result = server.chat(server.ChatRequest(message=QUERY))
     assert "completed Open Water." in result["reply"], {k: v for k, v in result["cognition"]["evidence_evaluation"].items() if "receipt_integrity" in k or "rejection_reason" in k}
     assert "later completed Nitrox." in result["reply"]
+    assert intro not in result["reply"]
     audit = result["cognition"]["evidence_evaluation"]
     assert audit["repair_accepted"] is True
     assert audit["claim_support"]["compound_blocks"] == []
