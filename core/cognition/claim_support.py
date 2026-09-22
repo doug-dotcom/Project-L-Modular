@@ -26,6 +26,11 @@ Layer 76 cryptographically binds this semantic receipt to both the exact raw
 draft it checked and the exact post-gate publication JSON produced from it, so
 the receipt cannot be replayed against a different answer.
 
+Layer 92 also reviews narrative block types. Personal assertions in an opening
+summary, inference or unknown must return through the cited-fact path. Greetings
+and genuine knowledge gaps remain readable. An unavailable narrative review
+cannot approve an unchecked recap.
+
 This is a claim/quote alignment and structure check, not independent truth certification.
 """
 from __future__ import annotations
@@ -82,7 +87,7 @@ def _accepted_quote_pairs(block: dict, audit_item: dict) -> list[dict]:
 
 
 def build_claim_support_payload(raw: str, evidence_audit: dict | None) -> list[dict]:
-    """Return only fact blocks whose citations already passed the hard gate."""
+    """Check cited facts and the declared type of every hard-gate-passing block."""
     blocks = _raw_blocks(raw)
     checks = {
         int(item.get("block")): item
@@ -93,13 +98,13 @@ def build_claim_support_payload(raw: str, evidence_audit: dict | None) -> list[d
     }
     payload = []
     for number, block in enumerate(blocks, 1):
-        if not isinstance(block, dict) or block.get("kind") != "fact":
+        if not isinstance(block, dict) or block.get("kind") not in {"fact", "conversation", "inference", "unknown"}:
             continue
         check = checks.get(number)
         if not check:
             continue
         quotes = _accepted_quote_pairs(block, check)
-        if not quotes:
+        if block.get("kind") == "fact" and not quotes:
             continue
         text = block.get("text")
         if not isinstance(text, str) or not text.strip():
@@ -109,6 +114,8 @@ def build_claim_support_payload(raw: str, evidence_audit: dict | None) -> list[d
             "claim": text.strip(),
             "evidence": quotes,
         })
+        if block.get("kind") != "fact":
+            payload[-1]["kind"] = block["kind"]
     return payload
 
 
@@ -124,7 +131,7 @@ def evaluate_claim_support(
     """
     candidates = build_claim_support_payload(raw, evidence_audit)
     audit = {
-        "version": "4.0",
+        "version": "4.1",
         "status": "not_required" if not candidates else "unavailable",
         "draft_sha256": sha256(raw.encode()).hexdigest(),
         "citation_audit_draft_sha256": str((evidence_audit or {}).get("draft_sha256") or ""),
@@ -135,6 +142,7 @@ def evaluate_claim_support(
         "conflict_blocks": [],
         "conflicts": [],
         "checks": [],
+        "narrative_blocks": [c["block"] for c in candidates if c.get("kind")],
         "independent_truth_certification": False,
         "scope": "claim_alignment_atomicity_and_cross_block_consistency",
     }
@@ -154,6 +162,20 @@ For each block classify the WHOLE factual claim:
 Paraphrase is allowed when meaning is preserved. Dates, numbers, negation,
 speaker identity, plan-vs-outcome status and causal wording must not be silently
 strengthened.
+
+Blocks with kind=conversation, inference or unknown also require a TYPE check.
+Return factual_assertion=true if such a block asserts a personal historical fact,
+event, credential, date, count, or that retrieved records establish those facts.
+An introductory recap is still a factual assertion. A factual premise embedded
+inside a tentative interpretation or an admission of uncertainty also counts.
+These assertions must be regenerated as separate kind=fact blocks with citations;
+do not approve them simply because their wording sounds plausible or familiar.
+Return factual_assertion=false for greetings, general explanations, specific
+admissions of missing knowledge, and explicitly tentative interpretations that
+introduce no new factual premise. Do not treat "I cannot establish the final dive
+count" as an assertion of a count. For these nonfactual blocks return supported
+and atomic. The factual_assertion field must be an actual JSON boolean.
+For normal fact blocks (no kind supplied), use the factual checks below as usual.
 
 Also classify ATOMICITY:
 - atomic: one independently verifiable factual proposition, including multiple
@@ -181,6 +203,7 @@ Return JSON only:
 "conflicts":[{"blocks":[1,2],"type":"contradiction|timeline_collision|status_conflict",
 "reason":"brief evidence-only reason"}]}.
 Return "conflicts":[] when none are present. Do not rewrite the answer and do not add facts."""
+    system += "\nFor every block carrying kind, also include factual_assertion:true or false in its verdict."
 
     request = build_model_request(
         [
@@ -227,6 +250,8 @@ Return "conflicts":[] when none are present. Do not rewrite the answer and do no
                 "atomicity": atomicity,
                 "reason": str(item.get("reason") or "")[:500],
             }
+            if any(c["block"] == number and c.get("kind") for c in candidates):
+                by_block[number]["factual_assertion"] = item.get("factual_assertion")
 
         conflicts_declared = "conflicts" in data
         raw_conflicts = data.get("conflicts", [])
@@ -279,6 +304,15 @@ Return "conflicts":[] when none are present. Do not rewrite the answer and do no
                     "atomicity": "unavailable",
                     "reason": "checker_returned_no_valid_verdict",
                 }
+            if candidate.get("kind"):
+                item["declared_kind"] = candidate["kind"]
+                if item.get("factual_assertion") is not False:
+                    item["verdict"] = "unsupported"
+                    item["reason"] = (
+                        "personal_fact_requires_cited_fact_block"
+                        if item.get("factual_assertion") is True
+                        else "narrative_type_check_unavailable"
+                    )
             checks.append(item)
             if item["verdict"] in BLOCKING_VERDICTS:
                 failed.append(number)
@@ -322,6 +356,12 @@ Return "conflicts":[] when none are present. Do not rewrite the answer and do no
             status="unavailable",
             error_type=type(exc).__name__,
         )
+        # A narrative block has no mandatory factual citation protection. Keep
+        # existing cited-fact outage behaviour, but do not publish unchecked recaps.
+        audit["failed_blocks"] = list(audit["narrative_blocks"])
+        audit["checks"] = [{"block": number, "verdict": "unsupported",
+                            "atomicity": "unavailable", "reason": "narrative_type_check_unavailable"}
+                           for number in audit["narrative_blocks"]]
         return audit
 
 
@@ -338,7 +378,7 @@ def bind_claim_support_to_publication(
 
 
 def apply_claim_support_gate(raw: str, support_audit: dict | None) -> str:
-    """Convert only semantically failed fact blocks into explicit unknowns."""
+    """Convert failed fact or narrative blocks into explicit unknowns."""
     failed = {}
     for item in (support_audit or {}).get("checks", []):
         if not isinstance(item, dict) or not str(item.get("block") or "").isdigit():
