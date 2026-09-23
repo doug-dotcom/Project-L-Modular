@@ -64,6 +64,7 @@ from core.cognition.recovery_provenance import (
 )
 from core.cognition.saved_answer_integrity_audit import load_saved_answer_integrity_audit
 from core.cognition.production_security_gate import production_security_gate
+from core.cognition.cold_recovery_certification import load_cold_recovery_certification
 from core.cognition.context_budget import build_generation_cognitive_context
 from core.cognition.benchmark import benchmark_manifest, run_cognitive_benchmark
 from core.cognition.evidence_evaluation import (
@@ -819,13 +820,14 @@ def health():
         "portability_certification_ready": True,
         "capability_router_ready": True,
         "main_street": True,
-        "release_layer": 107,
+        "release_layer": 108,
         "release_certification_ready": True,
         "release_provenance_ready": True,
         "answer_provenance_ready": True,
         "recovery_provenance_ready": True,
         "answer_authenticity": authenticity_status(),
         "saved_answer_integrity_audit_ready": True,
+        "cold_recovery_certification_ready": True,
         "production_security_gate": security_gate,
         "release_provenance": build_release_provenance()
     }
@@ -842,13 +844,14 @@ def cognition_status():
         "status": "ok",
         "architecture": "project_l_cognitive_core",
         "version": "13.0",
-        "release_layer": 107,
+        "release_layer": 108,
         "release_certification": build_release_certification(),
         "release_provenance": build_release_provenance(),
         "answer_provenance_ready": True,
         "recovery_provenance_ready": True,
         "answer_authenticity": authenticity_status(),
         "saved_answer_integrity_audit_ready": True,
+        "cold_recovery_certification_ready": True,
         "production_security_gate": production_security_gate(),
         "user_facing_voice": "L",
         "engines": {
@@ -961,6 +964,30 @@ def cognition_integrity_audit(limit: int = 50, x_l_recovery_token: str = Header(
 def cognition_security_readiness():
     """Privacy-safe cryptographic readiness report for the running release."""
     return production_security_gate()
+
+
+@app.get("/cognition/recovery-certification/{request_id}")
+def cognition_recovery_certification(
+    request_id: str,
+    x_l_recovery_token: str = Header(default=""),
+):
+    """Owner-scoped cold verification of one durable saved answer."""
+    try:
+        return load_cold_recovery_certification(
+            task_store.client,
+            x_l_recovery_token,
+            request_id,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            400,
+            "A valid request ID and recovery token are required",
+        ) from exc
+    except Exception as exc:
+        raise HTTPException(
+            503,
+            "The cold recovery certification is temporarily unavailable",
+        ) from exc
 
 
 @app.get("/cognition/portability-certification")
@@ -1811,7 +1838,7 @@ RESPONSE RULES:
         model_receipt=response_model_receipt,
         context_budget=cognitive_packet.get("context_budget", {}),
         assistant_persistence=assistant_persistence,
-        release_layer=107,
+        release_layer=108,
     )
     answer_provenance_check = verify_answer_provenance(
         answer_provenance,
