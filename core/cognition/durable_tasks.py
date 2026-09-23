@@ -19,6 +19,10 @@ from core.cognition.delivery_integrity import (
     require_chat_delivery_payload,
     verify_chat_delivery_payload,
 )
+from core.cognition.recovery_provenance import (
+    require_recovered_answer_payload,
+    verify_recovered_answer_payload,
+)
 
 LOG = logging.getLogger(__name__)
 CONTEXT = threading.local()
@@ -84,16 +88,17 @@ class TaskStore:
         row = rows[0]
         result_payload = row.get('result')
         if result_payload is not None or row['status'] == 'ready':
-            delivery = verify_chat_delivery_payload(
+            recovery = verify_recovered_answer_payload(
                 result_payload,
                 expected_request_id=request_id,
             )
-            row['delivery_integrity'] = delivery
-            if not delivery.get('valid'):
+            row['delivery_integrity'] = recovery.get('delivery_integrity', {})
+            row['recovery_integrity'] = recovery
+            if not recovery.get('valid'):
                 row['status'] = 'failed'
                 row['result'] = {
                     'reply': (
-                        'The saved answer failed delivery integrity verification. '
+                        'The saved answer failed recovery integrity verification. '
                         'Please submit the request again.'
                     ),
                     'error': True,
@@ -120,6 +125,10 @@ class TaskStore:
 
     def finish(self, request_id, worker, payload, status='ready'):
         require_chat_delivery_payload(
+            payload,
+            expected_request_id=request_id,
+        )
+        require_recovered_answer_payload(
             payload,
             expected_request_id=request_id,
         )
