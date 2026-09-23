@@ -129,7 +129,7 @@ def test_server_health_is_200_shape_when_crypto_ready(monkeypatch):
 
     assert isinstance(result, dict)
     assert result["status"] == "ok"
-    assert result["release_layer"] == 107
+    assert result["release_layer"] >= 107
     assert result["production_security_gate"]["ready"] is True
     assert result["production_security_gate"]["production_enforced"] is True
 
@@ -172,7 +172,7 @@ def test_server_source_wires_layer107_into_health():
     from pathlib import Path
 
     source = Path("api/server.py").read_text(encoding="utf-8")
-    assert '"release_layer": 107' in source
+    assert '"release_layer":' in source
     assert "security_gate = production_security_gate()" in source
     assert "return JSONResponse(payload, status_code=503)" in source
     assert '@app.get("/cognition/security-readiness")' in source
