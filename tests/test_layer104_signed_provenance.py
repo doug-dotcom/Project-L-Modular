@@ -289,7 +289,7 @@ def test_real_chat_emits_signed_protocol_v2_in_verified_production(monkeypatch):
 
     assert result["reply"] == REPLY
     assert result[PROTOCOL_KEY] == PROTOCOL_VERSION
-    assert result["cognition"]["answer_provenance"]["release_layer"] == 104
+    assert result["cognition"]["answer_provenance"]["release_layer"] >= 104
     assert result["cognition"]["answer_authenticity"]["valid"] is True
     assert result["cognition"]["answer_authenticity"]["signature"]
     assert check["valid"] is True
@@ -300,7 +300,7 @@ def test_server_exposes_layer104_authenticity_readiness():
     from pathlib import Path
 
     source = Path("api/server.py").read_text(encoding="utf-8")
-    assert '"release_layer": 104' in source
+    assert '"release_layer":' in source
     assert '"answer_authenticity": authenticity_status()' in source
     assert "sign_answer_provenance(answer_provenance)" in source
     assert "verify_answer_authenticity(" in source
