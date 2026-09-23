@@ -89,7 +89,7 @@ def test_layer103_marked_answer_requires_and_verifies_provenance():
 def test_protocol_marker_prevents_missing_provenance_downgrade():
     payload = answer_payload()
     body = dict(payload)
-    body.pop("chat_delivery_receipt")
+    body.pop("delivery_receipt")
     cognition = dict(body["cognition"])
     cognition.pop("answer_provenance")
     body["cognition"] = cognition
@@ -106,7 +106,7 @@ def test_protocol_marker_prevents_missing_provenance_downgrade():
 def test_bound_component_change_fails_even_after_delivery_is_resealed():
     payload = answer_payload()
     body = dict(payload)
-    body.pop("chat_delivery_receipt")
+    body.pop("delivery_receipt")
     cognition = dict(body["cognition"])
     cognition["model_receipt"] = {
         **cognition["model_receipt"],
@@ -127,7 +127,7 @@ def test_bound_component_change_fails_even_after_delivery_is_resealed():
 def test_unsupported_protocol_fails_closed():
     payload = answer_payload()
     body = dict(payload)
-    body.pop("chat_delivery_receipt")
+    body.pop("delivery_receipt")
     body[PROTOCOL_KEY] = "999.0"
     resealed = seal_chat_delivery_payload(body, request_id=REQUEST_ID)
 
@@ -187,7 +187,7 @@ def test_malformed_present_provenance_does_not_downgrade_to_legacy():
 def test_require_recovered_answer_payload_rejects_invalid_marked_result():
     payload = answer_payload()
     body = dict(payload)
-    body.pop("chat_delivery_receipt")
+    body.pop("delivery_receipt")
     body["cognition"] = {}
     resealed = seal_chat_delivery_payload(body, request_id=REQUEST_ID)
 
@@ -249,7 +249,7 @@ def test_durable_saved_answer_rechecks_provenance_before_returning():
 def test_durable_recovery_withholds_marked_answer_missing_provenance():
     payload = answer_payload()
     body = dict(payload)
-    body.pop("chat_delivery_receipt")
+    body.pop("delivery_receipt")
     body["cognition"] = {}
     resealed = seal_chat_delivery_payload(body, request_id=REQUEST_ID)
     row = {
@@ -276,7 +276,7 @@ def test_durable_finish_rechecks_provenance_before_database_write():
     assert client.finished and client.finished[0][0] == "l_task_finish"
 
     body = dict(payload)
-    body.pop("chat_delivery_receipt")
+    body.pop("delivery_receipt")
     body["cognition"] = {}
     invalid = seal_chat_delivery_payload(body, request_id=REQUEST_ID)
 
