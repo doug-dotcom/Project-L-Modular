@@ -31,7 +31,7 @@ from core.cognition.publication_repair import (
     sealed_reply_persistence_receipt,
     verify_final_publication_seal,
 )
-from core.cognition.runtime_safety import CORE_VERSION, cognitive_failsafe
+from core.cognition.runtime_safety import CORE_VERSION, _fallback, safe_diagnostic
 
 
 LAYER = 100
@@ -112,18 +112,20 @@ def _publication_and_delivery_check() -> dict:
 
 def _runtime_failsafe_check() -> dict:
     secret = "layer100-secret-error-detail"
-
-    @cognitive_failsafe
-    def broken(message: str, rhee_packet: dict):
+    try:
         raise RuntimeError(secret)
+    except RuntimeError as exc:
+        diagnostic = safe_diagnostic(exc)
 
-    packet = broken("synthetic", {"context": ""})
+    packet = _fallback(
+        {"message": "synthetic", "rhee_packet": {"context": ""}},
+        diagnostic,
+    )
     serialised = json.dumps(packet, sort_keys=True)
-    runtime = packet.get("runtime") or {}
-    diagnostic = runtime.get("diagnostic") or {}
     return {
-        "degraded": runtime.get("status") == "degraded",
-        "fallback_used": runtime.get("fallback_used") is True,
+        "degraded": packet.get("status") == "degraded",
+        "fallback_version": str(packet.get("version") or "").endswith("-failsafe"),
+        "guardrails_not_passed": (packet.get("guardrails") or {}).get("passed") is False,
         "diagnostic_bounded": bool(
             diagnostic.get("error_type")
             and diagnostic.get("source_file")
@@ -220,7 +222,8 @@ def build_release_certification() -> dict:
         _result(
             "bounded_cognition_failsafe",
             failsafe["degraded"]
-            and failsafe["fallback_used"]
+            and failsafe["fallback_version"]
+            and failsafe["guardrails_not_passed"]
             and failsafe["diagnostic_bounded"]
             and failsafe["exception_message_hidden"],
             scope="synthetic_runtime",
