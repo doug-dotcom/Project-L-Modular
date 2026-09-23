@@ -9,6 +9,7 @@ from math import ceil, isfinite
 from statistics import median
 
 from core.cognition.delivery_integrity import verify_chat_delivery_payload
+from core.cognition.answer_provenance import verify_answer_provenance
 from core.cognition.durable_tasks import owner_identity
 
 
@@ -57,7 +58,9 @@ def summarise_production_baseline(rows):
 
     summaries = []
     for version, entries in sorted(groups.items()):
-        statuses, delivery, runtime, evidence, models = (Counter() for _ in range(5))
+        statuses, delivery, runtime, evidence, models, answer_provenance, release_commits = (
+            Counter() for _ in range(7)
+        )
         latency, model_latency, recall_latency, source_counts = [], [], [], []
         costs = {}
         errors = cost_observed = 0
@@ -96,6 +99,29 @@ def summarise_production_baseline(rows):
             receipt = _object(cognition.get("model_receipt"))
             models[str(receipt.get("model_id") or "unknown")[:80]] += 1
             model_latency.append(_number(receipt.get("duration_ms")))
+
+            answer_receipt = _object(cognition.get("answer_provenance"))
+            if not answer_receipt:
+                answer_provenance["missing"] += 1
+            else:
+                answer_check = verify_answer_provenance(
+                    answer_receipt,
+                    request_id=row["request_id"],
+                    final_reply=result.get("reply") if isinstance(result.get("reply"), str) else None,
+                    release_provenance=_object(cognition.get("release_provenance")),
+                    model_receipt=receipt,
+                    context_budget=_object(cognition.get("context_budget")),
+                    assistant_persistence=_object(cognition.get("assistant_persistence")),
+                )
+                if not answer_check.get("valid"):
+                    answer_provenance["invalid"] += 1
+                elif answer_check.get("verified_production"):
+                    answer_provenance["verified_production"] += 1
+                    commit = str(answer_check.get("release_commit_sha") or "")
+                    if commit:
+                        release_commits[commit] += 1
+                else:
+                    answer_provenance["valid_unverified_runtime"] += 1
             recall = _object(cognition.get("recall_plan"))
             recall_latency.append(_number(recall.get("latency_ms")))
             source_counts.append(_number(recall.get("source_count")))
@@ -110,6 +136,8 @@ def summarise_production_baseline(rows):
             "cognition_version": version, "tasks": len(entries), "task_status": dict(statuses),
             "error_results": errors, "delivery_integrity": dict(delivery), "runtime": dict(runtime),
             "evidence_audit_status": dict(evidence), "models": dict(models),
+            "answer_provenance": dict(answer_provenance),
+            "release_commits": dict(release_commits),
             "task_elapsed_ms": _distribution(latency), "response_model_ms": _distribution(model_latency),
             "recall_ms": _distribution(recall_latency), "retrieved_sources": _distribution(source_counts),
             "response_model_cost": {"observed": cost_observed, "missing": len(entries)-cost_observed,
@@ -130,6 +158,7 @@ def summarise_production_baseline(rows):
             "Task elapsed time includes queueing and result persistence, not just reasoning.",
             "Recorded response-model costs exclude other model calls and infrastructure; estimates are not invoices.",
             "Missing or legacy telemetry is unknown, never a pass or zero cost.",
+            "Release-commit cohorts describe recorded provenance only; they do not establish causal quality differences.",
         ],
     }
 
