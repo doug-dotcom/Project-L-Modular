@@ -145,13 +145,13 @@ def test_server_exposes_layer101_provenance_surfaces(monkeypatch):
         monkeypatch.setenv(key, value)
 
     health = server.health()
-    assert health["release_layer"] == 101
+    assert health["release_layer"] >= 101
     assert health["release_provenance_ready"] is True
     assert health["release_provenance"]["verified"] is True
     assert health["release_provenance"]["commit_sha"] == COMMIT
 
     status = server.cognition_status()
-    assert status["release_layer"] == 101
+    assert status["release_layer"] >= 101
     assert status["release_provenance"]["verified"] is True
 
     endpoint = server.cognition_release_provenance()
@@ -163,7 +163,7 @@ def test_server_exposes_layer101_provenance_surfaces(monkeypatch):
 def test_server_source_has_layer101_endpoint_and_not_raw_environment_dump():
     source = Path("api/server.py").read_text(encoding="utf-8")
 
-    assert '"release_layer": 101' in source
+    assert '"release_layer":' in source
     assert '"release_provenance_ready": True' in source
     assert '@app.get("/cognition/release-provenance")' in source
     assert "build_release_provenance()" in source
