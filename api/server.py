@@ -47,6 +47,7 @@ from agents.rhee.rhee_v3 import (
 
 from core.cognition.orchestrator import run_cognitive_core
 from core.cognition.controller import plan_cognition
+from core.cognition.context_budget import build_generation_cognitive_context
 from core.cognition.benchmark import benchmark_manifest, run_cognitive_benchmark
 from core.cognition.evidence_evaluation import (
     evidence_mode, evidence_prompt, evaluate_answer, evaluation_manifest,
@@ -1085,7 +1086,16 @@ def chat(req: ChatRequest):
             f"dimensions={cognitive_packet.get('confidence_dimensions', {}).get('dimensions', {})} | "
             f"guardrails={cognitive_packet.get('guardrails', {})}"
         )
-        cognitive_context = json.dumps(cognitive_packet, ensure_ascii=False, indent=2)
+        generation_context = build_generation_cognitive_context(
+            cognitive_packet,
+            evidence_required=check_evidence,
+        )
+        cognitive_context = generation_context["context"]
+        cognitive_packet["context_budget"] = generation_context["receipt"]
+        log(
+            "COGNITIVE CONTEXT BUDGET: "
+            + json.dumps(cognitive_packet["context_budget"], sort_keys=True)
+        )
         cognitive_guardrails = guardrail_prompt(cognitive_packet.get("guardrails", {}))
         architecture_audit_context = build_architecture_audit_context(
             user_message,
@@ -1146,6 +1156,9 @@ CAPABILITY ROUTE:
 
 COGNITIVE PACKET:
 {cognitive_context}
+
+COGNITIVE CONTEXT BUDGET:
+{json.dumps(cognitive_packet.get("context_budget", {}), ensure_ascii=False, indent=2)}
 
 ACTIVE WORKING MEMORY:
 {json.dumps(cognitive_packet.get("working_memory", {}), ensure_ascii=False, indent=2)}
