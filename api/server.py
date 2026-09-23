@@ -50,6 +50,11 @@ from core.cognition.controller import plan_cognition
 from core.cognition.release_certification import build_release_certification
 from core.cognition.release_provenance import build_release_provenance, verify_release_provenance
 from core.cognition.answer_provenance import build_answer_provenance, verify_answer_provenance
+from core.cognition.recovery_provenance import (
+    mark_answer_provenance_required,
+    require_recovered_answer_payload,
+    verify_recovered_answer_payload,
+)
 from core.cognition.context_budget import build_generation_cognitive_context
 from core.cognition.benchmark import benchmark_manifest, run_cognitive_benchmark
 from core.cognition.evidence_evaluation import (
@@ -394,6 +399,10 @@ def store_chat_result(request_id, status, payload=None):
             payload,
             expected_request_id=request_id,
         )
+        require_recovered_answer_payload(
+            payload,
+            expected_request_id=request_id,
+        )
     now = monotonic_time.monotonic()
     with _chat_results_lock:
         expired = [
@@ -524,6 +533,28 @@ def recover_chat_result(request_id: str, x_l_recovery_token: str = Header(defaul
                 },
                 "delivery_integrity": delivery,
             }
+
+        recovery = verify_recovered_answer_payload(
+            payload,
+            expected_request_id=request_id,
+        )
+        if not recovery.get("valid"):
+            _chat_results.pop(request_id, None)
+            return {
+                "status": "failed",
+                "result": {
+                    "reply": (
+                        "The saved answer failed provenance verification. "
+                        "Please submit the request again."
+                    ),
+                    "error": True,
+                },
+                "delivery_integrity": delivery,
+                "recovery_integrity": recovery,
+            }
+
+        # Preserve the established recovery response shape; integrity metadata
+        # remains inside the sealed payload and is enforced before this return.
         return {"status": "ready", "result": payload}
 
 # =====================================================
@@ -778,10 +809,11 @@ def health():
         "portability_certification_ready": True,
         "capability_router_ready": True,
         "main_street": True,
-        "release_layer": 102,
+        "release_layer": 103,
         "release_certification_ready": True,
         "release_provenance_ready": True,
         "answer_provenance_ready": True,
+        "recovery_provenance_ready": True,
         "release_provenance": build_release_provenance()
     }
 
@@ -793,10 +825,11 @@ def cognition_status():
         "status": "ok",
         "architecture": "project_l_cognitive_core",
         "version": "13.0",
-        "release_layer": 102,
+        "release_layer": 103,
         "release_certification": build_release_certification(),
         "release_provenance": build_release_provenance(),
         "answer_provenance_ready": True,
+        "recovery_provenance_ready": True,
         "user_facing_voice": "L",
         "engines": {
             "metacognition": "cognitive_controller_v1",
@@ -1737,7 +1770,7 @@ RESPONSE RULES:
         model_receipt=response_model_receipt,
         context_budget=cognitive_packet.get("context_budget", {}),
         assistant_persistence=assistant_persistence,
-        release_layer=102,
+        release_layer=103,
     )
     answer_provenance_check = verify_answer_provenance(
         answer_provenance,
@@ -1833,6 +1866,7 @@ RESPONSE RULES:
             "guardrail_issues": cognitive_packet.get("guardrails", {}).get("issues", []),
         }
     }
+    payload = mark_answer_provenance_required(payload)
     payload = seal_chat_delivery_payload(
         payload,
         request_id=request_id,

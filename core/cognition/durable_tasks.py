@@ -19,6 +19,10 @@ from core.cognition.delivery_integrity import (
     require_chat_delivery_payload,
     verify_chat_delivery_payload,
 )
+from core.cognition.recovery_provenance import (
+    require_recovered_answer_payload,
+    verify_recovered_answer_payload,
+)
 
 LOG = logging.getLogger(__name__)
 CONTEXT = threading.local()
@@ -99,6 +103,22 @@ class TaskStore:
                     'error': True,
                 }
                 return {**row, 'durable': True, 'request_id': request_id}
+
+            recovery = verify_recovered_answer_payload(
+                result_payload,
+                expected_request_id=request_id,
+            )
+            row['recovery_integrity'] = recovery
+            if not recovery.get('valid'):
+                row['status'] = 'failed'
+                row['result'] = {
+                    'reply': (
+                        'The saved answer failed provenance verification. '
+                        'Please submit the request again.'
+                    ),
+                    'error': True,
+                }
+                return {**row, 'durable': True, 'request_id': request_id}
         temporal = (row.get('result') or {}).get('cognition', {}).get('temporal_memory')
         if temporal:
             from core.cognition.temporal_memory import snapshot_freshness
@@ -120,6 +140,10 @@ class TaskStore:
 
     def finish(self, request_id, worker, payload, status='ready'):
         require_chat_delivery_payload(
+            payload,
+            expected_request_id=request_id,
+        )
+        require_recovered_answer_payload(
             payload,
             expected_request_id=request_id,
         )
