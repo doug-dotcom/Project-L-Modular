@@ -56,6 +56,8 @@ from core.cognition.answer_authenticity import (
     verify_answer_authenticity,
 )
 from core.cognition.recovery_provenance import (
+    LEGACY_PROTOCOL_VERSION,
+    PROTOCOL_VERSION,
     mark_answer_provenance_required,
     require_recovered_answer_payload,
     verify_recovered_answer_payload,
@@ -1807,11 +1809,30 @@ RESPONSE RULES:
         store_chat_result(request_id, "ready", payload)
         return payload
 
-    answer_authenticity = sign_answer_provenance(answer_provenance)
-    answer_authenticity_check = verify_answer_authenticity(
-        answer_authenticity,
-        answer_provenance,
-    )
+    authenticity_config = authenticity_status()
+    production_authenticity_required = release_provenance.get("verified") is True
+    if authenticity_config.get("configured"):
+        answer_authenticity = sign_answer_provenance(answer_provenance)
+        answer_authenticity_check = verify_answer_authenticity(
+            answer_authenticity,
+            answer_provenance,
+        )
+        answer_protocol_version = PROTOCOL_VERSION
+    else:
+        answer_authenticity = {}
+        answer_authenticity_check = {
+            "version": "layer104-answer-authenticity-1",
+            "valid": not production_authenticity_required,
+            "authentic": False,
+            "status": "not_configured_nonproduction",
+            "issues": (
+                []
+                if not production_authenticity_required
+                else ["answer_authenticity_signing_key_unavailable"]
+            ),
+        }
+        answer_protocol_version = LEGACY_PROTOCOL_VERSION
+
     cognitive_packet["answer_authenticity"] = answer_authenticity
     cognitive_packet["answer_authenticity_verification"] = answer_authenticity_check
     if not answer_authenticity_check.get("valid"):
@@ -1899,7 +1920,10 @@ RESPONSE RULES:
             "guardrail_issues": cognitive_packet.get("guardrails", {}).get("issues", []),
         }
     }
-    payload = mark_answer_provenance_required(payload)
+    payload = mark_answer_provenance_required(
+        payload,
+        protocol_version=answer_protocol_version,
+    )
     payload = seal_chat_delivery_payload(
         payload,
         request_id=request_id,
