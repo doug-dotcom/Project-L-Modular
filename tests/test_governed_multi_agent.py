@@ -116,7 +116,8 @@ def test_phase_nine_cognitive_core_exposes_governed_worker_packet():
         capability_packet={},
         client=None,
     )
-    assert packet["version"] == "13.0"
+    from core.cognition.runtime_safety import CORE_VERSION
+    assert packet["version"] == CORE_VERSION
     assert packet["multi_agent"]["one_voice"] is True
     assert packet["multi_agent"]["synthesis_owner"] == "L"
     assert packet["multi_agent"]["governance"]["passed"] is True

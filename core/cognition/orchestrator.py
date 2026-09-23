@@ -34,8 +34,10 @@ from core.cognition.what_matters_now import build_what_matters_now_packet
 from governance.cognitive_guardrails import assess_cognitive_packet
 from core.cognition.controller import finalise_cognition_plan, plan_cognition
 from core.cognition.uncertainty import assess_confidence_dimensions
+from core.cognition.runtime_safety import CORE_VERSION, cognitive_failsafe
 
 
+@cognitive_failsafe
 def run_cognitive_core(
     message: str,
     rhee_packet: dict,
@@ -217,7 +219,7 @@ def run_cognitive_core(
 
     packet = {
         "engine": "project_l_cognitive_core",
-        "version": "14.9",
+        "version": CORE_VERSION,
         "controller": cognitive_plan,
         "confidence_dimensions": confidence_dimensions,
         "confidence_evidence": confidence_evidence,

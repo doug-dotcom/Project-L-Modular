@@ -89,3 +89,7 @@ jobs:
           tests/test_recall_planner.py
           tests/test_voice_input.py
           tests/test_account_documents.py
+          tests/test_anticipation_layer.py
+          tests/test_life_pattern_layer.py
+          tests/test_governed_multi_agent.py
+          tests/test_cognitive_working_memory.py

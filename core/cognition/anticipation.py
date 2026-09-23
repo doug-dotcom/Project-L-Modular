@@ -8,7 +8,7 @@ Only high-confidence, immediately useful candidates may be surfaced by L.
 from __future__ import annotations
 
 
-ANTICIPATION_VERSION = "1.0"
+ANTICIPATION_VERSION = "1.1"
 MAX_CANDIDATES = 3
 
 
@@ -74,8 +74,12 @@ def build_anticipation_packet(
         and mary.get("current_relevance") == "current"
     ):
         support = mary.get("supporting_episodes") or []
-        domains = mary.get("cross_domain_support") or {}
-        domain_count = int(domains.get("domain_count") or 0)
+        # Mary 5.1 emits a count. Older packets used a nested count object.
+        domains = mary.get("cross_domain_support")
+        if isinstance(domains, dict):
+            domains = domains.get("domain_count")
+        # An invalid count must not manufacture cross-domain confidence.
+        domain_count = domains if type(domains) is int and domains >= 0 else 0
         if len(support) >= 2:
             candidates.append(_candidate(
                 "current_pattern_watch",
