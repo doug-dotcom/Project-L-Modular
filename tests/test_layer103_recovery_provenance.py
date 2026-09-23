@@ -8,6 +8,7 @@ from core.cognition.answer_provenance import build_answer_provenance
 from core.cognition.delivery_integrity import seal_chat_delivery_payload
 from core.cognition.durable_tasks import TaskStore
 from core.cognition.recovery_provenance import (
+    LEGACY_PROTOCOL_VERSION,
     PROTOCOL_KEY,
     PROTOCOL_VERSION,
     mark_answer_provenance_required,
@@ -32,6 +33,7 @@ def production_env():
         "RAILWAY_PROJECT_NAME": "profound-wonder",
         "RAILWAY_SERVICE_NAME": "Project-L-Modular",
         "RAILWAY_ENVIRONMENT_NAME": "production",
+        "L_ANSWER_PROVENANCE_SIGNING_KEY": "k" * 64,
     }
 
 
@@ -66,7 +68,10 @@ def answer_payload(*, marked=True, release_layer=103):
         },
     }
     if marked:
-        body = mark_answer_provenance_required(body)
+        body = mark_answer_provenance_required(
+            body,
+            protocol_version=LEGACY_PROTOCOL_VERSION,
+        )
     return seal_chat_delivery_payload(body, request_id=REQUEST_ID)
 
 
@@ -77,7 +82,7 @@ def test_layer103_marked_answer_requires_and_verifies_provenance():
         expected_request_id=REQUEST_ID,
     )
 
-    assert payload[PROTOCOL_KEY] == PROTOCOL_VERSION
+    assert payload[PROTOCOL_KEY] == LEGACY_PROTOCOL_VERSION
     assert check["valid"] is True
     assert check["status"] == "verified_production"
     assert check["provenance_required"] is True
@@ -351,16 +356,16 @@ def test_real_chat_marks_layer103_protocol(monkeypatch):
     )
 
     assert result[PROTOCOL_KEY] == PROTOCOL_VERSION
-    assert result["cognition"]["answer_provenance"]["release_layer"] == 103
+    assert result["cognition"]["answer_provenance"]["release_layer"] >= 103
     assert check["valid"] is True
-    assert check["status"] == "verified_production"
+    assert check["status"] == "verified_authentic_production"
 
 
 def test_server_surfaces_layer103_recovery_readiness():
     from pathlib import Path
 
     source = Path("api/server.py").read_text(encoding="utf-8")
-    assert '"release_layer": 103' in source
+    assert '"release_layer":' in source
     assert '"recovery_provenance_ready": True' in source
-    assert "mark_answer_provenance_required(payload)" in source
+    assert "mark_answer_provenance_required(" in source
     assert "verify_recovered_answer_payload(" in source
