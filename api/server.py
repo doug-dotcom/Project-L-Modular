@@ -850,6 +850,18 @@ def cognition_benchmark():
     return run_cognitive_benchmark()
 
 
+@app.get("/cognition/baseline")
+def cognition_baseline(limit: int = 50, x_l_recovery_token: str = Header(default="")):
+    """Owner-scoped saved-answer telemetry; no generation or task replay."""
+    from core.cognition.production_baseline import load_production_baseline
+    try:
+        return load_production_baseline(task_store.client, x_l_recovery_token, limit)
+    except ValueError as exc:
+        raise HTTPException(400, "A valid recovery token and task limit (1–100) are required") from exc
+    except Exception as exc:
+        raise HTTPException(503, "The saved-answer baseline is temporarily unavailable") from exc
+
+
 @app.get("/cognition/portability-certification")
 def cognition_portability_certification():
     """Run Phase 12 using a fresh stateless model request and L's bootstrap only."""
