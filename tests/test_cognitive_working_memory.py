@@ -102,7 +102,8 @@ def test_phase_ten_cognitive_core_exposes_working_memory_packet():
         client=None,
         working_memory_packet=working_memory,
     )
-    assert packet["version"] == "13.0"
+    from core.cognition.runtime_safety import CORE_VERSION
+    assert packet["version"] == CORE_VERSION
     assert packet["working_memory"] == working_memory
 
 

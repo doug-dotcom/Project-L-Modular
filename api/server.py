@@ -1029,6 +1029,7 @@ def chat(req: ChatRequest):
     cognitive_packet = {
         "engine": "project_l_cognitive_core",
         "version": "13.0",
+        "runtime": {"status": "not_run", "fallback_used": False, "diagnostic": {}},
         "controller": cognitive_plan,
         "route": {"rike": "not_required"},
         "rike": {
@@ -1058,6 +1059,10 @@ def chat(req: ChatRequest):
             cognitive_plan=cognitive_plan,
             working_memory_packet=working_memory_packet,
             model_adapter=active_model_adapter,
+        )
+        log(
+            f"COGNITIVE RUNTIME: request={request_id} | "
+            + json.dumps(cognitive_packet.get("runtime", {}), sort_keys=True)
         )
         log(
             "COGNITIVE TRACE: "
@@ -1220,7 +1225,7 @@ RESPONSE RULES:
                         ),
                         "server": "vx",
                         "error": True,
-                        "cognition": {"evidence_evaluation": evidence_audit},
+                        "cognition": {"runtime": cognitive_packet.get("runtime", {}), "evidence_evaluation": evidence_audit},
                     }
                     store_chat_result(request_id, "ready", payload)
                     return payload
@@ -1247,7 +1252,7 @@ RESPONSE RULES:
                         ),
                         "server": "vx",
                         "error": True,
-                        "cognition": {"evidence_evaluation": evidence_audit},
+                        "cognition": {"runtime": cognitive_packet.get("runtime", {}), "evidence_evaluation": evidence_audit},
                     }
                     store_chat_result(request_id, "ready", payload)
                     return payload
@@ -1527,7 +1532,7 @@ RESPONSE RULES:
             failure_receipt = getattr(e, "receipt", {"status": "failed", "error_type": type(e).__name__})
             payload = {"reply": "I couldn't complete that answer. Please try again.", "server": "vx",
                        "error": True, "model_receipt": failure_receipt,
-                       "cognition": {"evidence_evaluation": {"status": "not_checked"}, "model_receipt": failure_receipt}}
+                       "cognition": {"runtime": cognitive_packet.get("runtime", {}), "evidence_evaluation": {"status": "not_checked"}, "model_receipt": failure_receipt}}
             store_chat_result(request_id, "ready", payload)
             return payload
 
@@ -1547,7 +1552,7 @@ RESPONSE RULES:
     temporal_receipt = rhee_packet.get('temporal_memory')
     if temporal_receipt and snapshot_freshness(supabase, temporal_receipt).get('status') != 'unchanged':
         payload = {'reply': 'The fact timeline changed while I was preparing this answer, or its freshness could not be checked. Please ask again.',
-                   'error': True, 'cognition': {'temporal_memory': temporal_receipt,
+                   'error': True, 'cognition': {'runtime': cognitive_packet.get('runtime', {}), 'temporal_memory': temporal_receipt,
                                                'model_receipt': response_model_receipt}}
         store_chat_result(request_id, 'ready', payload)
         return payload
@@ -1568,6 +1573,7 @@ RESPONSE RULES:
                 "server": "vx",
                 "error": True,
                 "cognition": {
+                    "runtime": cognitive_packet.get("runtime", {}),
                     "evidence_evaluation": {
                         **evidence_audit,
                         "final_publication": publication_seal,
@@ -1590,6 +1596,7 @@ RESPONSE RULES:
                 "server": "vx",
                 "error": True,
                 "cognition": {
+                    "runtime": cognitive_packet.get("runtime", {}),
                     "evidence_evaluation": {
                         **evidence_audit,
                         "final_publication_verification": immediate_seal_check,
@@ -1632,6 +1639,7 @@ RESPONSE RULES:
                 "server": "vx",
                 "error": True,
                 "cognition": {
+                    "runtime": cognitive_packet.get("runtime", {}),
                     "evidence_evaluation": {
                         **evidence_audit,
                         "final_publication_verification": final_seal_check,
@@ -1700,6 +1708,7 @@ RESPONSE RULES:
             "assistant_integrity": short_term_assistant.get("integrity"),
         },
         "cognition": {
+            "runtime": cognitive_packet.get("runtime", {}),
             "version": cognitive_packet.get("version"),
             "controller": cognitive_packet.get("controller", cognitive_plan),
             "route": cognitive_packet.get("route", {}),
