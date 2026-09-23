@@ -516,31 +516,46 @@ def recover_chat_result(request_id: str, x_l_recovery_token: str = Header(defaul
         if item["status"] != "ready":
             return {"status": "pending"}
         payload = item["payload"]
+        delivery = verify_chat_delivery_payload(
+            payload,
+            expected_request_id=request_id,
+        )
+        if not delivery.get("valid"):
+            _chat_results.pop(request_id, None)
+            return {
+                "status": "failed",
+                "result": {
+                    "reply": (
+                        "The saved answer failed delivery integrity "
+                        "verification. Please submit the request again."
+                    ),
+                    "error": True,
+                },
+                "delivery_integrity": delivery,
+            }
+
         recovery = verify_recovered_answer_payload(
             payload,
             expected_request_id=request_id,
         )
-        delivery = recovery.get("delivery_integrity", {})
         if not recovery.get("valid"):
             _chat_results.pop(request_id, None)
             return {
                 "status": "failed",
                 "result": {
                     "reply": (
-                        "The saved answer failed recovery integrity "
-                        "verification. Please submit the request again."
+                        "The saved answer failed provenance verification. "
+                        "Please submit the request again."
                     ),
                     "error": True,
                 },
                 "delivery_integrity": delivery,
                 "recovery_integrity": recovery,
             }
-        return {
-            "status": "ready",
-            "result": payload,
-            "delivery_integrity": delivery,
-            "recovery_integrity": recovery,
-        }
+
+        # Preserve the established recovery response shape; integrity metadata
+        # remains inside the sealed payload and is enforced before this return.
+        return {"status": "ready", "result": payload}
 
 # =====================================================
 # MEMORY DEPOT
