@@ -10,6 +10,7 @@ from statistics import median
 
 from core.cognition.delivery_integrity import verify_chat_delivery_payload
 from core.cognition.answer_provenance import verify_answer_provenance
+from core.cognition.recovery_provenance import verify_recovered_answer_payload
 from core.cognition.durable_tasks import owner_identity
 
 
@@ -58,8 +59,8 @@ def summarise_production_baseline(rows):
 
     summaries = []
     for version, entries in sorted(groups.items()):
-        statuses, delivery, runtime, evidence, models, answer_provenance, release_commits = (
-            Counter() for _ in range(7)
+        statuses, delivery, runtime, evidence, models, answer_provenance, release_commits, authenticity_keys = (
+            Counter() for _ in range(8)
         )
         latency, model_latency, recall_latency, source_counts = [], [], [], []
         costs = {}
@@ -122,6 +123,19 @@ def summarise_production_baseline(rows):
                         release_commits[commit] += 1
                 else:
                     answer_provenance["valid_unverified_runtime"] += 1
+
+                recovery_check = verify_recovered_answer_payload(
+                    result,
+                    expected_request_id=row["request_id"],
+                )
+                if recovery_check.get("valid"):
+                    auth = _object(recovery_check.get("answer_authenticity"))
+                    mode = str(auth.get("verification_mode") or "")
+                    key_id = str(auth.get("key_id") or "")
+                    if mode == "keyring" and key_id:
+                        authenticity_keys[key_id] += 1
+                    elif mode == "legacy_layer104":
+                        authenticity_keys["legacy_layer104"] += 1
             recall = _object(cognition.get("recall_plan"))
             recall_latency.append(_number(recall.get("latency_ms")))
             source_counts.append(_number(recall.get("source_count")))
@@ -138,6 +152,7 @@ def summarise_production_baseline(rows):
             "evidence_audit_status": dict(evidence), "models": dict(models),
             "answer_provenance": dict(answer_provenance),
             "release_commits": dict(release_commits),
+            "answer_authenticity_keys": dict(authenticity_keys),
             "task_elapsed_ms": _distribution(latency), "response_model_ms": _distribution(model_latency),
             "recall_ms": _distribution(recall_latency), "retrieved_sources": _distribution(source_counts),
             "response_model_cost": {"observed": cost_observed, "missing": len(entries)-cost_observed,
@@ -159,6 +174,7 @@ def summarise_production_baseline(rows):
             "Recorded response-model costs exclude other model calls and infrastructure; estimates are not invoices.",
             "Missing or legacy telemetry is unknown, never a pass or zero cost.",
             "Release-commit cohorts describe recorded provenance only; they do not establish causal quality differences.",
+            "Signing-key counts support rotation audits only; they do not establish answer quality.",
         ],
     }
 
