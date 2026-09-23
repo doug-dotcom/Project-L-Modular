@@ -62,6 +62,7 @@ from core.cognition.recovery_provenance import (
     require_recovered_answer_payload,
     verify_recovered_answer_payload,
 )
+from core.cognition.saved_answer_integrity_audit import load_saved_answer_integrity_audit
 from core.cognition.context_budget import build_generation_cognitive_context
 from core.cognition.benchmark import benchmark_manifest, run_cognitive_benchmark
 from core.cognition.evidence_evaluation import (
@@ -816,12 +817,13 @@ def health():
         "portability_certification_ready": True,
         "capability_router_ready": True,
         "main_street": True,
-        "release_layer": 105,
+        "release_layer": 106,
         "release_certification_ready": True,
         "release_provenance_ready": True,
         "answer_provenance_ready": True,
         "recovery_provenance_ready": True,
         "answer_authenticity": authenticity_status(),
+        "saved_answer_integrity_audit_ready": True,
         "release_provenance": build_release_provenance()
     }
 
@@ -833,12 +835,13 @@ def cognition_status():
         "status": "ok",
         "architecture": "project_l_cognitive_core",
         "version": "13.0",
-        "release_layer": 105,
+        "release_layer": 106,
         "release_certification": build_release_certification(),
         "release_provenance": build_release_provenance(),
         "answer_provenance_ready": True,
         "recovery_provenance_ready": True,
         "answer_authenticity": authenticity_status(),
+        "saved_answer_integrity_audit_ready": True,
         "user_facing_voice": "L",
         "engines": {
             "metacognition": "cognitive_controller_v1",
@@ -929,6 +932,21 @@ def cognition_baseline(limit: int = 50, x_l_recovery_token: str = Header(default
         raise HTTPException(400, "A valid recovery token and task limit (1–100) are required") from exc
     except Exception as exc:
         raise HTTPException(503, "The saved-answer baseline is temporarily unavailable") from exc
+
+
+@app.get("/cognition/integrity-audit")
+def cognition_integrity_audit(limit: int = 50, x_l_recovery_token: str = Header(default="")):
+    """Owner-scoped read-only verification of saved-answer integrity/authenticity."""
+    try:
+        return load_saved_answer_integrity_audit(
+            task_store.client,
+            x_l_recovery_token,
+            limit,
+        )
+    except ValueError as exc:
+        raise HTTPException(400, "A valid recovery token and task limit (1–100) are required") from exc
+    except Exception as exc:
+        raise HTTPException(503, "The saved-answer integrity audit is temporarily unavailable") from exc
 
 
 @app.get("/cognition/portability-certification")
@@ -1779,7 +1797,7 @@ RESPONSE RULES:
         model_receipt=response_model_receipt,
         context_budget=cognitive_packet.get("context_budget", {}),
         assistant_persistence=assistant_persistence,
-        release_layer=105,
+        release_layer=106,
     )
     answer_provenance_check = verify_answer_provenance(
         answer_provenance,
