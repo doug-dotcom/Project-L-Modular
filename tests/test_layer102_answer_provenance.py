@@ -26,6 +26,7 @@ def production_env():
         "RAILWAY_PROJECT_NAME": "profound-wonder",
         "RAILWAY_SERVICE_NAME": "Project-L-Modular",
         "RAILWAY_ENVIRONMENT_NAME": "production",
+        "L_ANSWER_PROVENANCE_SIGNING_KEY": "k" * 64,
     }
 
 
