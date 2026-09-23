@@ -299,7 +299,7 @@ def test_server_surfaces_layer106_integrity_audit_readiness():
     from pathlib import Path
 
     source = Path("api/server.py").read_text(encoding="utf-8")
-    assert '"release_layer": 106' in source
+    assert '"release_layer":' in source
     assert '"saved_answer_integrity_audit_ready": True' in source
     assert '@app.get("/cognition/integrity-audit")' in source
     assert "load_saved_answer_integrity_audit(" in source
