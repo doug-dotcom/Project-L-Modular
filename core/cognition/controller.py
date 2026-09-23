@@ -10,6 +10,7 @@ from __future__ import annotations
 import re
 
 from core.cognition.cue_driven_memory import assess_present_cue
+from core.cognition.current_update import self_contained_daily_update
 from core.cognition.decision_memory import decision_recall_requested
 from core.cognition.personal_research import personal_research_requested
 from core.cognition.personal_timeline import timeline_query_requested
@@ -18,7 +19,7 @@ from core.cognition.rike import needs_structured_reasoning
 from core.cognition.what_matters_now import what_matters_now_requested
 
 
-CONTROLLER_VERSION = "1.8"
+CONTROLLER_VERSION = "1.9"
 
 
 def _has(text: str, signals: tuple[str, ...]) -> bool:
@@ -59,6 +60,7 @@ def _life_pattern_signal(text: str) -> bool:
 def plan_cognition(message: str) -> dict:
     raw_text = str(message or "").strip()
     text = " ".join(raw_text.lower().split())
+    current_update = self_contained_daily_update(raw_text)
 
     continuity_signal = _continuity_signal(text)
     life_pattern_signal = _life_pattern_signal(text)
@@ -67,10 +69,14 @@ def plan_cognition(message: str) -> dict:
     timeline_signal = timeline_query_requested(raw_text)
     research_signal = personal_research_requested(raw_text)
     what_matters_signal = what_matters_now_requested(raw_text)
-    cue_assessment = assess_present_cue(raw_text)
+    cue_assessment = (
+        {"should_retrieve": False, "reason": "self_contained_daily_update",
+         "evidence_basis": "current_user_message"}
+        if current_update else assess_present_cue(raw_text)
+    )
     cue_signal = bool(cue_assessment.get("should_retrieve"))
 
-    explicit_recall_signal = (
+    explicit_recall_signal = not current_update and (
         continuity_signal or life_pattern_signal or decision_signal or relationship_signal
         or timeline_signal or research_signal or what_matters_signal or _has(text, (
             "remember", "recall", "deep recall", "what do you know", "tell me about my",
@@ -82,10 +88,10 @@ def plan_cognition(message: str) -> dict:
     associative_only = cue_signal and not explicit_recall_signal
     recall_signal = explicit_recall_signal or cue_signal
 
-    longitudinal_signal = life_pattern_signal or timeline_signal or what_matters_signal or _has(text, (
+    longitudinal_signal = not current_update and (life_pattern_signal or timeline_signal or what_matters_signal or _has(text, (
         "pattern", "over time", "timeline", "changed", "progress", "last six months",
         "last 6 months", "weekly report", "report for pauline", "journey",
-    ))
+    )))
     current_evidence_signal = research_signal or _has(text, (
         "latest", "current", "today's", "today’s", "news", "research", "look up",
         "search", "verify online", "weather", "market", "price", "schedule",
@@ -95,7 +101,7 @@ def plan_cognition(message: str) -> dict:
         r"\b(?:send|delete|create|schedule|book|upload|download|add|remove|cancel)\b",
         text,
     ))
-    structured = needs_structured_reasoning(text) or longitudinal_signal or research_signal or what_matters_signal
+    structured = (not current_update and needs_structured_reasoning(text)) or longitudinal_signal or research_signal or what_matters_signal
     high_stakes = _has(text, (
         "medical", "diagnosis", "legal", "insurance claim", "tpd", "financial advice",
         "suicide", "self-harm", "overdose", "emergency",
@@ -139,6 +145,8 @@ def plan_cognition(message: str) -> dict:
 
     known = []
     unknown = []
+    if current_update:
+        known.append("daily_update_supplied_in_current_message")
     if memory_required:
         unknown.append("relevant_personal_evidence_until_retrieved")
     else:
@@ -190,6 +198,7 @@ def plan_cognition(message: str) -> dict:
             "specialist": external_evidence_required or action_signal,
         },
         "signals": {
+            "self_contained_daily_update": current_update,
             "recall": recall_signal,
             "explicit_recall": explicit_recall_signal,
             "cue_driven_memory": associative_only,
