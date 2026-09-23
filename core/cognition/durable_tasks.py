@@ -88,17 +88,32 @@ class TaskStore:
         row = rows[0]
         result_payload = row.get('result')
         if result_payload is not None or row['status'] == 'ready':
+            delivery = verify_chat_delivery_payload(
+                result_payload,
+                expected_request_id=request_id,
+            )
+            row['delivery_integrity'] = delivery
+            if not delivery.get('valid'):
+                row['status'] = 'failed'
+                row['result'] = {
+                    'reply': (
+                        'The saved answer failed delivery integrity verification. '
+                        'Please submit the request again.'
+                    ),
+                    'error': True,
+                }
+                return {**row, 'durable': True, 'request_id': request_id}
+
             recovery = verify_recovered_answer_payload(
                 result_payload,
                 expected_request_id=request_id,
             )
-            row['delivery_integrity'] = recovery.get('delivery_integrity', {})
             row['recovery_integrity'] = recovery
             if not recovery.get('valid'):
                 row['status'] = 'failed'
                 row['result'] = {
                     'reply': (
-                        'The saved answer failed recovery integrity verification. '
+                        'The saved answer failed provenance verification. '
                         'Please submit the request again.'
                     ),
                     'error': True,
