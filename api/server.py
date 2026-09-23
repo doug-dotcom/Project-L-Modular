@@ -65,6 +65,7 @@ from core.cognition.recovery_provenance import (
 from core.cognition.saved_answer_integrity_audit import load_saved_answer_integrity_audit
 from core.cognition.production_security_gate import production_security_gate
 from core.cognition.cold_recovery_certification import load_cold_recovery_certification
+from core.cognition.key_retirement_certification import load_key_retirement_certification
 from core.cognition.context_budget import build_generation_cognitive_context
 from core.cognition.benchmark import benchmark_manifest, run_cognitive_benchmark
 from core.cognition.evidence_evaluation import (
@@ -820,7 +821,7 @@ def health():
         "portability_certification_ready": True,
         "capability_router_ready": True,
         "main_street": True,
-        "release_layer": 108,
+        "release_layer": 109,
         "release_certification_ready": True,
         "release_provenance_ready": True,
         "answer_provenance_ready": True,
@@ -828,6 +829,7 @@ def health():
         "answer_authenticity": authenticity_status(),
         "saved_answer_integrity_audit_ready": True,
         "cold_recovery_certification_ready": True,
+        "key_retirement_certification_ready": True,
         "production_security_gate": security_gate,
         "release_provenance": build_release_provenance()
     }
@@ -844,7 +846,7 @@ def cognition_status():
         "status": "ok",
         "architecture": "project_l_cognitive_core",
         "version": "13.0",
-        "release_layer": 108,
+        "release_layer": 109,
         "release_certification": build_release_certification(),
         "release_provenance": build_release_provenance(),
         "answer_provenance_ready": True,
@@ -852,6 +854,7 @@ def cognition_status():
         "answer_authenticity": authenticity_status(),
         "saved_answer_integrity_audit_ready": True,
         "cold_recovery_certification_ready": True,
+        "key_retirement_certification_ready": True,
         "production_security_gate": production_security_gate(),
         "user_facing_voice": "L",
         "engines": {
@@ -987,6 +990,32 @@ def cognition_recovery_certification(
         raise HTTPException(
             503,
             "The cold recovery certification is temporarily unavailable",
+        ) from exc
+
+
+@app.get("/cognition/key-retirement-certification")
+def cognition_key_retirement_certification(
+    page_size: int = 100,
+    max_rows: int = 10000,
+    x_l_recovery_token: str = Header(default=""),
+):
+    """Owner-scoped exhaustive signing-key dependency certification."""
+    try:
+        return load_key_retirement_certification(
+            task_store.client,
+            x_l_recovery_token,
+            page_size=page_size,
+            max_rows=max_rows,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            400,
+            "A valid recovery token, page size (1–100), and max rows (1–10000) are required",
+        ) from exc
+    except Exception as exc:
+        raise HTTPException(
+            503,
+            "The signing-key dependency certification is temporarily unavailable",
         ) from exc
 
 
@@ -1838,7 +1867,7 @@ RESPONSE RULES:
         model_receipt=response_model_receipt,
         context_budget=cognitive_packet.get("context_budget", {}),
         assistant_persistence=assistant_persistence,
-        release_layer=108,
+        release_layer=109,
     )
     answer_provenance_check = verify_answer_provenance(
         answer_provenance,
