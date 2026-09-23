@@ -48,6 +48,7 @@ from agents.rhee.rhee_v3 import (
 from core.cognition.orchestrator import run_cognitive_core
 from core.cognition.controller import plan_cognition
 from core.cognition.release_certification import build_release_certification
+from core.cognition.release_provenance import build_release_provenance, verify_release_provenance
 from core.cognition.context_budget import build_generation_cognitive_context
 from core.cognition.benchmark import benchmark_manifest, run_cognitive_benchmark
 from core.cognition.evidence_evaluation import (
@@ -776,8 +777,10 @@ def health():
         "portability_certification_ready": True,
         "capability_router_ready": True,
         "main_street": True,
-        "release_layer": 100,
-        "release_certification_ready": True
+        "release_layer": 101,
+        "release_certification_ready": True,
+        "release_provenance_ready": True,
+        "release_provenance": build_release_provenance()
     }
 
 
@@ -788,8 +791,9 @@ def cognition_status():
         "status": "ok",
         "architecture": "project_l_cognitive_core",
         "version": "13.0",
-        "release_layer": 100,
+        "release_layer": 101,
         "release_certification": build_release_certification(),
+        "release_provenance": build_release_provenance(),
         "user_facing_voice": "L",
         "engines": {
             "metacognition": "cognitive_controller_v1",
@@ -849,6 +853,15 @@ def cognition_status():
 @app.get("/cognition/release-certification")
 def cognition_release_certification():
     return build_release_certification()
+
+
+@app.get("/cognition/release-provenance")
+def cognition_release_provenance():
+    receipt = build_release_provenance()
+    return {
+        **receipt,
+        "verification": verify_release_provenance(receipt),
+    }
 
 
 @app.get("/cognition/evaluation")
