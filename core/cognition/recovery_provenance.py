@@ -9,12 +9,15 @@ present.
 from __future__ import annotations
 
 from core.cognition.answer_provenance import verify_answer_provenance
+from core.cognition.answer_authenticity import verify_answer_authenticity
 from core.cognition.delivery_integrity import verify_chat_delivery_payload
 
 
-VERSION = "layer103-recovery-provenance-1"
+VERSION = "layer104-recovery-authenticity-1"
 PROTOCOL_KEY = "answer_provenance_protocol"
-PROTOCOL_VERSION = "1.0"
+LEGACY_PROTOCOL_VERSION = "1.0"
+PROTOCOL_VERSION = "2.0"
+SUPPORTED_PROTOCOLS = {LEGACY_PROTOCOL_VERSION, PROTOCOL_VERSION}
 
 
 def mark_answer_provenance_required(payload: dict) -> dict:
@@ -55,17 +58,23 @@ def verify_recovered_answer_payload(
     context_budget = cognition.get("context_budget")
     persistence = cognition.get("assistant_persistence")
 
+    authenticity = cognition.get("answer_authenticity")
     protocol_present = PROTOCOL_KEY in body
     protocol = body.get(PROTOCOL_KEY)
     provenance_present = isinstance(receipt, dict)
+    authenticity_present = isinstance(authenticity, dict)
     issues: list[str] = []
 
-    if protocol_present and protocol != PROTOCOL_VERSION:
+    if protocol_present and protocol not in SUPPORTED_PROTOCOLS:
         issues.append("answer_provenance_protocol_unsupported")
     if protocol_present and not provenance_present:
         issues.append("answer_provenance_required_but_missing")
     if receipt is not None and not provenance_present:
         issues.append("answer_provenance_malformed")
+    if protocol == PROTOCOL_VERSION and not authenticity_present:
+        issues.append("answer_authenticity_required_but_missing")
+    if authenticity is not None and not authenticity_present:
+        issues.append("answer_authenticity_malformed")
 
     provenance_check = {}
     if provenance_present:
@@ -81,11 +90,24 @@ def verify_recovered_answer_payload(
         if not provenance_check.get("valid"):
             issues.append("answer_provenance_verification_failed")
 
+    authenticity_check = {}
+    if authenticity_present:
+        authenticity_check = verify_answer_authenticity(
+            authenticity,
+            receipt if isinstance(receipt, dict) else {},
+        )
+        if not authenticity_check.get("valid"):
+            issues.append("answer_authenticity_verification_failed")
+
     if issues:
         status = "invalid"
-    elif protocol_present and provenance_check.get("verified_production"):
+    elif protocol == PROTOCOL_VERSION and provenance_check.get("verified_production"):
+        status = "verified_authentic_production"
+    elif protocol == PROTOCOL_VERSION:
+        status = "valid_authentic_unverified_runtime"
+    elif protocol == LEGACY_PROTOCOL_VERSION and provenance_check.get("verified_production"):
         status = "verified_production"
-    elif protocol_present:
+    elif protocol == LEGACY_PROTOCOL_VERSION:
         status = "valid_unverified_runtime"
     elif provenance_present and provenance_check.get("verified_production"):
         status = "verified_layer102_compat"
@@ -100,8 +122,11 @@ def verify_recovered_answer_payload(
         "status": status,
         "provenance_required": protocol_present,
         "provenance_present": provenance_present,
+        "authenticity_required": protocol == PROTOCOL_VERSION,
+        "authenticity_present": authenticity_present,
         "delivery_integrity": delivery,
         "answer_provenance": provenance_check,
+        "answer_authenticity": authenticity_check,
         "issues": issues,
     }
 
