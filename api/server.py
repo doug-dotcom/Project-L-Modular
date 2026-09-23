@@ -50,6 +50,11 @@ from core.cognition.controller import plan_cognition
 from core.cognition.release_certification import build_release_certification
 from core.cognition.release_provenance import build_release_provenance, verify_release_provenance
 from core.cognition.answer_provenance import build_answer_provenance, verify_answer_provenance
+from core.cognition.answer_authenticity import (
+    authenticity_status,
+    sign_answer_provenance,
+    verify_answer_authenticity,
+)
 from core.cognition.recovery_provenance import (
     mark_answer_provenance_required,
     require_recovered_answer_payload,
@@ -809,11 +814,12 @@ def health():
         "portability_certification_ready": True,
         "capability_router_ready": True,
         "main_street": True,
-        "release_layer": 103,
+        "release_layer": 104,
         "release_certification_ready": True,
         "release_provenance_ready": True,
         "answer_provenance_ready": True,
         "recovery_provenance_ready": True,
+        "answer_authenticity": authenticity_status(),
         "release_provenance": build_release_provenance()
     }
 
@@ -825,11 +831,12 @@ def cognition_status():
         "status": "ok",
         "architecture": "project_l_cognitive_core",
         "version": "13.0",
-        "release_layer": 103,
+        "release_layer": 104,
         "release_certification": build_release_certification(),
         "release_provenance": build_release_provenance(),
         "answer_provenance_ready": True,
         "recovery_provenance_ready": True,
+        "answer_authenticity": authenticity_status(),
         "user_facing_voice": "L",
         "engines": {
             "metacognition": "cognitive_controller_v1",
@@ -1770,7 +1777,7 @@ RESPONSE RULES:
         model_receipt=response_model_receipt,
         context_budget=cognitive_packet.get("context_budget", {}),
         assistant_persistence=assistant_persistence,
-        release_layer=103,
+        release_layer=104,
     )
     answer_provenance_check = verify_answer_provenance(
         answer_provenance,
@@ -1795,6 +1802,30 @@ RESPONSE RULES:
             "cognition": {
                 "answer_provenance": answer_provenance,
                 "answer_provenance_verification": answer_provenance_check,
+            },
+        }
+        store_chat_result(request_id, "ready", payload)
+        return payload
+
+    answer_authenticity = sign_answer_provenance(answer_provenance)
+    answer_authenticity_check = verify_answer_authenticity(
+        answer_authenticity,
+        answer_provenance,
+    )
+    cognitive_packet["answer_authenticity"] = answer_authenticity
+    cognitive_packet["answer_authenticity_verification"] = answer_authenticity_check
+    if not answer_authenticity_check.get("valid"):
+        payload = {
+            "reply": (
+                "I couldn't authenticate this answer's provenance, "
+                "so I've withheld it. Please try again."
+            ),
+            "server": "vx",
+            "error": True,
+            "cognition": {
+                "answer_provenance": answer_provenance,
+                "answer_authenticity": answer_authenticity,
+                "answer_authenticity_verification": answer_authenticity_check,
             },
         }
         store_chat_result(request_id, "ready", payload)
@@ -1860,6 +1891,8 @@ RESPONSE RULES:
             "release_provenance": cognitive_packet.get("release_provenance", {}),
             "answer_provenance": cognitive_packet.get("answer_provenance", {}),
             "answer_provenance_verification": cognitive_packet.get("answer_provenance_verification", {}),
+            "answer_authenticity": cognitive_packet.get("answer_authenticity", {}),
+            "answer_authenticity_verification": cognitive_packet.get("answer_authenticity_verification", {}),
             "reasoning_model_receipt": cognitive_packet.get("rike", {}).get("model_receipt", {}),
             "portability": cognitive_packet.get("portability", {}),
             "guardrails_passed": cognitive_packet.get("guardrails", {}).get("passed"),
