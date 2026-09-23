@@ -26,6 +26,10 @@ def production_env(**overrides):
         "RAILWAY_PROJECT_NAME": "profound-wonder",
         "RAILWAY_SERVICE_NAME": "Project-L-Modular",
         "RAILWAY_ENVIRONMENT_NAME": "production",
+        "L_ANSWER_PROVENANCE_SIGNING_KEY": "l" * 64,
+        "L_ANSWER_PROVENANCE_ACTIVE_KEY_ID": "k2-2026-09",
+        "L_ANSWER_PROVENANCE_VERIFY_KEY_IDS": "k2-2026-09",
+        "L_ANSWER_PROVENANCE_SIGNING_KEY_K2_2026_09": "k" * 64,
         "OPENAI_API_KEY": "must-not-leak",
         "SUPABASE_SERVICE_ROLE_KEY": "must-not-leak",
     }
