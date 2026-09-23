@@ -20,11 +20,17 @@ PROTOCOL_VERSION = "2.0"
 SUPPORTED_PROTOCOLS = {LEGACY_PROTOCOL_VERSION, PROTOCOL_VERSION}
 
 
-def mark_answer_provenance_required(payload: dict) -> dict:
+def mark_answer_provenance_required(
+    payload: dict,
+    *,
+    protocol_version: str = PROTOCOL_VERSION,
+) -> dict:
     if not isinstance(payload, dict):
         raise TypeError("answer_provenance_payload_must_be_object")
+    if protocol_version not in SUPPORTED_PROTOCOLS:
+        raise ValueError("answer_provenance_protocol_unsupported")
     marked = dict(payload)
-    marked[PROTOCOL_KEY] = PROTOCOL_VERSION
+    marked[PROTOCOL_KEY] = protocol_version
     return marked
 
 
