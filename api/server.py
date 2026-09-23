@@ -1736,6 +1736,7 @@ RESPONSE RULES:
             "runtime": cognitive_packet.get("runtime", {}),
             "version": cognitive_packet.get("version"),
             "controller": cognitive_packet.get("controller", cognitive_plan),
+            "context_budget": cognitive_packet.get("context_budget", {}),
             "route": cognitive_packet.get("route", {}),
             "rike_status": cognitive_packet.get("rike", {}).get("status"),
             "confidence": cognitive_packet.get("rike", {}).get("confidence", {}),
