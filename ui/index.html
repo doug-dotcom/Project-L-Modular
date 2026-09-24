@@ -307,6 +307,10 @@
 
     </style>
 
+<style>
+.recovery-check-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.recovery-check-actions button { min-height: 44px; padding: 8px 12px; }
+</style>
 </head>
 
 <body>
@@ -613,6 +617,7 @@
             tasks.push({requestId, message, kind, pending: true});
             localStorage.setItem("project-l-saved-tasks", JSON.stringify(tasks.slice(-100)));
             localStorage.setItem(PENDING_REQUEST_KEY, JSON.stringify({requestId, message, kind}));
+            window.dispatchEvent?.(new Event('l-task-started'));
         }
 
         function clearPendingRequest(requestId) {
@@ -914,7 +919,7 @@
 
 
 <script src="/ui/chat-tools.js?v=1"></script>
-<script src="/ui/recovery-status.js?v=116"></script>
+<script src="/ui/recovery-status.js?v=118"></script>
 <script src="/ui/evidence.js?v=stage7-tools1"></script>
 <script src="/ui/voice.js"></script>
 <script src="/ui/voice-controls.js"></script>

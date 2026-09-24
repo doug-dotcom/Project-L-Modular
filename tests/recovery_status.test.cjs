@@ -16,7 +16,7 @@ function harness() {
     const element = () => ({children:[],disabled:false,textContent:'',attributes:{},
         setAttribute(k,v){this.attributes[k]=v;}, replaceChildren(){this.children=[];},
         append(...els){for(const el of els){el.removed=false;if(!this.children.includes(el))this.children.push(el);}},
-        focus(){this.focused=true;}, remove(){this.removed=true;}});
+        click(){return this.onclick?.();}, focus(){this.focused=true;}, remove(){this.removed=true;}});
     const get = id => {if(!elements.has(id))elements.set(id,element());return elements.get(id);};
     const root = {dataset:{account:'ready'}};
     const h = {get,root,calls,events,token:'fixture-owner',response:report(),
@@ -77,6 +77,36 @@ function harness() {
         if(scenario==='account_change')h.events['l-account-ready']();
         else {h.root.dataset.account='locked';h.mutate();}
         resolve(report());await first;assert.equal(h.text(),'');
+    } else if(scenario==='dated_actions') {
+        const h=harness();await h.get('checkSavedAnswersAction').onclick();
+        assert.match(h.text(), /Check started:.*point-in-time result/);
+        const controls=h.get('chat').children[0].children.at(-1).children;
+        assert.deepEqual(controls.map(c=>c.textContent),['Check again','Open saved answers','Dismiss']);
+        let opened=0;h.get('savedAnswersAction').onclick=()=>opened++;
+        controls[1].click();assert.equal(opened,1);
+        h.get('savedAnswersAction').disabled=true;controls[1].click();assert.equal(opened,1);
+        await controls[0].click();assert.equal(h.calls.length,2);
+        controls[2].click();assert.equal(h.text(),'');assert.equal(h.get('uploadBtn').focused,true);
+    } else if(['task_stale','storage_stale','unrelated_storage'].includes(scenario)) {
+        const h=harness();await h.get('checkSavedAnswersAction').onclick();
+        const card=h.get('chat').children[0];card.focused=false;
+        if(scenario==='task_stale')h.events['l-task-started']();
+        else h.events.storage({key:scenario==='storage_stale'?'project-l-saved-tasks':'unrelated'});
+        if(scenario==='unrelated_storage')assert.match(h.text(),/passed recovery checks/);
+        else {
+            assert.match(h.text(),/out of date/);assert.ok(!h.text().includes('Answers recoverable'));
+            assert.equal(card.focused,false);
+            await h.get('checkSavedAnswersAction').onclick();assert.match(h.text(),/passed recovery checks/);
+        }
+    } else if(['stale_pending','dismiss_pending'].includes(scenario)) {
+        const h=harness();let resolve;h.wait=new Promise(r=>resolve=r);
+        const first=h.get('checkSavedAnswersAction').onclick();
+        if(scenario==='stale_pending')h.events['l-task-started']();
+        else h.get('chat').children[0].children.at(-1).children[0].click();
+        resolve(report());await first;
+        if(scenario==='stale_pending')assert.match(h.text(),/out of date/);
+        else assert.equal(h.text(),'');
+        assert.ok(!h.text().includes('passed recovery'));assert.equal(h.get('checkSavedAnswersAction').disabled,false);
     } else throw Error('Unknown scenario');
     console.log(scenario+' passed');
 })().catch(e=>{console.error(e);process.exitCode=1;});

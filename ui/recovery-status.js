@@ -36,7 +36,7 @@
             card?.remove(); card = null;
             button.disabled = false;
         }
-        function show(title, body, counts = '') {
+        function show(title, body, counts = '', checkedAt = null, busy = false, focusResult = true) {
             if (!card) {
                 card = document.createElement('section');
                 card.className = 'msg assistant';
@@ -55,20 +55,57 @@
                 note.textContent = 'This check covers saved tasks linked to this browser, up to the check’s start time. It checks storage and recovery; answer accuracy still needs review.';
                 card.append(note);
             }
-            chat.append(card);
-            card.focus();
-            chat.scrollTop = chat.scrollHeight;
+            if (checkedAt) {
+                const stamp = document.createElement('p');
+                stamp.textContent = 'Check started: ' + checkedAt.toLocaleString() + '. This is a point-in-time result.';
+                card.append(stamp);
+            }
+            const actions = document.createElement('div');
+            actions.className = 'recovery-check-actions';
+            function action(label, handler) {
+                const control = document.createElement('button');
+                control.type = 'button'; control.textContent = label; control.onclick = handler;
+                actions.append(control);
+            }
+            if (!busy) {
+                action('Check again', () => button.click());
+                action('Open saved answers', () => {
+                    const saved = document.getElementById('savedAnswersAction');
+                    if (saved && !saved.disabled) saved.click();
+                });
+            }
+            action('Dismiss', () => { clear(); document.getElementById('uploadBtn')?.focus(); });
+            card.append(actions);
+            if (focusResult) {
+                chat.append(card);
+                card.focus();
+                chat.scrollTop = chat.scrollHeight;
+            }
+        }
+        function invalidate() {
+            if (!card) return;
+            generation += 1;
+            button.disabled = false;
+            show('Saved-answer check is out of date',
+                'Tasks or the browser recovery link have changed. Check again for a current result.',
+                '', null, false, false);
         }
         window.addEventListener('l-account-ready', clear);
+        window.addEventListener('l-task-started', invalidate);
+        window.addEventListener('storage', event => {
+            if (event.key === null || ['project-l-saved-tasks', 'project-l-recovery-token'].includes(event.key))
+                invalidate();
+        });
         new MutationObserver(() => {
             if (document.documentElement.dataset.account !== 'ready') clear();
         }).observe(document.documentElement, {attributes: true, attributeFilter: ['data-account']});
         button.onclick = async () => {
             if (button.disabled || document.documentElement.dataset.account !== 'ready') return;
             const request = ++generation;
+            const checkedAt = new Date();
             window.lChatTools?.close();
             button.disabled = true;
-            show('Checking saved answers…', 'L is checking the saved task records and their answers.');
+            show('Checking saved answers…', 'L is checking the saved task records and their answers.', '', null, true);
             try {
                 const token = localStorage.getItem('project-l-recovery-token');
                 if (!token) {
@@ -79,7 +116,7 @@
                     {method: 'GET', cache: 'no-store', headers: {'X-L-Recovery-Token': token}}, 30000);
                 if (request !== generation || document.documentElement.dataset.account !== 'ready') return;
                 const view = describe(report);
-                show(view.title, view.body, view.counts);
+                show(view.title, view.body, view.counts, checkedAt);
             } catch (_) {
                 if (request === generation && document.documentElement.dataset.account === 'ready')
                     show('The check could not finish', 'Please try Check saved answers again shortly. Your saved tasks have not been changed.');
