@@ -1047,6 +1047,12 @@
                                 actions.append(copy);
                             }
                             entry.append(actions, actionStatus);
+                            const checkedAt = new Date();
+                            const checkedTime = document.createElement('time');
+                            checkedTime.dateTime = checkedAt.toISOString();
+                            checkedTime.textContent = (failed ? 'Check attempted: ' : 'Checked: ') +
+                                checkedAt.toLocaleString('en-AU', {dateStyle: 'medium', timeStyle: 'short'}) + ' (device time)';
+                            entry.append(checkedTime);
 
                             results.append(entry);
                             run.entries.push({node: entry, attention, available: copyable, working,

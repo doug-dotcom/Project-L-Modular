@@ -130,6 +130,29 @@ const ready={status:'ready',result:{reply:'answer'}};
   context.appendChatMessage(chat,'assistant',"L is thinking...");assert.equal(context.lastAssistantText,'A new live reply');
   return;
  }
+ if(['check_times','check_times_refresh'].includes(scenario)) {
+  let now='2026-09-24T09:00:00.000Z';
+  context.Date=class extends Date {constructor(){super(now)}};
+  if(scenario==='check_times_refresh')tasks=[{requestId:'one',message:'One'}];
+  await button.onclick();
+  const times=()=>panel().children[4].children.map(e=>e.children[5]);
+  assert.ok(times().every(t=>t.dateTime===now&&t.textContent.includes('device time')));
+  assert.match(times()[0].textContent,/^Checked:/);
+  const first=times()[0];now='2026-09-24T09:05:00.000Z';
+  if(scenario==='check_times') {
+   await panel().children[5].onclick();assert.equal(times().length,25);
+   assert.equal(times()[0],first);assert.equal(first.dateTime,'2026-09-24T09:00:00.000Z');
+   assert.equal(times()[20].dateTime,now);
+   const search=panel().children[3].children[0].children[0];search.value='No match';search.oninput();
+   assert.equal(first.dateTime,'2026-09-24T09:00:00.000Z');
+  }else {
+   context.fetchChatJson=async()=>{throw Error('PRIVATE')};
+   await panel().children[3].children[3].children[4].onclick();
+   assert.equal(times()[0].dateTime,now);assert.match(times()[0].textContent,/^Check attempted:/);
+   assert.equal(first.dateTime,'2026-09-24T09:00:00.000Z');
+  }
+  return;
+ }
  if(scenario==='escape') {
   context.fetchChatJson=async()=>new Promise(r=>resolveFetch=r);
   const pending=button.onclick(),old=panel();
