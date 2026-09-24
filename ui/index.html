@@ -629,11 +629,18 @@
         }
 
         function clearPendingRequest(requestId) {
-            const tasks = savedTasks().map(task => task.requestId === requestId ? {...task, pending: false} : task);
-            localStorage.setItem("project-l-saved-tasks", JSON.stringify(tasks));
-            let old;
-            try { old = JSON.parse(localStorage.getItem(PENDING_REQUEST_KEY) || "null"); } catch (_) {}
-            if (!requestId || old?.requestId === requestId) localStorage.removeItem(PENDING_REQUEST_KEY);
+            // Local bookkeeping must not discard an answer already delivered.
+            try {
+                const tasks = savedTasks().map(task => task.requestId === requestId ? {...task, pending: false} : task);
+                localStorage.setItem("project-l-saved-tasks", JSON.stringify(tasks));
+                let old;
+                try { old = JSON.parse(localStorage.getItem(PENDING_REQUEST_KEY) || "null"); } catch (_) {}
+                if (!requestId || old?.requestId === requestId) localStorage.removeItem(PENDING_REQUEST_KEY);
+                return true;
+            } catch (_) {
+                // Keep existing handles so a later visit can check the same task.
+                return false;
+            }
         }
 
         async function sha256HexText(value) {

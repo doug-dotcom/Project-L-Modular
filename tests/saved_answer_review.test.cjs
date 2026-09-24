@@ -366,6 +366,16 @@ const ready={status:'ready',result:{reply:'answer'}};
   }
   assert.equal(calls.length,before);return;
  }
+ if(scenario==='cleanup_failure_review') {
+  tasks=[{requestId:'one',message:'Original question'}];
+  context.localStorage={setItem(){throw Error('PRIVATE')}};
+  const begin=html.indexOf('        function clearPendingRequest');
+  vm.runInContext(html.slice(begin,html.indexOf('        async function sha256HexText',begin)),context);
+  await button.onclick();const entry=panel().children[4].children[0];
+  assert.match(entry.children[0].textContent,/Saved answer/);assert.equal(entry.children[2].textContent,'answer');
+  assert.ok(entry.children[3].children.some(c=>c.textContent==='Copy answer'));
+  assert.ok(!JSON.stringify(entry).includes('PRIVATE'));return;
+ }
  if(scenario==='escape') {
   context.fetchChatJson=async()=>new Promise(r=>resolveFetch=r);
   const pending=button.onclick(),old=panel();
