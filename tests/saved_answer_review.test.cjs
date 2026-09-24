@@ -4,7 +4,7 @@ const source=html.slice(html.indexOf('        function installSavedAnswerReview'
 const scenario=process.argv[2],events={},calls=[],cleared=[];
 let mutation,resolveFetch,resolveVerify,clock=0;
 const el=()=>({children:[],textContent:'',disabled:false,attributes:{},
- append(...nodes){this.children.push(...nodes)},appendChild(node){this.children.push(node)},setAttribute(k,v){this.attributes[k]=v},remove(){this.removed=true},focus(){this.focused=true}});
+ append(...nodes){for(const node of nodes){const i=this.children.indexOf(node);if(i>=0)this.children.splice(i,1);this.children.push(node)}},appendChild(node){this.children.push(node)},insertBefore(node,before){const i=this.children.indexOf(node);if(i>=0)this.children.splice(i,1);const j=this.children.indexOf(before);if(j<0)this.children.push(node);else this.children.splice(j,0,node)},setAttribute(k,v){this.attributes[k]=v},remove(){this.removed=true},focus(){this.focused=true}});
 const button=el(),chat=el(),plus=el(),root={dataset:{account:'ready'}};
 let tasks=Array.from({length:25},(_,i)=>({requestId:'task-'+i,message:'Question '+i}));
 const context={window:{addEventListener:(k,f)=>events[k]=f,lChatTools:{close(){}}},
@@ -174,6 +174,30 @@ const ready={status:'ready',result:{reply:'answer'}};
   if(scenario==='empty_answers'){
    assert.ok(entries.every(e=>e.children[3].children.length===1));
    assert.match(panel().children[3].children[2].textContent,/0 answers available; 0 still working; 3 need attention/);
+  }
+  return;
+ }
+ if(['review_order','review_order_batches'].includes(scenario)) {
+  if(scenario==='review_order')tasks=['old-bad','middle-good','new-bad','newest-good'].map(requestId=>({requestId,message:requestId}));
+  let reads=0;context.fetchChatJson=async url=>{
+   reads++;const id=url.split('/').at(-1);
+   return id.includes('bad')||id==='task-0'?{status:'running'}:ready;
+  };
+  await button.onclick();const order=()=>panel().children[3].children[4].children[0];
+  const ids=()=>panel().children[4].children.map(e=>e.children[1].textContent);
+  const before=reads;order().value='attention';order().onchange();assert.equal(reads,before);
+  if(scenario==='review_order') {
+   assert.deepEqual(ids(),['new-bad','old-bad','newest-good','middle-good']);
+   const search=panel().children[3].children[0].children[0];search.value='good';search.oninput();
+   assert.deepEqual(panel().children[4].children.filter(e=>!e.hidden).map(e=>e.children[1].textContent),['newest-good','middle-good']);
+   order().value='newest';order().onchange();assert.deepEqual(ids(),['newest-good','new-bad','middle-good','old-bad']);
+   search.value='';search.oninput();order().value='attention';order().onchange();
+   await panel().children[3].children[3].children[4].onclick();
+   assert.equal(order().value,'attention');assert.deepEqual(ids(),['new-bad','old-bad','newest-good','middle-good']);
+  } else {
+   await panel().children[5].onclick();assert.equal(ids().length,25);assert.equal(new Set(ids()).size,25);
+   assert.equal(ids()[0],'Question 0');assert.equal(ids()[1],'Question 24');
+   order().value='newest';order().onchange();assert.equal(ids()[0],'Question 24');assert.equal(ids().at(-1),'Question 0');
   }
   return;
  }
