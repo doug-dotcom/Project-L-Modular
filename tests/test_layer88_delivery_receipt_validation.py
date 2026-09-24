@@ -136,16 +136,17 @@ const voiced = [];
 let envelope;
 let fetches = 0;
 function element() {
- return {textContent: '', value: '', children: [], remove() {},
+ return {setAttribute(){}, append(...els){els.forEach(e=>this.appendChild(e));}, textContent: '', value: '', children: [], remove() {},
    appendChild(child) { this.children.push(child); shown.push(child); },
    insertBefore(child) { elements.set(child.id, child); }};
 }
 for (const id of ['chat', 'chatToolsActions', 'closeChatTools', 'message']) elements.set(id, element());
 const context = {
  AbortController, performance, clearTimeout,
- TextEncoder, window: {crypto: require('node:crypto').webcrypto,
+ TextEncoder, window: {addEventListener(){}, crypto: require('node:crypto').webcrypto,
    lVoice: {canSend: () => true, saveDraft() {}, onReply: (...args) => voiced.push(args)}},
- document: {addEventListener() {}, createElement: element, getElementById: id => elements.get(id)},
+ MutationObserver: class {observe(){}},
+ document: {documentElement:{dataset:{account:'ready'}}, addEventListener() {}, createElement: element, getElementById: id => elements.get(id)},
  localStorage: {getItem: k => storage.get(k) || null, setItem: (k,v) => storage.set(k,v), removeItem: k => storage.delete(k)},
  setTimeout: (fn, ms) => ms <= 2000 ? (fn(), 0) : setTimeout(fn, ms),
  fetch: async (url, options) => {

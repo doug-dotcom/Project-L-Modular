@@ -309,7 +309,7 @@
 
 <style>
 .recovery-check-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.recovery-check-actions button { min-height: 44px; padding: 8px 12px; }
+#savedAnswerReview > button, .recovery-check-actions button { min-height: 44px; padding: 8px 12px; }
 </style>
 </head>
 
@@ -847,6 +847,94 @@
                 chat.scrollHeight;
         }
 
+        function installSavedAnswerReview(button, chat) {
+            let active = null;
+            function reset() {
+                if (active) { active.cancelled = true; active.panel.remove(); }
+                active = null;
+                button.disabled = false;
+            }
+            window.addEventListener('l-account-ready', reset);
+            new MutationObserver(() => {
+                if (document.documentElement.dataset.account !== 'ready') reset();
+            }).observe(document.documentElement, {attributes: true, attributeFilter: ['data-account']});
+            button.onclick = async () => {
+                if (button.disabled || document.documentElement.dataset.account !== 'ready') return;
+                reset();
+                window.lChatTools?.close();
+                button.disabled = true;
+                const panel = document.createElement('section');
+                panel.id = 'savedAnswerReview';
+                panel.setAttribute('aria-label', 'Saved answers review');
+                panel.setAttribute('tabindex', '-1');
+                const heading = document.createElement('h2'); heading.textContent = 'Saved answers';
+                const progress = document.createElement('p');
+                progress.setAttribute('role', 'status'); progress.setAttribute('aria-live', 'polite');
+                const stop = document.createElement('button');
+                stop.type = 'button'; stop.textContent = 'Stop checking';
+                const results = document.createElement('div');
+                panel.append(heading, progress, stop, results); chat.append(panel);
+                panel.focus?.(); chat.scrollTop = chat.scrollHeight;
+                const run = {panel, cancelled: false, checked: 0, total: 0}; active = run;
+                const current = () => active === run && !run.cancelled && document.documentElement.dataset.account === 'ready';
+                const count = () => `${run.checked} of ${run.total} recent saved tasks checked`;
+                stop.onclick = () => {
+                    if (!current()) return;
+                    run.cancelled = true;
+                    progress.textContent = 'Stopped — ' + count() + '. Your tasks have not been stopped or repeated.';
+                    stop.disabled = true; button.disabled = false;
+                    document.getElementById('uploadBtn')?.focus();
+                };
+                try {
+                    const recent = savedTasks().slice(-20).reverse();
+                    run.total = recent.length;
+                    progress.textContent = recent.length ? count() + '. Newest first; up to 20 tasks from this browser.' :
+                        'Your saved answers will appear here after you send a message.';
+                    const deadline = performance.now() + ANSWER_RECOVERY_BUDGET_MS;
+                    for (const task of recent) {
+                        if (!current()) return;
+                        const remaining = deadline - performance.now();
+                        if (remaining <= 0) {
+                            progress.textContent = 'Time limit reached — ' + count() + '. Open Saved answers to check again.';
+                            return;
+                        }
+                        let savedText, failed = false;
+                        try {
+                            const result = await fetchChatJson(`/chat/result/${encodeURIComponent(task.requestId)}`,
+                                {cache: "no-store", headers: recoveryHeaders()}, Math.min(CHAT_REQUEST_TIMEOUT_MS, remaining));
+                            if (!current()) return;
+                            if (["ready", "failed", "interrupted"].includes(result.status) &&
+                                (result.result != null || result.status === "ready")) {
+                                const delivery = await verifyDeliveryReply(result.result, task.requestId);
+                                if (!current()) return;
+                                savedText = !delivery.valid
+                                    ? "This saved answer failed delivery integrity verification."
+                                    : result.status === "ready" ? savedAnswerText(result) : result.result.reply;
+                                if (delivery.valid) clearPendingRequest(task.requestId);
+                            }
+                            savedText = savedText ||
+                                (["failed", "interrupted"].includes(result.status) ? "This task stopped before completion. Please review before starting it again." :
+                                 result.status === "not_found" ? "This answer is unavailable in this browser." : "L is working on this saved task.");
+                        } catch (_) {
+                            if (!current()) return;
+                            failed = true;
+                            savedText = 'This saved answer is temporarily unavailable. Your task is still saved.';
+                        }
+                        if (!current()) return;
+                        appendChatMessage(results, 'user', task.message);
+                        appendChatMessage(results, failed ? 'assistant error' : 'assistant', savedText);
+                        run.checked += 1;
+                        progress.textContent = count() + '. Newest first; up to 20 tasks from this browser.';
+                    }
+                    if (current() && recent.length) progress.textContent = 'Review finished — ' + count() + '. See each result below; checked does not mean completed.';
+                } catch (_) {
+                    if (current()) progress.textContent = 'Review could not finish — ' + count() + '. Please try again shortly.';
+                } finally {
+                    if (active === run) { button.disabled = false; stop.disabled = true; }
+                }
+            };
+        }
+
         async function resumePendingRequest() {
             let tasks = savedTasks();
             if (!tasks.length) {
@@ -861,44 +949,7 @@
             button.type = "button";
             button.id = 'savedAnswersAction';
             document.getElementById('chatToolsActions').insertBefore(button, document.getElementById('closeChatTools'));
-            button.onclick = async () => {
-                window.lChatTools?.close();
-                button.disabled = true;
-                try {
-                    const recent = savedTasks().slice(-20);
-                    const deadline = performance.now() + ANSWER_RECOVERY_BUDGET_MS;
-                    if (!recent.length) appendChatMessage(chat, "assistant", "Your saved answers will appear here after you send a message.");
-                    for (const task of recent) {
-                        const remaining = deadline - performance.now();
-                        if (remaining <= 0) throw new Error("Saved answers check timed out");
-                        appendChatMessage(chat, "user", task.message);
-                        try {
-                            const result = await fetchChatJson(`/chat/result/${encodeURIComponent(task.requestId)}`,
-                                {cache: "no-store", headers: recoveryHeaders()}, Math.min(CHAT_REQUEST_TIMEOUT_MS, remaining));
-                            let savedText = "";
-                            if (["ready", "failed", "interrupted"].includes(result.status) &&
-                                (result.result != null || result.status === "ready")) {
-                                const delivery = await verifyDeliveryReply(
-                                    result.result,
-                                    task.requestId
-                                );
-                                savedText = !delivery.valid
-                                    ? "This saved answer failed delivery integrity verification."
-                                    : result.status === "ready" ? savedAnswerText(result)
-                                    : result.result.reply;
-                                if (delivery.valid) clearPendingRequest(task.requestId);
-                            }
-                            appendChatMessage(chat, "assistant", savedText ||
-                                (["failed", "interrupted"].includes(result.status) ? "This task stopped before completion. Please review before starting it again." :
-                                 result.status === "not_found" ? "This answer is unavailable in this browser." : "L is working on this saved task."));
-                        } catch (_) {
-                            appendChatMessage(chat, "assistant error", "This saved answer is temporarily unavailable. Your task is still saved; checking the remaining answers.");
-                        }
-                    }
-                } catch (_) {
-                    appendChatMessage(chat, "assistant error", "Saved answers are temporarily unavailable. Please try again shortly.");
-                } finally { button.disabled = false; }
-            };
+            installSavedAnswerReview(button, chat);
             for (const pending of tasks.filter(task => task.pending)) {
                 const thinking = appendChatMessage(chat, "assistant", "Reconnecting to L's saved task...");
                 const result = await recoverChatResponse(pending.requestId);
