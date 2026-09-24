@@ -89,4 +89,5 @@ def test_voice_uses_the_existing_text_submission_path():
     assert "'/voice/transcribe'" in voice and '/chat/start' not in voice
     assert 'window.lVoice.canSend()' in html
     assert 'window.lVoice?.saveDraft()' in html
-    assert 'request_id: requestId' in html and '...recoveryHeaders()' in html
+    assert 'request_id: requestId' in html and '...requestHeaders' in html
+    assert 'requestHeaders = recoveryHeaders();' in html

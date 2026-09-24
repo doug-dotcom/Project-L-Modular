@@ -758,6 +758,19 @@
             if (!message) return;
             if (window.lVoice && !window.lVoice.canSend()) return;
 
+            let requestId, requestHeaders;
+            try {
+                requestId = newChatRequestId();
+                requestHeaders = recoveryHeaders();
+                rememberPendingRequest(requestId, message, "chat");
+            } catch (_) {
+                appendChatMessage(chat, "assistant error",
+                    "I could not save this request in your browser, so it has not been sent. Your draft is still in the message box. Check browser storage and try again.");
+                input.focus?.();
+                chat.scrollTop = chat.scrollHeight;
+                return;
+            }
+
             // =====================================================
             // USER MESSAGE
             // =====================================================
@@ -781,9 +794,6 @@
                 thinkingId
             );
 
-            const requestId = newChatRequestId();
-            rememberPendingRequest(requestId, message, "chat");
-
             chat.scrollTop =
                 chat.scrollHeight;
 
@@ -797,7 +807,7 @@
 
                         headers: {
                             "Content-Type": "application/json",
-                            ...recoveryHeaders()
+                            ...requestHeaders
                         },
 
                         body: JSON.stringify({
