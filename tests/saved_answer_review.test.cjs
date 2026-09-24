@@ -153,6 +153,30 @@ const ready={status:'ready',result:{reply:'answer'}};
   }
   return;
  }
+ if(['result_reasons','empty_answers'].includes(scenario)) {
+  const expected=scenario==='result_reasons'?{
+   good:'Saved answer',stale:'Facts changed',unchecked:'Freshness unchecked',bad:'Verification failed',
+   running:'Still working',queued:'Still working',failed:'Task stopped',interrupted:'Task stopped',
+   missing:'Answer unavailable',unknown:'Status unavailable',offline:'Check unavailable'
+  }:{empty:'No answer text',whitespace:'No answer text',empty_stale:'No answer text'};
+  tasks=Object.keys(expected).map(requestId=>({requestId,message:requestId}));
+  context.fetchChatJson=async url=>{
+   const id=url.split('/').at(-1);
+   if(id==='offline')throw Error('PRIVATE');
+   const statuses={running:'running',queued:'queued',failed:'failed',interrupted:'interrupted',missing:'not_found',unknown:'unexpected'};
+   return {status:statuses[id]||'ready',result:{reply:id.startsWith('empty')?'':id==='whitespace'?'   ':id},
+    freshness:{status:id==='stale'||id==='empty_stale'?'superseded':id==='unchecked'?'unavailable':'current'}};
+  };
+  context.verifyDeliveryReply=async result=>({valid:result.reply!=='bad'});
+  context.savedAnswerText=r=>r.freshness.status==='superseded'?'Freshness warning: '+r.result.reply:r.result.reply;
+  await button.onclick();const entries=panel().children[4].children;
+  for(const entry of entries){const id=entry.children[1].textContent;assert.equal(entry.children[0].textContent,expected[id]+' — '+id);}
+  if(scenario==='empty_answers'){
+   assert.ok(entries.every(e=>e.children[3].children.length===1));
+   assert.match(panel().children[3].children[2].textContent,/0 answers available; 0 still working; 3 need attention/);
+  }
+  return;
+ }
  if(scenario==='escape') {
   context.fetchChatJson=async()=>new Promise(r=>resolveFetch=r);
   const pending=button.onclick(),old=panel();

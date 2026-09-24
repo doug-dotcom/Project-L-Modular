@@ -975,11 +975,15 @@
                                 return;
                             }
                             let savedText, failed = false, attention = true, copyable = false, working = false;
+                            let resultLabel = 'Status unavailable';
                             try {
                                 const result = await fetchChatJson(`/chat/result/${encodeURIComponent(task.requestId)}`,
                                     {cache: "no-store", headers: recoveryHeaders()}, Math.min(CHAT_REQUEST_TIMEOUT_MS, remaining));
                                 if (!valid()) return;
                                 working = ["queued", "running"].includes(result.status);
+                                resultLabel = working ? 'Still working' :
+                                    ['failed', 'interrupted'].includes(result.status) ? 'Task stopped' :
+                                    result.status === 'not_found' ? 'Answer unavailable' : 'Status unavailable';
                                 if (["ready", "failed", "interrupted"].includes(result.status) &&
                                     (result.result != null || result.status === "ready")) {
                                     const delivery = await verifyDeliveryReply(result.result, task.requestId);
@@ -987,10 +991,14 @@
                                     savedText = !delivery.valid
                                         ? "This saved answer failed delivery integrity verification."
                                         : result.status === "ready" ? savedAnswerText(result) : result.result.reply;
+                                    if (!delivery.valid) resultLabel = 'Verification failed';
                                     if (delivery.valid) {
                                         clearPendingRequest(task.requestId);
-                                        copyable = result.status === 'ready' && typeof savedText === 'string' && savedText.length > 0;
-                                        attention = result.status !== 'ready' || ['superseded', 'unavailable'].includes(result.freshness?.status);
+                                        copyable = result.status === 'ready' && typeof result.result.reply === 'string' && result.result.reply.trim().length > 0;
+                                        attention = !copyable || ['superseded', 'unavailable'].includes(result.freshness?.status);
+                                        if (result.status === 'ready') resultLabel = !copyable ? 'No answer text' :
+                                            result.freshness?.status === 'superseded' ? 'Facts changed' :
+                                            result.freshness?.status === 'unavailable' ? 'Freshness unchecked' : 'Saved answer';
                                     }
                                 }
                                 savedText = savedText ||
@@ -999,7 +1007,7 @@
                                      ["queued", "running"].includes(result.status) ? "L is working on this saved task." : "The status of this saved task is unavailable.");
                             } catch (_) {
                                 if (!valid()) return;
-                                failed = true; copyable = false; working = false;
+                                failed = true; copyable = false; working = false; attention = true; resultLabel = 'Check unavailable';
                                 savedText = 'This saved answer is temporarily unavailable. Your task is still saved.';
                             }
                             if (!valid()) return;
@@ -1007,7 +1015,7 @@
                             entry.open = run.expanded;
                             const summary = document.createElement('summary');
                             const preview = String(task.message || 'Saved task').replace(/\s+/g, ' ').trim();
-                            summary.textContent = (attention ? 'Needs attention — ' : 'Saved answer — ') +
+                            summary.textContent = resultLabel + ' — ' +
                                 preview.slice(0, 140) + (preview.length > 140 ? '…' : '');
                             entry.append(summary);
                             appendChatMessage(entry, 'user', task.message);
