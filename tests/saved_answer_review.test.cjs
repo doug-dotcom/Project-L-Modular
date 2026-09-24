@@ -201,6 +201,30 @@ const ready={status:'ready',result:{reply:'answer'}};
   }
   return;
  }
+ if(['status_search','empty_search_guidance'].includes(scenario)) {
+  let reads=0;context.fetchChatJson=async url=>{
+   reads++;const id=url.split('/').at(-1);
+   if(id==='task-24')return {status:'running'};
+   return {status:'ready',result:{reply:'Answer'},freshness:{status:id==='task-23'?'superseded':'current'}};
+  };
+  await button.onclick();const controls=panel().children[3],search=controls.children[0].children[0];
+  const visible=()=>panel().children[4].children.filter(e=>!e.hidden);
+  const before=reads;
+  if(scenario==='status_search') {
+   search.value='  STILL WORKING  ';search.oninput();assert.equal(visible().length,1);assert.equal(visible()[0].children[1].textContent,'Question 24');
+   search.value='facts changed';search.oninput();assert.equal(visible().length,1);assert.equal(visible()[0].children[1].textContent,'Question 23');
+   const filter=controls.children[1].children[0];filter.value='working';filter.onchange();assert.equal(visible().length,0);
+   assert.match(controls.children[2].textContent,/No checked tasks match/);assert.equal(reads,before);
+  }else {
+   search.value='no such answer';search.oninput();
+   assert.match(controls.children[2].textContent,/Use Clear filters/);assert.match(controls.children[2].textContent,/More tasks remain/);
+   await panel().children[5].onclick();assert.ok(!controls.children[2].textContent.includes('More tasks remain'));
+   assert.match(controls.children[2].textContent,/No checked tasks match/);
+   controls.children[3].children[2].onclick();assert.equal(visible().length,25);
+   assert.ok(!controls.children[2].textContent.includes('No checked tasks match'));assert.equal(reads,25);
+  }
+  return;
+ }
  if(scenario==='escape') {
   context.fetchChatJson=async()=>new Promise(r=>resolveFetch=r);
   const pending=button.onclick(),old=panel();
