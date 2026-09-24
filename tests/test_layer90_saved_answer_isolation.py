@@ -15,12 +15,13 @@ def test_saved_answers_isolate_failures_and_settle_only_verified_results(scenari
 const assert = require('node:assert/strict'), vm = require('node:vm');
 const storage = new Map(), elements = new Map(), shown = [], calls = [], timers = new Map();
 let now = 0, sequence = 0;
-function element() { return {textContent:'', appendChild(e) {shown.push(e);},
+function element() { return {setAttribute(){}, append(...els){els.forEach(e=>this.appendChild(e));}, textContent:'', appendChild(e) {shown.push(e);},
  insertBefore(e) {elements.set(e.id,e);}, remove() {}}; }
 for (const id of ['chat','chatToolsActions','closeChatTools']) elements.set(id,element());
 const context = {AbortController, TextEncoder, performance:{now:()=>now},
- window:{crypto:require('node:crypto').webcrypto},
- document:{addEventListener(){}, createElement:element, getElementById:id=>elements.get(id)},
+ window:{addEventListener(){}, crypto:require('node:crypto').webcrypto},
+ MutationObserver: class {observe(){}},
+ document:{documentElement:{dataset:{account:'ready'}}, addEventListener(){}, createElement:element, getElementById:id=>elements.get(id)},
  localStorage:{getItem:k=>storage.get(k)||null, setItem:(k,v)=>storage.set(k,v), removeItem:k=>storage.delete(k)},
  setTimeout(fn,ms){const id=++sequence;timers.set(id,{fn,at:now+ms});return id;},
  clearTimeout:id=>timers.delete(id),
@@ -55,17 +56,17 @@ async function drive(promise) {
  await drive(button.onclick());
  const tasks=JSON.parse(storage.get('project-l-saved-tasks'));
  assert.equal(button.disabled,false);assert.equal(timers.size,0);
- assert.equal(tasks[0].pending,true);
+ assert.equal(tasks.at(-1).pending,true);
  assert.ok(!shown.some(e=>e.textContent==='DO NOT SHOW'));
  if(SCENARIO==='budget') {
   assert.equal(now,120000);assert.equal(calls.length,8);
   assert.ok(tasks.every(t=>t.pending));assert.ok(storage.has('project-l-pending-request'));
  } else {
-  assert.equal(calls.length,2);assert.ok(calls[1].endsWith('task-1'));
-  assert.equal(tasks[1].pending,false);assert.ok(!storage.has('project-l-pending-request'));
+  assert.equal(calls.length,2);assert.ok(calls[1].endsWith('task-0'));
+  assert.equal(tasks[0].pending,false);assert.ok(storage.has('project-l-pending-request'));
   assert.ok(shown.some(e=>e.textContent==='Verified later answer'));
   const questions=shown.filter(e=>e.className==='msg user').map(e=>e.textContent);
-  assert.deepEqual(questions,['Question 0','Question 1']);
+  assert.deepEqual(questions,['Question 1','Question 0']);
  }
 })().catch(e=>{console.error(e);process.exitCode=1;});
 '''

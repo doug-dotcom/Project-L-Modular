@@ -25,7 +25,7 @@ let now = 0, nextTimer = 0, aborted = 0, lateResolve;
 const never = () => new Promise(() => {});
 const ready = {status: 'ready', result: {reply: 'Recovered exact answer'}};
 function element() {
- return {textContent: '', value: '', removed: false, children: [],
+ return {setAttribute(){}, append(...els){els.forEach(e=>this.appendChild(e));}, textContent: '', value: '', removed: false, children: [],
   remove() {this.removed = true;},
   appendChild(child) {this.children.push(child); shown.push(child);},
   insertBefore(child) {elements.set(child.id, child);}};
@@ -34,9 +34,10 @@ for (const id of ['chat', 'message', 'chatToolsActions', 'closeChatTools']) elem
 const context = {
  AbortController, TextEncoder,
  performance: {now: () => now},
- window: {crypto: require('node:crypto').webcrypto,
+ window: {addEventListener(){}, crypto: require('node:crypto').webcrypto,
   lVoice: {canSend: () => true, saveDraft() {}, onReply: (...args) => voices.push(args)}},
- document: {addEventListener() {}, createElement: element, getElementById: id => elements.get(id)},
+ MutationObserver: class {observe(){}},
+ document: {documentElement:{dataset:{account:'ready'}}, addEventListener() {}, createElement: element, getElementById: id => elements.get(id)},
  localStorage: {getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key)},
  setTimeout(fn, delay) {const id = ++nextTimer; timers.set(id, {fn, at: now + delay}); return id;},
  clearTimeout: id => timers.delete(id),
