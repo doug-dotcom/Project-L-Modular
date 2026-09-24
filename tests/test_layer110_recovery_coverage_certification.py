@@ -146,6 +146,13 @@ class Query:
     def select(self,x): self.calls.append(("select",x)); return self
     def eq(self,c,v): self.calls.append(("eq",c,v)); return self
     def order(self,c,desc=False): self.calls.append(("order",c,desc)); return self
+    def lte(self,c,v): self.calls.append(("lte",c,v)); return self
+    def limit(self,n): self.calls.append(("limit",n)); self.end=n-1; return self
+    def or_(self,condition):
+        self.calls.append(("or",condition))
+        last_id=condition.split("request_id.gt.")[1].rstrip(")")
+        self.rows=[row for row in self.rows if row["request_id"]>last_id]
+        return self
     def range(self,s,e): self.calls.append(("range",s,e)); self.start=s; self.end=e; return self
     def execute(self): return NS(data=self.rows[self.start:self.end+1])
 class Client:
@@ -163,7 +170,9 @@ def test_loader_pages_owner_history_cold_and_read_only(monkeypatch):
     assert report["scan"]["rows_read"]==7
     assert report["scan"]["read_only"] is True
     assert report["scan"]["in_process_cache_used"] is False
-    assert ("range",0,2) in client.calls and ("range",3,5) in client.calls and ("range",6,8) in client.calls
+    assert sum(x[0]=="limit" for x in client.calls)==3
+    assert sum(x[0]=="or" for x in client.calls)==2
+    assert not any(x[0]=="range" for x in client.calls)
     assert any(x[0]=="eq" and x[1]=="user_id" for x in client.calls)
     assert any(x[0]=="eq" and x[1]=="owner_hash" for x in client.calls)
     assert not any(x[0] in {"insert","update","delete","upsert","rpc"} for x in client.calls)

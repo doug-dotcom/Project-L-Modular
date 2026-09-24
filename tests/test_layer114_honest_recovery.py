@@ -22,7 +22,8 @@ def payload(**extra):
 
 
 def row(result, status="ready"):
-    return {"request_id": RID, "result": result, "status": status}
+    return {"request_id": RID, "result": result, "status": status,
+            "created_at": "2026-09-24T00:00:00Z", "updated_at": "2026-09-24T00:00:01Z"}
 
 
 def summary(rows, **bounds):
@@ -157,6 +158,7 @@ class Query:
     def eq(self, *_): return self
     def order(self, *_, **__): return self
     def limit(self, *_): return self
+    def lte(self, *_): return self
     def range(self, *_): return self
     def execute(self): return SimpleNamespace(data=self.rows)
 
@@ -168,13 +170,17 @@ class Client:
 
 def test_endpoint_surfaces_terminal_failure_and_unassessed_records(monkeypatch):
     from api import server
-    monkeypatch.setattr(server.task_store, "client", Client([row(None), None, row(payload())]))
+    missing = row(None)
+    missing["request_id"] = "00000000-0000-4000-8000-000000000112"
+    monkeypatch.setattr(server.task_store, "client", Client([missing, row(payload()), None]))
     report = server.cognition_recovery_coverage_certification(
         page_size=100, max_rows=10000, x_l_recovery_token=TOKEN,
     )
     assert report["failed_ready_answers"] == 1
     assert report["unassessed_rows"] == 1
     assert report["certified_answers"] == 1
+    assert report["status"] == "incomplete_scan"
+    assert report["scan"]["error"] == "invalid_scan_key"
     assert not report["coverage"]["all_ready_answers_recoverable"]
     assert report["scan"]["read_only"]
 

@@ -1,4 +1,4 @@
-"""Layer 110: exhaustive durable recovery coverage certification.
+"""Durable recovery coverage, hardened and shared with readiness in Layer 115.
 
 Layer 108 certifies one exact saved answer. Layer 110 scans an owner's durable
 saved-answer history page by page and certifies aggregate recoverability under
@@ -13,11 +13,11 @@ from hashlib import sha256
 from uuid import UUID
 
 from core.cognition.cold_recovery_certification import certify_saved_answer_row
-from core.cognition.durable_tasks import owner_identity
+from core.cognition.durable_task_ledger_audit import scan_task_ledger
 from core.cognition.release_provenance import build_release_provenance
 
 
-VERSION = "layer114-recovery-coverage-certification-2"
+VERSION = "layer115-recovery-coverage-certification-3"
 PAGE_SIZE = 100
 MAX_ROWS = 10000
 
@@ -223,47 +223,9 @@ def load_recovery_coverage_certification(
     page_size: int = PAGE_SIZE,
     max_rows: int = MAX_ROWS,
 ) -> dict:
-    if type(page_size) is not int or not 1 <= page_size <= PAGE_SIZE:
-        raise ValueError("page_size must be between 1 and 100")
-    if type(max_rows) is not int or not 1 <= max_rows <= MAX_ROWS:
-        raise ValueError("max_rows must be between 1 and 10000")
-
-    user_id, owner_hash = owner_identity(recovery_token)
-    if client is None:
-        raise RuntimeError("database_unavailable")
-
-    rows = []
-    offset = 0
-    scan_complete = False
-    capped = False
-    pages_read = 0
-
-    while offset < max_rows:
-        remaining = max_rows - offset
-        batch_size = min(page_size, remaining)
-        page = (
-            client.table("l_chat_tasks")
-            .select("request_id,created_at,updated_at,status,result")
-            .eq("user_id", user_id)
-            .eq("owner_hash", owner_hash)
-            .order("created_at", desc=False)
-            .order("request_id", desc=False)
-            .range(offset, offset + batch_size - 1)
-            .execute()
-            .data
-        )
-        if not isinstance(page, list):
-            raise RuntimeError("invalid_database_response")
-
-        pages_read += 1
-        rows.extend(page)
-        if len(page) < batch_size:
-            scan_complete = True
-            break
-        offset += batch_size
-
-    if not scan_complete and len(rows) >= max_rows:
-        capped = True
+    rows, scan_complete, capped, scan = scan_task_ledger(
+        client, recovery_token, page_size=page_size, max_rows=max_rows,
+    )
 
     report = summarise_recovery_coverage(
         rows,
@@ -271,14 +233,11 @@ def load_recovery_coverage_certification(
         capped=capped,
     )
     report["scan"] = {
-        "scope": "recovery_token_owner_all_saved_tasks",
-        "database": "l_chat_tasks",
-        "order": "oldest_first",
-        "page_size": page_size,
-        "pages_read": pages_read,
-        "max_rows": max_rows,
-        "rows_read": len(rows),
-        "read_only": True,
+        **scan,
         "in_process_cache_used": False,
     }
+    report["claims"]["durable_recovery_coverage_scope"] = scan["scope"]
+    report["limitations"].append(
+        "Coverage uses a fixed scan-start boundary and keyset pagination; concurrent deletions, backdated inserts, key changes or task updates can still affect this non-transactional scan."
+    )
     return report
