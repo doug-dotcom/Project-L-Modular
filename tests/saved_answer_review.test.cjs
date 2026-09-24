@@ -21,6 +21,25 @@ vm.createContext(context);vm.runInContext(source+'\ninstallSavedAnswerReview(but
 const panel=()=>chat.children.at(-1),progress=()=>panel().children[1].textContent,stop=()=>panel().children[2].onclick();
 const ready={status:'ready',result:{reply:'answer'}};
 (async()=>{
+ if(scenario==='navigation') {
+  await button.onclick();
+  const entries=()=>panel().children[4].children;
+  const controls=()=>panel().children[3].children[3].children;
+  assert.ok(entries().every(e=>e.open===false));
+  const before=calls.length;controls()[0].onclick();
+  assert.ok(entries().every(e=>e.open===true));assert.equal(calls.length,before);
+  await panel().children[5].onclick();assert.ok(entries().every(e=>e.open===true));
+  controls()[1].onclick();assert.ok(entries().every(e=>e.open===false));
+  const search=panel().children[3].children[0].children[0];search.value='No match';search.oninput();
+  assert.ok(entries().every(e=>e.hidden));controls()[2].onclick();assert.ok(entries().every(e=>!e.hidden));
+  const settled=cleared.length;
+  context.fetchChatJson=async()=>new Promise(r=>resolveFetch=r);
+  const pending=button.onclick();const closed=panel();controls()[3].onclick();
+  assert.equal(closed.removed,true);assert.equal(plus.focused,true);assert.equal(button.disabled,false);
+  resolveFetch(ready);await pending;assert.equal(cleared.length,settled);
+  assert.equal(closed.children[4].children.length,0);
+  return;
+ }
  if(['search','attention','rejected_search','batch_filter'].includes(scenario)) {
   if(scenario!=='batch_filter') {
    tasks=[{requestId:'good',message:'Holiday plan'},{requestId:'stale',message:'Travel plan'},
