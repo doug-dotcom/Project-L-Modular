@@ -608,13 +608,13 @@
             );
         }
 
-        function appendChatMessage(chat, className, text, id = "") {
+        function appendChatMessage(chat, className, text, id = "", rememberReply = true) {
             const element = document.createElement("div");
             element.className = `msg ${className}`;
             if (id) element.id = id;
             element.textContent = text;
             chat.appendChild(element);
-            if (className === "assistant" && !String(text).startsWith("L is ")) {
+            if (rememberReply && className === "assistant" && !String(text).startsWith("L is ")) {
                 lastAssistantText = text;
             }
             return element;
@@ -1011,7 +1011,7 @@
                                 preview.slice(0, 140) + (preview.length > 140 ? '…' : '');
                             entry.append(summary);
                             appendChatMessage(entry, 'user', task.message);
-                            appendChatMessage(entry, failed ? 'assistant error' : 'assistant', savedText);
+                            appendChatMessage(entry, failed ? 'assistant error' : 'assistant', savedText, '', false);
                             const actions = document.createElement('div'); actions.className = 'saved-answer-navigation';
                             const actionStatus = document.createElement('p'); actionStatus.setAttribute('role', 'status');
                             const usable = () => active === run && document.documentElement.dataset.account === 'ready';
