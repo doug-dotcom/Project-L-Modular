@@ -4,7 +4,7 @@ const source=html.slice(html.indexOf('        function installSavedAnswerReview'
 const scenario=process.argv[2],events={},calls=[],cleared=[];
 let mutation,resolveFetch,resolveVerify,clock=0;
 const el=()=>({children:[],textContent:'',disabled:false,attributes:{},
- append(...nodes){this.children.push(...nodes)},setAttribute(k,v){this.attributes[k]=v},remove(){this.removed=true},focus(){this.focused=true}});
+ append(...nodes){this.children.push(...nodes)},appendChild(node){this.children.push(node)},setAttribute(k,v){this.attributes[k]=v},remove(){this.removed=true},focus(){this.focused=true}});
 const button=el(),chat=el(),plus=el(),root={dataset:{account:'ready'}};
 let tasks=Array.from({length:25},(_,i)=>({requestId:'task-'+i,message:'Question '+i}));
 const context={window:{addEventListener:(k,f)=>events[k]=f,lChatTools:{close(){}}},
@@ -108,6 +108,26 @@ const ready={status:'ready',result:{reply:'answer'}};
    assert.equal(panel(),current);assert.equal(cleared.length,before);assert.equal(old.children[4].children.length,0);
    events['l-account-ready']();const count=reads;await refresh().onclick();assert.equal(reads,count);
   }
+  return;
+ }
+ if(['latest_reply','latest_reply_empty'].includes(scenario)) {
+  context.lastAssistantText=scenario==='latest_reply'?'Latest live reply':'';
+  const appendSource=html.slice(html.indexOf('        function appendChatMessage'),html.indexOf('        function rememberPendingRequest'));
+  vm.runInContext(appendSource,context);
+  const initial=context.lastAssistantText;
+  tasks=['good','stale','bad','missing','offline'].map(requestId=>({requestId,message:requestId}));
+  context.fetchChatJson=async url=>{
+   const id=url.split('/').at(-1);
+   if(id==='offline')throw Error('PRIVATE');
+   return {status:id==='missing'?'not_found':'ready',result:{reply:id},freshness:{status:id==='stale'?'superseded':'current'}};
+  };
+  context.verifyDeliveryReply=async result=>({valid:result.reply!=='bad'});
+  await button.onclick();assert.equal(context.lastAssistantText,initial);
+  assert.equal(panel().children[4].children.length,5);
+  await panel().children[3].children[3].children[4].onclick();assert.equal(context.lastAssistantText,initial);
+  context.appendChatMessage(chat,'assistant','A new live reply');assert.equal(context.lastAssistantText,'A new live reply');
+  context.appendChatMessage(chat,'assistant error','Failed request');assert.equal(context.lastAssistantText,'A new live reply');
+  context.appendChatMessage(chat,'assistant',"L is thinking...");assert.equal(context.lastAssistantText,'A new live reply');
   return;
  }
  if(scenario==='escape') {
