@@ -866,7 +866,7 @@
             new MutationObserver(() => {
                 if (document.documentElement.dataset.account !== 'ready') reset();
             }).observe(document.documentElement, {attributes: true, attributeFilter: ['data-account']});
-            button.onclick = async () => {
+            async function openReview(view = {}) {
                 if (button.disabled || document.documentElement.dataset.account !== 'ready') return;
                 reset();
                 window.lChatTools?.close();
@@ -883,14 +883,14 @@
                 const filters = document.createElement('div');
                 filters.className = 'saved-answer-filters';
                 const searchLabel = document.createElement('label'); searchLabel.textContent = 'Search checked tasks';
-                const search = document.createElement('input'); search.type = 'search'; search.maxLength = 200;
+                const search = document.createElement('input'); search.type = 'search'; search.maxLength = 200; search.value = view.query || '';
                 searchLabel.append(search);
                 const filterLabel = document.createElement('label'); filterLabel.textContent = 'Show';
                 const filter = document.createElement('select');
                 for (const [value, text] of [['all', 'All checked tasks'], ['attention', 'Needs attention'], ['available', 'Answers available'], ['working', 'Still working']]) {
                     const option = document.createElement('option'); option.value = value; option.textContent = text; filter.append(option);
                 }
-                filter.value = 'all'; filterLabel.append(filter);
+                filter.value = view.status || 'all'; filterLabel.append(filter);
                 const visibleCount = document.createElement('p'); visibleCount.setAttribute('role', 'status');
                 filters.append(searchLabel, filterLabel, visibleCount);
                 const results = document.createElement('div');
@@ -898,7 +898,7 @@
                 older.type = 'button'; older.textContent = 'Check older tasks'; older.disabled = true;
                 panel.append(heading, progress, stop, filters, results, older); chat.append(panel);
                 panel.focus?.(); chat.scrollTop = chat.scrollHeight;
-                const run = {panel, cancelled: false, checked: 0, total: 0, pass: 0, tasks: [], entries: [], expanded: false}; active = run;
+                const run = {panel, cancelled: false, checked: 0, total: 0, pass: 0, tasks: [], entries: [], expanded: view.expanded === true}; active = run;
                 const current = () => active === run && !run.cancelled && document.documentElement.dataset.account === 'ready';
                 const count = () => `${run.checked} of ${run.total} recent saved tasks checked`;
                 function applyFilter() {
@@ -922,8 +922,8 @@
                 const navigation = document.createElement('div'); navigation.className = 'saved-answer-navigation';
                 function navigationButton(label, action) {
                     const control = document.createElement('button'); control.type = 'button'; control.textContent = label;
-                    control.onclick = () => { if (active === run) action(); };
-                    navigation.append(control);
+                    control.onclick = () => { if (active === run && !control.disabled) return action(); };
+                    navigation.append(control); return control;
                 }
                 function expandAll(open) {
                     run.expanded = open;
@@ -937,6 +937,10 @@
                     reset(); document.getElementById('uploadBtn')?.focus();
                 }
                 navigationButton('Close review', closeReview);
+                const refresh = navigationButton('Refresh review', () => openReview({
+                    query: search.value, status: filter.value, expanded: run.expanded
+                }));
+                refresh.setAttribute('title', 'Check the newest saved tasks again, keeping your search and filter.');
                 panel.onkeydown = event => {
                     if (active !== run || event.key !== 'Escape' || event.isComposing || event.defaultPrevented) return;
                     event.preventDefault(); event.stopPropagation(); closeReview();
@@ -948,7 +952,7 @@
                     run.cancelled = true; run.pass += 1;
                     older.disabled = run.checked >= run.total; older.textContent = 'Continue checking';
                     progress.textContent = 'Stopped — ' + count() + '. Your tasks have not been stopped or repeated.';
-                    stop.disabled = true; button.disabled = false;
+                    stop.disabled = true; button.disabled = false; refresh.disabled = false;
                     document.getElementById('uploadBtn')?.focus();
                 };
                 async function checkBatch() {
@@ -956,7 +960,7 @@
                     run.cancelled = false;
                     const pass = ++run.pass;
                     const valid = () => current() && run.pass === pass;
-                    button.disabled = true; stop.disabled = false; older.disabled = true;
+                    button.disabled = true; stop.disabled = false; older.disabled = true; refresh.disabled = true;
                     try {
                         if (pass === 1) { run.tasks = savedTasks().slice(-100).reverse(); run.total = run.tasks.length; }
                         const recent = run.tasks.slice(run.checked, run.checked + 20);
@@ -1056,7 +1060,7 @@
                         if (valid()) progress.textContent = 'Review could not finish — ' + count() + '. Please try again shortly.';
                     } finally {
                         if (active === run && run.pass === pass) {
-                            button.disabled = false; stop.disabled = true;
+                            button.disabled = false; stop.disabled = true; refresh.disabled = false;
                             older.disabled = run.checked >= run.total;
                             older.textContent = run.checked % 20 === 0 ? 'Check older tasks' : 'Continue checking';
                         }
@@ -1064,7 +1068,8 @@
                 }
                 older.onclick = checkBatch;
                 await checkBatch();
-            };
+            }
+            button.onclick = () => openReview();
         }
 
         async function resumePendingRequest() {
