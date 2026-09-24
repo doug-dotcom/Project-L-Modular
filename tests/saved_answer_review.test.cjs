@@ -110,6 +110,37 @@ const ready={status:'ready',result:{reply:'answer'}};
   }
   return;
  }
+ if(['refresh_open_questions','refresh_older_questions','refresh_expansion_reset'].includes(scenario)) {
+  const entries=()=>panel().children[4].children;
+  const navigation=()=>panel().children[3].children[3].children;
+  const refresh=()=>navigation()[4].onclick();
+  const find=id=>entries().find(e=>e.children[1].textContent==='Question '+id);
+  await button.onclick();
+  find(24).open=true;find(22).open=true;
+  if(scenario==='refresh_open_questions') {
+   const search=panel().children[3].children[0].children[0];search.value='Question 24';search.oninput();
+   tasks.push({requestId:'new',message:'New question'});
+   await refresh();
+   assert.equal(find(24).open,true);assert.equal(find(22).open,true);
+   assert.equal(find(22).hidden,true);assert.equal(find(23).open,false);
+   assert.equal(entries()[0].open,false);assert.equal(calls.length,40);
+  }else {
+   await panel().children[5].onclick();find(0).open=true;
+   await refresh();assert.equal(entries().length,20);
+   if(scenario==='refresh_expansion_reset') {
+    navigation()[0].onclick();find(24).open=false;
+    await refresh();assert.equal(find(24).open,false);assert.equal(find(23).open,true);
+    navigation()[1].onclick();
+   }else {await refresh();assert.equal(find(24).open,true);}
+   await panel().children[5].onclick();
+   assert.equal(find(0).open,scenario==='refresh_older_questions');
+   assert.equal(find(1).open,false);
+  }
+  // Closing and opening a new review must discard the previous expansion choices.
+  navigation()[3].onclick();await button.onclick();
+  assert.ok(entries().every(e=>!e.open));
+  return;
+ }
  if(['latest_reply','latest_reply_empty'].includes(scenario)) {
   context.lastAssistantText=scenario==='latest_reply'?'Latest live reply':'';
   const appendSource=html.slice(html.indexOf('        function appendChatMessage'),html.indexOf('        function rememberPendingRequest'));

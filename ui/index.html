@@ -898,7 +898,7 @@
                 older.type = 'button'; older.textContent = 'Check older tasks'; older.disabled = true;
                 panel.append(heading, progress, stop, filters, results, older); chat.append(panel);
                 panel.focus?.(); chat.scrollTop = chat.scrollHeight;
-                const run = {panel, cancelled: false, checked: 0, total: 0, pass: 0, tasks: [], entries: [], expanded: view.expanded === true}; active = run;
+                const run = {panel, cancelled: false, checked: 0, total: 0, pass: 0, tasks: [], entries: [], expanded: view.expanded === true, expansion: new Map(view.expansion || [])}; active = run;
                 const orderLabel = document.createElement('label'); orderLabel.textContent = 'Order';
                 const order = document.createElement('select');
                 for (const [value, text] of [['newest', 'Newest first'], ['attention', 'Needs attention first']]) {
@@ -940,7 +940,7 @@
                     navigation.append(control); return control;
                 }
                 function expandAll(open) {
-                    run.expanded = open;
+                    run.expanded = open; run.expansion.clear();
                     for (const entry of run.entries) entry.node.open = open;
                 }
                 navigationButton('Expand all', () => expandAll(true));
@@ -952,7 +952,8 @@
                 }
                 navigationButton('Close review', closeReview);
                 const refresh = navigationButton('Refresh review', () => openReview({
-                    query: search.value, status: filter.value, expanded: run.expanded, order: order.value
+                    query: search.value, status: filter.value, expanded: run.expanded, order: order.value,
+                    expansion: [...run.expansion, ...run.entries.map(entry => [entry.requestId, entry.node.open])]
                 }));
                 refresh.setAttribute('title', 'Check the newest saved tasks again, keeping your search and filter.');
                 panel.onkeydown = event => {
@@ -1026,7 +1027,7 @@
                             }
                             if (!valid()) return;
                             const entry = document.createElement('details'); entry.className = 'saved-answer-entry';
-                            entry.open = run.expanded;
+                            entry.open = run.expansion.has(task.requestId) ? run.expansion.get(task.requestId) : run.expanded;
                             const summary = document.createElement('summary');
                             const preview = String(task.message || 'Saved task').replace(/\s+/g, ' ').trim();
                             summary.textContent = resultLabel + ' — ' +
@@ -1083,7 +1084,7 @@
                             entry.append(checkedTime);
 
                             results.append(entry);
-                            run.entries.push({node: entry, attention, available: copyable, working,
+                            run.entries.push({node: entry, requestId: task.requestId, attention, available: copyable, working,
                                 text: (String(task.message || '') + '\n' + String(savedText || '') + '\n' + resultLabel).toLocaleLowerCase()});
                             applyFilter();
                             run.checked += 1;
