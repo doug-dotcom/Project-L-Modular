@@ -1,4 +1,4 @@
-"""Durable recovery coverage, hardened and shared with readiness in Layer 114.
+"""Durable recovery coverage, hardened and shared with readiness in Layer 115.
 
 Layer 108 certifies one exact saved answer. Layer 110 scans an owner's durable
 saved-answer history page by page and certifies aggregate recoverability under
@@ -9,13 +9,15 @@ from __future__ import annotations
 
 from collections import Counter
 from datetime import datetime, timezone
+from hashlib import sha256
+from uuid import UUID
 
 from core.cognition.cold_recovery_certification import certify_saved_answer_row
 from core.cognition.durable_task_ledger_audit import scan_task_ledger
 from core.cognition.release_provenance import build_release_provenance
 
 
-VERSION = "layer114-recovery-coverage-certification-2"
+VERSION = "layer115-recovery-coverage-certification-3"
 PAGE_SIZE = 100
 MAX_ROWS = 10000
 
@@ -36,22 +38,40 @@ def summarise_recovery_coverage(
     release_relationships = Counter()
     issue_codes = Counter()
     failures = []
+    findings_total = 0
+    rows_observed = 0
     observed = 0
     malformed = 0
+    verification_errors = 0
+    failed = 0
+    failed_ready = 0
     certified = 0
     modern_authenticated = 0
     legacy_readable = 0
     not_ready = 0
 
+    def add_finding(request_id, status, issues):
+        nonlocal findings_total
+        findings_total += 1
+        if len(failures) < 50:
+            failures.append({
+                "request_ref": sha256(request_id.encode("utf-8")).hexdigest()[:12] if request_id else "",
+                "status": status,
+                "issues": issues[:12],
+            })
+
     for row in rows:
-        if not isinstance(row, dict):
+        rows_observed += 1
+        request_id = row.get("request_id") if isinstance(row, dict) else None
+        try:
+            if not isinstance(request_id, str):
+                raise ValueError("request_id_invalid")
+            UUID(request_id)
+        except ValueError:
             malformed += 1
-            issue_codes["malformed_task_row"] += 1
-            continue
-        request_id = row.get("request_id")
-        if not isinstance(request_id, str) or not request_id:
-            malformed += 1
-            issue_codes["invalid_task_request_id"] += 1
+            issue_codes["malformed_saved_task"] += 1
+            add_finding(request_id if isinstance(request_id, str) else "",
+                        "unassessed_record", ["malformed_saved_task"])
             continue
 
         observed += 1
@@ -61,19 +81,17 @@ def summarise_recovery_coverage(
                 request_id=request_id,
                 current_release=release,
             )
-        except ValueError:
-            malformed += 1
-            issue_codes["invalid_task_request_id"] += 1
-            observed -= 1
+            if not isinstance(certificate, dict):
+                raise TypeError("certificate_not_an_object")
+        except Exception:
+            # A verifier failure is uncertainty, never evidence of recovery.
+            # Continue the read-only scan without exposing exception content.
+            verification_errors += 1
+            issue_codes["recovery_verification_error"] += 1
+            add_finding(request_id, "unassessed_record", ["recovery_verification_error"])
             continue
 
         status = str(certificate.get("status") or "unknown")[:80]
-        # A terminal task with no saved result is a recovery failure, not a
-        # pending task to subtract from the denominator of ready records.
-        if status in {"not_ready", "not_found"} and row.get("status") not in (
-            "queued", "running", "interrupted",
-        ):
-            status = "failed_missing_result"
         relationship = str(
             certificate.get("release_relationship") or "unknown"
         )[:80]
@@ -91,34 +109,32 @@ def summarise_recovery_coverage(
             legacy_readable += 1
         if status in {"not_ready", "not_found"}:
             not_ready += 1
+        elif certificate.get("certified") is not True:
+            failed += 1
+            if row.get("status") == "ready":
+                failed_ready += 1
 
         issues = [
             issue
             for issue in (certificate.get("issues") or [])
             if isinstance(issue, str)
         ]
-        if status == "failed_missing_result":
-            issues.append("saved_result_missing_or_malformed")
         for issue in issues:
             issue_codes[issue[:120]] += 1
 
-        if certificate.get("certified") is not True and len(failures) < 50:
-            failures.append({
-                "request_ref": str(certificate.get("request_ref") or "")[:12],
-                "status": status,
-                "issues": issues[:12],
-            })
+        if certificate.get("certified") is not True:
+            add_finding(request_id, status, issues)
 
     complete = bool(scan_complete and not capped)
-    ready_records = max(0, observed - not_ready)
-    failed = max(0, ready_records - certified)
-    all_ready_recoverable = bool(complete and malformed == 0 and failed == 0)
-    all_observed_certified = bool(complete and malformed == 0 and certified == observed)
+    unassessed = malformed + verification_errors
+    assessment_complete = bool(complete and unassessed == 0)
+    all_ready_recoverable = bool(assessment_complete and failed == 0)
+    all_observed_certified = bool(assessment_complete and certified == observed)
 
     if not complete:
         overall = "incomplete_scan"
-    elif malformed:
-        overall = "complete_with_malformed_records"
+    elif unassessed:
+        overall = "complete_with_unassessed_records"
     elif observed == 0:
         overall = "complete_no_saved_answers"
     elif failed:
@@ -137,18 +153,24 @@ def summarise_recovery_coverage(
         "status": overall,
         "scan_complete": complete,
         "capped": bool(capped),
+        "rows_observed": rows_observed,
         "answers_observed": observed,
+        "malformed_rows": malformed,
+        # Compatibility alias only: these rows now block coverage claims.
         "malformed_rows_ignored": malformed,
+        "verification_error_rows": verification_errors,
+        "unassessed_rows": unassessed,
         "certified_answers": certified,
         "modern_authenticated_answers": modern_authenticated,
         "legacy_readable_answers": legacy_readable,
         "not_ready_answers": not_ready,
-        "failed_ready_answers": failed,
+        "failed_ready_answers": failed_ready,
+        "failed_recovery_records": failed,
         "recovery_statuses": dict(statuses),
         "release_relationships": dict(release_relationships),
         "issue_codes": dict(issue_codes),
-        "failure_findings": failures[:50],
-        "failure_findings_omitted": max(0, observed - certified - len(failures)),
+        "failure_findings": failures,
+        "failure_findings_omitted": max(0, findings_total - len(failures)),
         "current_release": {
             "verified_production": bool(
                 release.get("verified") is True
@@ -159,6 +181,8 @@ def summarise_recovery_coverage(
         "coverage": {
             "all_ready_answers_recoverable": all_ready_recoverable,
             "all_observed_tasks_certified": all_observed_certified,
+            "assessment_complete": assessment_complete,
+            "unassessed_records_block_coverage": True,
             "complete_scan_required": True,
             "task_replay_used": False,
             "model_calls_used": False,
@@ -175,8 +199,8 @@ def summarise_recovery_coverage(
         "claims": {
             "durable_recovery_coverage": (
                 "complete"
-                if complete
-                else "incomplete"
+                if assessment_complete
+                else "unverified" if complete else "incomplete"
             ),
             "answer_quality": "not_scored",
             "factual_correctness": "not_scored",
@@ -185,9 +209,9 @@ def summarise_recovery_coverage(
         "limitations": [
             "Coverage applies only to durable l_chat_tasks records in the scanned owner history.",
             "A capped or interrupted scan cannot certify full-history recovery coverage.",
+            "Malformed records or verifier errors block full-history recovery claims, even when the scan finishes.",
             "Legacy readability is not equivalent to modern HMAC authentication.",
             "Recoverability does not establish factual correctness or answer quality.",
-            "Malformed records prevent an all-recoverable claim; missing terminal results are recovery failures.",
         ],
     }
 

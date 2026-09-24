@@ -71,7 +71,9 @@ def verify_recovered_answer_payload(
     authenticity_present = isinstance(authenticity, dict)
     issues: list[str] = []
 
-    if protocol_present and protocol not in SUPPORTED_PROTOCOLS:
+    if protocol_present and (
+        not isinstance(protocol, str) or protocol not in SUPPORTED_PROTOCOLS
+    ):
         issues.append("answer_provenance_protocol_unsupported")
     if protocol_present and not provenance_present:
         issues.append("answer_provenance_required_but_missing")

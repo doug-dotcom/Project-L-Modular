@@ -1,10 +1,13 @@
-# Layer 114 — Combined recovery readiness
+# Layer 115 — Combined recovery readiness
+
+This release builds on the saved-answer protections merged as Layer 114 in
+PR #85. Layer 113's stable scan is retained and shared with recovery coverage.
 
 Task-ledger validity and saved-answer integrity were previously reported by
 separate scans. Neither alone establishes that an observed task has a consistent
-journal and a recoverable answer. In addition, the coverage report classified a
-`ready` task without a result as pending, removing it from the ready-answer
-denominator. Malformed rows could also leave an all-recoverable claim true.
+journal and a recoverable answer. Layer 114 fixed missing terminal results and
+unassessed records being excluded from recovery failures. This layer applies
+those protections alongside the ledger checks in one report.
 
 ## Behaviour
 
@@ -26,10 +29,13 @@ check reports whether every observed answer has modern HMAC authentication.
 Recoverable failed-task results do not imply successful task execution.
 
 The existing recovery-coverage endpoint now uses Layer 113's stable timestamp
-and UUID cursor, fixed scan-start boundary and invalid-page guards. Terminal
-tasks with missing or malformed results count as failures, and malformed rows
-prevent all-recoverable claims. Failure findings stay bounded to 50 with an
-explicit omitted count.
+and UUID cursor, fixed scan-start boundary and invalid-page guards. Layer 114's
+rules for missing results, malformed rows and bounded findings remain in force.
+
+Cold certification also rejects results attached to unfinished tasks and uses
+fixed labels for unknown statuses or unsupported provenance markers. Malformed
+protocol JSON fails verification safely. A per-record verifier exception is
+counted as unassessed, prevents readiness and does not expose exception text.
 
 ## Boundaries
 
@@ -52,5 +58,5 @@ legacy readability, missing verification keys, caps, empty histories, bounded
 findings and failed-task semantics. Real Supabase-client requests with a mock
 HTTP transport verify one shared scan, owner filters, cursor continuation,
 fixed boundaries and output privacy. Route tests cover account authentication,
-owner-token validation and redacted database failures. Layers 110–113 retain
+owner-token validation and redacted database failures. Layers 110–114 retain
 their regression coverage, including records changing between pages.

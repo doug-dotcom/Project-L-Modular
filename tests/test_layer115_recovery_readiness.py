@@ -21,7 +21,7 @@ from tests.test_layer110_recovery_coverage_certification import (
 )
 
 
-TOKEN = "layer114-fixture-owner-no-production-access" * 2
+TOKEN = "layer115-fixture-owner-no-production-access" * 2
 NOW = datetime(2026, 9, 24, 2, tzinfo=timezone.utc)
 
 
@@ -95,9 +95,10 @@ def test_terminal_missing_result_is_a_failure_not_a_pending_task(status, payload
     saved = report["saved_answers"]
     assert report["status"] == "needs_attention"
     assert saved["status"] == "complete_with_recovery_failures"
-    assert saved["failed_ready_answers"] == 1
+    assert saved["failed_recovery_records"] == 1
+    assert saved["failed_ready_answers"] == (1 if status == "ready" else 0)
     assert saved["not_ready_answers"] == 0
-    assert saved["recovery_statuses"] == {"failed_missing_result": 1}
+    assert saved["recovery_statuses"] == {"failed_integrity": 1}
     assert saved["coverage"]["all_ready_answers_recoverable"] is False
     assert saved["coverage"]["all_observed_tasks_certified"] is False
     assert "private" not in json.dumps(report)
@@ -108,7 +109,7 @@ def test_terminal_missing_result_is_a_failure_not_a_pending_task(status, payload
 def test_malformed_rows_prevent_all_recoverable_claims(bad_row, include_valid):
     rows = ([task(6)] if include_valid else []) + [bad_row]
     saved = summarise_recovery_coverage(rows, scan_complete=True, capped=False)
-    assert saved["status"] == "complete_with_malformed_records"
+    assert saved["status"] == "complete_with_unassessed_records"
     assert saved["malformed_rows_ignored"] == 1
     assert saved["coverage"]["all_ready_answers_recoverable"] is False
     assert saved["coverage"]["all_observed_tasks_certified"] is False

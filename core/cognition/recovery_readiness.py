@@ -1,4 +1,4 @@
-"""Layer 114: task-ledger and saved-answer checks over the same durable rows."""
+"""Layer 115: task-ledger and saved-answer checks over the same durable rows."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from core.cognition.durable_task_ledger_audit import (
 from core.cognition.recovery_coverage_certification import summarise_recovery_coverage
 
 
-VERSION = "layer114-durable-recovery-readiness-1"
+VERSION = "layer115-durable-recovery-readiness-1"
 
 
 def summarise_recovery_readiness(
