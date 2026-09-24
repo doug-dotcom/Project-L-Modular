@@ -873,65 +873,81 @@
                 const stop = document.createElement('button');
                 stop.type = 'button'; stop.textContent = 'Stop checking';
                 const results = document.createElement('div');
-                panel.append(heading, progress, stop, results); chat.append(panel);
+                const older = document.createElement('button');
+                older.type = 'button'; older.textContent = 'Check older tasks'; older.disabled = true;
+                panel.append(heading, progress, stop, results, older); chat.append(panel);
                 panel.focus?.(); chat.scrollTop = chat.scrollHeight;
-                const run = {panel, cancelled: false, checked: 0, total: 0}; active = run;
+                const run = {panel, cancelled: false, checked: 0, total: 0, pass: 0, tasks: []}; active = run;
                 const current = () => active === run && !run.cancelled && document.documentElement.dataset.account === 'ready';
                 const count = () => `${run.checked} of ${run.total} recent saved tasks checked`;
                 stop.onclick = () => {
                     if (!current()) return;
-                    run.cancelled = true;
+                    run.cancelled = true; run.pass += 1;
+                    older.disabled = run.checked >= run.total; older.textContent = 'Continue checking';
                     progress.textContent = 'Stopped — ' + count() + '. Your tasks have not been stopped or repeated.';
                     stop.disabled = true; button.disabled = false;
                     document.getElementById('uploadBtn')?.focus();
                 };
-                try {
-                    const recent = savedTasks().slice(-20).reverse();
-                    run.total = recent.length;
-                    progress.textContent = recent.length ? count() + '. Newest first; up to 20 tasks from this browser.' :
-                        'Your saved answers will appear here after you send a message.';
-                    const deadline = performance.now() + ANSWER_RECOVERY_BUDGET_MS;
-                    for (const task of recent) {
-                        if (!current()) return;
-                        const remaining = deadline - performance.now();
-                        if (remaining <= 0) {
-                            progress.textContent = 'Time limit reached — ' + count() + '. Open Saved answers to check again.';
-                            return;
-                        }
-                        let savedText, failed = false;
-                        try {
-                            const result = await fetchChatJson(`/chat/result/${encodeURIComponent(task.requestId)}`,
-                                {cache: "no-store", headers: recoveryHeaders()}, Math.min(CHAT_REQUEST_TIMEOUT_MS, remaining));
-                            if (!current()) return;
-                            if (["ready", "failed", "interrupted"].includes(result.status) &&
-                                (result.result != null || result.status === "ready")) {
-                                const delivery = await verifyDeliveryReply(result.result, task.requestId);
-                                if (!current()) return;
-                                savedText = !delivery.valid
-                                    ? "This saved answer failed delivery integrity verification."
-                                    : result.status === "ready" ? savedAnswerText(result) : result.result.reply;
-                                if (delivery.valid) clearPendingRequest(task.requestId);
+                async function checkBatch() {
+                    if (active !== run || document.documentElement.dataset.account !== 'ready' || older.disabled && run.pass > 0) return;
+                    run.cancelled = false;
+                    const pass = ++run.pass;
+                    const valid = () => current() && run.pass === pass;
+                    button.disabled = true; stop.disabled = false; older.disabled = true;
+                    try {
+                        if (pass === 1) { run.tasks = savedTasks().slice(-100).reverse(); run.total = run.tasks.length; }
+                        const recent = run.tasks.slice(run.checked, run.checked + 20);
+                        progress.textContent = recent.length ? count() + '. Newest first; 20 per batch, using the tasks saved in this browser when the review opened.' :
+                            'Your saved answers will appear here after you send a message.';
+                        const deadline = performance.now() + ANSWER_RECOVERY_BUDGET_MS;
+                        for (const task of recent) {
+                            if (!valid()) return;
+                            const remaining = deadline - performance.now();
+                            if (remaining <= 0) {
+                                progress.textContent = 'Time limit reached — ' + count() + '. Use Continue checking for the remaining tasks.';
+                                return;
                             }
-                            savedText = savedText ||
-                                (["failed", "interrupted"].includes(result.status) ? "This task stopped before completion. Please review before starting it again." :
-                                 result.status === "not_found" ? "This answer is unavailable in this browser." : "L is working on this saved task.");
-                        } catch (_) {
-                            if (!current()) return;
-                            failed = true;
-                            savedText = 'This saved answer is temporarily unavailable. Your task is still saved.';
+                            let savedText, failed = false;
+                            try {
+                                const result = await fetchChatJson(`/chat/result/${encodeURIComponent(task.requestId)}`,
+                                    {cache: "no-store", headers: recoveryHeaders()}, Math.min(CHAT_REQUEST_TIMEOUT_MS, remaining));
+                                if (!valid()) return;
+                                if (["ready", "failed", "interrupted"].includes(result.status) &&
+                                    (result.result != null || result.status === "ready")) {
+                                    const delivery = await verifyDeliveryReply(result.result, task.requestId);
+                                    if (!valid()) return;
+                                    savedText = !delivery.valid
+                                        ? "This saved answer failed delivery integrity verification."
+                                        : result.status === "ready" ? savedAnswerText(result) : result.result.reply;
+                                    if (delivery.valid) clearPendingRequest(task.requestId);
+                                }
+                                savedText = savedText ||
+                                    (["failed", "interrupted"].includes(result.status) ? "This task stopped before completion. Please review before starting it again." :
+                                     result.status === "not_found" ? "This answer is unavailable in this browser." : "L is working on this saved task.");
+                            } catch (_) {
+                                if (!valid()) return;
+                                failed = true;
+                                savedText = 'This saved answer is temporarily unavailable. Your task is still saved.';
+                            }
+                            if (!valid()) return;
+                            appendChatMessage(results, 'user', task.message);
+                            appendChatMessage(results, failed ? 'assistant error' : 'assistant', savedText);
+                            run.checked += 1;
+                            progress.textContent = count() + '. Newest first; 20 per batch, using the tasks saved in this browser when the review opened.';
                         }
-                        if (!current()) return;
-                        appendChatMessage(results, 'user', task.message);
-                        appendChatMessage(results, failed ? 'assistant error' : 'assistant', savedText);
-                        run.checked += 1;
-                        progress.textContent = count() + '. Newest first; up to 20 tasks from this browser.';
+                        if (valid() && recent.length) progress.textContent = (run.checked < run.total ? 'Batch finished — ' : 'Review finished — ') + count() + '. See each result below; checked does not mean completed.';
+                    } catch (_) {
+                        if (valid()) progress.textContent = 'Review could not finish — ' + count() + '. Please try again shortly.';
+                    } finally {
+                        if (active === run && run.pass === pass) {
+                            button.disabled = false; stop.disabled = true;
+                            older.disabled = run.checked >= run.total;
+                            older.textContent = run.checked % 20 === 0 ? 'Check older tasks' : 'Continue checking';
+                        }
                     }
-                    if (current() && recent.length) progress.textContent = 'Review finished — ' + count() + '. See each result below; checked does not mean completed.';
-                } catch (_) {
-                    if (current()) progress.textContent = 'Review could not finish — ' + count() + '. Please try again shortly.';
-                } finally {
-                    if (active === run) { button.disabled = false; stop.disabled = true; }
                 }
+                older.onclick = checkBatch;
+                await checkBatch();
             };
         }
 

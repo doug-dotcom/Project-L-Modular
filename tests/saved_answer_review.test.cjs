@@ -12,7 +12,7 @@ const context={window:{addEventListener:(k,f)=>events[k]=f,lChatTools:{close(){}
  MutationObserver:class{constructor(f){mutation=f}observe(){}},performance:{now:()=>clock},
  savedTasks:()=>tasks,ANSWER_RECOVERY_BUDGET_MS:120000,CHAT_REQUEST_TIMEOUT_MS:15000,
  recoveryHeaders:()=>({'X-L-Recovery-Token':'fixture'}),
- fetchChatJson:async(url,options)=>{calls.push({url,options});if(scenario==='stop_fetch'||scenario==='account'||scenario==='restart')return new Promise(r=>resolveFetch=r);
+ fetchChatJson:async(url,options)=>{calls.push({url,options});if(scenario==='stop_fetch'||scenario==='account'||scenario==='restart'||(scenario==='continue_late'&&calls.length<=2))return new Promise(r=>resolveFetch=r);
  if(scenario==='mixed'&&calls.length===1)throw Error('PRIVATE');return {status:'ready',result:{reply:'answer'}};},
  verifyDeliveryReply:async()=>scenario==='stop_verify'?new Promise(r=>resolveVerify=r):{valid:true},
  savedAnswerText:r=>r.result.reply,clearPendingRequest:id=>cleared.push(id),
@@ -21,6 +21,32 @@ vm.createContext(context);vm.runInContext(source+'\ninstallSavedAnswerReview(but
 const panel=()=>chat.children.at(-1),progress=()=>panel().children[1].textContent,stop=()=>panel().children[2].onclick();
 const ready={status:'ready',result:{reply:'answer'}};
 (async()=>{
+ if(['pagination','snapshot','cap','account_between','continue_late'].includes(scenario)) {
+  if(scenario==='cap')tasks=Array.from({length:105},(_,i)=>({requestId:'task-'+i,message:'Question '+i}));
+  const first=button.onclick();
+  const older=()=>panel().children[4];
+  if(scenario==='continue_late') {
+   const oldResolve=resolveFetch;stop();const next=older().onclick();
+   oldResolve(ready);await first;assert.equal(button.disabled,true);assert.equal(cleared.length,0);
+   resolveFetch(ready);await next;
+   assert.equal(calls.length,21);assert.equal(cleared.length,20);
+   assert.equal(new Set(cleared).size,20);assert.equal(cleared[0],'task-24');
+   return;
+  }
+  await first;assert.equal(calls.length,20);assert.equal(older().disabled,false);
+  if(scenario==='account_between') {
+   events['l-account-ready']();await older().onclick();assert.equal(calls.length,20);assert.equal(panel().removed,true);return;
+  }
+  if(scenario==='snapshot')tasks.unshift({requestId:'new-task',message:'New'});
+  while(!older().disabled)await older().onclick();
+  const expected=scenario==='cap'?100:25;
+  assert.equal(calls.length,expected);assert.equal(new Set(calls.map(c=>c.url)).size,expected);
+  assert.match(calls.at(-1).url,scenario==='cap'?/task-5$/:/task-0$/);
+  assert.equal(panel().children[3].children.length,expected*2);
+  assert.match(progress(),/Review finished/);
+  await older().onclick();assert.equal(calls.length,expected);
+  return;
+ }
  if(scenario==='empty')tasks=[];
  if(scenario==='locked')root.dataset.account='locked';
  const promise=button.onclick();
@@ -42,7 +68,7 @@ const ready={status:'ready',result:{reply:'answer'}};
   if(scenario==='empty'){assert.equal(calls.length,0);assert.match(progress(),/after you send/);}
   else {
    assert.equal(calls.length,20);assert.match(calls[0].url,/task-24$/);assert.match(calls[19].url,/task-5$/);
-   assert.match(progress(),/20 of 20/);assert.match(progress(),/checked does not mean completed/);
+   assert.match(progress(),/20 of 25/);assert.match(progress(),/checked does not mean completed/);
    assert.equal(cleared.length,scenario==='mixed'?19:20);
    assert.ok(!JSON.stringify(panel()).includes('PRIVATE'));
    assert.ok(calls.every(c=>c.options.method===undefined));
