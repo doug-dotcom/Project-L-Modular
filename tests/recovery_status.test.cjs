@@ -8,7 +8,8 @@ function report(status = 'ready') {
     return {mode:'durable_recovery_readiness', status, recovery_ready:status.startsWith('ready'),
         scan_complete:status !== 'incomplete_scan', capped:false,
         checks:{ledger_consistent:true, all_observed_tasks_certified:true},
-        task_ledger:{tasks_observed:2}, saved_answers:{certified_answers:2,not_ready_answers:0}};
+        task_ledger:{tasks_observed:status === 'no_tasks' ? 0 : 2, malformed_rows:0,invalid_task_rows:0},
+        saved_answers:{rows_observed:status === 'no_tasks' ? 0 : 2,certified_answers:status === 'no_tasks' ? 0 : status === 'pending_tasks' ? 1 : 2,not_ready_answers:status === 'pending_tasks' ? 1 : 0,failed_recovery_records:0,unassessed_rows:0}};
 }
 function harness() {
     let start, onMutation;
@@ -41,8 +42,9 @@ function harness() {
         assert.equal(h.calls[0][1].cache,'no-store');
         assert.equal(h.calls[0][1].headers['X-L-Recovery-Token'],'fixture-owner');
         assert.equal(h.calls[0][2],30000);
-        assert.match(h.text(),/Tasks checked: 2/);
+        assert.match(h.text(),new RegExp('Records checked: '+(scenario === 'no_tasks' ? 0 : 2)));
         assert.ok(!h.text().includes('PRIVATE'));
+        assert.match(h.text(),/Recoverable results may include failed-task messages; this does not mean the task succeeded/);
         assert.ok(!h.text().includes('fixture-owner'));
         assert.equal(h.get('checkSavedAnswersAction').disabled,false);
         assert.equal(h.get('chat').children[0].attributes['role'],'status');
