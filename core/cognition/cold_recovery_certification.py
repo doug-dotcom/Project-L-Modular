@@ -15,12 +15,15 @@ from uuid import UUID
 from core.cognition.durable_tasks import owner_identity
 from core.cognition.recovery_provenance import (
     PROTOCOL_KEY,
+    SUPPORTED_PROTOCOLS,
     verify_recovered_answer_payload,
 )
 from core.cognition.release_provenance import build_release_provenance
 
 
-VERSION = "layer108-cold-recovery-certification-1"
+VERSION = "layer114-cold-recovery-certification-2"
+TASK_STATUSES = {"queued", "running", "ready", "failed", "interrupted"}
+TERMINAL_STATUSES = {"ready", "failed"}
 
 
 def _object(value):
@@ -111,17 +114,29 @@ def certify_saved_answer_row(
             "issues": ["saved_task_not_found"],
         }
 
-    stored_status = str(row.get("status") or "unknown")[:80]
+    raw_status = row.get("status")
+    stored_status = (
+        raw_status if isinstance(raw_status, str) and raw_status in TASK_STATUSES
+        else "invalid"
+    )
     result = row.get("result")
-    if not isinstance(result, dict):
-        issue = (
-            "ready_without_result"
-            if stored_status == "ready"
-            else "saved_answer_not_ready"
-        )
+    preflight_status = ""
+    issue = ""
+    if stored_status == "invalid":
+        preflight_status, issue = "failed_task_state", "saved_task_status_invalid"
+    elif stored_status not in TERMINAL_STATUSES:
+        if result is None:
+            preflight_status, issue = "not_ready", "saved_answer_not_ready"
+        else:
+            preflight_status, issue = "failed_task_state", "nonterminal_task_has_result"
+    elif not isinstance(result, dict):
+        preflight_status = "failed_integrity"
+        issue = "ready_without_result" if stored_status == "ready" else "terminal_result_missing_or_malformed"
+
+    if preflight_status:
         return {
             **base,
-            "status": "not_ready",
+            "status": preflight_status,
             "certified": False,
             "stored_task_status": stored_status,
             "release_relationship": "unknown",
@@ -136,6 +151,10 @@ def certify_saved_answer_row(
                 "key_id": "",
             },
             "issues": [issue],
+            "claims": {
+                **base["claims"],
+                "recoverability": "not_certified" if preflight_status == "not_ready" else "failed",
+            },
         }
 
     check = verify_recovered_answer_payload(
@@ -147,7 +166,11 @@ def certify_saved_answer_row(
     authenticity_check = _object(check.get("answer_authenticity"))
     cognition = _object(result.get("cognition"))
     provenance = _object(cognition.get("answer_provenance"))
-    protocol = str(result.get(PROTOCOL_KEY) or "")
+    protocol = result.get(PROTOCOL_KEY)
+    if PROTOCOL_KEY not in result:
+        protocol = ""
+    elif not isinstance(protocol, str) or protocol not in SUPPORTED_PROTOCOLS:
+        protocol = "unsupported"
     stored_commit = str(provenance.get("release_commit_sha") or "")[:40]
     provenance_present = bool(provenance)
     authenticity_present = isinstance(cognition.get("answer_authenticity"), dict)
