@@ -882,7 +882,7 @@
                 stop.type = 'button'; stop.textContent = 'Stop checking';
                 const filters = document.createElement('div');
                 filters.className = 'saved-answer-filters';
-                const searchLabel = document.createElement('label'); searchLabel.textContent = 'Search checked tasks';
+                const searchLabel = document.createElement('label'); searchLabel.textContent = 'Search questions, answers or status';
                 const search = document.createElement('input'); search.type = 'search'; search.maxLength = 200; search.value = view.query || '';
                 searchLabel.append(search);
                 const filterLabel = document.createElement('label'); filterLabel.textContent = 'Show';
@@ -928,7 +928,9 @@
                         `${run.entries.filter(entry => entry.available).length} answers available; ` +
                         `${run.entries.filter(entry => entry.working).length} still working; ` +
                         `${run.entries.filter(entry => entry.attention).length} need attention across all checked tasks. ` +
-                        'These counts can overlap. Status reflects the last check. Older tasks become searchable after you check them.';
+                        'These counts can overlap. Status reflects the last check. Older tasks become searchable after you check them.' +
+                        (visible === 0 && run.entries.length ? ' No checked tasks match your search and filter. Use Clear filters to show all checked tasks.' +
+                            (run.entries.length < run.total ? ' More tasks remain to be checked.' : '') : '');
                 }
                 search.oninput = applyFilter; filter.onchange = applyFilter; order.onchange = applyFilter; applyFilter();
                 const navigation = document.createElement('div'); navigation.className = 'saved-answer-navigation';
@@ -1076,7 +1078,7 @@
 
                             results.append(entry);
                             run.entries.push({node: entry, attention, available: copyable, working,
-                                text: (String(task.message || '') + '\n' + String(savedText || '')).toLocaleLowerCase()});
+                                text: (String(task.message || '') + '\n' + String(savedText || '') + '\n' + resultLabel).toLocaleLowerCase()});
                             applyFilter();
                             run.checked += 1;
                             progress.textContent = count() + '. Newest first; 20 per batch, using the tasks saved in this browser when the review opened.';
