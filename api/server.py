@@ -823,7 +823,7 @@ def health():
         "portability_certification_ready": True,
         "capability_router_ready": True,
         "main_street": True,
-        "release_layer": 113,
+        "release_layer": 114,
         "release_certification_ready": True,
         "release_provenance_ready": True,
         "answer_provenance_ready": True,
@@ -834,6 +834,7 @@ def health():
         "key_retirement_certification_ready": True,
         "recovery_coverage_certification_ready": True,
         "durable_task_ledger_audit_ready": True,
+        "stable_ledger_scan_ready": True,
         "production_security_gate": security_gate,
         "release_provenance": build_release_provenance()
     }
@@ -850,7 +851,7 @@ def cognition_status():
         "status": "ok",
         "architecture": "project_l_cognitive_core",
         "version": "13.0",
-        "release_layer": 113,
+        "release_layer": 114,
         "release_certification": build_release_certification(),
         "release_provenance": build_release_provenance(),
         "answer_provenance_ready": True,
@@ -861,6 +862,7 @@ def cognition_status():
         "key_retirement_certification_ready": True,
         "recovery_coverage_certification_ready": True,
         "durable_task_ledger_audit_ready": True,
+        "stable_ledger_scan_ready": True,
         "production_security_gate": production_security_gate(),
         "user_facing_voice": "L",
         "engines": {
@@ -1925,7 +1927,7 @@ RESPONSE RULES:
         model_receipt=response_model_receipt,
         context_budget=cognitive_packet.get("context_budget", {}),
         assistant_persistence=assistant_persistence,
-        release_layer=113,
+        release_layer=114,
     )
     answer_provenance_check = verify_answer_provenance(
         answer_provenance,

@@ -165,7 +165,8 @@ def test_endpoint_returns_diagnostics_for_malformed_record(monkeypatch):
         def select(self, *_): return self
         def eq(self, *_): return self
         def order(self, *_, **__): return self
-        def range(self, *_): return self
+        def lte(self, *_): return self
+        def limit(self, *_): return self
         def execute(self): return SimpleNamespace(data=[item])
     monkeypatch.setattr(server.task_store, "client", SimpleNamespace(table=lambda _: Query()))
     report = server.cognition_durable_task_ledger_audit(

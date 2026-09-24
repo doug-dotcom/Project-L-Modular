@@ -17,7 +17,7 @@ from core.cognition.durable_tasks import owner_identity
 from core.cognition.release_provenance import build_release_provenance
 
 
-VERSION = "layer113-recovery-coverage-certification-2"
+VERSION = "layer114-recovery-coverage-certification-2"
 PAGE_SIZE = 100
 MAX_ROWS = 10000
 

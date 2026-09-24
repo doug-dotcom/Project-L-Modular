@@ -1,4 +1,4 @@
-"""Durable task ledger audit, hardened against malformed records in Layer 112.
+"""Durable task ledger audit with bounded keyset scanning in Layer 113.
 
 Project L's durable queue is a state machine as well as a saved-answer store.
 This audit verifies owner-scoped task-journal invariants, request hashes and
@@ -16,7 +16,7 @@ from uuid import UUID
 from core.cognition.durable_tasks import owner_identity, request_hash
 
 
-VERSION = "layer112-durable-task-ledger-audit-2"
+VERSION = "layer113-durable-task-ledger-audit-3"
 PAGE_SIZE = 100
 MAX_ROWS = 10000
 ALLOWED_STATUSES = {"queued", "running", "ready", "failed", "interrupted"}
@@ -52,6 +52,16 @@ def _uuid(value):
 
 def _sha256_hex(value):
     return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None
+
+
+def _scan_key(row):
+    if not isinstance(row, dict):
+        return None
+    created_at = _parse_time(row.get("created_at"))
+    request_id = _uuid(row.get("request_id"))
+    if created_at is None or request_id is None:
+        return None
+    return created_at, request_id
 
 
 def audit_task_row(row: dict, *, now: datetime | None = None) -> dict:
@@ -278,15 +288,18 @@ def load_task_ledger_audit(
         raise RuntimeError("database_unavailable")
 
     rows = []
-    offset = 0
+    started_at = datetime.now(timezone.utc)
+    cursor = None
     scan_complete = False
     capped = False
     pages_read = 0
+    rows_read = 0
+    scan_error = None
 
-    while offset < max_rows:
-        remaining = max_rows - offset
+    while len(rows) < max_rows:
+        remaining = max_rows - len(rows)
         batch_size = min(page_size, remaining)
-        page = (
+        query = (
             client.table("l_chat_tasks")
             .select(
                 "request_id,owner_hash,input_hash,request,status,checkpoint,"
@@ -294,22 +307,51 @@ def load_task_ledger_audit(
             )
             .eq("user_id", user_id)
             .eq("owner_hash", owner_hash)
+            .lte("created_at", started_at.isoformat())
             .order("created_at", desc=False)
             .order("request_id", desc=False)
-            .range(offset, offset + batch_size - 1)
-            .execute()
-            .data
+            .limit(batch_size)
         )
+        if cursor is not None:
+            # Only parsed and canonicalised database keys enter raw PostgREST
+            # syntax. A stored value can never inject an additional filter.
+            timestamp, request_id = cursor
+            stamp = timestamp.isoformat()
+            query = query.or_(
+                f"created_at.gt.{stamp},"
+                f"and(created_at.eq.{stamp},request_id.gt.{request_id})"
+            )
+        page = query.execute().data
         if not isinstance(page, list):
             raise RuntimeError("invalid_database_response")
         pages_read += 1
-        rows.extend(page)
+        rows_read += len(page)
+        if len(page) > batch_size:
+            scan_error = "page_size_exceeded"
+            break
+        for row in page:
+            key = _scan_key(row)
+            if key is None:
+                # Keep this row's diagnostic findings, but never guess a key
+                # or mark the remaining history as checked.
+                rows.append(row)
+                scan_error = "invalid_scan_key"
+                break
+            if cursor is not None and key <= cursor:
+                scan_error = "non_advancing_scan_key"
+                break
+            if key[0] > started_at:
+                scan_error = "scan_boundary_exceeded"
+                break
+            rows.append(row)
+            cursor = key
+        if scan_error:
+            break
         if len(page) < batch_size:
             scan_complete = True
             break
-        offset += batch_size
 
-    if not scan_complete and len(rows) >= max_rows:
+    if not scan_complete and not scan_error and len(rows) >= max_rows:
         capped = True
 
     report = summarise_task_ledger(
@@ -318,13 +360,23 @@ def load_task_ledger_audit(
         capped=capped,
     )
     report["scan"] = {
-        "scope": "recovery_token_owner_all_durable_tasks",
+        "scope": "recovery_token_owner_tasks_created_by_scan_start",
         "database": "l_chat_tasks",
         "order": "oldest_first",
+        "pagination": "created_at_request_id_keyset",
+        "started_at": started_at.isoformat(),
+        "created_at_upper_bound": started_at.isoformat(),
+        "transactional_snapshot": False,
+        "error": scan_error,
         "page_size": page_size,
         "pages_read": pages_read,
         "max_rows": max_rows,
-        "rows_read": len(rows),
+        "rows_read": rows_read,
         "read_only": True,
     }
+    report["claims"]["ledger_coverage_scope"] = report["scan"]["scope"]
+    report["limitations"].extend([
+        "Coverage is limited to tasks with created_at at or before scan start; later tasks require a new audit.",
+        "Keyset pagination avoids offset shifts but is not a transactional snapshot: deletions, backdated inserts, key changes and state changes can still affect coverage or findings.",
+    ])
     return report

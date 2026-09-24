@@ -1,6 +1,6 @@
-# Layer 113 — Honest saved-answer recovery results
+# Layer 114 — Honest saved-answer recovery results
 
-Layer 113 closes false-success paths in saved-answer recovery certification.
+Layer 114 closes false-success paths in saved-answer recovery certification.
 A completed database scan is no longer treated as a complete assessment when
 some records could not be assessed.
 

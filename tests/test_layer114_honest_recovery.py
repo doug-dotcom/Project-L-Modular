@@ -12,8 +12,8 @@ from core.cognition.durable_tasks import TaskStore, owner_identity
 from core.cognition.recovery_provenance import PROTOCOL_KEY, verify_recovered_answer_payload
 
 
-RID = "00000000-0000-4000-8000-000000000113"
-TOKEN = "layer113-test-owner-token" * 3
+RID = "00000000-0000-4000-8000-000000000114"
+TOKEN = "layer114-test-owner-token" * 3
 PRIVATE = "PRIVATE fixture answer must not leak"
 
 

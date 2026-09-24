@@ -21,7 +21,7 @@ from core.cognition.recovery_provenance import (
 from core.cognition.release_provenance import build_release_provenance
 
 
-VERSION = "layer113-cold-recovery-certification-2"
+VERSION = "layer114-cold-recovery-certification-2"
 TASK_STATUSES = {"queued", "running", "ready", "failed", "interrupted"}
 TERMINAL_STATUSES = {"ready", "failed"}
 
