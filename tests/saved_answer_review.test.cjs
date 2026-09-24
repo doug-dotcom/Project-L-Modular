@@ -43,7 +43,7 @@ const ready={status:'ready',result:{reply:'answer'}};
    assert.match(status.textContent,/Could not copy/);assert.ok(!status.textContent.includes('PRIVATE'));
    assert.equal(actions[1].disabled,false);
    events['l-account-ready']();await actions[1].onclick();assert.equal(writes.length,1);
-  }else assert.equal(actions.length,1);
+  }else {assert.equal(actions.length,2);assert.equal(actions[1].textContent,'Copy question');}
   assert.equal(calls.length,before);return;
  }
  if(['status_filters','status_batches'].includes(scenario)) {
@@ -172,7 +172,7 @@ const ready={status:'ready',result:{reply:'answer'}};
   await button.onclick();const entries=panel().children[4].children;
   for(const entry of entries){const id=entry.children[1].textContent;assert.equal(entry.children[0].textContent,expected[id]+' — '+id);}
   if(scenario==='empty_answers'){
-   assert.ok(entries.every(e=>e.children[3].children.length===1));
+   assert.ok(entries.every(e=>!e.children[3].children.some(c=>c.textContent==='Copy answer')));
    assert.match(panel().children[3].children[2].textContent,/0 answers available; 0 still working; 3 need attention/);
   }
   return;
@@ -223,6 +223,29 @@ const ready={status:'ready',result:{reply:'answer'}};
    controls.children[3].children[2].onclick();assert.equal(visible().length,25);
    assert.ok(!controls.children[2].textContent.includes('No checked tasks match'));assert.equal(reads,25);
   }
+  return;
+ }
+ if(['copy_question','copy_question_blocked','copy_question_empty'].includes(scenario)) {
+  tasks=[{requestId:'one',message:scenario==='copy_question_empty'?'   ':'Original question\nwith exact spacing  👊'}];
+  const writes=[],draft={value:'Unsent draft'};let resolveCopy;
+  context.document.getElementById=id=>id==='message'?draft:plus;
+  context.navigator={clipboard:{writeText:async text=>{writes.push(text);if(scenario==='copy_question_blocked')return new Promise(r=>resolveCopy=r)}}};
+  context.verifyDeliveryReply=async()=>({valid:false});
+  await button.onclick();const entry=panel().children[4].children[0];
+  const copy=entry.children[3].children.find(c=>c.textContent==='Copy question'),status=entry.children[4];
+  const before=calls.length;
+  if(scenario==='copy_question_empty'){assert.equal(copy,undefined);return;}
+  const pending=copy.onclick();
+  if(scenario==='copy_question_blocked') {
+   assert.equal(copy.disabled,true);await copy.onclick();assert.equal(writes.length,1);
+   events['l-account-ready']();resolveCopy();await pending;assert.equal(status.textContent,'');
+   await copy.onclick();assert.equal(writes.length,1);
+  }else {
+   await pending;assert.deepEqual(writes,[tasks[0].message]);assert.match(status.textContent,/Original question copied/);
+   context.navigator.clipboard.writeText=async()=>{throw Error('PRIVATE')};await copy.onclick();
+   assert.match(status.textContent,/Select the question text/);assert.ok(!status.textContent.includes('PRIVATE'));assert.equal(copy.disabled,false);
+  }
+  assert.equal(draft.value,'Unsent draft');assert.equal(calls.length,before);
   return;
  }
  if(scenario==='escape') {

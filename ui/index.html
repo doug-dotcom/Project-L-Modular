@@ -1037,11 +1037,11 @@
                             const actions = document.createElement('div'); actions.className = 'saved-answer-navigation';
                             const actionStatus = document.createElement('p'); actionStatus.setAttribute('role', 'status');
                             const usable = () => active === run && document.documentElement.dataset.account === 'ready';
+                            const question = typeof task.message === 'string' ? task.message : '';
                             const useQuestion = document.createElement('button'); useQuestion.type = 'button'; useQuestion.textContent = 'Use question';
                             useQuestion.onclick = () => {
                                 if (!usable()) return;
                                 const input = document.getElementById('message');
-                                const question = typeof task.message === 'string' ? task.message : '';
                                 if (!input || !question.trim()) { actionStatus.textContent = 'This question could not be placed in the message box.'; return; }
                                 if (input.value && input.value !== question) {
                                     actionStatus.textContent = 'Your current draft is kept. Clear the message box before using this question.'; return;
@@ -1053,21 +1053,27 @@
                                 actionStatus.textContent = 'Question placed in the message box. Review it before pressing Send.';
                             };
                             actions.append(useQuestion);
-                            if (copyable) {
-                                const copy = document.createElement('button'); copy.type = 'button'; copy.textContent = 'Copy answer';
+                            function addCopyAction(label, text, success, failure) {
+                                const copy = document.createElement('button'); copy.type = 'button'; copy.textContent = label;
                                 copy.onclick = async () => {
                                     if (!usable() || copy.disabled) return;
                                     copy.disabled = true;
                                     try {
                                         if (!globalThis.navigator?.clipboard?.writeText) throw new Error('Clipboard unavailable');
-                                        await globalThis.navigator.clipboard.writeText(savedText);
-                                        if (usable()) actionStatus.textContent = 'Saved answer copied, including any freshness warning.';
+                                        await globalThis.navigator.clipboard.writeText(text);
+                                        if (usable()) actionStatus.textContent = success;
                                     } catch (_) {
-                                        if (usable()) actionStatus.textContent = 'Could not copy automatically. Select the answer text to copy it.';
+                                        if (usable()) actionStatus.textContent = failure;
                                     } finally { copy.disabled = false; }
                                 };
                                 actions.append(copy);
                             }
+                            if (copyable) addCopyAction('Copy answer', savedText,
+                                'Saved answer copied, including any freshness warning.',
+                                'Could not copy automatically. Select the answer text to copy it.');
+                            if (question.trim()) addCopyAction('Copy question', question,
+                                'Original question copied. Your current draft is unchanged.',
+                                'Could not copy automatically. Select the question text to copy it.');
                             entry.append(actions, actionStatus);
                             const checkedAt = new Date();
                             const checkedTime = document.createElement('time');
