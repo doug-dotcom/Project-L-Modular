@@ -338,6 +338,34 @@ const ready={status:'ready',result:{reply:'answer'}};
   const next=copies()[1],nextPending=next.onclick();assert.equal(writes.length,2);
   finish();await nextPending;assert.ok(copies().every(c=>!c.disabled));return;
  }
+ if(['search_words','search_phrase','search_mode_refresh'].includes(scenario)) {
+  tasks=[{requestId:'one',message:'Holiday planning'},{requestId:'two',message:'Budget draft'}];
+  context.fetchChatJson=async url=>{calls.push(url);return {status:'ready',result:{reply:url.endsWith('/one')?'Budget approved [AUD]':'Holiday postponed'},freshness:{status:'current'}}};
+  await button.onclick();const controls=()=>panel().children[3];
+  const search=()=>controls().children[0].children[0],match=()=>controls().children[5].children[0];
+  const visible=()=>panel().children[4].children.filter(e=>!e.hidden);
+  const before=calls.length;
+  if(scenario==='search_words') {
+   search().value='  APPROVED\t holiday  saved  ';search().oninput();assert.equal(visible().length,1);
+   assert.equal(visible()[0].children[1].textContent,'Holiday planning');
+   search().value='holiday missing';search().oninput();assert.equal(visible().length,0);
+   search().value='[AUD] holiday';search().oninput();assert.equal(visible().length,1);
+   search().value=' \t ';search().oninput();assert.equal(visible().length,2);
+  }else if(scenario==='search_phrase') {
+   search().value='approved budget';search().oninput();assert.equal(visible().length,1);
+   match().value='phrase';match().onchange();assert.equal(visible().length,0);
+   search().value=' BUDGET APPROVED ';search().oninput();assert.equal(visible().length,1);
+   search().value='Budget  approved';search().oninput();assert.equal(visible().length,0);
+   match().value='words';match().onchange();assert.equal(visible().length,1);
+  }else {
+   match().value='phrase';match().onchange();search().value='approved budget';search().oninput();
+   await controls().children[3].children[4].onclick();
+   assert.equal(match().value,'phrase');assert.equal(search().value,'approved budget');assert.equal(visible().length,0);
+   controls().children[3].children[2].onclick();assert.equal(visible().length,2);assert.equal(match().value,'phrase');
+   assert.equal(calls.length,before+2);return;
+  }
+  assert.equal(calls.length,before);return;
+ }
  if(scenario==='escape') {
   context.fetchChatJson=async()=>new Promise(r=>resolveFetch=r);
   const pending=button.onclick(),old=panel();
@@ -389,6 +417,7 @@ const ready={status:'ready',result:{reply:'answer'}};
   const entries=()=>panel().children[4].children.filter(e=>!e.hidden);
   const before=calls.length;
   if(scenario==='batch_filter') {
+   controls.children[5].children[0].value='phrase';
    search.value='Question 0';search.oninput();assert.equal(entries().length,0);
    await panel().children[5].onclick();assert.equal(entries().length,1);assert.equal(calls.length,25);
   } else if(scenario==='search') {
