@@ -279,6 +279,40 @@ const ready={status:'ready',result:{reply:'answer'}};
   assert.equal(draft.value,'Unsent draft');assert.equal(calls.length,before);
   return;
  }
+ if(['copy_exchange','copy_exchange_gates','copy_exchange_stale'].includes(scenario)) {
+  tasks=[{requestId:'one',message:'Original question\nExact spacing  👊'}];
+  const writes=[],draft={value:'Unsent draft'};let resolveCopy;
+  context.document.getElementById=id=>id==='message'?draft:plus;
+  // Exercise the production freshness formatter, including its warning prefix.
+  const formatter=html.slice(html.indexOf('        function savedAnswerText'),html.indexOf('        function savedAnswerText')+3000);
+  vm.runInContext(formatter.slice(0,formatter.indexOf('\n        }')+10),context);
+  context.fetchChatJson=async()=>({status:'ready',result:{reply:'Saved answer\nExact spacing  '},freshness:{status:'superseded'}});
+  context.navigator={clipboard:{writeText:async text=>{writes.push(text);if(scenario==='copy_exchange_stale')return new Promise(r=>resolveCopy=r)}}};
+  const getCopy=()=>panel().children[4].children[0].children[3].children.find(c=>c.textContent==='Copy question and answer');
+  if(scenario==='copy_exchange_gates') {
+   for(const result of [{status:'running'},{status:'failed',result:{reply:'Partial'}},{status:'ready',result:{reply:'  '}}]) {
+    context.fetchChatJson=async()=>result;await button.onclick();assert.equal(getCopy(),undefined);
+   }
+   context.fetchChatJson=async()=>ready;context.verifyDeliveryReply=async()=>({valid:false});
+   await button.onclick();assert.equal(getCopy(),undefined);
+   context.verifyDeliveryReply=async()=>({valid:true});tasks[0].message='   ';
+   await button.onclick();assert.equal(getCopy(),undefined);assert.equal(writes.length,0);return;
+  }
+  await button.onclick();const copy=getCopy(),entry=panel().children[4].children[0],status=entry.children[4];
+  const expected='Question:\n'+tasks[0].message+'\n\nAnswer:\n'+entry.children[2].textContent;
+  assert.match(expected,/changed|superseded/i);
+  const before=calls.length,pending=copy.onclick();
+  if(scenario==='copy_exchange_stale') {
+   await copy.onclick();assert.equal(writes.length,1);
+   panel().children[3].children[3].children[3].onclick();resolveCopy();await pending;
+   assert.equal(status.textContent,'');await copy.onclick();assert.equal(writes.length,1);
+  }else {
+   await pending;assert.deepEqual(writes,[expected]);assert.match(status.textContent,/Question and saved answer copied/);
+   context.navigator.clipboard.writeText=async()=>{throw Error('PRIVATE')};await copy.onclick();
+   assert.match(status.textContent,/Select the question and answer text/);assert.ok(!status.textContent.includes('PRIVATE'));
+  }
+  assert.equal(draft.value,'Unsent draft');assert.equal(copy.disabled,false);assert.equal(calls.length,before);return;
+ }
  if(scenario==='escape') {
   context.fetchChatJson=async()=>new Promise(r=>resolveFetch=r);
   const pending=button.onclick(),old=panel();

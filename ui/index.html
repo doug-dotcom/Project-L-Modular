@@ -1075,6 +1075,10 @@
                             if (question.trim()) addCopyAction('Copy question', question,
                                 'Original question copied. Your current draft is unchanged.',
                                 'Could not copy automatically. Select the question text to copy it.');
+                            if (copyable && question.trim()) addCopyAction('Copy question and answer',
+                                'Question:\n' + question + '\n\nAnswer:\n' + savedText,
+                                'Question and saved answer copied, including any freshness warning. Your current draft is unchanged.',
+                                'Could not copy automatically. Select the question and answer text to copy them.');
                             entry.append(actions, actionStatus);
                             const checkedAt = new Date();
                             const checkedTime = document.createElement('time');
