@@ -80,6 +80,36 @@ const ready={status:'ready',result:{reply:'answer'}};
   }
   return;
  }
+ if(['refresh','refresh_pending'].includes(scenario)) {
+  tasks=[{requestId:'one',message:'Question one'}];
+  const controls=()=>panel().children[3],refresh=()=>controls().children[3].children[4];
+  const search=()=>controls().children[0].children[0],filter=()=>controls().children[1].children[0];
+  let reads=0;
+  context.fetchChatJson=async()=>{reads++;return {status:'running'}};
+  await button.onclick();search().value='Question';search().oninput();
+  filter().value='working';filter().onchange();controls().children[3].children[0].onclick();
+  if(scenario==='refresh') {
+   const old=panel();context.fetchChatJson=async()=>{reads++;return ready};
+   tasks.push({requestId:'two',message:'Question two'});
+   await refresh().onclick();assert.equal(old.removed,true);assert.equal(reads,3);
+   assert.equal(search().value,'Question');assert.equal(filter().value,'working');
+   const entries=panel().children[4].children;assert.equal(entries.length,2);
+   assert.ok(entries.every(e=>e.open&&e.hidden));
+   assert.match(controls().children[2].textContent,/2 answers available; 0 still working/);
+   filter().value='available';filter().onchange();assert.ok(entries.every(e=>!e.hidden));
+   const before=reads;await old.children[3].children[3].children[4].onclick();assert.equal(reads,before);
+  }else {
+   context.fetchChatJson=async()=>{reads++;return new Promise(r=>resolveFetch=r)};
+   const pending=refresh().onclick(),old=panel(),oldRefresh=refresh();
+   assert.equal(oldRefresh.disabled,true);await oldRefresh.onclick();assert.equal(reads,2);
+   const late=resolveFetch;stop();assert.equal(oldRefresh.disabled,false);
+   context.fetchChatJson=async()=>{reads++;return ready};await oldRefresh.onclick();
+   const current=panel(),before=cleared.length;late(ready);await pending;
+   assert.equal(panel(),current);assert.equal(cleared.length,before);assert.equal(old.children[4].children.length,0);
+   events['l-account-ready']();const count=reads;await refresh().onclick();assert.equal(reads,count);
+  }
+  return;
+ }
  if(scenario==='escape') {
   context.fetchChatJson=async()=>new Promise(r=>resolveFetch=r);
   const pending=button.onclick(),old=panel();
