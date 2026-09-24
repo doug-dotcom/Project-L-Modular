@@ -21,10 +21,45 @@ vm.createContext(context);vm.runInContext(source+'\ninstallSavedAnswerReview(but
 const panel=()=>chat.children.at(-1),progress=()=>panel().children[1].textContent,stop=()=>panel().children[2].onclick();
 const ready={status:'ready',result:{reply:'answer'}};
 (async()=>{
+ if(['search','attention','rejected_search','batch_filter'].includes(scenario)) {
+  if(scenario!=='batch_filter') {
+   tasks=[{requestId:'good',message:'Holiday plan'},{requestId:'stale',message:'Travel plan'},
+          {requestId:'running',message:'Unfinished'},{requestId:'bad',message:'Damaged'}];
+   context.fetchChatJson=async(url,options)=>{
+    calls.push({url,options});const id=url.split('/').at(-1);
+    if(id==='running')return {status:'running'};
+    return {status:'ready',freshness:{status:id==='stale'?'superseded':'current'},
+      result:{reply:id==='bad'?'REJECTED_SECRET':id==='good'?'Budget approved':'Old flights'}};
+   };
+   context.verifyDeliveryReply=async result=>({valid:result.reply!=='REJECTED_SECRET'});
+  }
+  await button.onclick();
+  const controls=panel().children[3],search=controls.children[0].children[0],filter=controls.children[1].children[0];
+  const entries=()=>panel().children[4].children.filter(e=>!e.hidden);
+  const before=calls.length;
+  if(scenario==='batch_filter') {
+   search.value='Question 0';search.oninput();assert.equal(entries().length,0);
+   await panel().children[5].onclick();assert.equal(entries().length,1);assert.equal(calls.length,25);
+  } else if(scenario==='search') {
+   search.value='  BUDGET  ';search.oninput();assert.equal(entries().length,1);
+   search.value='no match';search.oninput();assert.equal(entries().length,0);
+   assert.match(controls.children[2].textContent,/Showing 0 of 4/);
+   search.value='';search.oninput();assert.equal(entries().length,4);
+  } else if(scenario==='attention') {
+   filter.value='attention';filter.onchange();assert.equal(entries().length,3);
+   search.value='travel';search.oninput();assert.equal(entries().length,1);
+   search.value='';search.oninput();filter.value='all';filter.onchange();assert.equal(entries().length,4);
+  } else {
+   search.value='REJECTED_SECRET';search.oninput();assert.equal(entries().length,0);
+   assert.ok(!JSON.stringify(panel().children[4]).includes('REJECTED_SECRET'));
+  }
+  if(scenario!=='batch_filter')assert.equal(calls.length,before);
+  return;
+ }
  if(['pagination','snapshot','cap','account_between','continue_late'].includes(scenario)) {
   if(scenario==='cap')tasks=Array.from({length:105},(_,i)=>({requestId:'task-'+i,message:'Question '+i}));
   const first=button.onclick();
-  const older=()=>panel().children[4];
+  const older=()=>panel().children[5];
   if(scenario==='continue_late') {
    const oldResolve=resolveFetch;stop();const next=older().onclick();
    oldResolve(ready);await first;assert.equal(button.disabled,true);assert.equal(cleared.length,0);
@@ -42,7 +77,7 @@ const ready={status:'ready',result:{reply:'answer'}};
   const expected=scenario==='cap'?100:25;
   assert.equal(calls.length,expected);assert.equal(new Set(calls.map(c=>c.url)).size,expected);
   assert.match(calls.at(-1).url,scenario==='cap'?/task-5$/:/task-0$/);
-  assert.equal(panel().children[3].children.length,expected*2);
+  assert.equal(panel().children[4].children.length,expected);
   assert.match(progress(),/Review finished/);
   await older().onclick();assert.equal(calls.length,expected);
   return;
@@ -61,7 +96,7 @@ const ready={status:'ready',result:{reply:'answer'}};
   if(scenario==='account')assert.equal(panel().removed,true);else assert.match(progress(),/Stopped/);
  }else if(scenario==='stop_verify'){
   await new Promise(setImmediate);stop();resolveVerify({valid:true});await promise;
-  assert.equal(cleared.length,0);assert.equal(panel().children[3].children.length,0);
+  assert.equal(cleared.length,0);assert.equal(panel().children[4].children.length,0);
  }else {
   await promise;
   if(scenario==='locked'){assert.equal(chat.children.length,0);assert.equal(calls.length,0);return;}

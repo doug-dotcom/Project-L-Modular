@@ -310,6 +310,10 @@
 <style>
 .recovery-check-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 #savedAnswerReview > button, .recovery-check-actions button { min-height: 44px; padding: 8px 12px; }
+.saved-answer-filters { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+.saved-answer-filters label { display: flex; flex-direction: column; gap: 4px; }
+.saved-answer-filters input, .saved-answer-filters select { min-height: 44px; max-width: 100%; font-size: 16px; }
+.saved-answer-filters p { flex-basis: 100%; margin: 0; }
 </style>
 </head>
 
@@ -872,14 +876,39 @@
                 progress.setAttribute('role', 'status'); progress.setAttribute('aria-live', 'polite');
                 const stop = document.createElement('button');
                 stop.type = 'button'; stop.textContent = 'Stop checking';
+                const filters = document.createElement('div');
+                filters.className = 'saved-answer-filters';
+                const searchLabel = document.createElement('label'); searchLabel.textContent = 'Search checked tasks';
+                const search = document.createElement('input'); search.type = 'search'; search.maxLength = 200;
+                searchLabel.append(search);
+                const filterLabel = document.createElement('label'); filterLabel.textContent = 'Show';
+                const filter = document.createElement('select');
+                for (const [value, text] of [['all', 'All checked tasks'], ['attention', 'Needs attention']]) {
+                    const option = document.createElement('option'); option.value = value; option.textContent = text; filter.append(option);
+                }
+                filter.value = 'all'; filterLabel.append(filter);
+                const visibleCount = document.createElement('p'); visibleCount.setAttribute('role', 'status');
+                filters.append(searchLabel, filterLabel, visibleCount);
                 const results = document.createElement('div');
                 const older = document.createElement('button');
                 older.type = 'button'; older.textContent = 'Check older tasks'; older.disabled = true;
-                panel.append(heading, progress, stop, results, older); chat.append(panel);
+                panel.append(heading, progress, stop, filters, results, older); chat.append(panel);
                 panel.focus?.(); chat.scrollTop = chat.scrollHeight;
-                const run = {panel, cancelled: false, checked: 0, total: 0, pass: 0, tasks: []}; active = run;
+                const run = {panel, cancelled: false, checked: 0, total: 0, pass: 0, tasks: [], entries: []}; active = run;
                 const current = () => active === run && !run.cancelled && document.documentElement.dataset.account === 'ready';
                 const count = () => `${run.checked} of ${run.total} recent saved tasks checked`;
+                function applyFilter() {
+                    if (active !== run) return;
+                    const query = (search.value || '').trim().toLocaleLowerCase();
+                    let visible = 0;
+                    for (const entry of run.entries) {
+                        entry.node.hidden = !((filter.value !== 'attention' || entry.attention) && entry.text.includes(query));
+                        if (!entry.node.hidden) visible += 1;
+                    }
+                    visibleCount.textContent = `Showing ${visible} of ${run.entries.length} checked tasks. ` +
+                        'Older tasks become searchable after you check them.';
+                }
+                search.oninput = applyFilter; filter.onchange = applyFilter; applyFilter();
                 stop.onclick = () => {
                     if (!current()) return;
                     run.cancelled = true; run.pass += 1;
@@ -907,7 +936,7 @@
                                 progress.textContent = 'Time limit reached — ' + count() + '. Use Continue checking for the remaining tasks.';
                                 return;
                             }
-                            let savedText, failed = false;
+                            let savedText, failed = false, attention = true;
                             try {
                                 const result = await fetchChatJson(`/chat/result/${encodeURIComponent(task.requestId)}`,
                                     {cache: "no-store", headers: recoveryHeaders()}, Math.min(CHAT_REQUEST_TIMEOUT_MS, remaining));
@@ -919,19 +948,28 @@
                                     savedText = !delivery.valid
                                         ? "This saved answer failed delivery integrity verification."
                                         : result.status === "ready" ? savedAnswerText(result) : result.result.reply;
-                                    if (delivery.valid) clearPendingRequest(task.requestId);
+                                    if (delivery.valid) {
+                                        clearPendingRequest(task.requestId);
+                                        attention = result.status !== 'ready' || ['superseded', 'unavailable'].includes(result.freshness?.status);
+                                    }
                                 }
                                 savedText = savedText ||
                                     (["failed", "interrupted"].includes(result.status) ? "This task stopped before completion. Please review before starting it again." :
-                                     result.status === "not_found" ? "This answer is unavailable in this browser." : "L is working on this saved task.");
+                                     result.status === "not_found" ? "This answer is unavailable in this browser." :
+                                     ["queued", "running"].includes(result.status) ? "L is working on this saved task." : "The status of this saved task is unavailable.");
                             } catch (_) {
                                 if (!valid()) return;
                                 failed = true;
                                 savedText = 'This saved answer is temporarily unavailable. Your task is still saved.';
                             }
                             if (!valid()) return;
-                            appendChatMessage(results, 'user', task.message);
-                            appendChatMessage(results, failed ? 'assistant error' : 'assistant', savedText);
+                            const entry = document.createElement('article');
+                            appendChatMessage(entry, 'user', task.message);
+                            appendChatMessage(entry, failed ? 'assistant error' : 'assistant', savedText);
+                            results.append(entry);
+                            run.entries.push({node: entry, attention,
+                                text: (String(task.message || '') + '\n' + String(savedText || '')).toLocaleLowerCase()});
+                            applyFilter();
                             run.checked += 1;
                             progress.textContent = count() + '. Newest first; 20 per batch, using the tasks saved in this browser when the review opened.';
                         }
