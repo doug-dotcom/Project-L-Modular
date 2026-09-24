@@ -856,10 +856,11 @@
         }
 
         function installSavedAnswerReview(button, chat) {
-            let active = null;
+            let active = null, copyBusy = false;
+            const copyControls = new Set();
             function reset() {
                 if (active) { active.cancelled = true; active.panel.remove(); }
-                active = null;
+                active = null; copyControls.clear();
                 button.disabled = false;
             }
             window.addEventListener('l-account-ready', reset);
@@ -1056,16 +1057,22 @@
                             actions.append(useQuestion);
                             function addCopyAction(label, text, success, failure) {
                                 const copy = document.createElement('button'); copy.type = 'button'; copy.textContent = label;
+                                copy.disabled = copyBusy; copyControls.add(copy);
                                 copy.onclick = async () => {
-                                    if (!usable() || copy.disabled) return;
-                                    copy.disabled = true;
+                                    if (!usable() || copy.disabled || copyBusy) return;
+                                    copyBusy = true;
+                                    for (const control of copyControls) control.disabled = true;
+                                    copy.textContent = 'Copying…';
                                     try {
                                         if (!globalThis.navigator?.clipboard?.writeText) throw new Error('Clipboard unavailable');
                                         await globalThis.navigator.clipboard.writeText(text);
                                         if (usable()) actionStatus.textContent = success;
                                     } catch (_) {
                                         if (usable()) actionStatus.textContent = failure;
-                                    } finally { copy.disabled = false; }
+                                    } finally {
+                                        copyBusy = false; copy.disabled = false; copy.textContent = label;
+                                        for (const control of copyControls) control.disabled = false;
+                                    }
                                 };
                                 actions.append(copy);
                             }

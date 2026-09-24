@@ -313,6 +313,31 @@ const ready={status:'ready',result:{reply:'answer'}};
   }
   assert.equal(draft.value,'Unsent draft');assert.equal(copy.disabled,false);assert.equal(calls.length,before);return;
  }
+ if(['copy_serialised','copy_serialised_refresh','copy_serialised_failure'].includes(scenario)) {
+  let finish,rejectCopy;const writes=[];
+  context.navigator={clipboard:{writeText:text=>{writes.push(text);return new Promise((resolve,reject)=>{finish=resolve;rejectCopy=reject})}}};
+  const entries=()=>panel().children[4].children;
+  const copies=()=>entries().flatMap(e=>e.children[3].children.filter(c=>c.textContent.startsWith('Copy')));
+  await button.onclick();const first=copies()[0],oldStatus=entries()[0].children[4];
+  const pending=first.onclick();assert.equal(first.textContent,'Copying…');
+  assert.ok(copies().every(c=>c.disabled));
+  for(const c of copies())await c.onclick();assert.equal(writes.length,1);
+  if(scenario==='copy_serialised_refresh') {
+   await panel().children[3].children[3].children[4].onclick();
+   assert.ok(copies().every(c=>c.disabled));await copies()[1].onclick();assert.equal(writes.length,1);
+   finish();await pending;assert.equal(oldStatus.textContent,'');
+   assert.ok(entries().every(e=>e.children[4].textContent===''));
+  }else {
+   await panel().children[5].onclick();assert.equal(entries().length,25);
+   assert.ok(copies().every(c=>c.disabled));await copies().at(-1).onclick();assert.equal(writes.length,1);
+   if(scenario==='copy_serialised_failure')rejectCopy(Error('PRIVATE'));else finish();
+   await pending;
+   assert.match(oldStatus.textContent,scenario==='copy_serialised_failure'?/Could not copy automatically/:/Saved answer copied/);
+  }
+  assert.equal(first.textContent,'Copy answer');assert.ok(copies().every(c=>!c.disabled));
+  const next=copies()[1],nextPending=next.onclick();assert.equal(writes.length,2);
+  finish();await nextPending;assert.ok(copies().every(c=>!c.disabled));return;
+ }
  if(scenario==='escape') {
   context.fetchChatJson=async()=>new Promise(r=>resolveFetch=r);
   const pending=button.onclick(),old=panel();
