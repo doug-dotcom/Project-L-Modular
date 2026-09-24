@@ -1,4 +1,4 @@
-"""Layer 110: exhaustive durable recovery coverage certification.
+"""Durable recovery coverage, hardened and shared with readiness in Layer 114.
 
 Layer 108 certifies one exact saved answer. Layer 110 scans an owner's durable
 saved-answer history page by page and certifies aggregate recoverability under
@@ -11,11 +11,11 @@ from collections import Counter
 from datetime import datetime, timezone
 
 from core.cognition.cold_recovery_certification import certify_saved_answer_row
-from core.cognition.durable_tasks import owner_identity
+from core.cognition.durable_task_ledger_audit import scan_task_ledger
 from core.cognition.release_provenance import build_release_provenance
 
 
-VERSION = "layer110-recovery-coverage-certification-1"
+VERSION = "layer114-recovery-coverage-certification-2"
 PAGE_SIZE = 100
 MAX_ROWS = 10000
 
@@ -46,10 +46,12 @@ def summarise_recovery_coverage(
     for row in rows:
         if not isinstance(row, dict):
             malformed += 1
+            issue_codes["malformed_task_row"] += 1
             continue
         request_id = row.get("request_id")
         if not isinstance(request_id, str) or not request_id:
             malformed += 1
+            issue_codes["invalid_task_request_id"] += 1
             continue
 
         observed += 1
@@ -61,10 +63,17 @@ def summarise_recovery_coverage(
             )
         except ValueError:
             malformed += 1
+            issue_codes["invalid_task_request_id"] += 1
             observed -= 1
             continue
 
         status = str(certificate.get("status") or "unknown")[:80]
+        # A terminal task with no saved result is a recovery failure, not a
+        # pending task to subtract from the denominator of ready records.
+        if status in {"not_ready", "not_found"} and row.get("status") not in (
+            "queued", "running", "interrupted",
+        ):
+            status = "failed_missing_result"
         relationship = str(
             certificate.get("release_relationship") or "unknown"
         )[:80]
@@ -88,10 +97,12 @@ def summarise_recovery_coverage(
             for issue in (certificate.get("issues") or [])
             if isinstance(issue, str)
         ]
+        if status == "failed_missing_result":
+            issues.append("saved_result_missing_or_malformed")
         for issue in issues:
             issue_codes[issue[:120]] += 1
 
-        if certificate.get("certified") is not True:
+        if certificate.get("certified") is not True and len(failures) < 50:
             failures.append({
                 "request_ref": str(certificate.get("request_ref") or "")[:12],
                 "status": status,
@@ -101,11 +112,13 @@ def summarise_recovery_coverage(
     complete = bool(scan_complete and not capped)
     ready_records = max(0, observed - not_ready)
     failed = max(0, ready_records - certified)
-    all_ready_recoverable = bool(complete and failed == 0)
-    all_observed_certified = bool(complete and certified == observed)
+    all_ready_recoverable = bool(complete and malformed == 0 and failed == 0)
+    all_observed_certified = bool(complete and malformed == 0 and certified == observed)
 
     if not complete:
         overall = "incomplete_scan"
+    elif malformed:
+        overall = "complete_with_malformed_records"
     elif observed == 0:
         overall = "complete_no_saved_answers"
     elif failed:
@@ -135,6 +148,7 @@ def summarise_recovery_coverage(
         "release_relationships": dict(release_relationships),
         "issue_codes": dict(issue_codes),
         "failure_findings": failures[:50],
+        "failure_findings_omitted": max(0, observed - certified - len(failures)),
         "current_release": {
             "verified_production": bool(
                 release.get("verified") is True
@@ -173,6 +187,7 @@ def summarise_recovery_coverage(
             "A capped or interrupted scan cannot certify full-history recovery coverage.",
             "Legacy readability is not equivalent to modern HMAC authentication.",
             "Recoverability does not establish factual correctness or answer quality.",
+            "Malformed records prevent an all-recoverable claim; missing terminal results are recovery failures.",
         ],
     }
 
@@ -184,46 +199,9 @@ def load_recovery_coverage_certification(
     page_size: int = PAGE_SIZE,
     max_rows: int = MAX_ROWS,
 ) -> dict:
-    if type(page_size) is not int or not 1 <= page_size <= PAGE_SIZE:
-        raise ValueError("page_size must be between 1 and 100")
-    if type(max_rows) is not int or not 1 <= max_rows <= MAX_ROWS:
-        raise ValueError("max_rows must be between 1 and 10000")
-
-    user_id, owner_hash = owner_identity(recovery_token)
-    if client is None:
-        raise RuntimeError("database_unavailable")
-
-    rows = []
-    offset = 0
-    scan_complete = False
-    capped = False
-    pages_read = 0
-
-    while offset < max_rows:
-        remaining = max_rows - offset
-        batch_size = min(page_size, remaining)
-        page = (
-            client.table("l_chat_tasks")
-            .select("request_id,created_at,updated_at,status,result")
-            .eq("user_id", user_id)
-            .eq("owner_hash", owner_hash)
-            .order("created_at", desc=False)
-            .range(offset, offset + batch_size - 1)
-            .execute()
-            .data
-        )
-        if not isinstance(page, list):
-            raise RuntimeError("invalid_database_response")
-
-        pages_read += 1
-        rows.extend(page)
-        if len(page) < batch_size:
-            scan_complete = True
-            break
-        offset += batch_size
-
-    if not scan_complete and len(rows) >= max_rows:
-        capped = True
+    rows, scan_complete, capped, scan = scan_task_ledger(
+        client, recovery_token, page_size=page_size, max_rows=max_rows,
+    )
 
     report = summarise_recovery_coverage(
         rows,
@@ -231,14 +209,11 @@ def load_recovery_coverage_certification(
         capped=capped,
     )
     report["scan"] = {
-        "scope": "recovery_token_owner_all_saved_tasks",
-        "database": "l_chat_tasks",
-        "order": "oldest_first",
-        "page_size": page_size,
-        "pages_read": pages_read,
-        "max_rows": max_rows,
-        "rows_read": len(rows),
-        "read_only": True,
+        **scan,
         "in_process_cache_used": False,
     }
+    report["claims"]["durable_recovery_coverage_scope"] = scan["scope"]
+    report["limitations"].append(
+        "Coverage uses a fixed scan-start boundary and keyset pagination; concurrent deletions, backdated inserts, key changes or task updates can still affect this non-transactional scan."
+    )
     return report

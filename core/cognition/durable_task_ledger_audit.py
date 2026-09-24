@@ -271,13 +271,14 @@ def summarise_task_ledger(
     }
 
 
-def load_task_ledger_audit(
+def scan_task_ledger(
     client,
     recovery_token,
     *,
     page_size: int = PAGE_SIZE,
     max_rows: int = MAX_ROWS,
-) -> dict:
+) -> tuple[list, bool, bool, dict]:
+    """Internal shared scan. Raw rows must never be returned by an API route."""
     if type(page_size) is not int or not 1 <= page_size <= PAGE_SIZE:
         raise ValueError("page_size must be between 1 and 100")
     if type(max_rows) is not int or not 1 <= max_rows <= MAX_ROWS:
@@ -354,12 +355,7 @@ def load_task_ledger_audit(
     if not scan_complete and not scan_error and len(rows) >= max_rows:
         capped = True
 
-    report = summarise_task_ledger(
-        rows,
-        scan_complete=scan_complete,
-        capped=capped,
-    )
-    report["scan"] = {
+    scan = {
         "scope": "recovery_token_owner_tasks_created_by_scan_start",
         "database": "l_chat_tasks",
         "order": "oldest_first",
@@ -374,6 +370,21 @@ def load_task_ledger_audit(
         "rows_read": rows_read,
         "read_only": True,
     }
+    return rows, scan_complete, capped, scan
+
+
+def load_task_ledger_audit(
+    client,
+    recovery_token,
+    *,
+    page_size: int = PAGE_SIZE,
+    max_rows: int = MAX_ROWS,
+) -> dict:
+    rows, complete, capped, scan = scan_task_ledger(
+        client, recovery_token, page_size=page_size, max_rows=max_rows,
+    )
+    report = summarise_task_ledger(rows, scan_complete=complete, capped=capped)
+    report["scan"] = scan
     report["claims"]["ledger_coverage_scope"] = report["scan"]["scope"]
     report["limitations"].extend([
         "Coverage is limited to tasks with created_at at or before scan start; later tasks require a new audit.",
