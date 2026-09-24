@@ -46,6 +46,40 @@ const ready={status:'ready',result:{reply:'answer'}};
   }else assert.equal(actions.length,1);
   assert.equal(calls.length,before);return;
  }
+ if(['status_filters','status_batches'].includes(scenario)) {
+  if(scenario==='status_filters') {
+   tasks=['good','stale','queued','running','failed','bad','missing','unknown','offline'].map(requestId=>({requestId,message:'Question '+requestId}));
+   context.fetchChatJson=async url=>{
+    calls.push(url);const id=url.split('/').at(-1);
+    if(id==='offline')throw Error('PRIVATE');
+    if(['queued','running','missing','unknown'].includes(id))return {status:id==='missing'?'not_found':id};
+    return {status:id==='failed'?'failed':'ready',result:{reply:id},freshness:{status:id==='stale'?'superseded':'current'}};
+   };
+   context.verifyDeliveryReply=async result=>({valid:result.reply!=='bad'});
+  }
+  await button.onclick();const controls=panel().children[3];
+  const search=controls.children[0].children[0],filter=controls.children[1].children[0];
+  const visible=()=>panel().children[4].children.filter(e=>!e.hidden);
+  const counts=()=>controls.children[2].textContent;
+  const before=calls.length;
+  if(scenario==='status_filters') {
+   assert.match(counts(),/2 answers available; 2 still working; 8 need attention/);
+   filter.value='available';filter.onchange();assert.equal(visible().length,2);
+   search.value='stale';search.oninput();assert.equal(visible().length,1);
+   filter.value='attention';filter.onchange();assert.equal(visible().length,1);
+   search.value='';search.oninput();filter.value='working';filter.onchange();assert.equal(visible().length,2);
+   search.value='running';search.oninput();assert.equal(visible().length,1);
+   assert.match(counts(),/Showing 1 of 9/);assert.match(counts(),/2 answers available; 2 still working; 8 need attention/);
+   assert.equal(calls.length,before);
+  } else {
+   assert.match(counts(),/20 answers available; 0 still working; 0 need attention/);
+   filter.value='working';filter.onchange();assert.equal(visible().length,0);
+   await panel().children[5].onclick();assert.equal(visible().length,0);
+   assert.match(counts(),/25 answers available; 0 still working; 0 need attention/);
+   filter.value='available';filter.onchange();assert.equal(visible().length,25);
+  }
+  return;
+ }
  if(scenario==='escape') {
   context.fetchChatJson=async()=>new Promise(r=>resolveFetch=r);
   const pending=button.onclick(),old=panel();

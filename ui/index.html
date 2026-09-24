@@ -887,7 +887,7 @@
                 searchLabel.append(search);
                 const filterLabel = document.createElement('label'); filterLabel.textContent = 'Show';
                 const filter = document.createElement('select');
-                for (const [value, text] of [['all', 'All checked tasks'], ['attention', 'Needs attention']]) {
+                for (const [value, text] of [['all', 'All checked tasks'], ['attention', 'Needs attention'], ['available', 'Answers available'], ['working', 'Still working']]) {
                     const option = document.createElement('option'); option.value = value; option.textContent = text; filter.append(option);
                 }
                 filter.value = 'all'; filterLabel.append(filter);
@@ -906,11 +906,17 @@
                     const query = (search.value || '').trim().toLocaleLowerCase();
                     let visible = 0;
                     for (const entry of run.entries) {
-                        entry.node.hidden = !((filter.value !== 'attention' || entry.attention) && entry.text.includes(query));
+                        const matchesStatus = filter.value === 'attention' ? entry.attention :
+                            filter.value === 'available' ? entry.available :
+                            filter.value === 'working' ? entry.working : true;
+                        entry.node.hidden = !(matchesStatus && entry.text.includes(query));
                         if (!entry.node.hidden) visible += 1;
                     }
                     visibleCount.textContent = `Showing ${visible} of ${run.entries.length} checked tasks. ` +
-                        'Older tasks become searchable after you check them.';
+                        `${run.entries.filter(entry => entry.available).length} answers available; ` +
+                        `${run.entries.filter(entry => entry.working).length} still working; ` +
+                        `${run.entries.filter(entry => entry.attention).length} need attention across all checked tasks. ` +
+                        'These counts can overlap. Status reflects the last check. Older tasks become searchable after you check them.';
                 }
                 search.oninput = applyFilter; filter.onchange = applyFilter; applyFilter();
                 const navigation = document.createElement('div'); navigation.className = 'saved-answer-navigation';
@@ -964,11 +970,12 @@
                                 progress.textContent = 'Time limit reached — ' + count() + '. Use Continue checking for the remaining tasks.';
                                 return;
                             }
-                            let savedText, failed = false, attention = true, copyable = false;
+                            let savedText, failed = false, attention = true, copyable = false, working = false;
                             try {
                                 const result = await fetchChatJson(`/chat/result/${encodeURIComponent(task.requestId)}`,
                                     {cache: "no-store", headers: recoveryHeaders()}, Math.min(CHAT_REQUEST_TIMEOUT_MS, remaining));
                                 if (!valid()) return;
+                                working = ["queued", "running"].includes(result.status);
                                 if (["ready", "failed", "interrupted"].includes(result.status) &&
                                     (result.result != null || result.status === "ready")) {
                                     const delivery = await verifyDeliveryReply(result.result, task.requestId);
@@ -988,7 +995,7 @@
                                      ["queued", "running"].includes(result.status) ? "L is working on this saved task." : "The status of this saved task is unavailable.");
                             } catch (_) {
                                 if (!valid()) return;
-                                failed = true; copyable = false;
+                                failed = true; copyable = false; working = false;
                                 savedText = 'This saved answer is temporarily unavailable. Your task is still saved.';
                             }
                             if (!valid()) return;
@@ -1038,7 +1045,7 @@
                             entry.append(actions, actionStatus);
 
                             results.append(entry);
-                            run.entries.push({node: entry, attention,
+                            run.entries.push({node: entry, attention, available: copyable, working,
                                 text: (String(task.message || '') + '\n' + String(savedText || '')).toLocaleLowerCase()});
                             applyFilter();
                             run.checked += 1;
