@@ -21,6 +21,30 @@ vm.createContext(context);vm.runInContext(source+'\ninstallSavedAnswerReview(but
 const panel=()=>chat.children.at(-1),progress=()=>panel().children[1].textContent,stop=()=>panel().children[2].onclick();
 const ready={status:'ready',result:{reply:'answer'}};
 (async()=>{
+ if(['reuse_question','copy_answer','copy_rejected'].includes(scenario)) {
+  tasks=[{requestId:'one',message:'Original question'}];
+  const draft=el();draft.value='Existing draft';
+  context.document.getElementById=id=>id==='message'?draft:plus;
+  const writes=[];context.navigator={clipboard:{writeText:async text=>writes.push(text)}};
+  context.savedAnswerText=()=> 'Saved answer — facts have since changed.\n\nOriginal answer';
+  if(scenario==='copy_rejected')context.verifyDeliveryReply=async()=>({valid:false});
+  await button.onclick();const entry=panel().children[4].children[0];
+  const actions=entry.children[3].children,status=entry.children[4];const before=calls.length;
+  if(scenario==='reuse_question') {
+   actions[0].onclick();assert.equal(draft.value,'Existing draft');assert.match(status.textContent,/draft is kept/);
+   draft.value='';actions[0].onclick();assert.equal(draft.value,'Original question');assert.equal(draft.focused,true);
+   assert.match(status.textContent,/before pressing Send/);
+   events['l-account-ready']();draft.value='';actions[0].onclick();assert.equal(draft.value,'');
+  }else if(scenario==='copy_answer'){
+   assert.equal(actions[1].textContent,'Copy answer');await actions[1].onclick();
+   assert.deepEqual(writes,['Saved answer — facts have since changed.\n\nOriginal answer']);
+   context.navigator.clipboard.writeText=async()=>{throw Error('PRIVATE')};await actions[1].onclick();
+   assert.match(status.textContent,/Could not copy/);assert.ok(!status.textContent.includes('PRIVATE'));
+   assert.equal(actions[1].disabled,false);
+   events['l-account-ready']();await actions[1].onclick();assert.equal(writes.length,1);
+  }else assert.equal(actions.length,1);
+  assert.equal(calls.length,before);return;
+ }
  if(scenario==='navigation') {
   await button.onclick();
   const entries=()=>panel().children[4].children;

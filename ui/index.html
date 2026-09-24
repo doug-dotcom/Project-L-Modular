@@ -956,7 +956,7 @@
                                 progress.textContent = 'Time limit reached — ' + count() + '. Use Continue checking for the remaining tasks.';
                                 return;
                             }
-                            let savedText, failed = false, attention = true;
+                            let savedText, failed = false, attention = true, copyable = false;
                             try {
                                 const result = await fetchChatJson(`/chat/result/${encodeURIComponent(task.requestId)}`,
                                     {cache: "no-store", headers: recoveryHeaders()}, Math.min(CHAT_REQUEST_TIMEOUT_MS, remaining));
@@ -970,6 +970,7 @@
                                         : result.status === "ready" ? savedAnswerText(result) : result.result.reply;
                                     if (delivery.valid) {
                                         clearPendingRequest(task.requestId);
+                                        copyable = result.status === 'ready' && typeof savedText === 'string' && savedText.length > 0;
                                         attention = result.status !== 'ready' || ['superseded', 'unavailable'].includes(result.freshness?.status);
                                     }
                                 }
@@ -979,7 +980,7 @@
                                      ["queued", "running"].includes(result.status) ? "L is working on this saved task." : "The status of this saved task is unavailable.");
                             } catch (_) {
                                 if (!valid()) return;
-                                failed = true;
+                                failed = true; copyable = false;
                                 savedText = 'This saved answer is temporarily unavailable. Your task is still saved.';
                             }
                             if (!valid()) return;
@@ -992,6 +993,41 @@
                             entry.append(summary);
                             appendChatMessage(entry, 'user', task.message);
                             appendChatMessage(entry, failed ? 'assistant error' : 'assistant', savedText);
+                            const actions = document.createElement('div'); actions.className = 'saved-answer-navigation';
+                            const actionStatus = document.createElement('p'); actionStatus.setAttribute('role', 'status');
+                            const usable = () => active === run && document.documentElement.dataset.account === 'ready';
+                            const useQuestion = document.createElement('button'); useQuestion.type = 'button'; useQuestion.textContent = 'Use question';
+                            useQuestion.onclick = () => {
+                                if (!usable()) return;
+                                const input = document.getElementById('message');
+                                const question = typeof task.message === 'string' ? task.message : '';
+                                if (!input || !question.trim()) { actionStatus.textContent = 'This question could not be placed in the message box.'; return; }
+                                if (input.value && input.value !== question) {
+                                    actionStatus.textContent = 'Your current draft is kept. Clear the message box before using this question.'; return;
+                                }
+                                input.value = question;
+                                input.focus();
+                                try { window.lVoice?.saveDraft(); } catch (_) {}
+                                actionStatus.textContent = 'Question placed in the message box. Review it before pressing Send.';
+                            };
+                            actions.append(useQuestion);
+                            if (copyable) {
+                                const copy = document.createElement('button'); copy.type = 'button'; copy.textContent = 'Copy answer';
+                                copy.onclick = async () => {
+                                    if (!usable() || copy.disabled) return;
+                                    copy.disabled = true;
+                                    try {
+                                        if (!globalThis.navigator?.clipboard?.writeText) throw new Error('Clipboard unavailable');
+                                        await globalThis.navigator.clipboard.writeText(savedText);
+                                        if (usable()) actionStatus.textContent = 'Saved answer copied, including any freshness warning.';
+                                    } catch (_) {
+                                        if (usable()) actionStatus.textContent = 'Could not copy automatically. Select the answer text to copy it.';
+                                    } finally { copy.disabled = false; }
+                                };
+                                actions.append(copy);
+                            }
+                            entry.append(actions, actionStatus);
+
                             results.append(entry);
                             run.entries.push({node: entry, attention,
                                 text: (String(task.message || '') + '\n' + String(savedText || '')).toLocaleLowerCase()});
