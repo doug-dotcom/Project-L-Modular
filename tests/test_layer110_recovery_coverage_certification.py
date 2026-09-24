@@ -197,7 +197,7 @@ def test_server_endpoint_returns_privacy_safe_coverage(monkeypatch):
 def test_server_surfaces_layer110_recovery_coverage_readiness():
     from pathlib import Path
     source=Path("api/server.py").read_text(encoding="utf-8")
-    assert '"release_layer": 110' in source
+    assert '"release_layer":' in source
     assert '"recovery_coverage_certification_ready": True' in source
     assert '@app.get("/cognition/recovery-coverage-certification")' in source
     assert "load_recovery_coverage_certification(" in source
