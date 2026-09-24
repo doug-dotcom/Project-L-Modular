@@ -491,7 +491,17 @@
             const chat = document.getElementById("chat");
             const input = document.getElementById("message");
             const prompt = input.value.trim() || "Tell me what you can see in this picture.";
-            const requestId = newChatRequestId();
+            let requestId;
+            try {
+                requestId = newChatRequestId();
+                rememberPendingRequest(requestId, prompt, "image");
+            } catch (_) {
+                appendChatMessage(chat, "assistant error",
+                    "I could not save this picture request in your browser, so it has not been uploaded. Your prompt and selected file are kept. Check browser storage and try again.");
+                input.focus?.();
+                chat.scrollTop = chat.scrollHeight;
+                return;
+            }
             const preview = document.createElement("img");
             preview.src = URL.createObjectURL(file);
             preview.alt = "Picture sent to L";
@@ -506,7 +516,6 @@
             formData.append("file", file);
             formData.append("request_id", requestId);
             formData.append("prompt", prompt);
-            rememberPendingRequest(requestId, prompt, "image");
 
             try {
                 const response = await fetch("/image/start", {method: "POST", body: formData});
