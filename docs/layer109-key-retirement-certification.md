@@ -1,5 +1,11 @@
 # Layer 109 — Signing-Key Retirement Certification
 
+**Current behaviour:** Layer 117 supersedes the zero-reference eligibility
+described below. Owner-only scans now report `no_references_in_owner_scope`,
+never retirement eligibility. Uncertain records block a clean assessment, and
+the loader uses the bounded stable scan. See
+[Layer 117](layer117-key-dependency-scope.md) for the current contract.
+
 Layers 105–106 could show signing-key usage in recent or bounded samples, but
 they deliberately could not prove that a historical key was unused across all
 saved answers.
