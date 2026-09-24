@@ -15,8 +15,8 @@ def test_saved_answers_isolate_failures_and_settle_only_verified_results(scenari
 const assert = require('node:assert/strict'), vm = require('node:vm');
 const storage = new Map(), elements = new Map(), shown = [], calls = [], timers = new Map();
 let now = 0, sequence = 0;
-function element() { return {setAttribute(){}, append(...els){els.forEach(e=>this.appendChild(e));}, textContent:'', appendChild(e) {shown.push(e);},
- insertBefore(e) {elements.set(e.id,e);}, remove() {}}; }
+function element() { return {children:[], setAttribute(){}, append(...els){els.forEach(e=>this.appendChild(e));}, textContent:'', appendChild(e) {this.children.push(e);shown.push(e);},
+ insertBefore(e,before) {const i=this.children.indexOf(e);if(i>=0)this.children.splice(i,1);const j=this.children.indexOf(before);if(j<0)this.children.push(e);else this.children.splice(j,0,e);elements.set(e.id,e);}, remove() {}}; }
 for (const id of ['chat','chatToolsActions','closeChatTools']) elements.set(id,element());
 const context = {AbortController, TextEncoder, performance:{now:()=>now},
  window:{addEventListener(){}, crypto:require('node:crypto').webcrypto},
