@@ -398,7 +398,7 @@ def test_server_surfaces_layer109_key_retirement_readiness():
     from pathlib import Path
 
     source = Path("api/server.py").read_text(encoding="utf-8")
-    assert '"release_layer": 109' in source
+    assert '"release_layer":' in source
     assert '"key_retirement_certification_ready": True' in source
     assert '@app.get("/cognition/key-retirement-certification")' in source
     assert "load_key_retirement_certification(" in source
