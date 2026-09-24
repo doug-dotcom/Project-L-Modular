@@ -1,4 +1,4 @@
-"""Layer 111: durable task ledger consistency audit.
+"""Durable task ledger audit, hardened against malformed records in Layer 112.
 
 Project L's durable queue is a state machine as well as a saved-answer store.
 This audit verifies owner-scoped task-journal invariants, request hashes and
@@ -10,11 +10,13 @@ from __future__ import annotations
 from collections import Counter
 from datetime import datetime, timezone
 from hashlib import sha256
+import re
+from uuid import UUID
 
 from core.cognition.durable_tasks import owner_identity, request_hash
 
 
-VERSION = "layer111-durable-task-ledger-audit-1"
+VERSION = "layer112-durable-task-ledger-audit-2"
 PAGE_SIZE = 100
 MAX_ROWS = 10000
 ALLOWED_STATUSES = {"queued", "running", "ready", "failed", "interrupted"}
@@ -29,34 +31,66 @@ def _parse_time(value):
     if not isinstance(value, str) or not value:
         return None
     try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        # Database timestamps are timezone-aware. Guessing a timezone can turn
+        # an invalid lease into a live one, or crash a comparison with UTC.
+        if parsed.tzinfo is None or parsed.utcoffset() is None:
+            return None
+        return parsed.astimezone(timezone.utc)
+    except (ValueError, OverflowError):
+        return None
+
+
+def _uuid(value):
+    if not isinstance(value, str):
+        return None
+    try:
+        return UUID(value)
     except ValueError:
         return None
+
+
+def _sha256_hex(value):
+    return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None
 
 
 def audit_task_row(row: dict, *, now: datetime | None = None) -> dict:
     now = now or datetime.now(timezone.utc)
     issues: list[str] = []
     request_id = row.get("request_id")
-    status = str(row.get("status") or "")
+    raw_status = row.get("status")
+    # A corrupt status may contain arbitrary private content. Only fixed labels
+    # can reach findings and the status counter in the public diagnostic result.
+    status = (
+        raw_status if isinstance(raw_status, str) and raw_status in ALLOWED_STATUSES
+        else "missing" if raw_status is None or raw_status == "" else "invalid"
+    )
     checkpoint = row.get("checkpoint")
     worker_id = row.get("worker_id")
-    lease_until = _parse_time(row.get("lease_until"))
+    raw_lease = row.get("lease_until")
+    lease_until = _parse_time(raw_lease)
     created_at = _parse_time(row.get("created_at"))
     updated_at = _parse_time(row.get("updated_at"))
     result = row.get("result")
     request = row.get("request")
-    input_hash = str(row.get("input_hash") or "")
-    owner_hash = str(row.get("owner_hash") or "")
+    input_hash = row.get("input_hash")
+    owner_hash = row.get("owner_hash")
 
     if status not in ALLOWED_STATUSES:
         issues.append("invalid_task_status")
-    if not isinstance(checkpoint, str) or not checkpoint:
+    if not isinstance(checkpoint, str) or not checkpoint.strip():
         issues.append("checkpoint_missing")
-    if len(owner_hash) != 64:
+    row_id = _uuid(request_id)
+    if row_id is None:
+        issues.append("request_id_invalid")
+    if worker_id is not None and _uuid(worker_id) is None:
+        issues.append("worker_id_invalid")
+    if not _sha256_hex(owner_hash):
         issues.append("owner_hash_shape_invalid")
-    if len(input_hash) != 64:
+    if not _sha256_hex(input_hash):
         issues.append("input_hash_shape_invalid")
+    if raw_lease is not None and lease_until is None:
+        issues.append("lease_until_invalid")
 
     if not isinstance(request, dict):
         issues.append("request_payload_missing_or_malformed")
@@ -68,8 +102,10 @@ def audit_task_row(row: dict, *, now: datetime | None = None) -> dict:
             issues.append("request_payload_not_hashable")
         if expected_hash and input_hash != expected_hash:
             issues.append("request_hash_mismatch")
-        embedded = str(request.get("request_id") or "")
-        if embedded and str(request_id or "") != embedded:
+        embedded = _uuid(request.get("request_id"))
+        if embedded is None:
+            issues.append("request_payload_id_invalid")
+        elif row_id is not None and row_id != embedded:
             issues.append("request_id_binding_mismatch")
 
     if created_at is None:
@@ -80,9 +116,11 @@ def audit_task_row(row: dict, *, now: datetime | None = None) -> dict:
         issues.append("updated_before_created")
 
     if status == "queued":
-        if worker_id:
+        if checkpoint != "queued":
+            issues.append("queued_checkpoint_mismatch")
+        if worker_id is not None:
             issues.append("queued_task_has_worker")
-        if lease_until is not None:
+        if raw_lease is not None:
             issues.append("queued_task_has_lease")
         if result is not None:
             issues.append("queued_task_has_result")
@@ -111,7 +149,7 @@ def audit_task_row(row: dict, *, now: datetime | None = None) -> dict:
 
     return {
         "request_ref": _request_ref(request_id),
-        "status": status or "missing",
+        "status": status,
         "valid": not issues,
         "issues": issues,
     }
@@ -145,11 +183,12 @@ def summarise_task_ledger(
         else:
             for issue in audit["issues"]:
                 issue_codes[issue] += 1
-            findings.append({
-                "request_ref": audit["request_ref"],
-                "status": audit["status"],
-                "issues": audit["issues"][:16],
-            })
+            if len(findings) < 50:
+                findings.append({
+                    "request_ref": audit["request_ref"],
+                    "status": audit["status"],
+                    "issues": audit["issues"][:16],
+                })
 
     complete = bool(scan_complete and not capped)
     invalid = observed - valid
@@ -175,7 +214,8 @@ def summarise_task_ledger(
         "malformed_rows": malformed,
         "task_statuses": dict(statuses),
         "issue_codes": dict(issue_codes),
-        "findings": findings[:50],
+        "findings": findings,
+        "findings_omitted": max(0, invalid - len(findings)),
         "checks": {
             "request_hash_binding": True,
             "request_id_binding": True,
@@ -183,6 +223,8 @@ def summarise_task_ledger(
             "terminal_result_contract": True,
             "running_lease_liveness": True,
             "timestamp_ordering": True,
+            "timezone_aware_timestamps": True,
+            "identifier_and_hash_validation": True,
         },
         "actions": {
             "tasks_replayed": False,
@@ -198,6 +240,7 @@ def summarise_task_ledger(
             "owner_hashes_returned": False,
             "input_hashes_returned": False,
             "secret_values_returned": False,
+            "unrecognised_status_values_returned": False,
             "finding_refs": "sha256_prefix_12",
         },
         "claims": {
@@ -252,6 +295,7 @@ def load_task_ledger_audit(
             .eq("user_id", user_id)
             .eq("owner_hash", owner_hash)
             .order("created_at", desc=False)
+            .order("request_id", desc=False)
             .range(offset, offset + batch_size - 1)
             .execute()
             .data

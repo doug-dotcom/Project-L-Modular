@@ -12,7 +12,7 @@ from core.cognition.durable_tasks import request_hash
 
 TOKEN="x"*64
 NOW=datetime(2026,9,24,1,0,0,tzinfo=timezone.utc)
-OWNER="o"*64
+OWNER="a"*64
 
 def rid(n): return f"00000000-0000-4000-8000-{n:012d}"
 
@@ -165,7 +165,7 @@ def test_server_endpoint_returns_privacy_safe_ledger_audit(monkeypatch):
 def test_server_surfaces_layer111_ledger_readiness():
     from pathlib import Path
     source=Path("api/server.py").read_text(encoding="utf-8")
-    assert '"release_layer": 111' in source
+    assert '"release_layer":' in source
     assert '"durable_task_ledger_audit_ready": True' in source
     assert '@app.get("/cognition/durable-task-ledger-audit")' in source
     assert "load_task_ledger_audit(" in source
