@@ -926,7 +926,15 @@
                 navigationButton('Expand all', () => expandAll(true));
                 navigationButton('Collapse all', () => expandAll(false));
                 navigationButton('Clear filters', () => { search.value = ''; filter.value = 'all'; applyFilter(); search.focus?.(); });
-                navigationButton('Close review', () => { reset(); document.getElementById('uploadBtn')?.focus(); });
+                function closeReview() {
+                    if (active !== run) return;
+                    reset(); document.getElementById('uploadBtn')?.focus();
+                }
+                navigationButton('Close review', closeReview);
+                panel.onkeydown = event => {
+                    if (active !== run || event.key !== 'Escape' || event.isComposing || event.defaultPrevented) return;
+                    event.preventDefault(); event.stopPropagation(); closeReview();
+                };
                 filters.append(navigation);
 
                 stop.onclick = () => {
@@ -1007,6 +1015,7 @@
                                 }
                                 input.value = question;
                                 input.focus();
+                                input.scrollIntoView?.({block: 'nearest', behavior: 'instant'});
                                 try { window.lVoice?.saveDraft(); } catch (_) {}
                                 actionStatus.textContent = 'Question placed in the message box. Review it before pressing Send.';
                             };

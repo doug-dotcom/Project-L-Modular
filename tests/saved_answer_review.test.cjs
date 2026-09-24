@@ -24,6 +24,7 @@ const ready={status:'ready',result:{reply:'answer'}};
  if(['reuse_question','copy_answer','copy_rejected'].includes(scenario)) {
   tasks=[{requestId:'one',message:'Original question'}];
   const draft=el();draft.value='Existing draft';
+  let scrolls=0;draft.scrollIntoView=options=>{assert.equal(options.block,'nearest');assert.equal(options.behavior,'instant');scrolls++};
   context.document.getElementById=id=>id==='message'?draft:plus;
   const writes=[];context.navigator={clipboard:{writeText:async text=>writes.push(text)}};
   context.savedAnswerText=()=> 'Saved answer — facts have since changed.\n\nOriginal answer';
@@ -31,8 +32,8 @@ const ready={status:'ready',result:{reply:'answer'}};
   await button.onclick();const entry=panel().children[4].children[0];
   const actions=entry.children[3].children,status=entry.children[4];const before=calls.length;
   if(scenario==='reuse_question') {
-   actions[0].onclick();assert.equal(draft.value,'Existing draft');assert.match(status.textContent,/draft is kept/);
-   draft.value='';actions[0].onclick();assert.equal(draft.value,'Original question');assert.equal(draft.focused,true);
+   actions[0].onclick();assert.equal(draft.value,'Existing draft');assert.match(status.textContent,/draft is kept/);assert.equal(scrolls,0);
+   draft.value='';actions[0].onclick();assert.equal(draft.value,'Original question');assert.equal(draft.focused,true);assert.equal(scrolls,1);
    assert.match(status.textContent,/before pressing Send/);
    events['l-account-ready']();draft.value='';actions[0].onclick();assert.equal(draft.value,'');
   }else if(scenario==='copy_answer'){
@@ -44,6 +45,21 @@ const ready={status:'ready',result:{reply:'answer'}};
    events['l-account-ready']();await actions[1].onclick();assert.equal(writes.length,1);
   }else assert.equal(actions.length,1);
   assert.equal(calls.length,before);return;
+ }
+ if(scenario==='escape') {
+  context.fetchChatJson=async()=>new Promise(r=>resolveFetch=r);
+  const pending=button.onclick(),old=panel();
+  let prevented=0,stopped=0;
+  const key={key:'Escape',preventDefault(){prevented++},stopPropagation(){stopped++}};
+  old.onkeydown({...key,key:'Enter'});old.onkeydown({...key,isComposing:true});
+  old.onkeydown({...key,defaultPrevented:true});
+  assert.equal(old.removed,undefined);assert.equal(prevented,0);
+  old.onkeydown(key);assert.equal(old.removed,true);assert.equal(plus.focused,true);
+  assert.equal(button.disabled,false);assert.equal(prevented,1);assert.equal(stopped,1);
+  resolveFetch(ready);await pending;assert.equal(cleared.length,0);assert.equal(old.children[4].children.length,0);
+  tasks=[];await button.onclick();old.onkeydown(key);
+  assert.equal(panel().removed,undefined);assert.equal(prevented,1);
+  return;
  }
  if(scenario==='navigation') {
   await button.onclick();
