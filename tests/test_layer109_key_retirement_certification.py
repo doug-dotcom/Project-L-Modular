@@ -153,9 +153,9 @@ def test_complete_scan_protects_active_and_identifies_zero_reference_inactive_ke
 
     assert k2["decision"] == "active_do_not_retire"
     assert k2["stored_references"] == 1
-    assert k3["decision"] == "eligible_for_operator_review"
+    assert k3["decision"] == "no_references_in_owner_scope"
     assert k3["stored_references"] == 0
-    assert legacy["decision"] == "eligible_for_operator_review"
+    assert legacy["decision"] == "no_references_in_owner_scope"
     assert report["policy"]["automatic_retirement"] is False
     assert report["claims"]["safe_to_auto_retire_any_key"] is False
 
@@ -283,6 +283,21 @@ class Query:
         self.start, self.end = start, end
         return self
 
+    def lte(self, column, value):
+        self.calls.append(("lte", column, value))
+        return self
+
+    def limit(self, count):
+        self.calls.append(("limit", count))
+        self.end = count - 1
+        return self
+
+    def or_(self, condition):
+        self.calls.append(("or", condition))
+        last_id = condition.split("request_id.gt.")[1].rstrip(")")
+        self.rows = [row for row in self.rows if row["request_id"] > last_id]
+        return self
+
     def execute(self):
         return NS(data=self.rows[self.start:self.end + 1])
 
@@ -327,9 +342,9 @@ def test_loader_pages_entire_owner_history_and_is_read_only(monkeypatch):
     assert any(call[0] == "eq" and call[1] == "user_id" for call in client.calls)
     assert any(call[0] == "eq" and call[1] == "owner_hash" for call in client.calls)
     assert ("order", "created_at", False) in client.calls
-    assert ("range", 0, 2) in client.calls
-    assert ("range", 3, 5) in client.calls
-    assert ("range", 6, 8) in client.calls
+    assert sum(call[0] == "limit" for call in client.calls) == 3
+    assert sum(call[0] == "or" for call in client.calls) == 2
+    assert not any(call[0] == "range" for call in client.calls)
     assert not any(
         call[0] in {"insert", "update", "delete", "upsert", "rpc"}
         for call in client.calls
@@ -391,7 +406,7 @@ def test_server_endpoint_exposes_read_only_retirement_certificate(monkeypatch):
     assert report["mode"] == "signing_key_dependency_certification"
     assert report["scan_complete"] is True
     assert report["policy"]["automatic_retirement"] is False
-    assert report["scan"]["scope"] == "recovery_token_owner_all_saved_tasks"
+    assert report["scan"]["scope"] == "recovery_token_owner_tasks_created_by_scan_start"
 
 
 def test_server_surfaces_layer109_key_retirement_readiness():

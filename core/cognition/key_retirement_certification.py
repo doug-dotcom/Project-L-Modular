@@ -1,47 +1,65 @@
-"""Layer 109: exhaustive signing-key dependency certification.
+"""Layer 116: conservative, owner-scoped signing-key dependency evidence.
 
-Recent-sample audits cannot prove that a historical signing key is unused.
-This module scans an owner's durable saved-answer history page by page, counts
-every stored key reference conservatively (including invalid records), and only
-marks a zero-reference key eligible for operator review when the scan completes.
-It never mutates keys or data.
+An owner's history cannot authorise retirement of a shared signing key.
+Known references remain protected even in damaged records; gaps and unknown
+references prevent a clean zero-reference assessment. Keys are never changed.
 """
 
 from __future__ import annotations
 
 from collections import Counter
 from datetime import datetime, timezone
+from uuid import UUID
 
-from core.cognition.answer_authenticity import authenticity_status
-from core.cognition.durable_tasks import owner_identity
+from core.cognition.answer_authenticity import (
+    LEGACY_VERSION, VERSION as KEYRING_VERSION, authenticity_status,
+)
+from core.cognition.durable_task_ledger_audit import scan_task_ledger
 from core.cognition.recovery_provenance import verify_recovered_answer_payload
 
 
-VERSION = "layer109-key-retirement-certification-1"
+VERSION = "layer116-key-dependency-certification-2"
 PAGE_SIZE = 100
 MAX_ROWS = 10000
 LEGACY_KEY_LABEL = "legacy_layer104"
+UNKNOWN_REFERENCE = "unclassified_signed_reference"
 
 
 def _object(value):
     return value if isinstance(value, dict) else {}
 
 
-def _raw_auth_dependency(result: object) -> str:
+def _raw_auth_dependencies(result: object, known_ids: set[str]) -> tuple[set[str], bool]:
     if not isinstance(result, dict):
-        return ""
-    cognition = _object(result.get("cognition"))
-    auth = _object(cognition.get("answer_authenticity"))
-    if not auth:
-        return ""
+        return set(), False
+    raw_cognition = result.get("cognition")
+    if raw_cognition is not None and not isinstance(raw_cognition, dict):
+        return {UNKNOWN_REFERENCE}, True
+    cognition = _object(raw_cognition)
+    if "answer_authenticity" not in cognition:
+        return set(), False
+    auth = cognition["answer_authenticity"]
+    if not isinstance(auth, dict) or not auth:
+        return {UNKNOWN_REFERENCE}, True
 
-    version = str(auth.get("version") or "")
-    key_id = str(auth.get("key_id") or "").strip().lower()
-    if key_id:
-        return key_id[:32]
-    if version == "layer104-answer-authenticity-1":
-        return LEGACY_KEY_LABEL
-    return "unclassified_signed_reference"
+    refs = set()
+    version = auth.get("version")
+    raw_id = auth.get("key_id")
+    key_id = raw_id.strip().lower() if isinstance(raw_id, str) else ""
+    # Preserve a legacy reference even when a damaged receipt also contains an
+    # extra key ID. A conflicting label must never hide the legacy dependency.
+    if version == LEGACY_VERSION:
+        refs.add(LEGACY_KEY_LABEL)
+    if key_id in known_ids:
+        refs.add(key_id)
+    uncertain = (
+        version not in (LEGACY_VERSION, KEYRING_VERSION)
+        or (version == KEYRING_VERSION and key_id not in known_ids)
+        or (version == LEGACY_VERSION and raw_id not in (None, ""))
+    )
+    if uncertain:
+        refs.add(UNKNOWN_REFERENCE)
+    return refs, uncertain
 
 
 def summarise_key_dependencies(
@@ -51,40 +69,81 @@ def summarise_key_dependencies(
     capped: bool,
     configured_status: dict | None = None,
 ) -> dict:
-    status = dict(configured_status or authenticity_status())
+    status = dict(authenticity_status() if configured_status is None else configured_status)
+    active = str(status.get("active_key_id") or "")
+    retained = list(dict.fromkeys(
+        key_id for key_id in (status.get("retained_key_ids") or [])
+        if isinstance(key_id, str) and key_id
+    ))
+    known_ids = set(retained) | ({active} if active else set())
     dependencies = Counter()
     verification_states = Counter()
     issue_codes = Counter()
     observed = 0
     malformed = 0
     ready_without_result = 0
+    uncertain_rows = 0
+    verification_errors = 0
+    unverified_answers = 0
+    rows_observed = 0
 
     for row in rows:
+        rows_observed += 1
         if not isinstance(row, dict):
             malformed += 1
+            uncertain_rows += 1
+            issue_codes["malformed_task_row"] += 1
             continue
+        result = row.get("result")
+        refs, uncertain = _raw_auth_dependencies(result, known_ids)
+        dependencies.update(refs)
+        if uncertain:
+            issue_codes["unclassified_signed_reference"] += 1
+
+        # Inspect dependencies before validating identity: a malformed ID does
+        # not erase an otherwise visible reference to a configured key.
         request_id = row.get("request_id")
-        if not isinstance(request_id, str) or not request_id:
+        try:
+            if not isinstance(request_id, str):
+                raise ValueError("invalid_id")
+            UUID(request_id)
+        except ValueError:
             malformed += 1
+            uncertain_rows += 1
+            issue_codes["request_id_invalid"] += 1
             continue
 
         observed += 1
-        result = row.get("result")
-        dependency = _raw_auth_dependency(result)
-        if dependency:
-            dependencies[dependency] += 1
+        task_status = row.get("status")
+        if task_status not in ("queued", "running", "ready", "failed", "interrupted"):
+            uncertain = True
+            issue_codes["task_status_invalid"] += 1
 
         if not isinstance(result, dict):
             if row.get("status") == "ready":
                 ready_without_result += 1
                 issue_codes["ready_without_result"] += 1
+            if task_status in ("ready", "failed") or result is not None:
+                uncertain = True
+                issue_codes["result_missing_or_malformed"] += 1
             verification_states["not_checked"] += 1
+            uncertain_rows += int(uncertain)
             continue
 
-        check = verify_recovered_answer_payload(
-            result,
-            expected_request_id=request_id,
-        )
+        try:
+            check = verify_recovered_answer_payload(result, expected_request_id=request_id)
+            if not isinstance(check, dict):
+                raise TypeError("invalid_verifier_response")
+        except Exception:
+            verification_errors += 1
+            uncertain_rows += 1
+            verification_states["verification_error"] += 1
+            issue_codes["dependency_verification_error"] += 1
+            continue
+        if check.get("valid") is not True:
+            unverified_answers += 1
+            uncertain = True
+        uncertain_rows += int(uncertain)
         state = str(check.get("status") or "unknown")[:80]
         verification_states[state] += 1
 
@@ -97,57 +156,59 @@ def summarise_key_dependencies(
                 if isinstance(issue, str):
                     issue_codes[issue[:120]] += 1
 
-    active = str(status.get("active_key_id") or "")
-    retained = [
-        str(key_id)
-        for key_id in (status.get("retained_key_ids") or [])
-        if isinstance(key_id, str) and key_id
-    ]
+    complete = bool(scan_complete and not capped)
+    assessed = complete and uncertain_rows == 0
+
+    def decision_for(key_id, is_active=False):
+        if is_active:
+            return "active_do_not_retire"
+        if dependencies.get(key_id, 0):
+            return "in_use"
+        if not complete:
+            return "unknown_incomplete_scan"
+        if not assessed:
+            return "unknown_unassessed_records"
+        return "no_references_in_owner_scope"
 
     candidates = []
     for key_id in retained:
         refs = int(dependencies.get(key_id, 0))
-        if key_id == active:
-            decision = "active_do_not_retire"
-        elif refs:
-            decision = "in_use"
-        elif scan_complete and not capped:
-            decision = "eligible_for_operator_review"
-        else:
-            decision = "unknown_incomplete_scan"
+        decision = decision_for(key_id, key_id == active)
         candidates.append({
             "key_id": key_id,
             "stored_references": refs,
             "decision": decision,
             "automatic_retirement": False,
+            "retirement_eligible": False,
         })
 
     legacy_refs = int(dependencies.get(LEGACY_KEY_LABEL, 0))
     legacy_configured = status.get("legacy_verification_configured") is True
     if legacy_configured:
-        if legacy_refs:
-            legacy_decision = "in_use"
-        elif scan_complete and not capped:
-            legacy_decision = "eligible_for_operator_review"
-        else:
-            legacy_decision = "unknown_incomplete_scan"
+        legacy_decision = decision_for(LEGACY_KEY_LABEL, not active)
         candidates.append({
             "key_id": LEGACY_KEY_LABEL,
             "stored_references": legacy_refs,
             "decision": legacy_decision,
             "automatic_retirement": False,
+            "retirement_eligible": False,
         })
 
-    complete = bool(scan_complete and not capped)
     return {
         "version": VERSION,
         "mode": "signing_key_dependency_certification",
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "status": "complete" if complete else "incomplete",
+        "status": "incomplete" if not complete else "complete_with_uncertainty" if not assessed else "complete",
         "scan_complete": complete,
         "capped": bool(capped),
         "answers_observed": observed,
+        "rows_observed": rows_observed,
+        "malformed_rows": malformed,
         "malformed_rows_ignored": malformed,
+        "uncertain_rows": uncertain_rows,
+        "verification_error_rows": verification_errors,
+        "unverified_answer_rows": unverified_answers,
+        "dependency_assessment_complete": assessed,
         "ready_without_result": ready_without_result,
         "active_key_id": active,
         "retained_key_ids": retained,
@@ -161,6 +222,8 @@ def summarise_key_dependencies(
             "complete_scan_required": True,
             "active_key_retirement_allowed": False,
             "operator_review_required": True,
+            "global_dependency_check_required": True,
+            "owner_scope_can_authorise_retirement": False,
         },
         "privacy": {
             "answer_text_returned": False,
@@ -168,19 +231,22 @@ def summarise_key_dependencies(
             "evidence_text_returned": False,
             "raw_request_ids_returned": False,
             "secret_values_returned": False,
+            "unknown_key_labels_returned": False,
         },
         "claims": {
             "key_dependency_coverage": (
-                "complete" if complete else "incomplete"
+                "complete_for_observed_owner_rows" if assessed else "unverified" if complete else "incomplete"
             ),
+            "global_key_dependencies_verified": False,
             "safe_to_auto_retire_any_key": False,
             "answer_quality": "not_scored",
             "factual_correctness": "not_scored",
         },
         "limitations": [
-            "Eligibility means only that a complete scan found zero stored references.",
+            "Zero references apply only to observed rows for this recovery-token owner; shared-key retirement requires a separate global dependency check.",
             "No key is retired automatically.",
             "A capped or interrupted scan cannot support zero-reference eligibility.",
+            "Malformed records, unverifiable answers and unclassified references prevent a complete dependency assessment.",
             "Stored-reference counts do not establish answer quality or factual correctness.",
         ],
     }
@@ -193,61 +259,13 @@ def load_key_retirement_certification(
     page_size: int = PAGE_SIZE,
     max_rows: int = MAX_ROWS,
 ) -> dict:
-    if type(page_size) is not int or not 1 <= page_size <= PAGE_SIZE:
-        raise ValueError("page_size must be between 1 and 100")
-    if type(max_rows) is not int or not 1 <= max_rows <= MAX_ROWS:
-        raise ValueError("max_rows must be between 1 and 10000")
-
-    user_id, owner_hash = owner_identity(recovery_token)
-    if client is None:
-        raise RuntimeError("database_unavailable")
-
-    rows = []
-    offset = 0
-    scan_complete = False
-    capped = False
-    pages_read = 0
-
-    while offset < max_rows:
-        remaining = max_rows - offset
-        batch_size = min(page_size, remaining)
-        query = (
-            client.table("l_chat_tasks")
-            .select("request_id,created_at,status,result")
-            .eq("user_id", user_id)
-            .eq("owner_hash", owner_hash)
-            .order("created_at", desc=False)
-            .range(offset, offset + batch_size - 1)
-        )
-        page = query.execute().data
-        if not isinstance(page, list):
-            raise RuntimeError("invalid_database_response")
-
-        pages_read += 1
-        rows.extend(page)
-
-        if len(page) < batch_size:
-            scan_complete = True
-            break
-
-        offset += batch_size
-
-    if not scan_complete and len(rows) >= max_rows:
-        capped = True
-
-    report = summarise_key_dependencies(
-        rows,
-        scan_complete=scan_complete,
-        capped=capped,
+    rows, complete, capped, scan = scan_task_ledger(
+        client, recovery_token, page_size=page_size, max_rows=max_rows,
     )
-    report["scan"] = {
-        "scope": "recovery_token_owner_all_saved_tasks",
-        "database": "l_chat_tasks",
-        "order": "oldest_first",
-        "page_size": page_size,
-        "pages_read": pages_read,
-        "max_rows": max_rows,
-        "rows_read": len(rows),
-        "read_only": True,
-    }
+    report = summarise_key_dependencies(rows, scan_complete=complete, capped=capped)
+    report["scan"] = scan
+    report["claims"]["coverage_scope"] = scan["scope"]
+    report["limitations"].append(
+        "The bounded keyset scan is not a transactional snapshot; later tasks, external backups and other owners are outside its scope."
+    )
     return report
