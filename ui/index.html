@@ -313,6 +313,10 @@
 .saved-answer-filters { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
 .saved-answer-filters label { display: flex; flex-direction: column; gap: 4px; }
 .saved-answer-filters input, .saved-answer-filters select { min-height: 44px; max-width: 100%; font-size: 16px; }
+.saved-answer-navigation { display: flex; flex-wrap: wrap; gap: 8px; flex-basis: 100%; }
+.saved-answer-navigation button { min-height: 44px; }
+.saved-answer-entry summary { cursor: pointer; min-height: 44px; padding: 10px 0; overflow-wrap: anywhere; }
+.saved-answer-entry { border-bottom: 1px solid #666; }
 .saved-answer-filters p { flex-basis: 100%; margin: 0; }
 </style>
 </head>
@@ -894,7 +898,7 @@
                 older.type = 'button'; older.textContent = 'Check older tasks'; older.disabled = true;
                 panel.append(heading, progress, stop, filters, results, older); chat.append(panel);
                 panel.focus?.(); chat.scrollTop = chat.scrollHeight;
-                const run = {panel, cancelled: false, checked: 0, total: 0, pass: 0, tasks: [], entries: []}; active = run;
+                const run = {panel, cancelled: false, checked: 0, total: 0, pass: 0, tasks: [], entries: [], expanded: false}; active = run;
                 const current = () => active === run && !run.cancelled && document.documentElement.dataset.account === 'ready';
                 const count = () => `${run.checked} of ${run.total} recent saved tasks checked`;
                 function applyFilter() {
@@ -909,6 +913,22 @@
                         'Older tasks become searchable after you check them.';
                 }
                 search.oninput = applyFilter; filter.onchange = applyFilter; applyFilter();
+                const navigation = document.createElement('div'); navigation.className = 'saved-answer-navigation';
+                function navigationButton(label, action) {
+                    const control = document.createElement('button'); control.type = 'button'; control.textContent = label;
+                    control.onclick = () => { if (active === run) action(); };
+                    navigation.append(control);
+                }
+                function expandAll(open) {
+                    run.expanded = open;
+                    for (const entry of run.entries) entry.node.open = open;
+                }
+                navigationButton('Expand all', () => expandAll(true));
+                navigationButton('Collapse all', () => expandAll(false));
+                navigationButton('Clear filters', () => { search.value = ''; filter.value = 'all'; applyFilter(); search.focus?.(); });
+                navigationButton('Close review', () => { reset(); document.getElementById('uploadBtn')?.focus(); });
+                filters.append(navigation);
+
                 stop.onclick = () => {
                     if (!current()) return;
                     run.cancelled = true; run.pass += 1;
@@ -963,7 +983,13 @@
                                 savedText = 'This saved answer is temporarily unavailable. Your task is still saved.';
                             }
                             if (!valid()) return;
-                            const entry = document.createElement('article');
+                            const entry = document.createElement('details'); entry.className = 'saved-answer-entry';
+                            entry.open = run.expanded;
+                            const summary = document.createElement('summary');
+                            const preview = String(task.message || 'Saved task').replace(/\s+/g, ' ').trim();
+                            summary.textContent = (attention ? 'Needs attention — ' : 'Saved answer — ') +
+                                preview.slice(0, 140) + (preview.length > 140 ? '…' : '');
+                            entry.append(summary);
                             appendChatMessage(entry, 'user', task.message);
                             appendChatMessage(entry, failed ? 'assistant error' : 'assistant', savedText);
                             results.append(entry);
