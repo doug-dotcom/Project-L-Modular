@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const el = id => document.getElementById(id);
-    let current = null, busy = false, selection = 0, accountVersion = 0, recoveryVersion = 0, historyVersion = 0;
+    let current = null, busy = false, selection = 0, accountVersion = 0, recoveryVersion = 0, historyVersion = 0, filesVersion = 0;
     const status = text => { el('evidenceStatus').textContent = text; };
     const accountCurrent = version => version === accountVersion && document.documentElement.dataset.account === 'ready';
     const recoveryCurrent = (account, version) => accountCurrent(account) && version === recoveryVersion;
@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         el('evidenceAnswer').textContent = ''; status('');
     }
     function resetAccount() {
-        accountVersion += 1; selection += 1; historyVersion += 1; stopRecovery();
+        accountVersion += 1; selection += 1; historyVersion += 1; filesVersion += 1; stopRecovery();
         current = null; busy = false; el('askEvidence').disabled = false;
         el('evidenceFiles').replaceChildren(new Option('Choose a saved file', ''));
         el('evidenceFiles').value = ''; el('evidenceTasks').replaceChildren();
@@ -44,19 +44,28 @@ document.addEventListener('DOMContentLoaded', () => {
             return result;
         }, timeoutMs);
     }
-    async function refresh(selected = '') {
-        const account = accountVersion, chosen = selection;
-        if (!accountCurrent(account)) return false;
-        let result;
-        try { result = await api('/evidence/files'); }
-        catch (error) {
-            if (accountCurrent(account) && chosen === selection) status(error.message);
+    async function refresh(selected = el('evidenceFiles').value) {
+        const account = accountVersion, chosen = selection, generation = ++filesVersion;
+        const active = () => accountCurrent(account) && chosen === selection && generation === filesVersion;
+        if (!active()) return false;
+        let result, options;
+        try {
+            result = await api('/evidence/files');
+            if (!active()) return false;
+            if (!Array.isArray(result?.files) || result.files.some(file => !file ||
+                typeof file.id !== 'string' || !file.id.trim() || typeof file.filename !== 'string' ||
+                !Number.isInteger(file.page_count) || file.page_count < 1))
+                throw new Error('Saved files could not be read. Your current file has been kept.');
+            options = result.files.map(file => new Option(file.filename + ' (' + file.page_count + ' pages)', file.id));
+        } catch (error) {
+            if (active()) status(error.message);
             return false;
         }
-        if (!accountCurrent(account) || chosen !== selection) return false;
-        el('evidenceFiles').replaceChildren(new Option('Choose a saved file', ''));
-        for (const file of result.files) el('evidenceFiles').add(new Option(file.filename + ' (' + file.page_count + ' pages)', file.id));
-        el('evidenceFiles').value = selected;
+        const available = result.files.some(file => file.id === selected);
+        el('evidenceFiles').replaceChildren(new Option('Choose a saved file', ''), ...options);
+        el('evidenceFiles').value = available ? selected : '';
+        // Originals are immutable; refreshing the list need not reset an open page or answer.
+        if (available && current?.id === selected) return true;
         return choose();
     }
     function preview() {
@@ -67,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function choose() {
         const generation = ++selection, account = accountVersion;
         stopRecovery(); current = null; el('evidencePreview').textContent = '';
+        el('evidencePage').value = 1; el('evidencePage').max = 1;
         if (!accountCurrent(account)) return false;
         const id = el('evidenceFiles').value;
         if (!id) return true;
