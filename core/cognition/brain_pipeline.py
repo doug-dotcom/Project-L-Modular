@@ -34,6 +34,12 @@ supabase = (
 
 RAW_TABLE = "raw_catchall"
 
+
+def _guard_write(write_guard, stage):
+    if write_guard is not None:
+        write_guard(stage)
+
+
 def already_processed(table, raw_id):
     result = (
         supabase.table(table)
@@ -46,7 +52,7 @@ def already_processed(table, raw_id):
     return bool(result.data)
 
 
-def process_raw_memory(row):
+def process_raw_memory(row, write_guard=None):
     promotion = evaluate_promotion(row)
     raw_id = row.get("id") if isinstance(row, dict) else None
 
@@ -69,14 +75,20 @@ def process_raw_memory(row):
             "target": target_table,
         }
 
+    _guard_write(write_guard, "promoting_long_term_memory")
     supabase.table(target_table).insert(payload).execute()
 
     specialised = write_specialised_memories(
         supabase,
         row,
         category=target_table.removeprefix("memory_"),
+        write_guard=write_guard,
     )
-    learning = record_user_learning(row, client=supabase)
+    learning = record_user_learning(
+        row,
+        client=supabase,
+        write_guard=write_guard,
+    )
     invalidate_recall_caches(long_term=True)
 
     return {
