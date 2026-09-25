@@ -898,6 +898,11 @@
                 button.disabled = false;
             }
             window.addEventListener('l-account-ready', reset);
+            window.addEventListener('l-task-started', () => active?.invalidate?.());
+            window.addEventListener('storage', event => {
+                if (event.key === null || ['project-l-saved-tasks', 'project-l-recovery-token'].includes(event.key))
+                    active?.invalidate?.();
+            });
             new MutationObserver(() => {
                 if (document.documentElement.dataset.account !== 'ready') reset();
             }).observe(document.documentElement, {attributes: true, attributeFilter: ['data-account']});
@@ -1007,6 +1012,12 @@
                 historyNotice.hidden = true;
                 filters.append(navigation, orderLabel, matchLabel, historyNotice);
 
+                run.invalidate = () => {
+                    if (active !== run || document.documentElement.dataset.account !== 'ready') return;
+                    run.cancelled = true; run.pass += 1;
+                    button.disabled = false; stop.disabled = true; older.disabled = true; refresh.disabled = false;
+                    progress.textContent = 'Review is out of date — ' + count() + '. Saved tasks or the browser recovery link changed. Use Refresh review for the latest status. No tasks have been repeated.';
+                };
                 stop.onclick = () => {
                     if (!current()) return;
                     run.cancelled = true; run.pass += 1;
