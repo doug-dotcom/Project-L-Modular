@@ -569,9 +569,17 @@
             }
             return {"X-L-Recovery-Token": token};
         }
-        function savedTasks() {
-            try { return JSON.parse(localStorage.getItem("project-l-saved-tasks") || "[]"); }
-            catch (_) { return []; }
+        function savedTasks(forUpdate = false) {
+            try {
+                const raw = localStorage.getItem("project-l-saved-tasks");
+                const tasks = raw === null ? [] : JSON.parse(raw);
+                if (forUpdate && !Array.isArray(tasks)) throw new Error("Saved tasks are unreadable");
+                return tasks;
+            } catch (error) {
+                // Read views can be empty; writes must never replace unreadable history.
+                if (forUpdate) throw error;
+                return [];
+            }
         }
 
 
@@ -630,7 +638,7 @@
         }
 
         function rememberPendingRequest(requestId, message, kind = "chat") {
-            const tasks = savedTasks().filter(task => task.requestId !== requestId);
+            const tasks = savedTasks(true).filter(task => task.requestId !== requestId);
             tasks.push({requestId, message, kind, pending: true});
             localStorage.setItem("project-l-saved-tasks", JSON.stringify(tasks.slice(-100)));
             localStorage.setItem(PENDING_REQUEST_KEY, JSON.stringify({requestId, message, kind}));
@@ -640,7 +648,7 @@
         function clearPendingRequest(requestId) {
             // Local bookkeeping must not discard an answer already delivered.
             try {
-                const tasks = savedTasks().map(task => task.requestId === requestId ? {...task, pending: false} : task);
+                const tasks = savedTasks(true).map(task => task.requestId === requestId ? {...task, pending: false} : task);
                 localStorage.setItem("project-l-saved-tasks", JSON.stringify(tasks));
                 let old;
                 try { old = JSON.parse(localStorage.getItem(PENDING_REQUEST_KEY) || "null"); } catch (_) {}
