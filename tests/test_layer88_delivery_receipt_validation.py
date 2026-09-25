@@ -115,7 +115,13 @@ def test_layer88_database_read_withholds_invalid_result_for_every_terminal_statu
 def test_layer88_write_rejects_missing_receipt_before_any_database_call():
     store = TaskStore(None)
     with pytest.raises(ValueError, match="chat_delivery_integrity_mismatch"):
-        store.finish(REQUEST_ID, "worker", invalid_payloads()[8])
+        store.finish_bound(
+            REQUEST_ID,
+            "worker",
+            "a" * 64,
+            {"request_id": REQUEST_ID, "message": "fixture"},
+            invalid_payloads()[8],
+        )
 
 
 def test_layer88_browser_verification_and_all_terminal_display_paths():
