@@ -68,7 +68,7 @@ def test_layer162_replaces_shared_write_guard_with_specific_boundaries():
 
     release_layers = [
         int(value)
-        for value in re.findall(r'release_layer["\\']?\\s*[:=]\\s*(\\d+)', text)
+        for value in re.findall(r"release_layer[\\\"']?\\s*[:=]\\s*(\\d+)", text)
     ]
     assert len(release_layers) == 3
     assert len(set(release_layers)) == 1
