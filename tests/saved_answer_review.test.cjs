@@ -21,6 +21,57 @@ vm.createContext(context);vm.runInContext(source+'\ninstallSavedAnswerReview(but
 const panel=()=>chat.children.at(-1),progress=()=>panel().children[1].textContent,stop=()=>panel().children[2].onclick();
 const ready={status:'ready',result:{reply:'answer'}};
 (async()=>{
+ if(scenario.startsWith('review_change_')) {
+  const controls=()=>panel().children[3],navigation=()=>controls().children[3].children;
+  const refresh=()=>navigation()[4].onclick(),entries=()=>panel().children[4].children;
+  const eventKeys={review_change_storage:'project-l-saved-tasks',review_change_token:'project-l-recovery-token',review_change_clear:null};
+  if(['review_change_late_fetch','review_change_late_verify'].includes(scenario)) {
+   let deferred,checks=0;
+   if(scenario.endsWith('fetch'))context.fetchChatJson=async url=>{
+    calls.push(url);return calls.length===2?new Promise(resolve=>deferred=()=>resolve(ready)):ready;
+   };
+   else context.verifyDeliveryReply=async()=>++checks===2?new Promise(resolve=>deferred=()=>resolve({valid:true})):{valid:true};
+   const pending=button.onclick();
+   for(let i=0;i<10&&!deferred;i++)await Promise.resolve();
+   assert.equal(typeof deferred,'function');assert.equal(entries().length,1);
+   events['l-task-started']();assert.match(progress(),/out of date/);
+   assert.equal(entries().length,1);assert.equal(panel().children[5].disabled,true);
+   context.fetchChatJson=async url=>{calls.push(url);return ready};
+   context.verifyDeliveryReply=async()=>({valid:true});
+   await refresh();const current=panel(),before=cleared.length;
+   assert.equal(entries().length,20);deferred();await pending;
+   assert.equal(panel(),current);assert.equal(entries().length,20);assert.equal(cleared.length,before);
+   assert.ok(!progress().includes('out of date'));assert.equal(panel().children[5].disabled,false);
+   return;
+  }
+  await button.onclick();const old=panel(),first=entries()[0],before=calls.length;
+  if(scenario==='review_change_unrelated') {
+   const previous=progress();events.storage({key:'unrelated'});
+   assert.equal(progress(),previous);assert.equal(panel().children[5].disabled,false);
+   await panel().children[5].onclick();assert.equal(entries().length,25);return;
+  }
+  if(scenario==='review_change_closed') {
+   navigation()[3].onclick();events['l-task-started']();events.storage({key:null});
+   assert.equal(old.removed,true);assert.equal(chat.children.length,1);assert.equal(calls.length,before);
+   await button.onclick();assert.ok(!progress().includes('out of date'));
+   events['l-account-ready']();events.storage({key:'project-l-saved-tasks'});
+   assert.equal(panel().removed,true);return;
+  }
+  const search=controls().children[0].children[0];search.value='Question';search.oninput();first.open=true;
+  tasks.push({requestId:'new',message:'Question new'});
+  if(scenario==='review_change_task')events['l-task-started']();else events.storage({key:eventKeys[scenario]});
+  assert.match(progress(),/out of date/);assert.match(progress(),/Refresh review/);
+  assert.equal(panel(),old);assert.equal(entries()[0],first);assert.equal(entries().length,20);
+  assert.equal(button.disabled,false);assert.equal(navigation()[4].disabled,false);
+  assert.equal(panel().children[2].disabled,true);assert.equal(panel().children[5].disabled,true);
+  await panel().children[5].onclick();stop();search.oninput();assert.equal(calls.length,before);
+  assert.match(progress(),/out of date/);
+  await refresh();assert.equal(old.removed,true);assert.equal(calls.length,before+20);
+  assert.equal(controls().children[0].children[0].value,'Question');
+  assert.equal(entries()[0].children[1].textContent,'Question new');assert.equal(entries()[1].open,true);
+  assert.ok(!progress().includes('out of date'));assert.equal(panel().children[5].disabled,false);
+  return;
+ }
  if(scenario.startsWith('history_')) {
   const rawValues={history_json:'PRIVATE broken JSON',history_shape:'null',history_empty:'[]',history_missing:null,
    history_mixed:JSON.stringify([null,{}, {requestId:'one',message:'Good one'},{requestId:'two',message:'Good two'}]),
