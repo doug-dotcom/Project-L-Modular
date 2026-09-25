@@ -141,18 +141,33 @@ class FakeStore:
     def __init__(self):
         self.finished = []
 
-    def progress(self, *args, **kwargs):
+    def progress_bound(self, *args, **kwargs):
         return True
 
-    def finish(self, request_id, worker, payload, status="ready"):
+    def finish_bound(self, request_id, worker, input_hash, request, payload, status="ready"):
         self.finished.append((status, payload))
+        return True
+
+    def reject_bound(self, *args, **kwargs):
         return True
 
 
 def test_runner_never_persists_mismatched_document_answer_as_ready():
     store = FakeStore()
+    req = request()
     TaskRunner(store, lambda _: answer(page=1)).run_one(
-        {"request_id": REQUEST_ID, "request": request()},
+        {
+            "request_id": REQUEST_ID,
+            "request": req,
+            "input_hash": request_hash(req),
+            "_request_integrity": {
+                "version": "1.0",
+                "status": "verified",
+                "valid": True,
+                "issues": [],
+                "request_id_bound": True,
+            },
+        },
         str(uuid4()),
     )
     assert len(store.finished) == 1

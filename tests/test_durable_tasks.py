@@ -7,16 +7,37 @@ from fastapi import HTTPException
 from core.cognition.durable_tasks import TaskStore, TaskRunner, CONTEXT, checkpoint, owner_identity, request_hash
 
 
+def bound_task(message='actual answer'):
+    request_id = str(uuid4())
+    request = {'request_id': request_id, 'message': message}
+    return {
+        'request_id': request_id,
+        'request': request,
+        'input_hash': request_hash(request),
+        '_request_integrity': {
+            'version': '1.0',
+            'status': 'verified',
+            'valid': True,
+            'issues': [],
+            'request_id_bound': True,
+        },
+    }
+
+
 class FakeStore:
     def __init__(self):
         self.finished = []
         self.progressed = []
+        self.rejected = []
         self.owned = True
-    def progress(self, request_id, worker, stage=None):
+    def progress_bound(self, request_id, worker, input_hash, request, stage=None):
         self.progressed.append(stage)
         return self.owned
-    def finish(self, request_id, worker, payload, status='ready'):
+    def finish_bound(self, request_id, worker, input_hash, request, payload, status='ready'):
         self.finished.append((status, payload))
+        return self.owned
+    def reject_bound(self, request_id, worker, input_hash, request, payload):
+        self.rejected.append(payload)
         return self.owned
 
 
@@ -25,7 +46,7 @@ def test_runner_checkpoints_and_saves_actual_result():
     def execute(request):
         checkpoint('reasoning')
         return {'reply': request['message']}
-    TaskRunner(store, execute).run_one({'request_id': str(uuid4()), 'request': {'message': 'actual answer'}}, str(uuid4()))
+    TaskRunner(store, execute).run_one(bound_task(), str(uuid4()))
     assert store.finished == [('ready', {'reply': 'actual answer'})]
     assert store.progressed == ['reasoning']
     assert CONTEXT.task is None
@@ -38,7 +59,7 @@ def test_lost_lease_stops_before_next_action():
     def execute(request):
         checkpoint('connected_actions')
         effects.append('action')
-    TaskRunner(store, execute).run_one({'request_id': str(uuid4()), 'request': {}}, str(uuid4()))
+    TaskRunner(store, execute).run_one(bound_task('connected action'), str(uuid4()))
     assert not effects
     assert store.finished[0][0] == 'failed'
 
@@ -46,15 +67,15 @@ def test_lost_lease_stops_before_next_action():
 def test_failed_result_write_retries_save_without_repeating_work():
     class Store(FakeStore):
         attempts = 0
-        def finish(self, *args, **kwargs):
+        def finish_bound(self, *args, **kwargs):
             self.attempts += 1
             if self.attempts == 1:
                 raise ConnectionError()
-            return super().finish(*args, **kwargs)
+            return super().finish_bound(*args, **kwargs)
     store = Store()
     effects = []
     TaskRunner(store, lambda request: effects.append('once') or {'reply': 'done'}).run_one(
-        {'request_id': str(uuid4()), 'request': {}}, str(uuid4()))
+        bound_task('once'), str(uuid4()))
     assert effects == ['once']
     assert store.attempts == 2
 
@@ -63,7 +84,7 @@ def test_execution_exception_is_terminal_not_retried():
     store = FakeStore()
     def execute(request):
         raise RuntimeError('private error detail')
-    TaskRunner(store, execute).run_one({'request_id': str(uuid4()), 'request': {}}, str(uuid4()))
+    TaskRunner(store, execute).run_one(bound_task('failure'), str(uuid4()))
     assert len(store.finished) == 1
     assert store.finished[0][0] == 'failed'
     assert 'private' not in str(store.finished)
@@ -72,7 +93,7 @@ def test_execution_exception_is_terminal_not_retried():
 def test_provider_failure_receipt_remains_failed_and_recoverable():
     store = FakeStore()
     payload = {'reply': 'Please try again.', 'error': True, 'model_receipt': {'status': 'incomplete'}}
-    TaskRunner(store, lambda _: payload).run_one({'request_id': str(uuid4()), 'request': {}}, str(uuid4()))
+    TaskRunner(store, lambda _: payload).run_one(bound_task('provider failure'), str(uuid4()))
     assert store.finished == [('failed', payload)]
 
 
@@ -186,7 +207,7 @@ def test_uncertain_claim_is_not_replayed(monkeypatch):
                 # The database committed this claim but its response was lost.
                 raise TimeoutError('response lost')
             if self.calls == 2:
-                return {'request_id': str(uuid4()), 'request': {'message': 'next task'}}
+                return bound_task('next task')
             return None
     store = Store()
     runner = TaskRunner(store, lambda request: effects.append(request['message']) or {'reply': 'done'})
