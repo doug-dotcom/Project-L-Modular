@@ -491,9 +491,10 @@
             const chat = document.getElementById("chat");
             const input = document.getElementById("message");
             const prompt = input.value.trim() || "Tell me what you can see in this picture.";
-            let requestId;
+            let requestId, requestHeaders;
             try {
                 requestId = newChatRequestId();
+                requestHeaders = recoveryHeaders();
                 rememberPendingRequest(requestId, prompt, "image");
             } catch (_) {
                 appendChatMessage(chat, "assistant error",
@@ -517,21 +518,38 @@
             formData.append("request_id", requestId);
             formData.append("prompt", prompt);
 
+            let recoveryAttempted = false;
             try {
-                const response = await fetch("/image/start", {method: "POST", body: formData});
-                const start = await response.json();
-                if (!response.ok || start.status === "unsupported_file" || start.status === "invalid_file_size") {
-                    throw new Error(start.message || "Image upload failed");
+                const start = await fetchChatJson("/image/start", {method: "POST", headers: requestHeaders, body: formData});
+                const rejection = {
+                    unsupported_file: "Please choose a JPEG, PNG, WebP or GIF image.",
+                    invalid_file_size: "Please choose a non-empty image under 10 MB.",
+                    invalid_request_id: "This picture request could not be started. Please select the picture again."
+                };
+                if (Object.hasOwn(rejection, start.status)) {
+                    thinking.remove();
+                    clearPendingRequest(requestId);
+                    appendChatMessage(chat, "assistant error", rejection[start.status]);
+                    return;
                 }
+                recoveryAttempted = true;
                 const result = await recoverChatResponse(requestId);
-                thinking.remove();
-                clearPendingRequest(requestId);
                 if (!result || !result.reply) throw new Error("Image response was not recovered");
-                appendChatMessage(chat, "assistant", result.reply);
-            } catch (error) {
                 thinking.remove();
                 clearPendingRequest(requestId);
-                appendChatMessage(chat, "assistant error", error.message || "Picture upload failed. Please try again.");
+                appendChatMessage(chat, "assistant", result.reply);
+            } catch (_) {
+                thinking.textContent = "Checking whether L saved your picture answer...";
+                // A lost acknowledgement can still mean the upload was accepted.
+                const recovered = recoveryAttempted ? null : await recoverChatResponse(requestId);
+                thinking.remove();
+                if (recovered?.reply) {
+                    clearPendingRequest(requestId);
+                    appendChatMessage(chat, "assistant", recovered.reply);
+                } else {
+                    appendChatMessage(chat, "assistant error",
+                        "I stopped waiting for this picture answer. Your request details are saved in this browser; L may still be working. Check Saved answers before uploading the picture again.");
+                }
             } finally {
                 fileInput.value = "";
                 chat.scrollTop = chat.scrollHeight;

@@ -3,9 +3,9 @@ const html=fs.readFileSync('ui/index.html','utf8'),scripts=[...html.matchAll(/<s
 const scenario=process.argv[2],storage=new Map(),requests=[],messages=[],previews=[];
 let blocked=true;const file={name:'picture.jpg'},original='  My picture prompt\nExact spacing  👊  ';
 const input={value:original,focus(){this.focused=true}},fileInput={value:'selected-picture',files:[file]},chat={scrollHeight:10,appendChild:n=>previews.push(n)};
-const key=scenario==='pending'?'project-l-pending-request':'project-l-saved-tasks';
+const key=scenario==='token'?'project-l-recovery-token':scenario==='pending'?'project-l-pending-request':'project-l-saved-tasks';
 if(scenario==='malformed')storage.set(key,'null');
-const context={window:{crypto:require('node:crypto').webcrypto},
+const context={AbortController,setTimeout,clearTimeout,window:{crypto:require('node:crypto').webcrypto},
  document:{addEventListener(){},createElement:()=>({style:{}}),getElementById:id=>id==='message'?input:id==='fileInput'?fileInput:chat},
  URL:{createObjectURL:()=> 'blob:fixture'},FormData:class{constructor(){this.fields={}}append(k,v){this.fields[k]=v}},
  localStorage:{getItem:k=>storage.get(k)||null,setItem(k,v){if(blocked&&scenario!=='malformed'&&k===key)throw Error('PRIVATE');storage.set(k,v)},removeItem:k=>storage.delete(k)},
