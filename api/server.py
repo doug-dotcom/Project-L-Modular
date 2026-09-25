@@ -90,7 +90,14 @@ from core.cognition.claim_support import (
     bind_claim_support_to_publication,
     evaluate_claim_support,
 )
-from core.cognition.durable_tasks import TaskStore, TaskRunner, CONTEXT as TASK_CONTEXT, checkpoint, task_database_client
+from core.cognition.durable_tasks import (
+    CONTEXT as TASK_CONTEXT,
+    DurableTaskBindingError,
+    TaskRunner,
+    TaskStore,
+    checkpoint,
+    task_database_client,
+)
 from core.cognition.delivery_integrity import (
     require_chat_delivery_payload,
     seal_chat_delivery_payload,
@@ -616,10 +623,12 @@ def run_brain_pipeline(raw_row):
         if not raw_row or not isinstance(raw_row, dict):
             return None
 
-        return process_raw_memory(raw_row)
+        return process_raw_memory(raw_row, write_guard=checkpoint)
 
+    except DurableTaskBindingError:
+        raise
     except Exception as e:
-        log(f"BRAIN PIPELINE ERROR: {e}")
+        log(f"BRAIN PIPELINE ERROR: {type(e).__name__}")
         return None
 
 def write_live_short_term(table_name, role, content):
@@ -826,7 +835,7 @@ def health():
         "portability_certification_ready": True,
         "capability_router_ready": True,
         "main_street": True,
-        "release_layer": 162,
+        "release_layer": 163,
         "release_certification_ready": True,
         "release_provenance_ready": True,
         "answer_provenance_ready": True,
@@ -855,7 +864,7 @@ def cognition_status():
         "status": "ok",
         "architecture": "project_l_cognitive_core",
         "version": "13.0",
-        "release_layer": 162,
+        "release_layer": 163,
         "release_certification": build_release_certification(),
         "release_provenance": build_release_provenance(),
         "answer_provenance_ready": True,
@@ -1956,7 +1965,7 @@ RESPONSE RULES:
         model_receipt=response_model_receipt,
         context_budget=cognitive_packet.get("context_budget", {}),
         assistant_persistence=assistant_persistence,
-        release_layer=162,
+        release_layer=163,
     )
     answer_provenance_check = verify_answer_provenance(
         answer_provenance,
