@@ -225,17 +225,19 @@ def _already_stored(client, table_name, raw_id):
     return bool(response.data)
 
 
-def _store_candidate(client, table_name, payload):
+def _store_candidate(client, table_name, payload, write_guard=None, stage=""):
     if not payload:
         return "not_applicable"
     raw_id = payload.get("source_reference")
     if raw_id is None or _already_stored(client, table_name, raw_id):
         return "already_exists"
+    if write_guard is not None:
+        write_guard(stage or f"saving_{table_name}")
     client.table(table_name).insert(payload).execute()
     return "stored"
 
 
-def write_specialised_memories(client, row, category="general"):
+def write_specialised_memories(client, row, category="general", write_guard=None):
     """Idempotently write specialised records for one promoted raw row."""
     results = {}
     candidates = {
@@ -244,7 +246,13 @@ def write_specialised_memories(client, row, category="general"):
     }
     for name, (table_name, payload) in candidates.items():
         try:
-            results[name] = _store_candidate(client, table_name, payload)
+            results[name] = _store_candidate(
+                client,
+                table_name,
+                payload,
+                write_guard=write_guard,
+                stage=f"saving_specialised_{name}",
+            )
         except Exception as exc:
             results[name] = f"error:{type(exc).__name__}"
     return results
