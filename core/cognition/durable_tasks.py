@@ -346,7 +346,9 @@ class TaskRunner:
                 LOG.warning('Invalid durable task could not be marked failed')
             return
 
-        claimed_request = task.get('request')
+        claimed_request = json.loads(json.dumps(
+            task.get('request'), sort_keys=True, separators=(',', ':')
+        ))
         claimed_hash = task.get('input_hash')
         bound = (
             isinstance(request_integrity, dict)
