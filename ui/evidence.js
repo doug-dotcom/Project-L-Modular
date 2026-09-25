@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const el = id => document.getElementById(id);
-    let current = null, busy = false, selection = 0, accountVersion = 0, recoveryVersion = 0;
+    let current = null, busy = false, selection = 0, accountVersion = 0, recoveryVersion = 0, historyVersion = 0;
     const status = text => { el('evidenceStatus').textContent = text; };
     const accountCurrent = version => version === accountVersion && document.documentElement.dataset.account === 'ready';
     const recoveryCurrent = (account, version) => accountCurrent(account) && version === recoveryVersion;
@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         el('evidenceAnswer').textContent = ''; status('');
     }
     function resetAccount() {
-        accountVersion += 1; selection += 1; stopRecovery();
+        accountVersion += 1; selection += 1; historyVersion += 1; stopRecovery();
         current = null; busy = false; el('askEvidence').disabled = false;
         el('evidenceFiles').replaceChildren(new Option('Choose a saved file', ''));
         el('evidenceFiles').value = ''; el('evidenceTasks').replaceChildren();
@@ -140,23 +140,41 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
     async function history() {
-        const account = accountVersion;
-        if (!accountCurrent(account)) return;
-        const result = await api('/evidence/tasks');
-        if (!accountCurrent(account)) return;
-        el('evidenceTasks').replaceChildren();
-        for (const task of result.tasks) {
-            const button = document.createElement('button');
-            button.textContent = task.request.question + ' — ' + task.status;
-            button.onclick = () => {
-                if (!accountCurrent(account)) return;
-                stopRecovery(); const generation = recoveryVersion;
-                status('Checking this saved file answer…');
-                return recover(task.request_id, generation, account).catch(error => {
-                    if (recoveryCurrent(account, generation)) status(error.message);
-                });
-            };
-            el('evidenceTasks').appendChild(button);
+        const account = accountVersion, generation = ++historyVersion, recovery = recoveryVersion;
+        const active = () => accountCurrent(account) && generation === historyVersion;
+        const announce = text => { if (active() && recovery === recoveryVersion && !busy) status(text); };
+        if (!active()) return;
+        announce('Loading saved file answers…');
+        try {
+            const result = await api('/evidence/tasks');
+            if (!active()) return;
+            if (!Array.isArray(result?.tasks)) throw new Error('Saved file answers could not be read.');
+            const buttons = [];
+            let skipped = 0;
+            for (const task of result.tasks) {
+                if (!task || typeof task.request_id !== 'string' || !task.request_id.trim() ||
+                    typeof task.request?.question !== 'string' || !task.request.question.trim() ||
+                    typeof task.status !== 'string' || !task.status.trim()) { skipped += 1; continue; }
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.textContent = task.request.question + ' — ' + task.status;
+                button.onclick = () => {
+                    if (!accountCurrent(account)) return;
+                    stopRecovery(); const generation = recoveryVersion;
+                    status('Checking this saved file answer…');
+                    return recover(task.request_id, generation, account).catch(error => {
+                        if (recoveryCurrent(account, generation)) status(error.message);
+                    });
+                };
+                buttons.push(button);
+            }
+            el('evidenceTasks').replaceChildren(...buttons);
+            announce(skipped
+                ? `${buttons.length} saved file answers shown. ${skipped} ${skipped === 1 ? 'entry could' : 'entries could'} not be read. Check Saved file answers again to retry.`
+                : buttons.length ? `${buttons.length} saved file ${buttons.length === 1 ? 'answer' : 'answers'} shown.`
+                : 'No saved file answers found for this account.');
+        } catch (error) {
+            announce(error.message + ' The displayed list has been kept. Check Saved file answers again to retry.');
         }
     }
     window.lEvidenceUpload = async file => {
