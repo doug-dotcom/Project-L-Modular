@@ -222,13 +222,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Older tasks may not contain file/page context. Keep them recoverable without
                     // pretending the current preview belongs to the saved answer.
+                    selection += 1; filesVersion += 1;
                     stopRecovery(); const generation = recoveryVersion;
                     current = null; el('evidenceFiles').value = ''; el('evidencePage').value = 1; el('evidencePage').max = 1;
                     el('evidencePreview').textContent = ''; el('evidenceQuestion').value = request.question;
                     status('Checking this saved file answer. Its original file context was not stored with this older entry…');
-                    return recover(task.request_id, generation, account).catch(error => {
+                    try {
+                        const recovered = await recover(task.request_id, generation, account);
+                        if (recovered && recoveryCurrent(account, generation))
+                            status('Answer recovered. The original file context was not stored with this older entry, so no file preview is shown.');
+                    } catch (error) {
                         if (recoveryCurrent(account, generation)) status(error.message);
-                    });
+                    }
                 };
                 buttons.push(button);
             }
