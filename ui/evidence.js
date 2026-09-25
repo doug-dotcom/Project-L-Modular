@@ -80,6 +80,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
     }
+    function readableAnswer(result) {
+        if (!result || typeof result !== 'object' || Array.isArray(result) ||
+            typeof result.reply !== 'string' || !result.reply.trim()) return false;
+        const source = result.evidence;
+        if (source == null) return true;
+        return typeof source === 'object' && !Array.isArray(source) &&
+            typeof source.filename === 'string' && !!source.filename.trim() &&
+            Number.isInteger(source.page) && source.page > 0 &&
+            (source.quotes == null || (Array.isArray(source.quotes) && source.quotes.every(q => typeof q === 'string')));
+    }
     function show(result) {
         const source = result.evidence;
         el('evidenceAnswer').textContent = result.reply + (source ? '\n\nSource: ' + source.filename + ', physical page ' + source.page +
@@ -109,7 +119,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (!recoveryCurrent(account, generation)) return false;
             if (['ready','failed','interrupted'].includes(result?.status)) {
-                show(result.result || {reply:'This question was interrupted. Review before starting another.'});
+                const answer = result.result ?? (result.status === 'ready' ? null :
+                    {reply:'This question was interrupted. Review before starting another.'});
+                if (!readableAnswer(answer) || (result.status === 'ready' && answer.error)) {
+                    status('This saved file answer could not be read. Its recovery details have been kept. Check Saved file answers again before submitting another question.');
+                    return false;
+                }
+                show(answer);
                 if (!recoveryCurrent(account, generation)) return false;
                 clearPendingQuestion(id);
                 status(result.status === 'ready' ? 'Answer recovered from your account.' : 'Question did not complete.');
