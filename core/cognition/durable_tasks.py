@@ -286,6 +286,34 @@ class TaskRunner:
 
     def run_one(self, task, worker):
         request_id = task['request_id']
+        request_fields_present = 'request' in task or 'input_hash' in task
+        if request_fields_present:
+            request_integrity = verify_task_request_integrity(
+                request_id, task.get('request'), task.get('input_hash')
+            )
+            if not request_integrity.get('valid'):
+                LOG.warning(
+                    'Durable task request integrity failed before execution: request_id=%s issues=%s',
+                    request_id,
+                    ','.join(request_integrity.get('issues', [])),
+                )
+                try:
+                    self.store.finish(
+                        request_id,
+                        worker,
+                        {
+                            'reply': (
+                                'This task stopped before execution because its saved request '
+                                'failed integrity verification. Please submit it again.'
+                            ),
+                            'error': True,
+                        },
+                        status='failed',
+                    )
+                except Exception:
+                    LOG.warning('Invalid durable task could not be marked failed')
+                return
+
         done = threading.Event()
         def heartbeat():
             while not done.wait(15):
