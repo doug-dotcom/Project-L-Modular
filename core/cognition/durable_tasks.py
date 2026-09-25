@@ -7,6 +7,7 @@ import hashlib
 import json
 import logging
 import random
+import re
 import threading
 import traceback
 from uuid import UUID, uuid4
@@ -67,6 +68,37 @@ def request_hash(request):
     return hashlib.sha256(json.dumps(request, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
+def verify_task_request_integrity(request_id, request, input_hash):
+    """Verify the stored durable request before trusting any saved task result."""
+    issues = []
+    if not isinstance(request, dict):
+        issues.append('request_payload_missing_or_malformed')
+    else:
+        embedded = request.get('request_id')
+        if not isinstance(embedded, str) or embedded != str(request_id):
+            issues.append('request_id_binding_mismatch')
+        try:
+            expected_hash = request_hash(request)
+        except Exception:
+            expected_hash = ''
+            issues.append('request_payload_not_hashable')
+        if not re.fullmatch(r'[0-9a-f]{64}', str(input_hash or '')):
+            issues.append('input_hash_shape_invalid')
+        elif expected_hash and str(input_hash) != expected_hash:
+            issues.append('request_hash_mismatch')
+
+    if not isinstance(request, dict) and not re.fullmatch(r'[0-9a-f]{64}', str(input_hash or '')):
+        issues.append('input_hash_shape_invalid')
+
+    return {
+        'version': '1.0',
+        'status': 'verified' if not issues else 'mismatch',
+        'valid': not issues,
+        'issues': issues,
+        'request_id_bound': not issues,
+    }
+
+
 class TaskStore:
     def __init__(self, client):
         self.client = client
@@ -84,13 +116,26 @@ class TaskStore:
     def get(self, request_id, token):
         user_id, owner = owner_identity(token)
         rows = (self.client.table('l_chat_tasks')
-                .select('status,result,request,checkpoint,lease_until,created_at,updated_at')
+                .select('status,result,request,input_hash,checkpoint,lease_until,created_at,updated_at')
                 .eq('request_id', request_id).eq('user_id', user_id).eq('owner_hash', owner)
                 .limit(1).execute().data)
         if not rows:
             return {'status': 'not_found'}
         row = rows[0]
         task_request = row.pop('request', None)
+        stored_input_hash = row.pop('input_hash', None)
+        request_integrity = verify_task_request_integrity(request_id, task_request, stored_input_hash)
+        row['request_integrity'] = request_integrity
+        if not request_integrity.get('valid'):
+            row['status'] = 'failed'
+            row['result'] = {
+                'reply': (
+                    'The saved task failed request integrity verification. '
+                    'Please submit the request again.'
+                ),
+                'error': True,
+            }
+            return {**row, 'durable': True, 'request_id': request_id}
         result_payload = row.get('result')
         if result_payload is not None or row['status'] == 'ready':
             delivery = verify_chat_delivery_payload(
