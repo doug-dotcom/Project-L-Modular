@@ -24,7 +24,7 @@ def payload():
 
 
 @pytest.mark.parametrize(
-    "request,input_hash,issue",
+    "stored_request,input_hash,issue",
     [
         (None, "a" * 64, "request_payload_missing_or_malformed"),
         (req(request_id="00000000-0000-4000-8000-000000000999"), None, "request_id_binding_mismatch"),
@@ -32,8 +32,8 @@ def payload():
         (req(), "b" * 64, "request_hash_mismatch"),
     ],
 )
-def test_request_integrity_rejects_invalid_stored_request(request, input_hash, issue):
-    check = verify_task_request_integrity(REQUEST_ID, request, input_hash)
+def test_request_integrity_rejects_invalid_stored_request(stored_request, input_hash, issue):
+    check = verify_task_request_integrity(REQUEST_ID, stored_request, input_hash)
     assert check["valid"] is False
     assert check["status"] == "mismatch"
     assert issue in check["issues"]
@@ -109,8 +109,8 @@ def test_recovery_exposes_verified_request_integrity_without_returning_request()
         (req(), "b" * 64, "request_hash_mismatch"),
     ],
 )
-def test_recovery_withholds_answer_when_stored_request_integrity_fails(request, input_hash, issue):
-    result = TaskStore(Client(row(request, input_hash))).get(REQUEST_ID, TOKEN)
+def test_recovery_withholds_answer_when_stored_request_integrity_fails(stored_request, input_hash, issue):
+    result = TaskStore(Client(row(stored_request, input_hash))).get(REQUEST_ID, TOKEN)
     assert result["status"] == "failed"
     assert result["result"]["error"] is True
     assert "request integrity verification" in result["result"]["reply"]
