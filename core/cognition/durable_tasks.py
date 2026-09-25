@@ -206,7 +206,13 @@ class TaskStore:
 
     def claim(self, worker):
         rows = self.rpc('l_task_claim', {'p_worker': worker})
-        return rows[0] if rows else None
+        if not rows:
+            return None
+        task = rows[0]
+        task['_request_integrity'] = verify_task_request_integrity(
+            task.get('request_id'), task.get('request'), task.get('input_hash')
+        )
+        return task
 
     def progress(self, request_id, worker, checkpoint=None):
         return self.rpc('l_task_progress', {'p_id': request_id, 'p_worker': worker, 'p_checkpoint': checkpoint})
@@ -286,33 +292,29 @@ class TaskRunner:
 
     def run_one(self, task, worker):
         request_id = task['request_id']
-        request_fields_present = 'request' in task or 'input_hash' in task
-        if request_fields_present:
-            request_integrity = verify_task_request_integrity(
-                request_id, task.get('request'), task.get('input_hash')
+        request_integrity = task.get('_request_integrity')
+        if isinstance(request_integrity, dict) and not request_integrity.get('valid'):
+            LOG.warning(
+                'Durable task request integrity failed before execution: request_id=%s issues=%s',
+                request_id,
+                ','.join(request_integrity.get('issues', [])),
             )
-            if not request_integrity.get('valid'):
-                LOG.warning(
-                    'Durable task request integrity failed before execution: request_id=%s issues=%s',
+            try:
+                self.store.finish(
                     request_id,
-                    ','.join(request_integrity.get('issues', [])),
+                    worker,
+                    {
+                        'reply': (
+                            'This task stopped before execution because its saved request '
+                            'failed integrity verification. Please submit it again.'
+                        ),
+                        'error': True,
+                    },
+                    status='failed',
                 )
-                try:
-                    self.store.finish(
-                        request_id,
-                        worker,
-                        {
-                            'reply': (
-                                'This task stopped before execution because its saved request '
-                                'failed integrity verification. Please submit it again.'
-                            ),
-                            'error': True,
-                        },
-                        status='failed',
-                    )
-                except Exception:
-                    LOG.warning('Invalid durable task could not be marked failed')
-                return
+            except Exception:
+                LOG.warning('Invalid durable task could not be marked failed')
+            return
 
         done = threading.Event()
         def heartbeat():
