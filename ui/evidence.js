@@ -1,7 +1,27 @@
 document.addEventListener('DOMContentLoaded', () => {
     const el = id => document.getElementById(id);
-    let current = null, busy = false, selection = 0;
+    let current = null, busy = false, selection = 0, accountVersion = 0, recoveryVersion = 0;
     const status = text => { el('evidenceStatus').textContent = text; };
+    const accountCurrent = version => version === accountVersion && document.documentElement.dataset.account === 'ready';
+    const recoveryCurrent = (account, version) => accountCurrent(account) && version === recoveryVersion;
+    function stopRecovery() {
+        recoveryVersion += 1;
+        el('evidenceAnswer').textContent = ''; status('');
+    }
+    function resetAccount() {
+        accountVersion += 1; selection += 1; stopRecovery();
+        current = null; busy = false; el('askEvidence').disabled = false;
+        el('evidenceFiles').replaceChildren(new Option('Choose a saved file', ''));
+        el('evidenceFiles').value = ''; el('evidenceTasks').replaceChildren();
+        el('evidencePreview').textContent = ''; el('evidenceQuestion').value = '';
+        el('evidencePage').value = 1; el('evidencePage').max = 1;
+        el('evidenceUpload').value = ''; el('fileInput').value = '';
+    }
+    function reportFailure(action) {
+        const account = accountVersion;
+        if (!accountCurrent(account)) return Promise.resolve();
+        return action().catch(error => { if (accountCurrent(account)) status(error.message); });
+    }
     async function api(path, options) {
         const response = await fetch(path, options);
         const result = await response.json();
@@ -9,10 +29,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return result;
     }
     async function refresh(selected = '') {
-        const result = await api('/evidence/files');
+        const account = accountVersion, chosen = selection;
+        if (!accountCurrent(account)) return false;
+        let result;
+        try { result = await api('/evidence/files'); }
+        catch (error) {
+            if (accountCurrent(account) && chosen === selection) status(error.message);
+            return false;
+        }
+        if (!accountCurrent(account) || chosen !== selection) return false;
         el('evidenceFiles').replaceChildren(new Option('Choose a saved file', ''));
         for (const file of result.files) el('evidenceFiles').add(new Option(file.filename + ' (' + file.page_count + ' pages)', file.id));
-        if (selected) { el('evidenceFiles').value = selected; await choose(); }
+        el('evidenceFiles').value = selected;
+        return choose();
     }
     function preview() {
         const page = current?.pages[Number(el('evidencePage').value)-1];
@@ -20,13 +49,20 @@ document.addEventListener('DOMContentLoaded', () => {
             (page.truncated ? '\n[Extraction limited to the first 20,000 characters.]' : '') : '';
     }
     async function choose() {
-        const generation = ++selection;
-        current = null; el('evidencePreview').textContent = ''; el('evidenceAnswer').textContent = '';
+        const generation = ++selection, account = accountVersion;
+        stopRecovery(); current = null; el('evidencePreview').textContent = '';
+        if (!accountCurrent(account)) return false;
         const id = el('evidenceFiles').value;
-        if (!id) return;
-        const doc = await api('/evidence/files/' + id);
-        if (generation !== selection) return;
-        current = doc; el('evidencePage').value = 1; el('evidencePage').max = doc.page_count; preview();
+        if (!id) return true;
+        try {
+            const doc = await api('/evidence/files/' + id);
+            if (generation !== selection || !accountCurrent(account)) return false;
+            current = doc; el('evidencePage').value = 1; el('evidencePage').max = doc.page_count; preview();
+            return true;
+        } catch (error) {
+            if (generation === selection && accountCurrent(account)) status(error.message);
+            return false;
+        }
     }
     function show(result) {
         const source = result.evidence;
@@ -41,10 +77,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (pending?.request_id === id) sessionStorage.removeItem('l-evidence-pending');
         } catch (_) {}
     }
-    async function recover(id) {
+    async function recover(id, generation, account) {
         // One bounded polling window. Returning later uses the durable history.
         const deadline = performance.now() + 120000;
         for (let n=0; n<60; n++) {
+            if (!recoveryCurrent(account, generation)) return false;
             const remaining = deadline - performance.now();
             if (remaining <= 0) break;
             let result;
@@ -54,8 +91,10 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (_) {
                 // A transient read failure can recover within this same window.
             }
+            if (!recoveryCurrent(account, generation)) return false;
             if (['ready','failed','interrupted'].includes(result?.status)) {
                 show(result.result || {reply:'This question was interrupted. Review before starting another.'});
+                if (!recoveryCurrent(account, generation)) return false;
                 clearPendingQuestion(id);
                 status(result.status === 'ready' ? 'Answer recovered from your account.' : 'Question did not complete.');
                 return true;
@@ -64,21 +103,33 @@ document.addEventListener('DOMContentLoaded', () => {
             const delay = Math.min(2000, deadline - performance.now());
             if (delay > 0) await new Promise(resolve => setTimeout(resolve, delay));
         }
-        status('I stopped waiting for this file answer. L may still be working. Use Saved file answers to check before submitting again.');
+        if (recoveryCurrent(account, generation))
+            status('I stopped waiting for this file answer. L may still be working. Use Saved file answers to check before submitting again.');
         return false;
     }
     async function history() {
+        const account = accountVersion;
+        if (!accountCurrent(account)) return;
         const result = await api('/evidence/tasks');
+        if (!accountCurrent(account)) return;
         el('evidenceTasks').replaceChildren();
         for (const task of result.tasks) {
             const button = document.createElement('button');
             button.textContent = task.request.question + ' — ' + task.status;
-            button.onclick = () => recover(task.request_id).catch(error => status(error.message));
+            button.onclick = () => {
+                if (!accountCurrent(account)) return;
+                stopRecovery(); const generation = recoveryVersion;
+                status('Checking this saved file answer…');
+                return recover(task.request_id, generation, account).catch(error => {
+                    if (recoveryCurrent(account, generation)) status(error.message);
+                });
+            };
             el('evidenceTasks').appendChild(button);
         }
     }
     window.lEvidenceUpload = async file => {
-        if (!file || busy) return;
+        const account = accountVersion;
+        if (!accountCurrent(account) || !file || busy) return;
         if (window.lVoice && !window.lVoice.canSend()) return;
         if (window.lChatTools) window.lChatTools.show('files');
         else el('evidencePanel').open = true;
@@ -87,29 +138,38 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const body = new FormData(); body.append('file',file);
             const result = await api('/evidence/files', {method:'POST',body});
-            await refresh(result.id);
+            if (!accountCurrent(account)) return;
+            const opened = await refresh(result.id);
+            if (!accountCurrent(account) || !opened) return;
             status(result.duplicate ? 'This file was already saved. Opened the existing original.' : 'Original and page evidence saved to your account.');
-        } catch(error) { status(error.message); }
-        finally { busy = false; el('evidenceUpload').value = ''; el('fileInput').value = ''; }
+        } catch(error) { if (accountCurrent(account)) status(error.message); }
+        finally { if (accountCurrent(account)) { busy = false; el('evidenceUpload').value = ''; el('fileInput').value = ''; } }
     };
     el('evidenceUpload').onchange = () => window.lEvidenceUpload(el('evidenceUpload').files[0]);
-    el('refreshFiles').onclick = () => refresh().catch(error => status(error.message));
-    el('evidenceFiles').onchange = () => choose().catch(error => status(error.message));
-    el('evidencePage').onchange = preview;
+    el('refreshFiles').onclick = () => reportFailure(() => refresh());
+    el('evidenceFiles').onchange = choose;
+    el('evidencePage').onchange = () => { stopRecovery(); preview(); };
     el('openOriginal').onclick = async () => {
-        if (!current) return;
+        const account = accountVersion;
+        if (!accountCurrent(account) || !current) return;
         const doc = current;
         try {
             const response = await fetch('/evidence/files/'+doc.id+'/original');
+            if (!accountCurrent(account)) return;
             if (!response.ok) throw new Error('Original could not be downloaded.');
-            const url = URL.createObjectURL(await response.blob());
+            const blob = await response.blob();
+            if (!accountCurrent(account)) return;
+            const url = URL.createObjectURL(blob);
             const link = document.createElement('a'); link.href=url; link.download=doc.filename;
             document.body.appendChild(link); link.click(); link.remove(); setTimeout(()=>URL.revokeObjectURL(url),60000);
-        } catch(error) { status(error.message); }
+        } catch(error) { if (accountCurrent(account)) status(error.message); }
     };
     el('askEvidence').onclick = async () => {
+        const account = accountVersion;
+        if (!accountCurrent(account)) return;
         const question = el('evidenceQuestion').value.trim();
         if (busy || !current || !question) { status('Choose a file and enter your question.'); return; }
+        stopRecovery(); const generation = recoveryVersion;
         busy = true; el('askEvidence').disabled = true;
         const candidate = {document_id:current.id, page:Number(el('evidencePage').value), question};
         let pending;
@@ -126,10 +186,16 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (_) {
                 // An uncertain acknowledgement does not justify another submission.
             }
-            status('L is reading the selected page…'); await recover(request_id);
-        } catch(error) { status(error.message + ' Check Saved file answers before submitting again.'); }
-        finally { busy=false; el('askEvidence').disabled=false; }
+            if (!recoveryCurrent(account, generation)) return;
+            status('L is reading the selected page…'); await recover(request_id, generation, account);
+        } catch(error) {
+            if (recoveryCurrent(account, generation)) status(error.message + ' Check Saved file answers before submitting again.');
+        }
+        finally { if (accountCurrent(account)) { busy=false; el('askEvidence').disabled=false; } }
     };
-    el('evidenceHistory').onclick = () => history().catch(error=>status(error.message));
-    window.addEventListener('l-account-ready', () => refresh().catch(error=>status(error.message)));
+    el('evidenceHistory').onclick = () => reportFailure(history);
+    window.addEventListener('l-account-ready', () => { resetAccount(); return reportFailure(() => refresh()); });
+    new MutationObserver(() => {
+        if (document.documentElement.dataset.account !== 'ready') resetAccount();
+    }).observe(document.documentElement, {attributes:true, attributeFilter:['data-account']});
 });
