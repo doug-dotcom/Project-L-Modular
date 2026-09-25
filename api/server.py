@@ -99,6 +99,7 @@ from core.cognition.delivery_integrity import (
 from core.cognition.account_access import require_account
 from core.cognition.document_evidence import EvidenceStore, answer_from_document
 from api.account_documents import routes as account_document_routes
+from api.shine_ai_memory import router as shine_ai_memory_router
 from core.cognition.reflection import reflect_on_task
 from core.cognition.learning_engine import ingest_reflective_observation
 from core.cognition.working_memory import ActiveContextService
@@ -355,7 +356,7 @@ app.add_middleware(
 
 @app.middleware('http')
 async def account_boundary(request: Request, call_next):
-    public_paths = {'/', '/health', '/account/config', '/account/login', '/account/signup', '/account/refresh', '/account/recover'}
+    public_paths = {'/', '/health', '/account/config', '/account/login', '/account/signup', '/account/refresh', '/account/recover', '/internal/shine-ai/memory/retrieve'}
     path = request.url.path
     if path not in public_paths and not path.startswith('/ui/') and request.method != 'OPTIONS':
         try:
@@ -467,6 +468,7 @@ def execute_durable_request(request):
 
 task_runner = TaskRunner(task_store, execute_durable_request)
 app.include_router(account_document_routes(supabase, task_store))
+app.include_router(shine_ai_memory_router)
 
 
 @app.on_event("startup")
