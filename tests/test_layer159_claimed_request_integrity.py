@@ -70,21 +70,18 @@ class RunnerStore:
     def __init__(self):
         self.finished = []
         self.progressed = []
-
-    def progress(self, request_id, worker, stage=None):
-        self.progressed.append(stage)
-        return True
+        self.rejected = []
 
     def progress_bound(self, request_id, worker, input_hash, request, stage=None):
         self.progressed.append(stage)
         return True
 
-    def finish(self, request_id, worker, payload, status="ready"):
+    def finish_bound(self, request_id, worker, input_hash, request, payload, status="ready"):
         self.finished.append((status, payload))
         return True
 
-    def finish_bound(self, request_id, worker, input_hash, request, payload, status="ready"):
-        self.finished.append((status, payload))
+    def reject_bound(self, request_id, worker, input_hash, request, payload):
+        self.rejected.append(payload)
         return True
 
 
@@ -106,11 +103,10 @@ def test_runner_refuses_invalid_claim_before_execute_or_checkpoint():
 
     assert effects == []
     assert store.progressed == []
-    assert len(store.finished) == 1
-    status, payload = store.finished[0]
-    assert status == "failed"
-    assert payload["error"] is True
-    assert "before execution" in payload["reply"]
+    assert store.finished == []
+    assert len(store.rejected) == 1
+    assert store.rejected[0]["error"] is True
+    assert "before execution" in store.rejected[0]["reply"]
 
 
 def test_runner_executes_verified_claim_once():
@@ -133,12 +129,19 @@ def test_runner_executes_verified_claim_once():
     assert store.finished == [("ready", {"reply": "done"})]
 
 
-def test_direct_pre_contract_runner_fixture_without_claim_marker_still_runs():
+def test_runner_without_claim_integrity_marker_fails_closed():
     store = RunnerStore()
     effects = []
+    request = {"request_id": REQUEST_ID, "message": "fixture"}
     TaskRunner(store, lambda request: effects.append("legacy") or {"reply": "done"}).run_one(
-        {"request_id": REQUEST_ID, "request": {"message": "fixture"}},
+        {
+            "request_id": REQUEST_ID,
+            "request": request,
+            "input_hash": request_hash(request),
+        },
         str(uuid4()),
     )
-    assert effects == ["legacy"]
-    assert store.finished == [("ready", {"reply": "done"})]
+    assert effects == []
+    assert store.finished == []
+    assert len(store.rejected) == 1
+    assert store.rejected[0]["error"] is True
