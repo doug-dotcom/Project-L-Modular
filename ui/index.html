@@ -1011,7 +1011,12 @@
                     const valid = () => current() && run.pass === pass;
                     button.disabled = true; stop.disabled = false; older.disabled = true; refresh.disabled = true;
                     try {
-                        if (pass === 1) { run.tasks = savedTasks().slice(-100).reverse(); run.total = run.tasks.length; }
+                        if (pass === 1) {
+                            const stored = savedTasks();
+                            run.tasks = (Array.isArray(stored) ? stored : []).filter(task =>
+                                task && typeof task.requestId === 'string' && task.requestId.trim()).slice(-100).reverse();
+                            run.total = run.tasks.length;
+                        }
                         const recent = run.tasks.slice(run.checked, run.checked + 20);
                         progress.textContent = recent.length ? count() + '. Newest first; 20 per batch, using the tasks saved in this browser when the review opened.' :
                             'Your saved answers will appear here after you send a message.';
@@ -1152,11 +1157,13 @@
         }
 
         async function resumePendingRequest() {
-            let tasks = savedTasks();
+            const stored = savedTasks();
+            let tasks = (Array.isArray(stored) ? stored : []).filter(task =>
+                task && typeof task.requestId === 'string' && task.requestId.trim());
             if (!tasks.length) {
                 try {
                     const old = JSON.parse(localStorage.getItem(PENDING_REQUEST_KEY) || "null");
-                    if (old?.requestId) tasks = [{...old, pending: true}];
+                    if (typeof old?.requestId === 'string' && old.requestId.trim()) tasks = [{...old, pending: true}];
                 } catch (_) {}
             }
             const chat = document.getElementById("chat");
