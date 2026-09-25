@@ -62,7 +62,7 @@ def extract_user_learning(row: dict) -> dict | None:
     return None
 
 
-def record_user_learning(row: dict, client=None) -> dict:
+def record_user_learning(row: dict, client=None, write_guard=None) -> dict:
     candidate = extract_user_learning(row)
     if not candidate:
         return {"stored": False, "reason": "not_explicit_user_learning"}
@@ -70,6 +70,8 @@ def record_user_learning(row: dict, client=None) -> dict:
     if raw_id is None:
         return {"stored": False, "reason": "missing_source_provenance"}
     try:
+        if write_guard is not None:
+            write_guard("saving_governed_learning")
         return store_llgr(
             candidate,
             source_reference=f"raw_catchall:{raw_id}",
