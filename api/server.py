@@ -826,7 +826,7 @@ def health():
         "portability_certification_ready": True,
         "capability_router_ready": True,
         "main_street": True,
-        "release_layer": 161,
+        "release_layer": 162,
         "release_certification_ready": True,
         "release_provenance_ready": True,
         "answer_provenance_ready": True,
@@ -855,7 +855,7 @@ def cognition_status():
         "status": "ok",
         "architecture": "project_l_cognitive_core",
         "version": "13.0",
-        "release_layer": 161,
+        "release_layer": 162,
         "release_certification": build_release_certification(),
         "release_provenance": build_release_provenance(),
         "answer_provenance_ready": True,
@@ -1167,13 +1167,15 @@ def chat(req: ChatRequest):
     log(f"VX CHAT REQUEST: {user_message[:120]}")
 
     short_term_domain = classify_short_term_domain(user_message)
+
+    checkpoint("saving_short_term_user")
     short_term_user = write_live_short_term(
         short_term_domain,
         "user",
         user_message,
     )
 
-    checkpoint("saving_user_message")
+    checkpoint("saving_raw_user")
     raw_user_row = write_raw_catchall(
         "user",
         user_message
@@ -1183,9 +1185,11 @@ def chat(req: ChatRequest):
     if intake_kind:
         payload = intake_receipt(intake_kind, raw_user_row)
         store_chat_result(request_id, "ready", payload)
+        checkpoint("processing_user_memory")
         run_brain_pipeline(raw_user_row)
         return payload
 
+    checkpoint("processing_user_memory")
     run_brain_pipeline(raw_user_row)
 
     time_context = build_time_context()
@@ -1922,13 +1926,14 @@ RESPONSE RULES:
         unresolved=bool(route.get("status") == "error"),
     ) or working_memory_packet
 
-    checkpoint("saving_answer")
+    checkpoint("saving_short_term_answer")
     short_term_assistant = write_live_short_term(
         short_term_domain,
         "assistant",
         reply,
     )
 
+    checkpoint("saving_raw_answer")
     raw_assistant_row = write_raw_catchall(
         "assistant",
         reply
@@ -1951,7 +1956,7 @@ RESPONSE RULES:
         model_receipt=response_model_receipt,
         context_budget=cognitive_packet.get("context_budget", {}),
         assistant_persistence=assistant_persistence,
-        release_layer=161,
+        release_layer=162,
     )
     answer_provenance_check = verify_answer_provenance(
         answer_provenance,
