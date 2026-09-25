@@ -101,7 +101,7 @@ def test_recovery_exposes_verified_request_integrity_without_returning_request()
 
 
 @pytest.mark.parametrize(
-    "request,input_hash,issue",
+    "stored_request,input_hash,issue",
     [
         (None, "a" * 64, "request_payload_missing_or_malformed"),
         (req(request_id="00000000-0000-4000-8000-000000000999"), None, "request_id_binding_mismatch"),
