@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const el = id => document.getElementById(id);
-    let current = null, busy = false, selection = 0, accountVersion = 0, recoveryVersion = 0, historyVersion = 0, filesVersion = 0, copyText = '', copyBusy = false;
+    let current = null, busy = false, selection = 0, accountVersion = 0, recoveryVersion = 0, historyVersion = 0, filesVersion = 0, savedContextVersion = 0, copyText = '', copyBusy = false;
     const status = text => { el('evidenceStatus').textContent = text; };
     const accountCurrent = version => version === accountVersion && document.documentElement.dataset.account === 'ready';
     const recoveryCurrent = (account, version) => accountCurrent(account) && version === recoveryVersion;
@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
         el('copyEvidence').disabled = copyBusy || !copyText || !accountCurrent(accountVersion);
     }
     function stopRecovery() {
-        recoveryVersion += 1;
+        recoveryVersion += 1; savedContextVersion += 1;
         el('evidenceAnswer').textContent = ''; status('');
         copyText = ''; el('evidenceCopyStatus').textContent = ''; syncCopy();
     }
@@ -173,10 +173,59 @@ document.addEventListener('DOMContentLoaded', () => {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.textContent = task.request.question + ' — ' + task.status;
-                button.onclick = () => {
+                button.onclick = async () => {
                     if (!accountCurrent(account)) return;
+                    const request = task.request || {};
+                    const hasContext = typeof request.document_id === 'string' && !!request.document_id.trim() &&
+                        Number.isInteger(request.page) && request.page > 0 && request.page <= 30;
+                    if (hasContext) {
+                        const openGeneration = ++savedContextVersion;
+                        const openCurrent = () => accountCurrent(account) && openGeneration === savedContextVersion;
+                        status('Opening the original file and page for this saved answer…');
+                        try {
+                            const [files, doc] = await Promise.all([
+                                api('/evidence/files'),
+                                api('/evidence/files/' + encodeURIComponent(request.document_id))
+                            ]);
+                            if (!openCurrent()) return;
+                            if (!Array.isArray(files?.files) || files.files.some(file => !file ||
+                                typeof file.id !== 'string' || !file.id.trim() || typeof file.filename !== 'string' ||
+                                !Number.isInteger(file.page_count) || file.page_count < 1))
+                                throw new Error('Saved files could not be read.');
+                            const listed = files.files.find(file => file.id === request.document_id);
+                            if (!listed || !doc || doc.id !== request.document_id ||
+                                typeof doc.filename !== 'string' || !Number.isInteger(doc.page_count) ||
+                                request.page > doc.page_count || !Array.isArray(doc.pages) ||
+                                !doc.pages[request.page - 1])
+                                throw new Error('Original file or page is no longer available.');
+
+                            // Commit the saved context only after the original and page are confirmed.
+                            selection += 1; filesVersion += 1;
+                            stopRecovery(); const generation = recoveryVersion;
+                            current = doc;
+                            const options = files.files.map(file =>
+                                new Option(file.filename + ' (' + file.page_count + ' pages)', file.id));
+                            el('evidenceFiles').replaceChildren(new Option('Choose a saved file', ''), ...options);
+                            el('evidenceFiles').value = request.document_id;
+                            el('evidencePage').max = doc.page_count; el('evidencePage').value = request.page;
+                            el('evidenceQuestion').value = request.question; preview();
+                            status('Checking this saved file answer…');
+                            return recover(task.request_id, generation, account).catch(error => {
+                                if (recoveryCurrent(account, generation)) status(error.message);
+                            });
+                        } catch (_) {
+                            if (openCurrent())
+                                status('This saved answer was not opened because its original file or page could not be confirmed. Your current file view was kept.');
+                            return;
+                        }
+                    }
+
+                    // Older tasks may not contain file/page context. Keep them recoverable without
+                    // pretending the current preview belongs to the saved answer.
                     stopRecovery(); const generation = recoveryVersion;
-                    status('Checking this saved file answer…');
+                    current = null; el('evidenceFiles').value = ''; el('evidencePage').value = 1; el('evidencePage').max = 1;
+                    el('evidencePreview').textContent = ''; el('evidenceQuestion').value = request.question;
+                    status('Checking this saved file answer. Its original file context was not stored with this older entry…');
                     return recover(task.request_id, generation, account).catch(error => {
                         if (recoveryCurrent(account, generation)) status(error.message);
                     });
