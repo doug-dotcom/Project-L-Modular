@@ -14,7 +14,8 @@ const el = id => {if (!elements.has(id)) elements.set(id, element()); return ele
 const context = {
     AbortController, crypto, performance: {now: () => now},
     window: {addEventListener() {}, lVoice: {onReply() {if (scenario === 'voice_failure') throw Error('PRIVATE voice error');}}},
-    document: {addEventListener(name, fn) {if (name === 'DOMContentLoaded') domReady.push(fn);}, getElementById: el, createElement: element},
+    document: {documentElement:{dataset:{account:'ready'}}, addEventListener(name, fn) {if (name === 'DOMContentLoaded') domReady.push(fn);}, getElementById: el, createElement: element},
+    MutationObserver: class {observe() {}},
     Option: class {constructor(text, value) {this.text = text; this.value = value;}},
     sessionStorage: {
         getItem: key => storage.get(key) ?? null,
