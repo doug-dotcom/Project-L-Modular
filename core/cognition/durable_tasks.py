@@ -217,7 +217,16 @@ class TaskStore:
     def progress(self, request_id, worker, checkpoint=None):
         return self.rpc('l_task_progress', {'p_id': request_id, 'p_worker': worker, 'p_checkpoint': checkpoint})
 
-    def finish(self, request_id, worker, payload, status='ready'):
+    def progress_bound(self, request_id, worker, input_hash, request, checkpoint=None):
+        return self.rpc('l_task_progress_bound', {
+            'p_id': request_id,
+            'p_worker': worker,
+            'p_hash': input_hash,
+            'p_request': request,
+            'p_checkpoint': checkpoint,
+        })
+
+    def _verify_finish_payload(self, request_id, payload):
         require_chat_delivery_payload(
             payload,
             expected_request_id=request_id,
@@ -226,16 +235,37 @@ class TaskStore:
             payload,
             expected_request_id=request_id,
         )
+
+    def finish(self, request_id, worker, payload, status='ready'):
+        self._verify_finish_payload(request_id, payload)
         return self.rpc('l_task_finish', {'p_id': request_id, 'p_worker': worker,
                                         'p_status': status, 'p_result': payload})
+
+    def finish_bound(self, request_id, worker, input_hash, request, payload, status='ready'):
+        self._verify_finish_payload(request_id, payload)
+        return self.rpc('l_task_finish_bound', {
+            'p_id': request_id,
+            'p_worker': worker,
+            'p_hash': input_hash,
+            'p_request': request,
+            'p_status': status,
+            'p_result': payload,
+        })
 
 
 def checkpoint(stage):
     task = getattr(CONTEXT, 'task', None)
     if task:
-        store, request_id, worker = task
-        if not store.progress(request_id, worker, stage):
-            raise RuntimeError('Task lease lost; work stopped')
+        if len(task) == 5:
+            store, request_id, worker, input_hash, request = task
+            advanced = store.progress_bound(
+                request_id, worker, input_hash, request, stage
+            )
+        else:
+            store, request_id, worker = task
+            advanced = store.progress(request_id, worker, stage)
+        if not advanced:
+            raise RuntimeError('Task lease or request binding lost; work stopped')
 
 
 class TaskRunner:
@@ -316,17 +346,36 @@ class TaskRunner:
                 LOG.warning('Invalid durable task could not be marked failed')
             return
 
+        claimed_request = task.get('request')
+        claimed_hash = task.get('input_hash')
+        bound = (
+            isinstance(request_integrity, dict)
+            and request_integrity.get('valid') is True
+            and isinstance(claimed_request, dict)
+            and isinstance(claimed_hash, str)
+            and re.fullmatch(r'[0-9a-f]{64}', claimed_hash) is not None
+        )
+
         done = threading.Event()
         def heartbeat():
             while not done.wait(15):
                 try:
-                    if not self.store.progress(request_id, worker):
+                    if bound:
+                        advanced = self.store.progress_bound(
+                            request_id, worker, claimed_hash, claimed_request
+                        )
+                    else:
+                        advanced = self.store.progress(request_id, worker)
+                    if not advanced:
                         return
                 except Exception:
                     LOG.warning('Task heartbeat unavailable')
         pulse = threading.Thread(target=heartbeat, daemon=True)
         pulse.start()
-        CONTEXT.task = (self.store, request_id, worker)
+        CONTEXT.task = (
+            (self.store, request_id, worker, claimed_hash, claimed_request)
+            if bound else (self.store, request_id, worker)
+        )
         try:
             payload = self.execute(task['request'])
             if task['request'].get('kind') == 'document_evidence' and not payload.get('error'):
@@ -334,9 +383,24 @@ class TaskRunner:
             # Retry only the idempotent result write, never the cognition/actions.
             for attempt in range(3):
                 try:
-                    if not self.store.finish(request_id, worker, payload,
-                                             status='failed' if payload.get('error') else 'ready'):
-                        LOG.warning('Task result rejected: lease lost')
+                    if bound:
+                        saved = self.store.finish_bound(
+                            request_id,
+                            worker,
+                            claimed_hash,
+                            claimed_request,
+                            payload,
+                            status='failed' if payload.get('error') else 'ready',
+                        )
+                    else:
+                        saved = self.store.finish(
+                            request_id,
+                            worker,
+                            payload,
+                            status='failed' if payload.get('error') else 'ready',
+                        )
+                    if not saved:
+                        LOG.warning('Task result rejected: lease or request binding lost')
                     break
                 except Exception:
                     if attempt == 2:
@@ -356,9 +420,21 @@ class TaskRunner:
                 last.name if last else 'unknown',
             )
             try:
-                self.store.finish(request_id, worker, {
+                failure = {
                     'reply': 'This task stopped before completion. Please review any actions before starting it again.',
-                    'error': True}, status='failed')
+                    'error': True,
+                }
+                if bound:
+                    self.store.finish_bound(
+                        request_id,
+                        worker,
+                        claimed_hash,
+                        claimed_request,
+                        failure,
+                        status='failed',
+                    )
+                else:
+                    self.store.finish(request_id, worker, failure, status='failed')
             except Exception:
                 LOG.warning('Task failure could not be persisted')
         finally:
