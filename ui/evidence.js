@@ -189,15 +189,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!accountCurrent(account)) return;
         const question = el('evidenceQuestion').value.trim();
         if (busy || !current || !question) { status('Choose a file and enter your question.'); return; }
+        const candidate = {document_id:current.id, page:Number(el('evidencePage').value), question};
+        const validId = id => typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+        let body;
+        try {
+            const raw = sessionStorage.getItem('l-evidence-pending');
+            const pending = raw === null ? null : JSON.parse(raw);
+            if (raw !== null && (!pending || typeof pending !== 'object' || Array.isArray(pending) || !validId(pending.request_id)))
+                throw new Error('Invalid saved recovery details');
+            const same = pending && Object.keys(candidate).every(key => candidate[key] === pending[key]);
+            body = {...candidate, request_id:same ? pending.request_id : crypto.randomUUID()};
+            if (!validId(body.request_id)) throw new Error('Invalid request identifier');
+            // Save the recovery handle before changing the view or submitting.
+            sessionStorage.setItem('l-evidence-pending', JSON.stringify(body));
+        } catch (_) {
+            status('This question was not sent because its recovery details could not be prepared. Your question is still here. Check Saved file answers before trying again.');
+            return;
+        }
+        const request_id = body.request_id;
         stopRecovery(); const generation = recoveryVersion;
         busy = true; el('askEvidence').disabled = true;
-        const candidate = {document_id:current.id, page:Number(el('evidencePage').value), question};
-        let pending;
-        try { pending = JSON.parse(sessionStorage.getItem('l-evidence-pending') || 'null'); } catch (_) {}
-        const same = pending && Object.keys(candidate).every(key => candidate[key] === pending[key]);
-        const body = same ? pending : {...candidate, request_id:crypto.randomUUID()};
-        const request_id = body.request_id;
-        try { sessionStorage.setItem('l-evidence-pending',JSON.stringify(body)); } catch (_) {}
         status('Saving your question…');
         try {
             try {
