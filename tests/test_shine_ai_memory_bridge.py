@@ -11,7 +11,7 @@ def client() -> TestClient:
 
 
 def configure(monkeypatch):
-    monkeypatch.setenv("SHINE_AI_MEMORY_TOKEN", "test-service-token")
+    monkeypatch.setenv("SHINE_AI_MEMORY_TOKEN", "x" * 32)
     monkeypatch.setenv("PROJECT_L_OWNER_ID", "owner-1")
 
 
@@ -57,7 +57,7 @@ def test_retrieval_is_service_authenticated_scoped_and_bounded(monkeypatch):
 
     response = client().post(
         "/internal/shine-ai/memory/retrieve",
-        headers={"X-Shine-Service-Token": "test-service-token"},
+        headers={"X-Shine-Service-Token": "x" * 32},
         json={
             "app": "shine-dive",
             "user_id": "owner-1",
