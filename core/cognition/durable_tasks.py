@@ -214,9 +214,6 @@ class TaskStore:
         )
         return task
 
-    def progress(self, request_id, worker, checkpoint=None):
-        return self.rpc('l_task_progress', {'p_id': request_id, 'p_worker': worker, 'p_checkpoint': checkpoint})
-
     def progress_bound(self, request_id, worker, input_hash, request, checkpoint=None):
         return self.rpc('l_task_progress_bound', {
             'p_id': request_id,
@@ -236,11 +233,6 @@ class TaskStore:
             expected_request_id=request_id,
         )
 
-    def finish(self, request_id, worker, payload, status='ready'):
-        self._verify_finish_payload(request_id, payload)
-        return self.rpc('l_task_finish', {'p_id': request_id, 'p_worker': worker,
-                                        'p_status': status, 'p_result': payload})
-
     def finish_bound(self, request_id, worker, input_hash, request, payload, status='ready'):
         self._verify_finish_payload(request_id, payload)
         return self.rpc('l_task_finish_bound', {
@@ -252,20 +244,26 @@ class TaskStore:
             'p_result': payload,
         })
 
+    def reject_bound(self, request_id, worker, input_hash, request, payload):
+        self._verify_finish_payload(request_id, payload)
+        return self.rpc('l_task_reject_bound', {
+            'p_id': request_id,
+            'p_worker': worker,
+            'p_hash': input_hash,
+            'p_request': request,
+            'p_result': payload,
+        })
+
 
 def checkpoint(stage):
     task = getattr(CONTEXT, 'task', None)
-    if task:
-        if len(task) == 5:
-            store, request_id, worker, input_hash, request = task
-            advanced = store.progress_bound(
-                request_id, worker, input_hash, request, stage
-            )
-        else:
-            store, request_id, worker = task
-            advanced = store.progress(request_id, worker, stage)
-        if not advanced:
-            raise RuntimeError('Task lease or request binding lost; work stopped')
+    if not task:
+        return
+    if len(task) != 5:
+        raise RuntimeError('Durable task binding missing; work stopped')
+    store, request_id, worker, input_hash, request = task
+    if not store.progress_bound(request_id, worker, input_hash, request, stage):
+        raise RuntimeError('Task lease or request binding lost; work stopped')
 
 
 class TaskRunner:
@@ -323,60 +321,69 @@ class TaskRunner:
     def run_one(self, task, worker):
         request_id = task['request_id']
         request_integrity = task.get('_request_integrity')
-        if isinstance(request_integrity, dict) and not request_integrity.get('valid'):
+        try:
+            claimed_request = json.loads(json.dumps(
+                task.get('request'), sort_keys=True, separators=(',', ':')
+            ))
+        except Exception:
+            claimed_request = None
+        claimed_hash = task.get('input_hash')
+
+        if not isinstance(request_integrity, dict) or request_integrity.get('valid') is not True:
+            issues = (
+                request_integrity.get('issues', [])
+                if isinstance(request_integrity, dict)
+                else ['claim_integrity_marker_missing']
+            )
             LOG.warning(
                 'Durable task request integrity failed before execution: request_id=%s issues=%s',
                 request_id,
-                ','.join(request_integrity.get('issues', [])),
+                ','.join(str(issue) for issue in issues),
             )
-            try:
-                self.store.finish(
-                    request_id,
-                    worker,
-                    {
-                        'reply': (
-                            'This task stopped before execution because its saved request '
-                            'failed integrity verification. Please submit it again.'
-                        ),
-                        'error': True,
-                    },
-                    status='failed',
-                )
-            except Exception:
-                LOG.warning('Invalid durable task could not be marked failed')
+            if claimed_request is not None and isinstance(claimed_hash, str):
+                try:
+                    self.store.reject_bound(
+                        request_id,
+                        worker,
+                        claimed_hash,
+                        claimed_request,
+                        {
+                            'reply': (
+                                'This task stopped before execution because its saved request '
+                                'failed integrity verification. Please submit it again.'
+                            ),
+                            'error': True,
+                        },
+                    )
+                except Exception:
+                    LOG.warning('Invalid durable task could not be marked failed')
             return
 
-        claimed_request = json.loads(json.dumps(
-            task.get('request'), sort_keys=True, separators=(',', ':')
-        ))
-        claimed_hash = task.get('input_hash')
-        bound = (
-            isinstance(request_integrity, dict)
-            and request_integrity.get('valid') is True
-            and isinstance(claimed_request, dict)
-            and isinstance(claimed_hash, str)
-            and re.fullmatch(r'[0-9a-f]{64}', claimed_hash) is not None
-        )
+        if (
+            not isinstance(claimed_request, dict)
+            or not isinstance(claimed_hash, str)
+            or re.fullmatch(r'[0-9a-f]{64}', claimed_hash) is None
+        ):
+            LOG.warning(
+                'Verified durable task lost its claim binding before execution: request_id=%s',
+                request_id,
+            )
+            return
 
         done = threading.Event()
         def heartbeat():
             while not done.wait(15):
                 try:
-                    if bound:
-                        advanced = self.store.progress_bound(
-                            request_id, worker, claimed_hash, claimed_request
-                        )
-                    else:
-                        advanced = self.store.progress(request_id, worker)
-                    if not advanced:
+                    if not self.store.progress_bound(
+                        request_id, worker, claimed_hash, claimed_request
+                    ):
                         return
                 except Exception:
                     LOG.warning('Task heartbeat unavailable')
         pulse = threading.Thread(target=heartbeat, daemon=True)
         pulse.start()
         CONTEXT.task = (
-            (self.store, request_id, worker, claimed_hash, claimed_request)
-            if bound else (self.store, request_id, worker)
+            self.store, request_id, worker, claimed_hash, claimed_request
         )
         try:
             payload = self.execute(task['request'])
@@ -385,22 +392,14 @@ class TaskRunner:
             # Retry only the idempotent result write, never the cognition/actions.
             for attempt in range(3):
                 try:
-                    if bound:
-                        saved = self.store.finish_bound(
-                            request_id,
-                            worker,
-                            claimed_hash,
-                            claimed_request,
-                            payload,
-                            status='failed' if payload.get('error') else 'ready',
-                        )
-                    else:
-                        saved = self.store.finish(
-                            request_id,
-                            worker,
-                            payload,
-                            status='failed' if payload.get('error') else 'ready',
-                        )
+                    saved = self.store.finish_bound(
+                        request_id,
+                        worker,
+                        claimed_hash,
+                        claimed_request,
+                        payload,
+                        status='failed' if payload.get('error') else 'ready',
+                    )
                     if not saved:
                         LOG.warning('Task result rejected: lease or request binding lost')
                     break
@@ -426,17 +425,14 @@ class TaskRunner:
                     'reply': 'This task stopped before completion. Please review any actions before starting it again.',
                     'error': True,
                 }
-                if bound:
-                    self.store.finish_bound(
-                        request_id,
-                        worker,
-                        claimed_hash,
-                        claimed_request,
-                        failure,
-                        status='failed',
-                    )
-                else:
-                    self.store.finish(request_id, worker, failure, status='failed')
+                self.store.finish_bound(
+                    request_id,
+                    worker,
+                    claimed_hash,
+                    claimed_request,
+                    failure,
+                    status='failed',
+                )
             except Exception:
                 LOG.warning('Task failure could not be persisted')
         finally:
