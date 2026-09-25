@@ -233,7 +233,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!accountCurrent(account)) return;
         const question = el('evidenceQuestion').value.trim();
         if (busy || !current || !question) { status('Choose a file and enter your question.'); return; }
-        const candidate = {document_id:current.id, page:Number(el('evidencePage').value), question};
+        const page = Number(el('evidencePage').value), maxPage = Math.min(current.page_count, 30);
+        if (!Number.isInteger(maxPage) || maxPage < 1 || !Number.isInteger(page) || page < 1 || page > maxPage) {
+            status('This question was not sent. Choose a whole page number from 1 to ' + (Number.isInteger(maxPage) && maxPage > 0 ? maxPage : 1) + '. Your question is still here.');
+            return;
+        }
+        if (Array.from(question).length > 4000) {
+            status('This question was not sent. Shorten it to 4,000 characters or fewer. Your question is still here.');
+            return;
+        }
+        const candidate = {document_id:current.id, page, question};
         const validId = id => typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
         let body;
         try {
