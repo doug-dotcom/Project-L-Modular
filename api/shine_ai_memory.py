@@ -58,6 +58,11 @@ def _configured_owner(service_token: str) -> str:
             status_code=503,
             detail="Project L's Shine-AI memory bridge is disabled.",
         )
+    if len(expected_token) < 32:
+        raise HTTPException(
+            status_code=503,
+            detail="Project L's Shine-AI memory bridge is misconfigured.",
+        )
 
     if not service_token or not secrets.compare_digest(service_token, expected_token):
         raise HTTPException(status_code=401, detail="Invalid service credentials.")
