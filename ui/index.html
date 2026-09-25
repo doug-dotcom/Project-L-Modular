@@ -794,7 +794,7 @@
             appendChatMessage(chat, "user", message);
 
             input.value = "";
-            window.lVoice?.saveDraft();
+            try { window.lVoice?.saveDraft(); } catch (_) {}
 
             // =====================================================
             // THINKING MESSAGE
@@ -856,7 +856,7 @@
                 // =====================================================
 
                 appendChatMessage(chat, "assistant", data.reply);
-                window.lVoice?.onReply(data.reply, !data.error);
+                try { window.lVoice?.onReply(data.reply, !data.error); } catch (_) {}
 
             } catch (err) {
                 thinking.textContent = "Checking whether L saved your answer...";
@@ -867,7 +867,7 @@
                 if (recovered && recovered.reply) {
                     clearPendingRequest(requestId);
                     appendChatMessage(chat, "assistant", recovered.reply);
-                    window.lVoice?.onReply(recovered.reply, !recovered.error);
+                    try { window.lVoice?.onReply(recovered.reply, !recovered.error); } catch (_) {}
                 } else {
                     appendChatMessage(
                         chat,
