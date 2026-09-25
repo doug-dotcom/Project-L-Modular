@@ -21,6 +21,46 @@ vm.createContext(context);vm.runInContext(source+'\ninstallSavedAnswerReview(but
 const panel=()=>chat.children.at(-1),progress=()=>panel().children[1].textContent,stop=()=>panel().children[2].onclick();
 const ready={status:'ready',result:{reply:'answer'}};
 (async()=>{
+ if(scenario.startsWith('history_')) {
+  const rawValues={history_json:'PRIVATE broken JSON',history_shape:'null',history_empty:'[]',history_missing:null,
+   history_mixed:JSON.stringify([null,{}, {requestId:'one',message:'Good one'},{requestId:'two',message:'Good two'}]),
+   history_invalid:JSON.stringify([{requestId:'  '}]),history_refresh:'PRIVATE broken JSON'};
+  let raw=rawValues[scenario]??null,blocked=scenario==='history_read_error';
+  const original=raw;
+  context.localStorage={getItem(){if(blocked)throw Error('PRIVATE read failure');return raw},
+   setItem(){throw Error('Unexpected write')},removeItem(){throw Error('Unexpected removal')}};
+  const start=html.indexOf('        function savedTasks');
+  vm.runInContext(html.slice(start,html.indexOf('        const sleep',start)),context);
+  const notice=()=>panel().children[3].children[6];
+  const refresh=()=>panel().children[3].children[3].children[4];
+  await button.onclick();
+  assert.equal(notice().attributes.role,'status');assert.equal(notice().attributes['aria-live'],'polite');
+  assert.equal(button.disabled,false);assert.equal(refresh().disabled,false);assert.equal(raw,original);
+  if(['history_empty','history_missing'].includes(scenario)) {
+   assert.equal(notice().hidden,true);assert.match(progress(),/after you send a message/);assert.equal(calls.length,0);
+  }else if(['history_mixed','history_invalid'].includes(scenario)) {
+   assert.equal(notice().hidden,false);assert.match(notice().textContent,/have not been removed/);
+   assert.match(notice().textContent,scenario==='history_mixed'?/Skipped 2 saved entries/:/Skipped 1 saved entry/);
+   assert.equal(calls.length,scenario==='history_mixed'?2:0);
+   assert.equal(panel().children[4].children.length,calls.length);
+   if(calls.length)assert.ok(calls.every(c=>/one$|two$/.test(c.url)));
+   else assert.match(progress(),/No saved entries have usable request details/);
+  }else {
+   assert.equal(notice().hidden,false);assert.match(notice().textContent,/could not read/);
+   assert.match(notice().textContent,/has not been changed/);assert.match(notice().textContent,/Refresh review/);
+   assert.ok(!notice().textContent.includes('PRIVATE'));assert.match(progress(),/No tasks were checked/);
+   assert.equal(calls.length,0);assert.equal(panel().children[5].disabled,true);
+  }
+  if(scenario==='history_refresh') {
+   const old=panel();raw=JSON.stringify([{requestId:'one',message:'Recovered question'}]);
+   await refresh().onclick();assert.equal(old.removed,true);assert.equal(notice().hidden,true);
+   assert.equal(calls.length,1);assert.match(progress(),/Review finished/);
+   blocked=true;await refresh().onclick();assert.equal(notice().hidden,false);
+   assert.match(progress(),/No tasks were checked/);assert.equal(calls.length,1);
+   events['l-account-ready']();assert.equal(panel().removed,true);
+  }
+  return;
+ }
  if(['reuse_question','copy_answer','copy_rejected'].includes(scenario)) {
   tasks=[{requestId:'one',message:'Original question'}];
   const draft=el();draft.value='Existing draft';
