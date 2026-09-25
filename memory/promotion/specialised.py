@@ -225,17 +225,16 @@ def _already_stored(client, table_name, raw_id):
     return bool(response.data)
 
 
-def _store_candidate(client, table_name, payload):
+def _candidate_state(client, table_name, payload):
     if not payload:
         return "not_applicable"
     raw_id = payload.get("source_reference")
     if raw_id is None or _already_stored(client, table_name, raw_id):
         return "already_exists"
-    client.table(table_name).insert(payload).execute()
-    return "stored"
+    return "ready"
 
 
-def write_specialised_memories(client, row, category="general"):
+def write_specialised_memories(client, row, category="general", write_guard=None):
     """Idempotently write specialised records for one promoted raw row."""
     results = {}
     candidates = {
@@ -244,7 +243,20 @@ def write_specialised_memories(client, row, category="general"):
     }
     for name, (table_name, payload) in candidates.items():
         try:
-            results[name] = _store_candidate(client, table_name, payload)
+            state = _candidate_state(client, table_name, payload)
+        except Exception as exc:
+            results[name] = f"error:{type(exc).__name__}"
+            continue
+        if state != "ready":
+            results[name] = state
+            continue
+        if write_guard is not None:
+            # Binding/lease failures must propagate; never convert them into
+            # a recoverable specialised-memory error.
+            write_guard(f"saving_specialised_{name}")
+        try:
+            client.table(table_name).insert(payload).execute()
+            results[name] = "stored"
         except Exception as exc:
             results[name] = f"error:{type(exc).__name__}"
     return results

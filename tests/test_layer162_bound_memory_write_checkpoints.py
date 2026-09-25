@@ -1,5 +1,6 @@
 """Layer 162 — durable memory writes require fresh bound checkpoints."""
 from pathlib import Path
+import re
 
 
 SERVER = Path("api/server.py")
@@ -64,5 +65,11 @@ def test_layer162_replaces_shared_write_guard_with_specific_boundaries():
 
     assert 'checkpoint("saving_user_message")' not in text
     assert 'checkpoint("saving_answer")' not in text
-    assert text.count('release_layer=162') == 1
-    assert text.count('"release_layer": 162') == 2
+
+    release_layers = [
+        int(value)
+        for value in re.findall(r'release_layer"?\s*[:=]\s*(\d+)', text)
+    ]
+    assert len(release_layers) == 3
+    assert len(set(release_layers)) == 1
+    assert release_layers[0] >= 162

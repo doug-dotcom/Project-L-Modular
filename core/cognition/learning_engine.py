@@ -62,13 +62,17 @@ def extract_user_learning(row: dict) -> dict | None:
     return None
 
 
-def record_user_learning(row: dict, client=None) -> dict:
+def record_user_learning(row: dict, client=None, write_guard=None) -> dict:
     candidate = extract_user_learning(row)
     if not candidate:
         return {"stored": False, "reason": "not_explicit_user_learning"}
     raw_id = (row or {}).get("id")
     if raw_id is None:
         return {"stored": False, "reason": "missing_source_provenance"}
+    if write_guard is not None:
+        # Lease/request binding loss is a task-integrity failure, not a
+        # recoverable learning-store error.
+        write_guard("saving_governed_learning")
     try:
         return store_llgr(
             candidate,

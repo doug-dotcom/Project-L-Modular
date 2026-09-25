@@ -33,6 +33,11 @@ LOG = logging.getLogger(__name__)
 CONTEXT = threading.local()
 
 
+class DurableTaskBindingError(RuntimeError):
+    """A durable task no longer owns the exact request/lease it claimed."""
+
+
+
 def task_database_client(url, key):
     """Isolate leases and queue polling from the shared recall HTTP/2 pool.
 
@@ -260,10 +265,10 @@ def checkpoint(stage):
     if not task:
         return
     if len(task) != 5:
-        raise RuntimeError('Durable task binding missing; work stopped')
+        raise DurableTaskBindingError('Durable task binding missing; work stopped')
     store, request_id, worker, input_hash, request = task
     if not store.progress_bound(request_id, worker, input_hash, request, stage):
-        raise RuntimeError('Task lease or request binding lost; work stopped')
+        raise DurableTaskBindingError('Task lease or request binding lost; work stopped')
 
 
 class TaskRunner:
