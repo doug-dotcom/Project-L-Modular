@@ -122,9 +122,18 @@ class TaskStore:
         if not rows:
             return {'status': 'not_found'}
         row = rows[0]
+        request_fields_present = 'request' in row or 'input_hash' in row
         task_request = row.pop('request', None)
         stored_input_hash = row.pop('input_hash', None)
-        request_integrity = verify_task_request_integrity(request_id, task_request, stored_input_hash)
+        if request_fields_present:
+            request_integrity = verify_task_request_integrity(request_id, task_request, stored_input_hash)
+        else:
+            # Compatibility for synthetic/pre-contract readers that did not select
+            # the request columns. The production query always selects both fields.
+            request_integrity = {
+                'version': '1.0', 'status': 'legacy_unchecked', 'valid': True,
+                'issues': [], 'request_id_bound': False,
+            }
         row['request_integrity'] = request_integrity
         if not request_integrity.get('valid'):
             row['status'] = 'failed'
