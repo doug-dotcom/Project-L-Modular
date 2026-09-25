@@ -145,6 +145,20 @@ def test_verified_runner_persists_with_bound_finish_only():
     assert store.legacy_finish == []
 
 
+def test_execution_cannot_mutate_the_claimed_binding_snapshot():
+    store = BoundStore()
+    task = verified_task()
+
+    def mutate(request):
+        request["message"] = "mutated inside execution"
+        return {"reply": "done"}
+
+    TaskRunner(store, mutate).run_one(task, WORKER_ID)
+
+    assert task["request"]["message"] == "mutated inside execution"
+    assert store.bound_finish[0][3]["message"] == "Bound request"
+
+
 def test_verified_runner_does_not_fallback_to_unbound_finish_when_binding_is_lost():
     store = BoundStore(finish_ok=False)
     task = verified_task()
