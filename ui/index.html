@@ -1002,7 +1002,10 @@
                     if (active !== run || event.key !== 'Escape' || event.isComposing || event.defaultPrevented) return;
                     event.preventDefault(); event.stopPropagation(); closeReview();
                 };
-                filters.append(navigation, orderLabel, matchLabel);
+                const historyNotice = document.createElement('p');
+                historyNotice.setAttribute('role', 'status'); historyNotice.setAttribute('aria-live', 'polite');
+                historyNotice.hidden = true;
+                filters.append(navigation, orderLabel, matchLabel, historyNotice);
 
                 stop.onclick = () => {
                     if (!current()) return;
@@ -1020,13 +1023,29 @@
                     button.disabled = true; stop.disabled = false; older.disabled = true; refresh.disabled = true;
                     try {
                         if (pass === 1) {
-                            const stored = savedTasks();
-                            run.tasks = (Array.isArray(stored) ? stored : []).filter(task =>
-                                task && typeof task.requestId === 'string' && task.requestId.trim()).slice(-100).reverse();
+                            let stored;
+                            try {
+                                stored = savedTasks(true);
+                                if (!Array.isArray(stored)) throw new Error('Saved history is unreadable');
+                            } catch (_) {
+                                historyNotice.hidden = false;
+                                historyNotice.textContent = 'I could not read the saved history in this browser. It has not been changed. Check browser storage access, then use Refresh review to try again.';
+                                progress.textContent = 'Saved history could not be read. No tasks were checked.';
+                                return;
+                            }
+                            const readable = stored.filter(task =>
+                                task && typeof task.requestId === 'string' && task.requestId.trim());
+                            const skipped = stored.length - readable.length;
+                            if (skipped) {
+                                historyNotice.hidden = false;
+                                historyNotice.textContent = `Skipped ${skipped} saved ${skipped === 1 ? 'entry' : 'entries'} with incomplete request details. These entries have not been removed.`;
+                            }
+                            run.tasks = readable.slice(-100).reverse();
                             run.total = run.tasks.length;
                         }
                         const recent = run.tasks.slice(run.checked, run.checked + 20);
                         progress.textContent = recent.length ? count() + '. Newest first; 20 per batch, using the tasks saved in this browser when the review opened.' :
+                            !historyNotice.hidden ? 'No saved entries have usable request details. No tasks were checked.' :
                             'Your saved answers will appear here after you send a message.';
                         const deadline = performance.now() + ANSWER_RECOVERY_BUDGET_MS;
                         for (const task of recent) {
