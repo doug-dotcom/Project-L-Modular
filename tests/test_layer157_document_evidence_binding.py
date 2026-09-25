@@ -8,7 +8,7 @@ from core.cognition.document_evidence import (
     require_document_evidence_binding,
     verify_document_evidence_binding,
 )
-from core.cognition.durable_tasks import TaskRunner, TaskStore
+from core.cognition.durable_tasks import TaskRunner, TaskStore, request_hash
 
 
 REQUEST_ID = "00000000-0000-4000-8000-000000000157"
@@ -107,10 +107,12 @@ class Client:
 
 
 def stored_row(payload):
+    req = request()
     return {
         "status": "ready",
         "result": payload,
-        "request": request(),
+        "request": req,
+        "input_hash": request_hash(req),
         "checkpoint": "done",
         "lease_until": None,
         "created_at": "2026-09-25T00:00:00+00:00",
