@@ -6,7 +6,7 @@ import pytest
 
 from core.cognition.answer_provenance import build_answer_provenance
 from core.cognition.delivery_integrity import seal_chat_delivery_payload
-from core.cognition.durable_tasks import TaskStore
+from core.cognition.durable_tasks import TaskStore, request_hash
 from core.cognition.recovery_provenance import (
     LEGACY_PROTOCOL_VERSION,
     PROTOCOL_KEY,
@@ -276,9 +276,13 @@ def test_durable_finish_rechecks_provenance_before_database_write():
     client = Client({})
     store = TaskStore(client)
     payload = answer_payload()
+    request = {"request_id": REQUEST_ID, "message": "fixture"}
+    digest = request_hash(request)
 
-    assert store.finish(REQUEST_ID, "worker", payload) is True
-    assert client.finished and client.finished[0][0] == "l_task_finish"
+    assert store.finish_bound(
+        REQUEST_ID, "worker", digest, request, payload
+    ) is True
+    assert client.finished and client.finished[0][0] == "l_task_finish_bound"
 
     body = dict(payload)
     body.pop("delivery_receipt")
@@ -286,7 +290,9 @@ def test_durable_finish_rechecks_provenance_before_database_write():
     invalid = seal_chat_delivery_payload(body, request_id=REQUEST_ID)
 
     with pytest.raises(ValueError, match="chat_recovery_provenance_mismatch"):
-        store.finish(REQUEST_ID, "worker", invalid)
+        store.finish_bound(
+            REQUEST_ID, "worker", digest, request, invalid
+        )
 
 
 def test_real_chat_marks_layer103_protocol(monkeypatch):
