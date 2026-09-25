@@ -18,6 +18,53 @@ MIMES = {'application/pdf', 'image/jpeg', 'image/png', 'image/webp'}
 _parsers = threading.BoundedSemaphore(2)
 
 
+def verify_document_evidence_binding(request, payload):
+    """Bind a completed document answer to the exact source request that produced it."""
+    if not isinstance(request, dict) or request.get('kind') != 'document_evidence':
+        return {'version': '1.0', 'status': 'not_applicable', 'valid': True,
+                'bound': False, 'issues': []}
+
+    issues = []
+    evidence = payload.get('evidence') if isinstance(payload, dict) else None
+    if not isinstance(evidence, dict):
+        issues.append('document_evidence_missing')
+    else:
+        expected_document = str(request.get('document_id') or '')
+        actual_document = str(evidence.get('document_id') or '')
+        if not expected_document or actual_document != expected_document:
+            issues.append('document_id_mismatch')
+
+        expected_page = request.get('page')
+        if not isinstance(expected_page, int) or evidence.get('page') != expected_page:
+            issues.append('physical_page_mismatch')
+
+        expected_sha = str(request.get('source_sha256') or '')
+        actual_sha = str(evidence.get('sha256') or '')
+        if not expected_sha or actual_sha != expected_sha:
+            issues.append('source_sha256_mismatch')
+
+        if not isinstance(evidence.get('filename'), str) or not evidence['filename'].strip():
+            issues.append('source_filename_missing')
+
+    return {
+        'version': '1.0',
+        'status': 'verified' if not issues else 'mismatch',
+        'valid': not issues,
+        'bound': True,
+        'issues': issues,
+        'document_id': str(request.get('document_id') or ''),
+        'page': request.get('page'),
+        'source_sha256': str(request.get('source_sha256') or ''),
+    }
+
+
+def require_document_evidence_binding(request, payload):
+    result = verify_document_evidence_binding(request, payload)
+    if not result.get('valid'):
+        raise ValueError('document_evidence_binding_mismatch')
+    return result
+
+
 def extract_pages(data, mime):
     if mime not in MIMES or not data or len(data) > MAX_BYTES:
         raise ValueError('Choose a PDF, JPEG, PNG or WebP under 5 MB.')
