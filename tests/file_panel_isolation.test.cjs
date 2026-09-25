@@ -18,6 +18,7 @@ let fetchHandler = async url => {
 };
 let answerHandler = async url => url === '/evidence/ask' ? {status: 'queued'} : ready('Current answer');
 const context = {
+    AbortController, setTimeout, clearTimeout,
     crypto: require('node:crypto').webcrypto, performance: {now: () => 0},
     window: {addEventListener: (name, fn) => {events[name] = fn;}, lVoice: {canSend: () => true, onReply: text => voices.push(text)}},
     document: {documentElement: root, addEventListener(name, fn) {initialise = fn;}, getElementById: el, createElement: element, body: element()},

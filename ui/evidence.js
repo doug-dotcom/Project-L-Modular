@@ -22,11 +22,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!accountCurrent(account)) return Promise.resolve();
         return action().catch(error => { if (accountCurrent(account)) status(error.message); });
     }
-    async function api(path, options) {
-        const response = await fetch(path, options);
-        const result = await response.json();
-        if (!response.ok) throw new Error(typeof result.detail === 'string' ? result.detail : 'Request could not finish.');
-        return result;
+    async function fileRequest(path, options, read, timeoutMs = 15000) {
+        const controller = new AbortController();
+        let timer;
+        try {
+            const timeout = new Promise((_, reject) => {
+                timer = setTimeout(() => {
+                    const error = new Error('File request timed out. Please try again.');
+                    error.code = 'file_timeout'; reject(error); controller.abort();
+                }, timeoutMs);
+            });
+            // Include body reads and transports that do not honour abort.
+            const request = (async () => read(await fetch(path, {...options, signal: controller.signal})))();
+            return await Promise.race([request, timeout]);
+        } finally { clearTimeout(timer); }
+    }
+    async function api(path, options, timeoutMs) {
+        return fileRequest(path, options, async response => {
+            const result = await response.json();
+            if (!response.ok) throw new Error(typeof result.detail === 'string' ? result.detail : 'Request could not finish.');
+            return result;
+        }, timeoutMs);
     }
     async function refresh(selected = '') {
         const account = accountVersion, chosen = selection;
@@ -137,12 +153,16 @@ document.addEventListener('DOMContentLoaded', () => {
         busy = true; status('Saving your original and reading its pages…');
         try {
             const body = new FormData(); body.append('file',file);
-            const result = await api('/evidence/files', {method:'POST',body});
+            const result = await api('/evidence/files', {method:'POST',body}, 60000);
             if (!accountCurrent(account)) return;
             const opened = await refresh(result.id);
             if (!accountCurrent(account) || !opened) return;
             status(result.duplicate ? 'This file was already saved. Opened the existing original.' : 'Original and page evidence saved to your account.');
-        } catch(error) { if (accountCurrent(account)) status(error.message); }
+        } catch(error) {
+            if (accountCurrent(account)) status(error.code === 'file_timeout'
+                ? 'I stopped waiting for this upload. It may still finish saving. Refresh your saved files before uploading again.'
+                : error.message + ' Refresh your saved files before uploading again.');
+        }
         finally { if (accountCurrent(account)) { busy = false; el('evidenceUpload').value = ''; el('fileInput').value = ''; } }
     };
     el('evidenceUpload').onchange = () => window.lEvidenceUpload(el('evidenceUpload').files[0]);
@@ -154,10 +174,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!accountCurrent(account) || !current) return;
         const doc = current;
         try {
-            const response = await fetch('/evidence/files/'+doc.id+'/original');
-            if (!accountCurrent(account)) return;
-            if (!response.ok) throw new Error('Original could not be downloaded.');
-            const blob = await response.blob();
+            const blob = await fileRequest('/evidence/files/'+doc.id+'/original', {}, async response => {
+                if (!response.ok) throw new Error('Original could not be downloaded.');
+                return response.blob();
+            }, 30000);
             if (!accountCurrent(account)) return;
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a'); link.href=url; link.download=doc.filename;
