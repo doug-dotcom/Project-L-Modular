@@ -75,7 +75,15 @@ class RunnerStore:
         self.progressed.append(stage)
         return True
 
+    def progress_bound(self, request_id, worker, input_hash, request, stage=None):
+        self.progressed.append(stage)
+        return True
+
     def finish(self, request_id, worker, payload, status="ready"):
+        self.finished.append((status, payload))
+        return True
+
+    def finish_bound(self, request_id, worker, input_hash, request, payload, status="ready"):
         self.finished.append((status, payload))
         return True
 
