@@ -19,6 +19,10 @@ from core.cognition.delivery_integrity import (
     require_chat_delivery_payload,
     verify_chat_delivery_payload,
 )
+from core.cognition.document_evidence import (
+    require_document_evidence_binding,
+    verify_document_evidence_binding,
+)
 from core.cognition.recovery_provenance import (
     require_recovered_answer_payload,
     verify_recovered_answer_payload,
@@ -80,12 +84,13 @@ class TaskStore:
     def get(self, request_id, token):
         user_id, owner = owner_identity(token)
         rows = (self.client.table('l_chat_tasks')
-                .select('status,result,checkpoint,lease_until,created_at,updated_at')
+                .select('status,result,request,checkpoint,lease_until,created_at,updated_at')
                 .eq('request_id', request_id).eq('user_id', user_id).eq('owner_hash', owner)
                 .limit(1).execute().data)
         if not rows:
             return {'status': 'not_found'}
         row = rows[0]
+        task_request = row.pop('request', None)
         result_payload = row.get('result')
         if result_payload is not None or row['status'] == 'ready':
             delivery = verify_chat_delivery_payload(
@@ -119,6 +124,20 @@ class TaskStore:
                     'error': True,
                 }
                 return {**row, 'durable': True, 'request_id': request_id}
+
+            if row['status'] == 'ready' and isinstance(task_request, dict) and task_request.get('kind') == 'document_evidence':
+                source_binding = verify_document_evidence_binding(task_request, result_payload)
+                row['document_evidence_binding'] = source_binding
+                if not source_binding.get('valid'):
+                    row['status'] = 'failed'
+                    row['result'] = {
+                        'reply': (
+                            'The saved file answer failed source binding verification. '
+                            'Please submit the question again from the original file.'
+                        ),
+                        'error': True,
+                    }
+                    return {**row, 'durable': True, 'request_id': request_id}
         temporal = (row.get('result') or {}).get('cognition', {}).get('temporal_memory')
         if temporal:
             from core.cognition.temporal_memory import snapshot_freshness
@@ -226,6 +245,8 @@ class TaskRunner:
         CONTEXT.task = (self.store, request_id, worker)
         try:
             payload = self.execute(task['request'])
+            if task['request'].get('kind') == 'document_evidence' and not payload.get('error'):
+                require_document_evidence_binding(task['request'], payload)
             # Retry only the idempotent result write, never the cognition/actions.
             for attempt in range(3):
                 try:
