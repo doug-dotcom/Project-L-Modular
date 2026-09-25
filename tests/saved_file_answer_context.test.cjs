@@ -63,7 +63,8 @@ const flush=async()=>{for(let i=0;i<8;i++)await Promise.resolve();};
  if(scenario==='legacy'){
   assert.equal(el('evidenceFiles').value,'');assert.equal(el('evidencePreview').textContent,'');
   assert.equal(el('evidenceQuestion').value,'Legacy question');
-  assert.equal(el('evidenceAnswer').textContent,'Recovered answer');
+  assert.match(el('evidenceAnswer').textContent,/Recovered answer/);
+  assert.match(el('evidenceAnswer').textContent,/Source: target\.pdf, physical page 2/);
   assert.ok(requests.some(r=>r.url==='/evidence/tasks/legacy'));
   assert.match(el('evidenceStatus').textContent,/original file context was not stored/);
   assert.ok(!requests.some(r=>r.url==='/evidence/ask'));return;
