@@ -20,8 +20,11 @@ begin
  assert t.request_id=id;
  assert not exists(select 1 from public.l_task_claim(gen_random_uuid()));
  assert not public.l_task_finish(id,gen_random_uuid(),'ready','{}');
+ assert not public.l_task_progress_bound(id,w,'changed',t.request,'wrong_hash');
+ assert not public.l_task_progress_bound(id,w,'hash','{}'::jsonb,'wrong_request');
+ assert public.l_task_progress_bound(id,w,'hash',t.request,'bound_checkpoint');
  assert public.l_task_progress(id,w,'test_checkpoint');
- assert public.l_task_finish(id,w,'ready','{"reply":"saved result"}');
+ assert public.l_task_finish_bound(id,w,'hash',t.request,'ready','{"reply":"saved result"}');
  assert (select result->>'reply' from public.l_chat_tasks where request_id=id)='saved result';
  assert not public.l_task_finish(id,w,'failed','{}');
  update public.l_chat_tasks set status='running',lease_until=now()-interval '3 minutes' where request_id=id;
@@ -32,5 +35,9 @@ begin
  assert not has_table_privilege('authenticated','public.l_chat_tasks','select');
  assert not has_function_privilege('anon','public.l_task_claim(uuid)','execute');
  assert not has_function_privilege('authenticated','public.l_task_submit(uuid,uuid,text,text,jsonb)','execute');
+ assert not has_function_privilege('anon','public.l_task_progress_bound(uuid,uuid,text,jsonb,text)','execute');
+ assert not has_function_privilege('authenticated','public.l_task_finish_bound(uuid,uuid,text,jsonb,text,jsonb)','execute');
+ assert has_function_privilege('service_role','public.l_task_progress_bound(uuid,uuid,text,jsonb,text)','execute');
+ assert has_function_privilege('service_role','public.l_task_finish_bound(uuid,uuid,text,jsonb,text,jsonb)','execute');
 end $$;
 rollback;
