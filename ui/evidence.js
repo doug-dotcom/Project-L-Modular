@@ -1,12 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
     const el = id => document.getElementById(id);
-    let current = null, busy = false, selection = 0, accountVersion = 0, recoveryVersion = 0, historyVersion = 0, filesVersion = 0;
+    let current = null, busy = false, selection = 0, accountVersion = 0, recoveryVersion = 0, historyVersion = 0, filesVersion = 0, copyText = '', copyBusy = false;
     const status = text => { el('evidenceStatus').textContent = text; };
     const accountCurrent = version => version === accountVersion && document.documentElement.dataset.account === 'ready';
     const recoveryCurrent = (account, version) => accountCurrent(account) && version === recoveryVersion;
+    function syncCopy() {
+        el('copyEvidence').disabled = copyBusy || !copyText || !accountCurrent(accountVersion);
+    }
     function stopRecovery() {
         recoveryVersion += 1;
         el('evidenceAnswer').textContent = ''; status('');
+        copyText = ''; el('evidenceCopyStatus').textContent = ''; syncCopy();
     }
     function resetAccount() {
         accountVersion += 1; selection += 1; historyVersion += 1; filesVersion += 1; stopRecovery();
@@ -105,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         el('evidenceAnswer').textContent = result.reply + (source ? '\n\nSource: ' + source.filename + ', physical page ' + source.page +
             '\n' + (source.quotes || []).map(q => '“' + q + '”').join('\n') +
             (source.kind === 'image' ? '\nImage interpretation by the model; inspect the original for confirmation.' : '') : '');
+        copyText = el('evidenceAnswer').textContent; syncCopy();
         try { window.lVoice?.onReply(result.reply, !result.error); } catch (_) {}
     }
     function clearPendingQuestion(id) {
@@ -277,6 +282,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         finally { if (accountCurrent(account)) { busy=false; el('askEvidence').disabled=false; } }
     };
+    el('copyEvidence').onclick = async () => {
+        const account = accountVersion, generation = recoveryVersion, text = copyText;
+        if (!accountCurrent(account) || copyBusy || !text) return;
+        copyBusy = true; syncCopy(); el('evidenceCopyStatus').textContent = 'Copying…';
+        try {
+            if (!globalThis.navigator?.clipboard?.writeText) throw new Error('Clipboard unavailable');
+            await globalThis.navigator.clipboard.writeText(text);
+            if (recoveryCurrent(account, generation) && copyText === text)
+                el('evidenceCopyStatus').textContent = 'Answer and any displayed source details copied.';
+        } catch (_) {
+            if (recoveryCurrent(account, generation) && copyText === text)
+                el('evidenceCopyStatus').textContent = 'Could not copy. Select the answer text to copy it manually.';
+        } finally { copyBusy = false; syncCopy(); }
+    };
+    syncCopy();
     el('evidenceHistory').onclick = () => reportFailure(history);
     window.addEventListener('l-account-ready', () => { resetAccount(); return reportFailure(() => refresh()); });
     new MutationObserver(() => {
