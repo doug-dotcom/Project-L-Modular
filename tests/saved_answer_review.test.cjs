@@ -376,6 +376,15 @@ const ready={status:'ready',result:{reply:'answer'}};
   assert.ok(entry.children[3].children.some(c=>c.textContent==='Copy answer'));
   assert.ok(!JSON.stringify(entry).includes('PRIVATE'));return;
  }
+ if(['invalid_saved_shape','invalid_saved_entries'].includes(scenario)) {
+  tasks=scenario==='invalid_saved_shape'?null:[null,17,{}, {requestId:42}, {requestId:'  '},
+   {requestId:'one',message:'Good one'},{requestId:'two',message:'Good two'}];
+  const original=JSON.stringify(tasks);await button.onclick();
+  assert.equal(calls.length,scenario==='invalid_saved_shape'?0:2);
+  assert.equal(panel().children[4].children.length,calls.length);
+  if(calls.length)assert.ok(calls.every(c=>/one$|two$/.test(c.url)));
+  assert.equal(JSON.stringify(tasks),original);assert.equal(button.disabled,false);return;
+ }
  if(scenario==='escape') {
   context.fetchChatJson=async()=>new Promise(r=>resolveFetch=r);
   const pending=button.onclick(),old=panel();
