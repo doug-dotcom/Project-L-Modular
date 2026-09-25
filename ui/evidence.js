@@ -33,21 +33,39 @@ document.addEventListener('DOMContentLoaded', () => {
         el('evidenceAnswer').textContent = result.reply + (source ? '\n\nSource: ' + source.filename + ', physical page ' + source.page +
             '\n' + (source.quotes || []).map(q => '“' + q + '”').join('\n') +
             (source.kind === 'image' ? '\nImage interpretation by the model; inspect the original for confirmation.' : '') : '');
-        if (window.lVoice) window.lVoice.onReply(result.reply, !result.error);
+        try { window.lVoice?.onReply(result.reply, !result.error); } catch (_) {}
+    }
+    function clearPendingQuestion(id) {
+        try {
+            const pending = JSON.parse(sessionStorage.getItem('l-evidence-pending') || 'null');
+            if (pending?.request_id === id) sessionStorage.removeItem('l-evidence-pending');
+        } catch (_) {}
     }
     async function recover(id) {
         // One bounded polling window. Returning later uses the durable history.
+        const deadline = performance.now() + 120000;
         for (let n=0; n<60; n++) {
-            const result = await api('/evidence/tasks/' + id);
-            if (['ready','failed','interrupted'].includes(result.status)) {
-                show(result.result || {reply:'This question was interrupted. Review before starting another.'});
-                status(result.status === 'ready' ? 'Answer recovered from your account.' : 'Question did not complete.');
-                return;
+            const remaining = deadline - performance.now();
+            if (remaining <= 0) break;
+            let result;
+            try {
+                result = await fetchChatJson('/evidence/tasks/' + encodeURIComponent(id),
+                    {cache:'no-store'}, Math.min(15000, remaining));
+            } catch (_) {
+                // A transient read failure can recover within this same window.
             }
-            if (result.status === 'not_found') throw new Error('Saved question not found for this account.');
-            await new Promise(resolve => setTimeout(resolve,2000));
+            if (['ready','failed','interrupted'].includes(result?.status)) {
+                show(result.result || {reply:'This question was interrupted. Review before starting another.'});
+                clearPendingQuestion(id);
+                status(result.status === 'ready' ? 'Answer recovered from your account.' : 'Question did not complete.');
+                return true;
+            }
+            if (result?.status === 'not_found') throw new Error('Saved question not found for this account.');
+            const delay = Math.min(2000, deadline - performance.now());
+            if (delay > 0) await new Promise(resolve => setTimeout(resolve, delay));
         }
-        status('Still processing. Use Saved file answers to check later.');
+        status('I stopped waiting for this file answer. L may still be working. Use Saved file answers to check before submitting again.');
+        return false;
     }
     async function history() {
         const result = await api('/evidence/tasks');
@@ -102,9 +120,13 @@ document.addEventListener('DOMContentLoaded', () => {
         try { sessionStorage.setItem('l-evidence-pending',JSON.stringify(body)); } catch (_) {}
         status('Saving your question…');
         try {
-            await api('/evidence/ask', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+            try {
+                await fetchChatJson('/evidence/ask',
+                    {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+            } catch (_) {
+                // An uncertain acknowledgement does not justify another submission.
+            }
             status('L is reading the selected page…'); await recover(request_id);
-            try { sessionStorage.removeItem('l-evidence-pending'); } catch (_) {}
         } catch(error) { status(error.message + ' Check Saved file answers before submitting again.'); }
         finally { busy=false; el('askEvidence').disabled=false; }
     };
