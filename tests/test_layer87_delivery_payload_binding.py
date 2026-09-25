@@ -166,7 +166,13 @@ def test_layer87_durable_finish_rejects_mutated_bound_payload_before_rpc():
     store = RecordingStore()
 
     with pytest.raises(ValueError, match="chat_delivery_integrity_mismatch"):
-        store.finish(request_id, "worker", payload)
+        store.finish_bound(
+            request_id,
+            "worker",
+            "a" * 64,
+            {"request_id": request_id, "message": "fixture"},
+            payload,
+        )
 
     assert store.calls == []
 
