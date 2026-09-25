@@ -65,7 +65,8 @@ const flush=async()=>{for(let i=0;i<8;i++)await Promise.resolve();};
   assert.equal(el('evidenceQuestion').value,'Legacy question');
   assert.equal(el('evidenceAnswer').textContent,'Recovered answer');
   assert.ok(requests.some(r=>r.url==='/evidence/tasks/legacy'));
-  assert.match(el('evidenceStatus').textContent,/original file context was not stored/);\n  assert.ok(!requests.some(r=>r.url==='/evidence/ask'));return;
+  assert.match(el('evidenceStatus').textContent,/original file context was not stored/);
+  assert.ok(!requests.some(r=>r.url==='/evidence/ask'));return;
  }
  assert.equal(el('evidenceFiles').value,'target');assert.equal(el('evidencePage').value,2);
  assert.equal(el('evidencePreview').textContent,'target page 2');assert.equal(el('evidenceQuestion').value,'Saved question');
