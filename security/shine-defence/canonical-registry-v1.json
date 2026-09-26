@@ -1,0 +1,91 @@
+{
+  "registry": "shine-defence/canonical-registry-v1",
+  "version": "1.0.0",
+  "repository": "doug-dotcom/ShineUniverse-shine-core",
+  "entries": [
+    {
+      "id": "baseline",
+      "path": "security/shine-defence/baseline-v1.json",
+      "version": "1.0.0",
+      "blobSha": "963402a4a4df916583c46aaec59cf0cd2028157d"
+    },
+    {
+      "id": "certifier",
+      "path": "security/shine-defence/integration-kit/certifier-v1.mjs",
+      "version": "1.1.0",
+      "blobSha": "ccb28b1c373ad4fad1a3064559e1f1741b32b5b0"
+    },
+    {
+      "id": "external-link",
+      "path": "security/shine-defence/policies/external-link-v1.json",
+      "version": "1.0.0",
+      "blobSha": "a8887b4c5ab678316221f0b16e5d726280db80ac"
+    },
+    {
+      "id": "untrusted-content",
+      "path": "security/shine-defence/policies/untrusted-content-v1.json",
+      "version": "1.0.0",
+      "blobSha": "1a3cefcbe8973c94b7b6da8f3ac0d7ceace595d4"
+    },
+    {
+      "id": "malware-quarantine",
+      "path": "security/shine-defence/policies/malware-quarantine-v1.json",
+      "version": "1.0.0",
+      "blobSha": "843592299816d7474e4f0ab22e728f46ec452d98"
+    },
+    {
+      "id": "external-data-provenance",
+      "path": "security/shine-defence/policies/external-data-provenance-v1.json",
+      "version": "1.0.0",
+      "blobSha": "d42c2c01599ed5f28254c6a120a474e8a0d966cc"
+    },
+    {
+      "id": "collaborative-content",
+      "path": "security/shine-defence/policies/collaborative-content-v1.json",
+      "version": "1.0.0",
+      "blobSha": "54ee8fa25ac85d37218dd3902fa66248be313fef"
+    },
+    {
+      "id": "authenticated-session-hardening",
+      "path": "security/shine-defence/policies/authenticated-session-hardening-v1.json",
+      "version": "1.0.0",
+      "blobSha": "d06f9a66cdf548148fd66651c0687595ef8aa41b"
+    },
+    {
+      "id": "ai-prompt-and-tool-boundaries",
+      "path": "security/shine-defence/policies/ai-prompt-and-tool-boundaries-v1.json",
+      "version": "1.0.0",
+      "blobSha": "a83982e8839432958fa7ae6e2c956b2675e324ff"
+    },
+    {
+      "id": "personal-financial-data",
+      "path": "security/shine-defence/policies/personal-financial-data-v1.json",
+      "version": "1.0.0",
+      "blobSha": "9351f87ebf9cb0278f983f53401d4872a9a01e14"
+    },
+    {
+      "id": "wagering-trial-integrity",
+      "path": "security/shine-defence/policies/wagering-trial-integrity-v1.json",
+      "version": "1.0.0",
+      "blobSha": "388adc401533ea2956f38b14c909e5c590f608d9"
+    },
+    {
+      "id": "financial-research-provenance",
+      "path": "security/shine-defence/policies/financial-research-provenance-v1.json",
+      "version": "1.0.0",
+      "blobSha": "2df11022162c287bd781ee18a6127f9a7a3afa21"
+    },
+    {
+      "id": "sensitive-memory-governance",
+      "path": "security/shine-defence/policies/sensitive-memory-governance-v1.json",
+      "version": "1.0.0",
+      "blobSha": "109e3e1aacb88671266c72748ad2657d6d5f9df4"
+    },
+    {
+      "id": "exercise-companion-safety",
+      "path": "security/shine-defence/policies/exercise-companion-safety-v1.json",
+      "version": "1.0.0",
+      "blobSha": "10a457f1e40499c893af29f732bdb84e6de5d038"
+    }
+  ]
+}
