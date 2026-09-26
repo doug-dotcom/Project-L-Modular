@@ -145,7 +145,7 @@ def test_missing_provider_resource_id_is_not_clean_success(monkeypatch):
 
     assert route["status"] == "error"
     assert route["action_receipt_verification"]["valid"] is False
-    assert "resource_id_invalid" in route["action_receipt_verification"]["issues"]
+    assert "action_receipt_resource_id_invalid" in route["action_receipt_verification"]["issues"]
     assert "check google tasks before retrying" in route["reply"].lower()
 
 
