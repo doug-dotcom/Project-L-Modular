@@ -41,12 +41,28 @@ class DurableTaskBindingError(RuntimeError):
     """A durable task no longer owns the exact request/lease it claimed."""
 
 
+def _task_binding_parts(task):
+    """Return the durable binding plus optional cooperative-loss signal."""
+    if not task:
+        return None
+    if len(task) == 5:
+        store, request_id, worker, input_hash, request = task
+        return store, request_id, worker, input_hash, request, None
+    if len(task) == 6:
+        store, request_id, worker, input_hash, request, binding_lost = task
+        if not hasattr(binding_lost, 'is_set') or not hasattr(binding_lost, 'set'):
+            raise DurableTaskBindingError('Durable task binding signal invalid; work stopped')
+        return store, request_id, worker, input_hash, request, binding_lost
+    raise DurableTaskBindingError('Durable task binding missing; work stopped')
+
+
 def current_task_request_id():
     """Return the durable request bound to this execution thread, if any."""
     task = getattr(CONTEXT, 'task', None)
-    if not task or len(task) != 5:
+    if not task:
         return ''
-    return str(task[1] or '')
+    parts = _task_binding_parts(task)
+    return str(parts[1] or '')
 
 
 
@@ -296,16 +312,21 @@ def checkpoint(stage):
     task = getattr(CONTEXT, 'task', None)
     if not task:
         return
-    if len(task) != 5:
-        raise DurableTaskBindingError('Durable task binding missing; work stopped')
-    store, request_id, worker, input_hash, request = task
+    store, request_id, worker, input_hash, request, binding_lost = _task_binding_parts(task)
+    if binding_lost is not None and binding_lost.is_set():
+        raise DurableTaskBindingError('Task lease or request binding lost; work stopped')
     if not store.progress_bound(request_id, worker, input_hash, request, stage):
+        if binding_lost is not None:
+            binding_lost.set()
+        raise DurableTaskBindingError('Task lease or request binding lost; work stopped')
+    if binding_lost is not None and binding_lost.is_set():
         raise DurableTaskBindingError('Task lease or request binding lost; work stopped')
 
 
 class TaskRunner:
-    def __init__(self, store, execute, slots=2):
+    def __init__(self, store, execute, slots=2, heartbeat_seconds=15):
         self.store, self.execute, self.slots = store, execute, slots
+        self.heartbeat_seconds = max(0.001, float(heartbeat_seconds))
         self.stop_event = threading.Event()
         self.threads = []
 
@@ -408,22 +429,32 @@ class TaskRunner:
             return
 
         done = threading.Event()
+        binding_lost = threading.Event()
         def heartbeat():
-            while not done.wait(15):
+            while not done.wait(self.heartbeat_seconds):
                 try:
                     if not self.store.progress_bound(
                         request_id, worker, claimed_hash, claimed_request
                     ):
+                        binding_lost.set()
+                        LOG.warning('Task heartbeat rejected: lease or request binding lost')
                         return
                 except Exception:
+                    # Transport uncertainty does not prove ownership was lost. The
+                    # next checkpoint still performs a bound database verification.
                     LOG.warning('Task heartbeat unavailable')
         pulse = threading.Thread(target=heartbeat, daemon=True)
         pulse.start()
         CONTEXT.task = (
-            self.store, request_id, worker, claimed_hash, claimed_request
+            self.store, request_id, worker, claimed_hash, claimed_request,
+            binding_lost,
         )
         try:
             payload = self.execute(task['request'])
+            if binding_lost.is_set():
+                raise DurableTaskBindingError(
+                    'Task lease or request binding lost; work stopped'
+                )
             if task['request'].get('kind') == 'document_evidence' and not payload.get('error'):
                 require_document_evidence_binding(task['request'], payload)
             # Retry only the idempotent result write, never the cognition/actions.
