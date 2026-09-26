@@ -10,10 +10,11 @@ from agents.rhee.rhee_v3 import build_context_packet as build_rhee_packet
 
 router = APIRouter(prefix="/internal/shine-ai", tags=["internal-shine-ai"])
 
-# Project L is currently a single-owner corpus. This policy deliberately starts
-# with one consumer and narrow curated scopes. Expansion must be explicit.
+# Project L is currently a single-owner corpus. Every consumer gets an explicit,
+# narrow scope allow-list; adding an app never inherits another app's scopes.
 _APP_SCOPE_POLICY: dict[str, frozenset[str]] = {
     "shine-dive": frozenset({"episodic", "sport", "general"}),
+    "daash": frozenset({"sport"}),
 }
 
 _BROAD_RECALL_RE = re.compile(
