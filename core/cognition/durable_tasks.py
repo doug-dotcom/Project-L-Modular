@@ -77,8 +77,15 @@ def record_current_action_receipt(receipt):
     if binding_lost is not None and binding_lost.is_set():
         raise DurableTaskBindingError('Task lease or request binding lost; work stopped')
 
+    try:
+        frozen_receipt = json.loads(json.dumps(
+            receipt, sort_keys=True, separators=(',', ':')
+        ))
+    except Exception:
+        raise DurableTaskBindingError('Connected action receipt invalid; work stopped')
+
     verification = verify_action_receipt(
-        receipt,
+        frozen_receipt,
         expected_request_id=request_id,
     )
     if not verification.get('valid'):
@@ -90,7 +97,7 @@ def record_current_action_receipt(receipt):
             worker,
             input_hash,
             request,
-            receipt,
+            frozen_receipt,
         )
     except Exception:
         # The provider action may already have happened and an RPC response can
@@ -105,6 +112,11 @@ def record_current_action_receipt(receipt):
         raise DurableTaskBindingError(
             'Connected action journal rejected; work stopped'
         )
+
+    # Preserve the exact successfully journaled receipt for any later terminal
+    # failure in this same worker thread. This is process-local evidence only;
+    # the durable journal remains authoritative.
+    CONTEXT.action_receipt = frozen_receipt
     return True
 
 
@@ -533,6 +545,7 @@ class TaskRunner:
             self.store, request_id, worker, claimed_hash, claimed_request,
             binding_lost,
         )
+        CONTEXT.action_receipt = None
         try:
             payload = self.execute(task['request'])
             if binding_lost.is_set():
@@ -577,7 +590,19 @@ class TaskRunner:
                     'reply': 'This task stopped before completion. Please review any actions before starting it again.',
                     'error': True,
                 }
-                self.store.finish_bound(
+                journaled_receipt = getattr(CONTEXT, 'action_receipt', None)
+                if isinstance(journaled_receipt, dict):
+                    failure['route'] = {
+                        'handled': True,
+                        'capability': journaled_receipt.get('capability', 'connected_action'),
+                        'status': 'error',
+                        'action_receipt': journaled_receipt,
+                        'action_receipt_verification': verify_action_receipt(
+                            journaled_receipt,
+                            expected_request_id=request_id,
+                        ),
+                    }
+                saved_failure = self.store.finish_bound(
                     request_id,
                     worker,
                     claimed_hash,
@@ -585,9 +610,12 @@ class TaskRunner:
                     failure,
                     status='failed',
                 )
+                if not saved_failure:
+                    LOG.warning('Task failure rejected: lease, request binding or action journal mismatch')
             except Exception:
                 LOG.warning('Task failure could not be persisted')
         finally:
             CONTEXT.task = None
+            CONTEXT.action_receipt = None
             done.set()
             pulse.join(timeout=1)
