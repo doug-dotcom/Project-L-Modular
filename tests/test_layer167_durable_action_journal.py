@@ -326,7 +326,17 @@ def test_interrupted_recovery_surfaces_valid_durable_action_journal():
         "request": req,
         "input_hash": request_hash(req),
         "checkpoint": "connected_action_recorded",
-        "lease_until": None,
+        "lease_until": "2026-09-26T02:59:59Z",
+        "interruption_evidence": {
+            "version": "1.0",
+            "reason": "lease_expired",
+            "interrupted_at": "2026-09-26T03:00:01Z",
+            "lease_until": "2026-09-26T02:59:59Z",
+            "checkpoint": "connected_action_recorded",
+            "worker_id": "20000000-0000-4000-8000-000000000167",
+            "claim_token": CLAIM_TOKEN,
+            "action_journalled": True,
+        },
         "created_at": "2026-09-26T03:00:00Z",
         "updated_at": "2026-09-26T03:00:01Z",
     }
