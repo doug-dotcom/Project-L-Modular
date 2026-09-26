@@ -65,6 +65,9 @@ jobs:
           python -c
           "import fastapi, openai, supabase, tiktoken, tavily, uvicorn, yaml"
 
+      - name: Certify Shine Defence sensitive-memory boundary
+        run: python scripts/certify_shine_defence.py
+
       - name: Run active memory and numbered-layer regression suites
         env:
           SUPABASE_URL: https://example.supabase.co
