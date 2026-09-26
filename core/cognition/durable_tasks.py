@@ -18,6 +18,8 @@ from supabase.lib.client_options import SyncClientOptions
 
 from core.cognition.action_receipt import (
     require_payload_action_receipt,
+    verify_action_receipt,
+    verify_journaled_action_receipt,
     verify_payload_action_receipt,
 )
 from core.cognition.delivery_integrity import (
@@ -63,6 +65,47 @@ def current_task_request_id():
         return ''
     parts = _task_binding_parts(task)
     return str(parts[1] or '')
+
+
+def record_current_action_receipt(receipt):
+    """Persist one provider-confirmed action immediately when running durably."""
+    task = getattr(CONTEXT, 'task', None)
+    if not task:
+        return False
+
+    store, request_id, worker, input_hash, request, binding_lost = _task_binding_parts(task)
+    if binding_lost is not None and binding_lost.is_set():
+        raise DurableTaskBindingError('Task lease or request binding lost; work stopped')
+
+    verification = verify_action_receipt(
+        receipt,
+        expected_request_id=request_id,
+    )
+    if not verification.get('valid'):
+        raise DurableTaskBindingError('Connected action receipt invalid; work stopped')
+
+    try:
+        saved = store.record_action_bound(
+            request_id,
+            worker,
+            input_hash,
+            request,
+            receipt,
+        )
+    except Exception:
+        # The provider action may already have happened and an RPC response can
+        # be lost after commit. Never expose transport details or continue as
+        # though the action were cleanly journaled.
+        raise DurableTaskBindingError(
+            'Connected action journal unavailable; work stopped'
+        )
+    if not saved:
+        if binding_lost is not None:
+            binding_lost.set()
+        raise DurableTaskBindingError(
+            'Connected action journal rejected; work stopped'
+        )
+    return True
 
 
 
@@ -149,7 +192,7 @@ class TaskStore:
     def get(self, request_id, token):
         user_id, owner = owner_identity(token)
         rows = (self.client.table('l_chat_tasks')
-                .select('status,result,request,input_hash,checkpoint,lease_until,created_at,updated_at')
+                .select('status,result,action_receipt,request,input_hash,checkpoint,lease_until,created_at,updated_at')
                 .eq('request_id', request_id).eq('user_id', user_id).eq('owner_hash', owner)
                 .limit(1).execute().data)
         if not rows:
@@ -178,6 +221,24 @@ class TaskStore:
                 'error': True,
             }
             return {**row, 'durable': True, 'request_id': request_id}
+        journal_receipt = row.get('action_receipt')
+        journal_integrity = verify_journaled_action_receipt(
+            journal_receipt,
+            row.get('result'),
+            expected_request_id=request_id,
+        )
+        row['action_journal_integrity'] = journal_integrity
+        if not journal_integrity.get('valid'):
+            row['status'] = 'failed'
+            row['result'] = {
+                'reply': (
+                    'The saved task failed connected-action journal verification. '
+                    'Please check the external service before retrying.'
+                ),
+                'error': True,
+            }
+            return {**row, 'durable': True, 'request_id': request_id}
+
         result_payload = row.get('result')
         if result_payload is not None or row['status'] == 'ready':
             delivery = verify_chat_delivery_payload(
@@ -251,6 +312,20 @@ class TaskStore:
             from datetime import datetime, timezone
             if datetime.fromisoformat(row['lease_until'].replace('Z', '+00:00')) < datetime.now(timezone.utc):
                 row['status'] = 'interrupted'
+        if (
+            row['status'] == 'interrupted'
+            and row.get('result') is None
+            and journal_integrity.get('valid')
+            and journal_integrity.get('present')
+        ):
+            row['result'] = {
+                'reply': (
+                    'A connected action was confirmed before this task stopped, '
+                    'but the final answer was not saved. Check the external service '
+                    'before submitting the action again.'
+                ),
+                'error': True,
+            }
         return {**row, 'durable': True, 'request_id': request_id}
 
     def claim(self, worker):
@@ -270,6 +345,15 @@ class TaskStore:
             'p_hash': input_hash,
             'p_request': request,
             'p_checkpoint': checkpoint,
+        })
+
+    def record_action_bound(self, request_id, worker, input_hash, request, receipt):
+        return self.rpc('l_task_record_action_bound', {
+            'p_id': request_id,
+            'p_worker': worker,
+            'p_hash': input_hash,
+            'p_request': request,
+            'p_receipt': receipt,
         })
 
     def _verify_finish_payload(self, request_id, payload):

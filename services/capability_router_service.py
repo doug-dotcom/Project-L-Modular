@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 from core.cognition.action_receipt import verify_action_receipt
-from core.cognition.durable_tasks import DurableTaskBindingError, current_task_request_id
+from core.cognition.durable_tasks import (
+    DurableTaskBindingError,
+    current_task_request_id,
+    record_current_action_receipt,
+)
 
 
 def _normalise(message: str) -> str:
@@ -52,7 +56,17 @@ def route_capability(message: str, write_guard=None) -> dict:
         if google_capability == "tasks":
             receipt_box = {}
             def capture_receipt(receipt):
+                # Preserve Layer 165's explicit uncertain-provider outcome when
+                # Google does not return enough evidence for a valid receipt.
+                # Only a semantically valid provider confirmation is eligible
+                # for durable journaling.
                 receipt_box["value"] = receipt
+                verification = verify_action_receipt(
+                    receipt,
+                    expected_request_id=current_task_request_id(),
+                )
+                if verification.get("valid"):
+                    record_current_action_receipt(receipt)
 
             result = _run(
                 google_capability,

@@ -129,3 +129,53 @@ def require_payload_action_receipt(payload, *, expected_request_id):
     if not check.get("valid"):
         raise ValueError("connected_action_receipt_mismatch")
     return check
+
+
+def verify_journaled_action_receipt(journal_receipt, payload=None, *, expected_request_id):
+    """Verify a durable journal receipt and, when present, bind it to final output."""
+    if journal_receipt is None:
+        return {
+            "version": VERSION,
+            "valid": True,
+            "status": "legacy_unjournaled",
+            "present": False,
+            "payload_bound": False,
+            "issues": [],
+        }
+
+    check = verify_action_receipt(
+        journal_receipt,
+        expected_request_id=expected_request_id,
+    )
+    issues = list(check.get("issues") or [])
+    payload_bound = False
+
+    if payload is not None:
+        route = payload.get("route") if isinstance(payload, dict) else None
+        payload_receipt = (
+            route.get("action_receipt")
+            if isinstance(route, dict)
+            else None
+        )
+        if payload_receipt is None:
+            issues.append("journaled_action_missing_from_final_payload")
+        elif payload_receipt != journal_receipt:
+            issues.append("journaled_action_final_payload_mismatch")
+        else:
+            payload_bound = True
+
+    return {
+        "version": VERSION,
+        "valid": not issues,
+        "status": (
+            "verified"
+            if not issues and payload is not None
+            else "journal_verified"
+            if not issues
+            else "mismatch"
+        ),
+        "present": True,
+        "payload_bound": payload_bound,
+        "request_bound": bool(journal_receipt.get("request_bound")) if isinstance(journal_receipt, dict) else False,
+        "issues": issues,
+    }
