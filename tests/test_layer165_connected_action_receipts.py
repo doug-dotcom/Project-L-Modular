@@ -18,6 +18,7 @@ from services.capability_router_service import route_capability
 
 
 REQUEST_ID = "10000000-0000-4000-8000-000000000165"
+CLAIM_TOKEN = "30000000-0000-4000-8000-000000000165"
 
 
 class Executable:
@@ -96,7 +97,10 @@ class RecordingStore(TaskStore):
 
 def task_context(request_id=REQUEST_ID):
     request = {"request_id": request_id, "message": "add to my tasks: call electrician"}
-    return (RecordingStore(), request_id, str(uuid4()), request_hash(request), request)
+    store = RecordingStore()
+    worker = str(uuid4())
+    store._remember_claim_token(worker, CLAIM_TOKEN)
+    return (store, request_id, worker, request_hash(request), request)
 
 
 def test_google_tasks_emits_request_bound_confirmed_receipt(monkeypatch):

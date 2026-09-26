@@ -15,6 +15,7 @@ from core.cognition.durable_tasks import (
 
 
 REQUEST_ID = "10000000-0000-4000-8000-000000000168"
+CLAIM_TOKEN = "30000000-0000-4000-8000-000000000168"
 
 
 def task():
@@ -46,6 +47,12 @@ def receipt():
     )
 
 
+def run_bound(store, execute):
+    worker = str(uuid4())
+    store._remember_claim_token(worker, CLAIM_TOKEN)
+    TaskRunner(store, execute, heartbeat_seconds=60).run_one(task(), worker)
+
+
 class RpcClient:
     def __init__(self, finish_result=True):
         self.calls = []
@@ -53,7 +60,7 @@ class RpcClient:
 
     def rpc(self, name, params):
         self.calls.append((name, params))
-        data = self.finish_result if name == "l_task_finish_bound" else True
+        data = self.finish_result if name == "l_task_finish_claim_bound" else True
         return SimpleNamespace(execute=lambda: SimpleNamespace(data=data))
 
 
@@ -66,10 +73,10 @@ def test_journaled_action_then_exception_persists_matching_failed_result():
         assert record_current_action_receipt(action_receipt) is True
         raise RuntimeError("synthetic post-action failure")
 
-    TaskRunner(store, execute, heartbeat_seconds=60).run_one(task(), str(uuid4()))
+    run_bound(store, execute)
 
     names = [name for name, _params in client.calls]
-    assert names == ["l_task_record_action_bound", "l_task_finish_bound"]
+    assert names == ["l_task_record_action_claim_bound", "l_task_finish_claim_bound"]
 
     journal_params = client.calls[0][1]
     finish_params = client.calls[1][1]
@@ -93,10 +100,10 @@ def test_failure_before_any_action_does_not_invent_action_receipt():
     def execute(_request):
         raise RuntimeError("failure before action")
 
-    TaskRunner(store, execute, heartbeat_seconds=60).run_one(task(), str(uuid4()))
+    run_bound(store, execute)
 
     finish_calls = [
-        params for name, params in client.calls if name == "l_task_finish_bound"
+        params for name, params in client.calls if name == "l_task_finish_claim_bound"
     ]
     assert len(finish_calls) == 1
     payload = finish_calls[0]["p_result"]
@@ -114,12 +121,12 @@ def test_successfully_journaled_receipt_is_frozen_against_caller_mutation():
         original["resource_id"] = "mutated-after-journal"
         raise RuntimeError("synthetic failure after mutation")
 
-    TaskRunner(store, execute, heartbeat_seconds=60).run_one(task(), str(uuid4()))
+    run_bound(store, execute)
 
     journal = next(
         params["p_receipt"]
         for name, params in client.calls
-        if name == "l_task_record_action_bound"
+        if name == "l_task_record_action_claim_bound"
     )
     failure = next(
         params["p_result"]
@@ -138,7 +145,7 @@ def test_runner_clears_process_local_journal_after_task():
         record_current_action_receipt(receipt())
         raise RuntimeError("synthetic failure")
 
-    TaskRunner(store, execute, heartbeat_seconds=60).run_one(task(), str(uuid4()))
+    run_bound(store, execute)
 
     assert getattr(CONTEXT, "task", None) is None
     assert getattr(CONTEXT, "action_receipt", None) is None
@@ -152,7 +159,7 @@ def test_rejected_terminal_failure_is_not_mistaken_for_persisted():
         record_current_action_receipt(receipt())
         raise RuntimeError("synthetic failure")
 
-    TaskRunner(store, execute, heartbeat_seconds=60).run_one(task(), str(uuid4()))
+    run_bound(store, execute)
 
     finish_calls = [
         params for name, params in client.calls if name == "l_task_finish_bound"

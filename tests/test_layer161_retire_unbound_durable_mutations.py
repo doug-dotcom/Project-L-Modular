@@ -135,7 +135,7 @@ def test_unbound_rpc_names_are_absent_from_runtime_mutation_calls():
     assert "self.rpc('l_task_finish'," not in source
     assert "self.store.progress(" not in source
     assert "self.store.finish(" not in source
-    assert "l_task_reject_bound" in source
+    assert "l_task_reject_claim_bound" in source
 
 
 def test_layer161_migration_retires_service_role_legacy_mutations():
