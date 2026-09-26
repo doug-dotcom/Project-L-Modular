@@ -37,6 +37,14 @@ class DurableTaskBindingError(RuntimeError):
     """A durable task no longer owns the exact request/lease it claimed."""
 
 
+def current_task_request_id():
+    """Return the durable request bound to this execution thread, if any."""
+    task = getattr(CONTEXT, 'task', None)
+    if not task or len(task) != 5:
+        return ''
+    return str(task[1] or '')
+
+
 
 def task_database_client(url, key):
     """Isolate leases and queue polling from the shared recall HTTP/2 pool.
