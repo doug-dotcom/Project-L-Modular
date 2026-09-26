@@ -27,6 +27,7 @@ def task():
         "request_id": REQUEST_ID,
         "request": request,
         "input_hash": request_hash(request),
+        "claim_token": CLAIM_TOKEN,
         "_request_integrity": {
             "version": "1.0",
             "status": "verified",
@@ -45,12 +46,6 @@ def receipt():
         resource_id="google-task-168",
         subject="call electrician",
     )
-
-
-def run_bound(store, execute):
-    worker = str(uuid4())
-    store._remember_claim_token(worker, CLAIM_TOKEN)
-    TaskRunner(store, execute, heartbeat_seconds=60).run_one(task(), worker)
 
 
 class RpcClient:
@@ -73,7 +68,7 @@ def test_journaled_action_then_exception_persists_matching_failed_result():
         assert record_current_action_receipt(action_receipt) is True
         raise RuntimeError("synthetic post-action failure")
 
-    run_bound(store, execute)
+    TaskRunner(store, execute, heartbeat_seconds=60).run_one(task(), str(uuid4()))
 
     names = [name for name, _params in client.calls]
     assert names == ["l_task_record_action_claim_bound", "l_task_finish_claim_bound"]
@@ -100,7 +95,7 @@ def test_failure_before_any_action_does_not_invent_action_receipt():
     def execute(_request):
         raise RuntimeError("failure before action")
 
-    run_bound(store, execute)
+    TaskRunner(store, execute, heartbeat_seconds=60).run_one(task(), str(uuid4()))
 
     finish_calls = [
         params for name, params in client.calls if name == "l_task_finish_claim_bound"
@@ -121,7 +116,7 @@ def test_successfully_journaled_receipt_is_frozen_against_caller_mutation():
         original["resource_id"] = "mutated-after-journal"
         raise RuntimeError("synthetic failure after mutation")
 
-    run_bound(store, execute)
+    TaskRunner(store, execute, heartbeat_seconds=60).run_one(task(), str(uuid4()))
 
     journal = next(
         params["p_receipt"]
@@ -145,7 +140,7 @@ def test_runner_clears_process_local_journal_after_task():
         record_current_action_receipt(receipt())
         raise RuntimeError("synthetic failure")
 
-    run_bound(store, execute)
+    TaskRunner(store, execute, heartbeat_seconds=60).run_one(task(), str(uuid4()))
 
     assert getattr(CONTEXT, "task", None) is None
     assert getattr(CONTEXT, "action_receipt", None) is None
@@ -159,7 +154,7 @@ def test_rejected_terminal_failure_is_not_mistaken_for_persisted():
         record_current_action_receipt(receipt())
         raise RuntimeError("synthetic failure")
 
-    run_bound(store, execute)
+    TaskRunner(store, execute, heartbeat_seconds=60).run_one(task(), str(uuid4()))
 
     finish_calls = [
         params for name, params in client.calls if name == "l_task_finish_claim_bound"

@@ -672,6 +672,29 @@ class TaskRunner:
     def run_one(self, task, worker):
         request_id = task['request_id']
         request_integrity = task.get('_request_integrity')
+
+        # Re-bind the one-shot claim identity from the claimed row before any
+        # request-integrity rejection or execution path.
+        if isinstance(self.store, TaskStore):
+            task_claim_token = task.get('claim_token')
+            if task_claim_token is not None:
+                try:
+                    self.store._remember_claim_token(worker, task_claim_token)
+                except Exception:
+                    LOG.warning(
+                        'Verified durable task has invalid claim token before execution: request_id=%s',
+                        request_id,
+                    )
+                    return
+            else:
+                try:
+                    self.store._resolve_claim_token(worker)
+                except DurableTaskBindingError:
+                    LOG.warning(
+                        'Verified durable task missing claim token before execution: request_id=%s',
+                        request_id,
+                    )
+                    return
         try:
             claimed_request = json.loads(json.dumps(
                 task.get('request'), sort_keys=True, separators=(',', ':')
