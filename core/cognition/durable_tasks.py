@@ -352,8 +352,12 @@ class TaskStore:
             }
         return {**row, 'durable': True, 'request_id': request_id}
 
-    def claim(self, worker):
-        rows = self.rpc('l_task_claim', {'p_worker': worker})
+    def claim(self, worker, claim_token=None):
+        token = str(claim_token or uuid4())
+        rows = self.rpc('l_task_claim_bound', {
+            'p_worker': worker,
+            'p_claim_token': token,
+        })
         if not rows:
             return None
         task = rows[0]
@@ -478,10 +482,17 @@ class TaskRunner:
 
     def loop(self):
         worker = str(uuid4())
+        claim_token = None
         failures = 0
         while not self.stop_event.is_set():
             try:
-                task = self.store.claim(worker)
+                if claim_token is None:
+                    claim_token = str(uuid4())
+                task = self.store.claim(worker, claim_token=claim_token)
+                # A returned response, including an empty queue response, resolves
+                # this one-shot claim attempt. Transport failures keep the same
+                # token so a retry can only recover that exact claim.
+                claim_token = None
                 if failures:
                     LOG.info('Durable task dispatcher recovered after %d failed polls', failures)
                 failures = 0
@@ -491,7 +502,8 @@ class TaskRunner:
             except Exception as exc:
                 failures += 1
                 # Do not log exception text: it may contain request data or credentials.
-                # No immediate RPC retry: a timed-out claim may already own a task.
+                # The claim token is intentionally retained across transport
+                # uncertainty so the next poll cannot claim a different task.
                 delay = min(60, 3 * (2 ** min(failures - 1, 5)))
                 delay = min(60, delay + random.uniform(0, delay * 0.2))
                 frames = traceback.extract_tb(exc.__traceback__)

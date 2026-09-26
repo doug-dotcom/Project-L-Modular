@@ -18,8 +18,9 @@ class RpcClient:
         self.rows = rows
 
     def rpc(self, name, params):
-        assert name == "l_task_claim"
+        assert name == "l_task_claim_bound"
         assert "p_worker" in params
+        assert "p_claim_token" in params
         return NS(execute=lambda: NS(data=[dict(row) for row in self.rows]))
 
 
