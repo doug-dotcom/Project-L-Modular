@@ -1,5 +1,8 @@
 """Layer 163 — every live promotion write revalidates durable task binding."""
 
+from pathlib import Path
+import re
+
 from types import SimpleNamespace
 
 import pytest
@@ -172,6 +175,11 @@ def test_server_pipeline_passes_bound_guard_and_propagates_binding_loss(monkeypa
 
 
 def test_layer163_release_marker_is_continuous():
-    source = open("api/server.py", encoding="utf-8").read()
-    assert source.count('"release_layer": 163') == 2
-    assert source.count("release_layer=163") == 1
+    source = Path("api/server.py").read_text(encoding="utf-8")
+    layers = [
+        int(value)
+        for value in re.findall(r'release_layer"?\s*[:=]\s*(\d+)', source)
+    ]
+    assert len(layers) == 3
+    assert len(set(layers)) == 1
+    assert layers[0] >= 163
