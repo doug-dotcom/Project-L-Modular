@@ -414,6 +414,19 @@ class TaskStore:
             'p_result': payload,
         })
 
+    def confirm_finish_bound(
+        self, request_id, worker, input_hash, request, payload, status='ready'
+    ):
+        self._verify_finish_payload(request_id, payload)
+        return self.rpc('l_task_confirm_finish_bound', {
+            'p_id': request_id,
+            'p_worker': worker,
+            'p_hash': input_hash,
+            'p_request': request,
+            'p_status': status,
+            'p_result': payload,
+        })
+
     def reject_bound(self, request_id, worker, input_hash, request, payload):
         self._verify_finish_payload(request_id, payload)
         return self.rpc('l_task_reject_bound', {
@@ -492,6 +505,73 @@ class TaskRunner:
                 self.stop_event.wait(delay)
                 continue
             self.stop_event.wait(3)
+
+    def _persist_terminal_bound(
+        self,
+        request_id,
+        worker,
+        input_hash,
+        request,
+        payload,
+        status,
+        done,
+    ):
+        """Persist one terminal result and prove ambiguous acknowledgements."""
+        for attempt in range(3):
+            try:
+                saved = self.store.finish_bound(
+                    request_id,
+                    worker,
+                    input_hash,
+                    request,
+                    payload,
+                    status=status,
+                )
+            except Exception:
+                # The exact terminal write may have committed even if its
+                # acknowledgement was lost. Reconcile read-only before any
+                # idempotent retry; never rerun cognition or connected actions.
+                try:
+                    if self.store.confirm_finish_bound(
+                        request_id,
+                        worker,
+                        input_hash,
+                        request,
+                        payload,
+                        status=status,
+                    ):
+                        return True
+                except Exception:
+                    pass
+                if attempt == 2:
+                    return False
+                done.wait(1)
+                continue
+
+            if saved:
+                return True
+
+            # A prior ambiguous attempt can make an exact retry return false
+            # because the row is already terminal. Prove the stored terminal
+            # payload before treating the false write result as rejection.
+            try:
+                if self.store.confirm_finish_bound(
+                    request_id,
+                    worker,
+                    input_hash,
+                    request,
+                    payload,
+                    status=status,
+                ):
+                    return True
+            except Exception:
+                if attempt < 2:
+                    done.wait(1)
+                    continue
+                return False
+            return False
+
+        return False
 
     def run_one(self, task, worker):
         request_id = task['request_id']
@@ -575,25 +655,18 @@ class TaskRunner:
                 )
             if task['request'].get('kind') == 'document_evidence' and not payload.get('error'):
                 require_document_evidence_binding(task['request'], payload)
-            # Retry only the idempotent result write, never the cognition/actions.
-            for attempt in range(3):
-                try:
-                    saved = self.store.finish_bound(
-                        request_id,
-                        worker,
-                        claimed_hash,
-                        claimed_request,
-                        payload,
-                        status='failed' if payload.get('error') else 'ready',
-                    )
-                    if not saved:
-                        LOG.warning('Task result rejected: lease or request binding lost')
-                    break
-                except Exception:
-                    if attempt == 2:
-                        LOG.warning('Task result could not be persisted')
-                    else:
-                        done.wait(1)
+            terminal_status = 'failed' if payload.get('error') else 'ready'
+            saved = self._persist_terminal_bound(
+                request_id,
+                worker,
+                claimed_hash,
+                claimed_request,
+                payload,
+                terminal_status,
+                done,
+            )
+            if not saved:
+                LOG.warning('Task result could not be confirmed as persisted')
         except Exception as exc:
             # Safe production diagnostic: type + final source location only. Never log
             # exception text, request content, retrieved evidence, tokens or credentials.
@@ -623,16 +696,20 @@ class TaskRunner:
                             expected_request_id=request_id,
                         ),
                     }
-                saved_failure = self.store.finish_bound(
+                saved_failure = self._persist_terminal_bound(
                     request_id,
                     worker,
                     claimed_hash,
                     claimed_request,
                     failure,
-                    status='failed',
+                    'failed',
+                    done,
                 )
                 if not saved_failure:
-                    LOG.warning('Task failure rejected: lease, request binding or action journal mismatch')
+                    LOG.warning(
+                        'Task failure could not be confirmed as persisted: '
+                        'lease, request binding or action journal mismatch'
+                    )
             except Exception:
                 LOG.warning('Task failure could not be persisted')
         finally:
