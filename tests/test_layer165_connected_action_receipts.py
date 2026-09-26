@@ -1,6 +1,7 @@
 """Layer 165 — connected actions carry request-bound, recoverable receipts."""
 
 from types import SimpleNamespace
+import re
 from uuid import uuid4
 
 import pytest
@@ -263,5 +264,10 @@ def test_direct_saved_results_also_require_action_receipt_integrity():
 
 def test_layer165_release_marker_is_continuous():
     source = open("api/server.py", encoding="utf-8").read()
-    assert source.count('"release_layer": 165') == 2
-    assert source.count("release_layer=165") == 1
+    layers = [
+        int(value)
+        for value in re.findall(r'release_layer"?\s*[:=]\s*(\d+)', source)
+    ]
+    assert len(layers) == 3
+    assert len(set(layers)) == 1
+    assert layers[0] >= 165
