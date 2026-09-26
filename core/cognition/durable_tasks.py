@@ -456,6 +456,9 @@ class TaskStore:
             }
         return {**row, 'durable': True, 'request_id': request_id}
 
+    def reap_expired(self, limit=100):
+        return self.rpc('l_task_reap_expired', {'p_limit': int(limit)})
+
     def claim(self, worker, claim_token=None):
         token = str(UUID(str(claim_token or uuid4())))
         rows = self.rpc('l_task_claim_bound', {
@@ -638,6 +641,9 @@ class TaskRunner:
         failures = 0
         while not self.stop_event.is_set():
             try:
+                # Lease expiry is a separate bounded maintenance operation.
+                # Claiming one queued task must not globally mutate unrelated work.
+                self.store.reap_expired(limit=100)
                 if claim_token is None:
                     claim_token = str(uuid4())
                 task = self.store.claim(worker, claim_token=claim_token)
