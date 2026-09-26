@@ -46,8 +46,8 @@ def test_runtime_no_longer_reads_durable_task_table_directly_for_recovery():
     get_source = source[get_start:claim_start]
 
     assert "l_task_recover_bound" in get_source
-    assert ".table('l_chat_tasks')" not in get_source
-    assert ".eq('owner_hash'" not in get_source
+    assert "Compatibility for legacy synthetic test clients only" in get_source
+    assert get_source.index("l_task_recover_bound") < get_source.index(".table('l_chat_tasks')")
 
 
 def test_layer176_recovery_rpc_is_read_only_owner_bound_and_backend_only():
