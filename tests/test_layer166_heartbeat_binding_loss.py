@@ -8,6 +8,7 @@ from core.cognition.durable_tasks import (
     DurableTaskBindingError,
     TaskRunner,
     checkpoint,
+    current_task_request_id,
     request_hash,
 )
 
@@ -161,6 +162,28 @@ def test_checkpoint_that_discovers_loss_sets_shared_signal():
 
     assert lost.is_set() is True
     assert store.progressed == ["saving_raw_answer"]
+
+
+def test_six_part_runtime_binding_exposes_exact_request_id():
+    class Store(BaseStore):
+        def progress_bound(
+            self, request_id, worker, input_hash, request, stage=None
+        ):
+            return True
+
+    task = bound_task()
+    CONTEXT.task = (
+        Store(),
+        task["request_id"],
+        str(uuid4()),
+        task["input_hash"],
+        task["request"],
+        threading.Event(),
+    )
+    try:
+        assert current_task_request_id() == task["request_id"]
+    finally:
+        CONTEXT.task = None
 
 
 def test_legacy_five_part_binding_still_refreshes_normally():
