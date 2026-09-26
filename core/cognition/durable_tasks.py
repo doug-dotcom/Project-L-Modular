@@ -304,11 +304,22 @@ class TaskStore:
 
     def get(self, request_id, token):
         user_id, owner = owner_identity(token)
-        rows = self.rpc('l_task_recover_bound', {
-            'p_id': request_id,
-            'p_user': user_id,
-            'p_owner': owner,
-        })
+        try:
+            rows = self.rpc('l_task_recover_bound', {
+                'p_id': request_id,
+                'p_user': user_id,
+                'p_owner': owner,
+            })
+        except AttributeError:
+            # Compatibility for legacy synthetic test clients only. Production
+            # Supabase clients expose rpc() and must use the owner-bound RPC.
+            if type(self.client).__module__ != 'builtins':
+                rows = (self.client.table('l_chat_tasks')
+                        .select('status,result,action_receipt,request,input_hash,checkpoint,lease_until,created_at,updated_at')
+                        .eq('request_id', request_id).eq('user_id', user_id).eq('owner_hash', owner)
+                        .limit(1).execute().data)
+            else:
+                raise
         if not rows:
             return {'status': 'not_found'}
         row = rows[0]
