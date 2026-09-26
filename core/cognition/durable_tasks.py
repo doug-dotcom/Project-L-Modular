@@ -84,13 +84,21 @@ def record_current_action_receipt(receipt):
     if not verification.get('valid'):
         raise DurableTaskBindingError('Connected action receipt invalid; work stopped')
 
-    saved = store.record_action_bound(
-        request_id,
-        worker,
-        input_hash,
-        request,
-        receipt,
-    )
+    try:
+        saved = store.record_action_bound(
+            request_id,
+            worker,
+            input_hash,
+            request,
+            receipt,
+        )
+    except Exception:
+        # The provider action may already have happened and an RPC response can
+        # be lost after commit. Never expose transport details or continue as
+        # though the action were cleanly journaled.
+        raise DurableTaskBindingError(
+            'Connected action journal unavailable; work stopped'
+        )
     if not saved:
         if binding_lost is not None:
             binding_lost.set()
