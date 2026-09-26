@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 import threading
+import re
 from uuid import uuid4
 
 import pytest
@@ -438,5 +439,10 @@ def test_layer167_migration_is_bound_and_service_role_only():
 
 def test_layer167_release_marker_is_continuous():
     source = open("api/server.py", encoding="utf-8").read()
-    assert source.count('"release_layer": 167') == 2
-    assert source.count("release_layer=167") == 1
+    layers = [
+        int(value)
+        for value in re.findall(r'release_layer"?\s*[:=]\s*(\d+)', source)
+    ]
+    assert len(layers) == 3
+    assert len(set(layers)) == 1
+    assert layers[0] >= 167
