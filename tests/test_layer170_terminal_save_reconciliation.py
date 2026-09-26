@@ -9,7 +9,7 @@ from core.cognition.durable_tasks import TaskRunner, TaskStore
 
 REQUEST_ID = "10000000-0000-4000-8000-000000000170"
 WORKER_ID = "20000000-0000-4000-8000-000000000170"
-CLAIM_TOKEN = "33333333-3333-4333-8333-333333333174"INPUT_HASH = "a" * 64
+CLAIM_TOKEN = "33333333-3333-4333-8333-333333333174"\nINPUT_HASH = "a" * 64
 REQUEST = {
     "request_id": REQUEST_ID,
     "message": "layer 170 terminal persistence",
