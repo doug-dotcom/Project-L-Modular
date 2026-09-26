@@ -21,7 +21,12 @@ class RpcClient:
         assert name == "l_task_claim_bound"
         assert "p_worker" in params
         assert "p_claim_token" in params
-        return NS(execute=lambda: NS(data=[dict(row) for row in self.rows]))
+        rows = []
+        for row in self.rows:
+            item = dict(row)
+            item["claim_token"] = params["p_claim_token"]
+            rows.append(item)
+        return NS(execute=lambda: NS(data=rows))
 
 
 def claimed_row(request, input_hash):

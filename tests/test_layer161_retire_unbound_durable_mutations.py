@@ -6,7 +6,7 @@ from core.cognition.durable_tasks import TaskRunner, TaskStore, request_hash
 
 REQUEST_ID = "00000000-0000-4000-8000-000000000161"
 WORKER_ID = "22222222-2222-4222-8222-222222222161"
-
+CLAIM_TOKEN = "33333333-3333-4333-8333-333333333174"\n
 
 class RpcClient:
     def __init__(self):
@@ -44,13 +44,14 @@ def test_reject_bound_uses_exact_claim_tuple():
     }
 
     assert store.reject_bound(
-        REQUEST_ID, WORKER_ID, digest, req, payload
+        REQUEST_ID, WORKER_ID, digest, req, payload, claim_token=CLAIM_TOKEN
     ) is True
     assert client.calls == [(
-        "l_task_reject_bound",
+        "l_task_reject_claim_bound",
         {
             "p_id": REQUEST_ID,
             "p_worker": WORKER_ID,
+            "p_claim_token": CLAIM_TOKEN,
             "p_hash": digest,
             "p_request": req,
             "p_result": payload,

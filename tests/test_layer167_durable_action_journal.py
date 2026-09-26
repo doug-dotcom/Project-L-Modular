@@ -23,7 +23,7 @@ from services.capability_router_service import route_capability
 
 REQUEST_ID = "10000000-0000-4000-8000-000000000167"
 WORKER_ID = "20000000-0000-4000-8000-000000000167"
-
+CLAIM_TOKEN = "33333333-3333-4333-8333-333333333174"\n
 
 def request():
     return {
@@ -158,14 +158,16 @@ def test_task_store_action_journal_rpc_uses_exact_claim_binding():
         request_hash(req),
         req,
         action_receipt,
+        claim_token=CLAIM_TOKEN,
     ) is True
 
     assert client.calls == [
         (
-            "l_task_record_action_bound",
+            "l_task_record_action_claim_bound",
             {
                 "p_id": REQUEST_ID,
                 "p_worker": WORKER_ID,
+                "p_claim_token": CLAIM_TOKEN,
                 "p_hash": request_hash(req),
                 "p_request": req,
                 "p_receipt": action_receipt,

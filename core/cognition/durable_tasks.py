@@ -202,11 +202,39 @@ def verify_task_request_integrity(request_id, request, input_hash):
 class TaskStore:
     def __init__(self, client):
         self.client = client
+        self._claim_tokens = {}
+        self._claim_token_lock = threading.Lock()
 
     def rpc(self, name, params):
         if self.client is None:
             raise RuntimeError('Task database unavailable')
         return self.client.rpc(name, params).execute().data
+
+    def _remember_claim_token(self, worker, token):
+        worker_key = str(worker or "")
+        token_value = str(UUID(str(token or "")))
+        with self._claim_token_lock:
+            self._claim_tokens[worker_key] = token_value
+        return token_value
+
+    def _resolve_claim_token(self, worker, claim_token=None):
+        token = claim_token
+        if token is None:
+            with self._claim_token_lock:
+                token = self._claim_tokens.get(str(worker or ""))
+        try:
+            return str(UUID(str(token or "")))
+        except Exception:
+            raise DurableTaskBindingError(
+                'Durable claim token missing or invalid; work stopped'
+            )
+
+    def _clear_claim_token(self, worker, claim_token):
+        worker_key = str(worker or "")
+        token_value = str(claim_token or "")
+        with self._claim_token_lock:
+            if self._claim_tokens.get(worker_key) == token_value:
+                self._claim_tokens.pop(worker_key, None)
 
     def submit(self, request, token):
         user_id, owner = owner_identity(token)
@@ -353,7 +381,7 @@ class TaskStore:
         return {**row, 'durable': True, 'request_id': request_id}
 
     def claim(self, worker, claim_token=None):
-        token = str(claim_token or uuid4())
+        token = str(UUID(str(claim_token or uuid4())))
         rows = self.rpc('l_task_claim_bound', {
             'p_worker': worker,
             'p_claim_token': token,
@@ -361,33 +389,59 @@ class TaskStore:
         if not rows:
             return None
         task = rows[0]
+        try:
+            returned_token = str(UUID(str(task.get('claim_token') or '')))
+        except Exception:
+            raise DurableTaskBindingError(
+                'Claim response missing durable claim token; work stopped'
+            )
+        if returned_token != token:
+            raise DurableTaskBindingError(
+                'Claim response token mismatch; work stopped'
+            )
+        self._remember_claim_token(worker, token)
         task['_request_integrity'] = verify_task_request_integrity(
             task.get('request_id'), task.get('request'), task.get('input_hash')
         )
         return task
 
-    def progress_bound(self, request_id, worker, input_hash, request, checkpoint=None):
-        return self.rpc('l_task_progress_bound', {
+    def progress_bound(
+        self, request_id, worker, input_hash, request, checkpoint=None,
+        claim_token=None,
+    ):
+        token = self._resolve_claim_token(worker, claim_token)
+        return self.rpc('l_task_progress_claim_bound', {
             'p_id': request_id,
             'p_worker': worker,
+            'p_claim_token': token,
             'p_hash': input_hash,
             'p_request': request,
             'p_checkpoint': checkpoint,
         })
 
-    def record_action_bound(self, request_id, worker, input_hash, request, receipt):
-        return self.rpc('l_task_record_action_bound', {
+    def record_action_bound(
+        self, request_id, worker, input_hash, request, receipt,
+        claim_token=None,
+    ):
+        token = self._resolve_claim_token(worker, claim_token)
+        return self.rpc('l_task_record_action_claim_bound', {
             'p_id': request_id,
             'p_worker': worker,
+            'p_claim_token': token,
             'p_hash': input_hash,
             'p_request': request,
             'p_receipt': receipt,
         })
 
-    def confirm_action_bound(self, request_id, worker, input_hash, request, receipt):
-        return self.rpc('l_task_confirm_action_bound', {
+    def confirm_action_bound(
+        self, request_id, worker, input_hash, request, receipt,
+        claim_token=None,
+    ):
+        token = self._resolve_claim_token(worker, claim_token)
+        return self.rpc('l_task_confirm_action_claim_bound', {
             'p_id': request_id,
             'p_worker': worker,
+            'p_claim_token': token,
             'p_hash': input_hash,
             'p_request': request,
             'p_receipt': receipt,
@@ -407,39 +461,61 @@ class TaskStore:
             expected_request_id=request_id,
         )
 
-    def finish_bound(self, request_id, worker, input_hash, request, payload, status='ready'):
-        self._verify_finish_payload(request_id, payload)
-        return self.rpc('l_task_finish_bound', {
-            'p_id': request_id,
-            'p_worker': worker,
-            'p_hash': input_hash,
-            'p_request': request,
-            'p_status': status,
-            'p_result': payload,
-        })
-
-    def confirm_finish_bound(
-        self, request_id, worker, input_hash, request, payload, status='ready'
+    def finish_bound(
+        self, request_id, worker, input_hash, request, payload, status='ready',
+        claim_token=None,
     ):
         self._verify_finish_payload(request_id, payload)
-        return self.rpc('l_task_confirm_finish_bound', {
+        token = self._resolve_claim_token(worker, claim_token)
+        saved = self.rpc('l_task_finish_claim_bound', {
             'p_id': request_id,
             'p_worker': worker,
+            'p_claim_token': token,
             'p_hash': input_hash,
             'p_request': request,
             'p_status': status,
             'p_result': payload,
         })
+        if saved:
+            self._clear_claim_token(worker, token)
+        return saved
 
-    def reject_bound(self, request_id, worker, input_hash, request, payload):
+    def confirm_finish_bound(
+        self, request_id, worker, input_hash, request, payload, status='ready',
+        claim_token=None,
+    ):
         self._verify_finish_payload(request_id, payload)
-        return self.rpc('l_task_reject_bound', {
+        token = self._resolve_claim_token(worker, claim_token)
+        confirmed = self.rpc('l_task_confirm_finish_claim_bound', {
             'p_id': request_id,
             'p_worker': worker,
+            'p_claim_token': token,
+            'p_hash': input_hash,
+            'p_request': request,
+            'p_status': status,
+            'p_result': payload,
+        })
+        if confirmed:
+            self._clear_claim_token(worker, token)
+        return confirmed
+
+    def reject_bound(
+        self, request_id, worker, input_hash, request, payload,
+        claim_token=None,
+    ):
+        self._verify_finish_payload(request_id, payload)
+        token = self._resolve_claim_token(worker, claim_token)
+        rejected = self.rpc('l_task_reject_claim_bound', {
+            'p_id': request_id,
+            'p_worker': worker,
+            'p_claim_token': token,
             'p_hash': input_hash,
             'p_request': request,
             'p_result': payload,
         })
+        if rejected:
+            self._clear_claim_token(worker, token)
+        return rejected
 
 
 def checkpoint(stage):

@@ -7,7 +7,7 @@ from core.cognition.durable_tasks import CONTEXT, TaskRunner, TaskStore, checkpo
 
 REQUEST_ID = "00000000-0000-4000-8000-000000000160"
 WORKER_ID = "22222222-2222-4222-8222-222222222160"
-
+CLAIM_TOKEN = "33333333-3333-4333-8333-333333333174"\n
 
 def req():
     return {"request_id": REQUEST_ID, "message": "Bound request"}
@@ -28,12 +28,13 @@ def test_task_store_bound_progress_passes_exact_claim_identity():
     request = req()
     digest = request_hash(request)
 
-    assert store.progress_bound(REQUEST_ID, WORKER_ID, digest, request, "before_action") is True
+    assert store.progress_bound(REQUEST_ID, WORKER_ID, digest, request, "before_action", claim_token=CLAIM_TOKEN) is True
     name, params = client.calls[-1]
-    assert name == "l_task_progress_bound"
+    assert name == "l_task_progress_claim_bound"
     assert params == {
         "p_id": REQUEST_ID,
         "p_worker": WORKER_ID,
+        "p_claim_token": CLAIM_TOKEN,
         "p_hash": digest,
         "p_request": request,
         "p_checkpoint": "before_action",
@@ -48,13 +49,14 @@ def test_task_store_bound_finish_passes_exact_claim_identity():
     payload = {"reply": "Bound result"}
 
     assert store.finish_bound(
-        REQUEST_ID, WORKER_ID, digest, request, payload, status="ready"
+        REQUEST_ID, WORKER_ID, digest, request, payload, status="ready", claim_token=CLAIM_TOKEN
     ) is True
     name, params = client.calls[-1]
-    assert name == "l_task_finish_bound"
+    assert name == "l_task_finish_claim_bound"
     assert params == {
         "p_id": REQUEST_ID,
         "p_worker": WORKER_ID,
+        "p_claim_token": CLAIM_TOKEN,
         "p_hash": digest,
         "p_request": request,
         "p_status": "ready",

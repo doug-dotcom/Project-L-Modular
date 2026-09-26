@@ -9,7 +9,7 @@ from core.cognition.durable_tasks import TaskRunner, TaskStore
 
 REQUEST_ID = "10000000-0000-4000-8000-000000000170"
 WORKER_ID = "20000000-0000-4000-8000-000000000170"
-INPUT_HASH = "a" * 64
+CLAIM_TOKEN = "33333333-3333-4333-8333-333333333174"\nINPUT_HASH = "a" * 64
 REQUEST = {
     "request_id": REQUEST_ID,
     "message": "layer 170 terminal persistence",
@@ -89,14 +89,16 @@ def test_task_store_terminal_reconciliation_rpc_uses_exact_binding():
         REQUEST,
         PAYLOAD,
         status="ready",
+        claim_token=CLAIM_TOKEN,
     ) is True
 
     assert client.calls == [
         (
-            "l_task_confirm_finish_bound",
+            "l_task_confirm_finish_claim_bound",
             {
                 "p_id": REQUEST_ID,
                 "p_worker": WORKER_ID,
+                "p_claim_token": CLAIM_TOKEN,
                 "p_hash": INPUT_HASH,
                 "p_request": REQUEST,
                 "p_status": "ready",
