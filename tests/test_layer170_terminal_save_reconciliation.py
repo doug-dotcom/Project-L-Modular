@@ -139,12 +139,12 @@ def test_prior_commit_can_be_proven_after_retry_returns_false():
     assert len(store.confirm_calls) == 2
 
 
-def test_definitive_terminal_rejection_is_not_retried_when_reconciliation_misses():
-    store = SequenceStore([False], [False])
+def test_definitive_terminal_rejection_is_not_retried_or_reconciled():
+    store = SequenceStore([False], [])
 
     assert persist(store) is False
     assert len(store.finish_calls) == 1
-    assert len(store.confirm_calls) == 1
+    assert len(store.confirm_calls) == 0
 
 
 def test_failed_terminal_status_uses_same_reconciliation_path():

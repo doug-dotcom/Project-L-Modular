@@ -517,6 +517,7 @@ class TaskRunner:
         done,
     ):
         """Persist one terminal result and prove ambiguous acknowledgements."""
+        ambiguous_write_seen = False
         for attempt in range(3):
             try:
                 saved = self.store.finish_bound(
@@ -528,6 +529,7 @@ class TaskRunner:
                     status=status,
                 )
             except Exception:
+                ambiguous_write_seen = True
                 # The exact terminal write may have committed even if its
                 # acknowledgement was lost. Reconcile read-only before any
                 # idempotent retry; never rerun cognition or connected actions.
@@ -551,9 +553,15 @@ class TaskRunner:
             if saved:
                 return True
 
-            # A prior ambiguous attempt can make an exact retry return false
-            # because the row is already terminal. Prove the stored terminal
-            # payload before treating the false write result as rejection.
+            # A clean false response is definitive when no earlier write was
+            # transport-ambiguous. Preserve the Layer 160 bound-rejection
+            # contract: do not retry a mutation the database rejected.
+            if not ambiguous_write_seen:
+                return False
+
+            # After an earlier ambiguous write, an exact retry can return false
+            # because that earlier attempt actually committed. Prove the stored
+            # terminal payload before treating this as rejection.
             try:
                 if self.store.confirm_finish_bound(
                     request_id,
