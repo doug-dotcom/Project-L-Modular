@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from core.cognition.durable_tasks import DurableTaskBindingError
+
 
 def _normalise(message: str) -> str:
     return str(message or "").strip().lower()
@@ -18,6 +20,8 @@ def _run(capability: str, handler, message: str) -> dict:
     try:
         reply = handler(message)
         return {"handled": True, "capability": capability, "reply": reply, "status": "ok"}
+    except DurableTaskBindingError:
+        raise
     except Exception as exc:
         return {
             "handled": True,
@@ -27,7 +31,7 @@ def _run(capability: str, handler, message: str) -> dict:
         }
 
 
-def route_capability(message: str) -> dict:
+def route_capability(message: str, write_guard=None) -> dict:
     text = _normalise(message)
 
     from services.google_workspace_service import (
@@ -43,7 +47,10 @@ def route_capability(message: str) -> dict:
         "tasks": tasks_result,
     }
     if google_capability:
-        return _run(google_capability, google_handlers[google_capability], message)
+        handler = google_handlers[google_capability]
+        if google_capability == "tasks":
+            handler = lambda value: tasks_result(value, write_guard=write_guard)
+        return _run(google_capability, handler, message)
 
     finance_data_action = any(signal in text for signal in (
         "uploaded transactions", "transactions csv", "bank statement csv",
