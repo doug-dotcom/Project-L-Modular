@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from core.cognition.durable_tasks import DurableTaskBindingError
+from core.cognition.action_receipt import verify_action_receipt
+from core.cognition.durable_tasks import DurableTaskBindingError, current_task_request_id
 
 
 def _normalise(message: str) -> str:
@@ -49,7 +50,36 @@ def route_capability(message: str, write_guard=None) -> dict:
     if google_capability:
         handler = google_handlers[google_capability]
         if google_capability == "tasks":
-            handler = lambda value: tasks_result(value, write_guard=write_guard)
+            receipt_box = {}
+            def capture_receipt(receipt):
+                receipt_box["value"] = receipt
+
+            result = _run(
+                google_capability,
+                lambda value: tasks_result(
+                    value,
+                    write_guard=write_guard,
+                    receipt_sink=capture_receipt,
+                ),
+                message,
+            )
+            receipt = receipt_box.get("value")
+            if receipt is not None:
+                verification = verify_action_receipt(
+                    receipt,
+                    expected_request_id=current_task_request_id(),
+                )
+                result["action_receipt"] = receipt
+                result["action_receipt_verification"] = verification
+                if not verification.get("valid"):
+                    result.update({
+                        "status": "error",
+                        "reply": (
+                            "Google Tasks may have created the task, but L could not verify "
+                            "the provider action receipt. Check Google Tasks before retrying."
+                        ),
+                    })
+            return result
         return _run(google_capability, handler, message)
 
     finance_data_action = any(signal in text for signal in (
