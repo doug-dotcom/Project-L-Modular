@@ -39,6 +39,74 @@ LOG = logging.getLogger(__name__)
 CONTEXT = threading.local()
 
 
+def verify_interruption_evidence(row):
+    """Validate persisted lease-expiry evidence against recovered row facts."""
+    evidence = row.get('interruption_evidence')
+    status = row.get('status')
+    issues = []
+
+    if status != 'interrupted':
+        if evidence is not None:
+            issues.append('interruption_evidence_on_noninterrupted_task')
+        return {
+            'version': '1.0',
+            'valid': not issues,
+            'status': 'not_present' if not issues else 'mismatch',
+            'present': evidence is not None,
+            'pending': False,
+            'issues': issues,
+        }
+
+    if evidence is None:
+        return {
+            'version': '1.0',
+            'valid': False,
+            'status': 'missing',
+            'present': False,
+            'pending': False,
+            'issues': ['interruption_evidence_missing'],
+        }
+    if not isinstance(evidence, dict):
+        issues.append('interruption_evidence_malformed')
+        evidence = {}
+
+    required = {
+        'version', 'reason', 'interrupted_at', 'lease_until', 'checkpoint',
+        'worker_id', 'claim_token', 'action_journalled',
+    }
+    if set(evidence) != required:
+        issues.append('interruption_evidence_schema_mismatch')
+    if evidence.get('version') != '1.0':
+        issues.append('interruption_evidence_version_mismatch')
+    if evidence.get('reason') != 'lease_expired':
+        issues.append('interruption_evidence_reason_mismatch')
+    if not isinstance(evidence.get('interrupted_at'), str) or not evidence.get('interrupted_at'):
+        issues.append('interruption_evidence_time_invalid')
+    if evidence.get('lease_until') != row.get('lease_until'):
+        issues.append('interruption_evidence_lease_mismatch')
+    if evidence.get('checkpoint') != row.get('checkpoint'):
+        issues.append('interruption_evidence_checkpoint_mismatch')
+    if evidence.get('action_journalled') is not bool(row.get('action_receipt')):
+        issues.append('interruption_evidence_journal_mismatch')
+    try:
+        UUID(str(evidence.get('worker_id') or ''))
+    except Exception:
+        issues.append('interruption_evidence_worker_invalid')
+    try:
+        UUID(str(evidence.get('claim_token') or ''))
+    except Exception:
+        issues.append('interruption_evidence_claim_token_invalid')
+
+    return {
+        'version': '1.0',
+        'valid': not issues,
+        'status': 'verified' if not issues else 'mismatch',
+        'present': True,
+        'pending': False,
+        'issues': issues,
+    }
+
+
 class DurableTaskBindingError(RuntimeError):
     """A durable task no longer owns the exact request/lease it claimed."""
 
@@ -430,6 +498,20 @@ class TaskStore:
                         'error': True,
                     }
                     return {**row, 'durable': True, 'request_id': request_id}
+        persisted_status = row.get('status')
+        interruption = verify_interruption_evidence(row)
+        row['interruption_integrity'] = interruption
+        if not interruption.get('valid'):
+            row['status'] = 'failed'
+            row['result'] = {
+                'reply': (
+                    'The saved task failed interruption evidence verification. '
+                    'Please check the external service before retrying.'
+                ),
+                'error': True,
+            }
+            return {**row, 'durable': True, 'request_id': request_id}
+
         temporal = (row.get('result') or {}).get('cognition', {}).get('temporal_memory')
         if temporal:
             from core.cognition.temporal_memory import snapshot_freshness
@@ -440,6 +522,14 @@ class TaskStore:
             from datetime import datetime, timezone
             if datetime.fromisoformat(row['lease_until'].replace('Z', '+00:00')) < datetime.now(timezone.utc):
                 row['status'] = 'interrupted'
+                row['interruption_integrity'] = {
+                    'version': '1.0',
+                    'valid': True,
+                    'status': 'pending_reaper',
+                    'present': False,
+                    'pending': True,
+                    'issues': [],
+                }
         if (
             row['status'] == 'interrupted'
             and row.get('result') is None
