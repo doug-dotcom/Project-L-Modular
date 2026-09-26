@@ -89,3 +89,43 @@ def verify_action_receipt(receipt, *, expected_request_id=None):
         "request_bound": bool(receipt.get("request_bound")),
         "issues": issues,
     }
+
+
+def verify_payload_action_receipt(payload, *, expected_request_id):
+    if not isinstance(payload, dict):
+        return {
+            "version": VERSION,
+            "valid": False,
+            "status": "mismatch",
+            "present": False,
+            "issues": ["action_payload_missing_or_malformed"],
+        }
+    route = payload.get("route")
+    receipt = route.get("action_receipt") if isinstance(route, dict) else None
+    if receipt is None:
+        return {
+            "version": VERSION,
+            "valid": True,
+            "status": "not_present",
+            "present": False,
+            "request_bound": False,
+            "issues": [],
+        }
+    check = verify_action_receipt(
+        receipt,
+        expected_request_id=expected_request_id,
+    )
+    return {
+        **check,
+        "present": True,
+    }
+
+
+def require_payload_action_receipt(payload, *, expected_request_id):
+    check = verify_payload_action_receipt(
+        payload,
+        expected_request_id=expected_request_id,
+    )
+    if not check.get("valid"):
+        raise ValueError("connected_action_receipt_mismatch")
+    return check
