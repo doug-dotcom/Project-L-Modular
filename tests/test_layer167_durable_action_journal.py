@@ -200,6 +200,25 @@ def test_action_journal_rejection_sets_binding_loss_and_stops():
     assert len(store.recorded) == 1
 
 
+def test_action_journal_transport_uncertainty_stops_safely():
+    class Store(RecordingStore):
+        def record_action_bound(self, *args, **kwargs):
+            raise ConnectionError("private upstream detail")
+
+    store = Store()
+    bind_context(store)
+    try:
+        with pytest.raises(
+            DurableTaskBindingError,
+            match="Connected action journal unavailable",
+        ) as exc:
+            record_current_action_receipt(receipt())
+    finally:
+        CONTEXT.task = None
+
+    assert "private upstream detail" not in str(exc.value)
+
+
 def test_non_durable_action_receipt_journal_is_noop():
     CONTEXT.task = None
     assert record_current_action_receipt(
