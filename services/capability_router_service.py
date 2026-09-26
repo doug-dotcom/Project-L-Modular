@@ -56,12 +56,17 @@ def route_capability(message: str, write_guard=None) -> dict:
         if google_capability == "tasks":
             receipt_box = {}
             def capture_receipt(receipt):
-                # Durable execution journals provider confirmation before the
-                # rest of the answer continues. Direct/manual calls remain
-                # compatible because the journal helper is a no-op without a
-                # durable task context.
-                record_current_action_receipt(receipt)
+                # Preserve Layer 165's explicit uncertain-provider outcome when
+                # Google does not return enough evidence for a valid receipt.
+                # Only a semantically valid provider confirmation is eligible
+                # for durable journaling.
                 receipt_box["value"] = receipt
+                verification = verify_action_receipt(
+                    receipt,
+                    expected_request_id=current_task_request_id(),
+                )
+                if verification.get("valid"):
+                    record_current_action_receipt(receipt)
 
             result = _run(
                 google_capability,
