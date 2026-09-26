@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 from core.cognition.action_receipt import verify_action_receipt
-from core.cognition.durable_tasks import DurableTaskBindingError, current_task_request_id
+from core.cognition.durable_tasks import (
+    DurableTaskBindingError,
+    current_task_request_id,
+    record_current_action_receipt,
+)
 
 
 def _normalise(message: str) -> str:
@@ -52,6 +56,11 @@ def route_capability(message: str, write_guard=None) -> dict:
         if google_capability == "tasks":
             receipt_box = {}
             def capture_receipt(receipt):
+                # Durable execution journals provider confirmation before the
+                # rest of the answer continues. Direct/manual calls remain
+                # compatible because the journal helper is a no-op without a
+                # durable task context.
+                record_current_action_receipt(receipt)
                 receipt_box["value"] = receipt
 
             result = _run(
