@@ -96,7 +96,7 @@ def _task_title(message: str) -> str:
     return (match.group(1) if match else "").strip()[:500]
 
 
-def tasks_result(message: str, limit: int = 20) -> str:
+def tasks_result(message: str, limit: int = 20, write_guard=None) -> str:
     service = _google_service("tasks", "v1")
     tasklists = service.tasklists().list(maxResults=1).execute().get("items", [])
     if not tasklists:
@@ -104,7 +104,12 @@ def tasks_result(message: str, limit: int = 20) -> str:
     tasklist_id = tasklists[0]["id"]
     title = _task_title(message)
     if title:
-        created = service.tasks().insert(tasklist=tasklist_id, body={"title": title}).execute()
+        if write_guard is not None:
+            write_guard("google_tasks_create")
+        created = service.tasks().insert(
+            tasklist=tasklist_id,
+            body={"title": title},
+        ).execute()
         return f"Tasks service created: {created.get('title', title)}."
     tasks = service.tasks().list(
         tasklist=tasklist_id, maxResults=limit, showCompleted=False
