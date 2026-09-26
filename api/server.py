@@ -509,6 +509,11 @@ def start_chat(req: ChatRequest, x_l_recovery_token: str = Header(default="")):
         raise HTTPException(400, str(exc)) from exc
     except Exception as exc:
         raise HTTPException(503, "L could not save this task. Retry with the same request ID.") from exc
+    if result["status"] == "invalid":
+        raise HTTPException(
+            400,
+            "Task submission failed request integrity verification",
+        )
     if result["status"] == "conflict":
         raise HTTPException(409, "This request ID already belongs to a different message")
     if result["status"] == "not_found":

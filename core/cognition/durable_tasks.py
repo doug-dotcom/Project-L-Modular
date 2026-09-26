@@ -168,6 +168,33 @@ def request_hash(request):
     return hashlib.sha256(json.dumps(request, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
+def submission_proof(request):
+    """Cross-language proof for the durable chat submission envelope."""
+    if not isinstance(request, dict):
+        raise ValueError('A durable request object is required')
+    request_id = request.get('request_id')
+    message = request.get('message')
+    conversation_id = request.get('conversation_id')
+    if not isinstance(request_id, str) or not isinstance(message, str):
+        raise ValueError('Durable request identity is invalid')
+    if conversation_id is not None and not isinstance(conversation_id, str):
+        raise ValueError('Durable conversation identity is invalid')
+
+    def field(value):
+        if value is None:
+            return b'N'
+        encoded = value.encode('utf-8')
+        return b'S' + str(len(encoded)).encode('ascii') + b':' + encoded
+
+    body = (
+        b'layer175-submit-v1|'
+        + field(request_id)
+        + field(conversation_id)
+        + field(message)
+    )
+    return hashlib.sha256(body).hexdigest()
+
+
 def verify_task_request_integrity(request_id, request, input_hash):
     """Verify the stored durable request before trusting any saved task result."""
     issues = []
@@ -238,8 +265,42 @@ class TaskStore:
 
     def submit(self, request, token):
         user_id, owner = owner_identity(token)
-        return self.rpc('l_task_submit', {'p_id': request['request_id'], 'p_user': user_id,
-            'p_owner': owner, 'p_hash': request_hash(request), 'p_request': request})
+        digest = request_hash(request)
+        proof = submission_proof(request)
+        verified_params = {
+            'p_id': request['request_id'],
+            'p_user': user_id,
+            'p_owner': owner,
+            'p_hash': digest,
+            'p_request': request,
+            'p_proof': proof,
+        }
+        try:
+            return self.rpc('l_task_submit_verified', verified_params)
+        except Exception:
+            # The insert may have committed even if its acknowledgement was
+            # lost. Never blindly resubmit. Prove the exact durable row with
+            # one read-only reconciliation instead.
+            try:
+                confirmed = self.rpc('l_task_confirm_submit', {
+                    'p_id': request['request_id'],
+                    'p_user': user_id,
+                    'p_owner': owner,
+                    'p_hash': digest,
+                    'p_request': request,
+                })
+            except Exception:
+                raise RuntimeError(
+                    'Durable task submission acknowledgement unavailable'
+                ) from None
+            if (
+                isinstance(confirmed, dict)
+                and confirmed.get('status') not in (None, 'not_found')
+            ):
+                return confirmed
+            raise RuntimeError(
+                'Durable task submission acknowledgement unavailable'
+            )
 
     def get(self, request_id, token):
         user_id, owner = owner_identity(token)
