@@ -5,6 +5,9 @@ from __future__ import annotations
 import re
 from datetime import datetime, timezone
 
+from core.cognition.action_receipt import build_action_receipt
+from core.cognition.durable_tasks import current_task_request_id
+
 
 EMAIL_TRIGGERS = (
     "check my email", "check my emails", "look at my email", "look at my emails",
@@ -96,7 +99,7 @@ def _task_title(message: str) -> str:
     return (match.group(1) if match else "").strip()[:500]
 
 
-def tasks_result(message: str, limit: int = 20, write_guard=None) -> str:
+def tasks_result(message: str, limit: int = 20, write_guard=None, receipt_sink=None) -> str:
     service = _google_service("tasks", "v1")
     tasklists = service.tasklists().list(maxResults=1).execute().get("items", [])
     if not tasklists:
@@ -110,6 +113,15 @@ def tasks_result(message: str, limit: int = 20, write_guard=None) -> str:
             tasklist=tasklist_id,
             body={"title": title},
         ).execute()
+        receipt = build_action_receipt(
+            request_id=current_task_request_id(),
+            capability="google_tasks",
+            action="create",
+            resource_id=created.get("id", ""),
+            subject=created.get("title", title),
+        )
+        if receipt_sink is not None:
+            receipt_sink(receipt)
         return f"Tasks service created: {created.get('title', title)}."
     tasks = service.tasks().list(
         tasklist=tasklist_id, maxResults=limit, showCompleted=False

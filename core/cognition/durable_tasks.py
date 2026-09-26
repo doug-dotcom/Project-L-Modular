@@ -16,6 +16,10 @@ import httpx
 from supabase import create_client
 from supabase.lib.client_options import SyncClientOptions
 
+from core.cognition.action_receipt import (
+    require_payload_action_receipt,
+    verify_payload_action_receipt,
+)
 from core.cognition.delivery_integrity import (
     require_chat_delivery_payload,
     verify_chat_delivery_payload,
@@ -35,6 +39,14 @@ CONTEXT = threading.local()
 
 class DurableTaskBindingError(RuntimeError):
     """A durable task no longer owns the exact request/lease it claimed."""
+
+
+def current_task_request_id():
+    """Return the durable request bound to this execution thread, if any."""
+    task = getattr(CONTEXT, 'task', None)
+    if not task or len(task) != 5:
+        return ''
+    return str(task[1] or '')
 
 
 
@@ -184,6 +196,22 @@ class TaskStore:
                 }
                 return {**row, 'durable': True, 'request_id': request_id}
 
+            action_receipt = verify_payload_action_receipt(
+                result_payload,
+                expected_request_id=request_id,
+            )
+            row['action_receipt_integrity'] = action_receipt
+            if not action_receipt.get('valid'):
+                row['status'] = 'failed'
+                row['result'] = {
+                    'reply': (
+                        'The saved answer failed connected-action receipt verification. '
+                        'Please check the external service before retrying.'
+                    ),
+                    'error': True,
+                }
+                return {**row, 'durable': True, 'request_id': request_id}
+
             if row['status'] == 'ready' and isinstance(task_request, dict) and task_request.get('kind') == 'document_evidence':
                 source_binding = verify_document_evidence_binding(task_request, result_payload)
                 row['document_evidence_binding'] = source_binding
@@ -234,6 +262,10 @@ class TaskStore:
             expected_request_id=request_id,
         )
         require_recovered_answer_payload(
+            payload,
+            expected_request_id=request_id,
+        )
+        require_payload_action_receipt(
             payload,
             expected_request_id=request_id,
         )

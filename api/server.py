@@ -49,6 +49,7 @@ from core.cognition.orchestrator import run_cognitive_core
 from core.cognition.controller import plan_cognition
 from core.cognition.release_certification import build_release_certification
 from core.cognition.release_provenance import build_release_provenance, verify_release_provenance
+from core.cognition.action_receipt import require_payload_action_receipt
 from core.cognition.answer_provenance import build_answer_provenance, verify_answer_provenance
 from core.cognition.answer_authenticity import (
     authenticity_status,
@@ -422,6 +423,10 @@ def store_chat_result(request_id, status, payload=None):
             expected_request_id=request_id,
         )
         require_recovered_answer_payload(
+            payload,
+            expected_request_id=request_id,
+        )
+        require_payload_action_receipt(
             payload,
             expected_request_id=request_id,
         )
@@ -835,7 +840,7 @@ def health():
         "portability_certification_ready": True,
         "capability_router_ready": True,
         "main_street": True,
-        "release_layer": 164,
+        "release_layer": 165,
         "release_certification_ready": True,
         "release_provenance_ready": True,
         "answer_provenance_ready": True,
@@ -864,7 +869,7 @@ def cognition_status():
         "status": "ok",
         "architecture": "project_l_cognitive_core",
         "version": "13.0",
-        "release_layer": 164,
+        "release_layer": 165,
         "release_certification": build_release_certification(),
         "release_provenance": build_release_provenance(),
         "answer_provenance_ready": True,
@@ -1967,7 +1972,7 @@ RESPONSE RULES:
         model_receipt=response_model_receipt,
         context_budget=cognitive_packet.get("context_budget", {}),
         assistant_persistence=assistant_persistence,
-        release_layer=164,
+        release_layer=165,
     )
     answer_provenance_check = verify_answer_provenance(
         answer_provenance,
