@@ -178,7 +178,7 @@ def test_dispatcher_backs_off_caps_and_resets_after_recovery(monkeypatch, caplog
     monkeypatch.setattr(durable_tasks.random, 'uniform', lambda a, b: 0)
     class Store:
         calls = 0
-        def claim(self, worker):
+        def claim(self, worker, claim_token=None):
             self.calls += 1
             if self.calls <= 7 or self.calls == 9:
                 raise ConnectionError('secret-token must never enter logs')
@@ -195,30 +195,45 @@ def test_dispatcher_backs_off_caps_and_resets_after_recovery(monkeypatch, caplog
     assert 'secret-token' not in caplog.text
 
 
-def test_uncertain_claim_is_not_replayed(monkeypatch):
+def test_uncertain_claim_reuses_same_token_and_recovers_exact_claim(monkeypatch):
     from core.cognition import durable_tasks
     monkeypatch.setattr(durable_tasks.random, 'uniform', lambda a, b: 0)
     effects = []
+
     class Store(FakeStore):
         calls = 0
-        def claim(self, worker):
+
+        def __init__(self):
+            super().__init__()
+            self.tokens = []
+
+        def claim(self, worker, claim_token=None):
             self.calls += 1
+            self.tokens.append(claim_token)
             if self.calls == 1:
                 # The database committed this claim but its response was lost.
                 raise TimeoutError('response lost')
             if self.calls == 2:
-                return bound_task('next task')
+                # Retrying the same one-shot token can only recover that exact claim.
+                return bound_task('original claimed task')
             return None
+
     store = Store()
-    runner = TaskRunner(store, lambda request: effects.append(request['message']) or {'reply': 'done'})
+    runner = TaskRunner(
+        store,
+        lambda request: effects.append(request['message']) or {'reply': 'done'},
+    )
     runner.stop_event = PollEvent(2)
     runner.loop()
-    assert effects == ['next task']
+
+    assert effects == ['original claimed task']
     assert len(store.finished) == 1
+    assert store.tokens[0] == store.tokens[1]
+    assert store.tokens[2] != store.tokens[1]
     assert runner.stop_event.waits == [3, 3]
 
 
-def test_dedicated_task_transport_authenticates_and_does_not_retry_uncertain_claim(monkeypatch):
+def test_dedicated_task_transport_authenticates_and_uses_token_bound_claim(monkeypatch):
     import httpx
     from core.cognition import durable_tasks
     requests = []
@@ -238,14 +253,21 @@ def test_dedicated_task_transport_authenticates_and_does_not_retry_uncertain_cla
         return real_client(**kwargs, transport=httpx.MockTransport(respond))
 
     monkeypatch.setattr(durable_tasks.httpx, 'Client', client)
-    db = durable_tasks.task_database_client('https://example.supabase.co', 'synthetic-service-key')
+    db = durable_tasks.task_database_client(
+        'https://example.supabase.co',
+        'synthetic-service-key',
+    )
     try:
         store = TaskStore(db)
+        worker = str(uuid4())
+        claim_token = str(uuid4())
         with pytest.raises(httpx.RemoteProtocolError):
-            store.claim(str(uuid4()))
-        assert len(requests) == 1, 'An uncertain claim must not be retried'
-        assert store.claim(str(uuid4())) is None
-        assert requests[0].url.path == '/rest/v1/rpc/l_task_claim'
+            store.claim(worker, claim_token=claim_token)
+
+        assert len(requests) == 1, 'TaskStore must not hide claim transport ambiguity'
+        assert store.claim(worker, claim_token=claim_token) is None
+        assert requests[0].url.path == '/rest/v1/rpc/l_task_claim_bound'
+        assert requests[1].url.path == '/rest/v1/rpc/l_task_claim_bound'
         assert client_options['http2'] is False
         assert client_options['timeout'].read < 120
         assert client_options['timeout'].pool < 120
