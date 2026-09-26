@@ -149,3 +149,39 @@ def test_broad_recall_is_rejected(monkeypatch):
     )
 
     assert response.status_code == 422
+
+
+def test_daash_bridge_is_limited_to_sport_scope(monkeypatch):
+    configure(monkeypatch)
+    monkeypatch.setattr(bridge, "build_rhee_packet", lambda query: packet())
+
+    allowed = client().post(
+        "/internal/shine-ai/memory/retrieve",
+        headers={"X-Shine-Service-Token": "x" * 32},
+        json={
+            "app": "daash",
+            "user_id": "owner-1",
+            "query": "What training history is relevant to this programme?",
+            "scopes": ["sport"],
+            "limit": 4,
+        },
+    )
+
+    assert allowed.status_code == 200
+    body = allowed.json()
+    assert [record["id"] for record in body["records"]] == ["memory_sport:5507"]
+    assert body["receipt"]["requested_scopes"] == ["sport"]
+
+    denied = client().post(
+        "/internal/shine-ai/memory/retrieve",
+        headers={"X-Shine-Service-Token": "x" * 32},
+        json={
+            "app": "daash",
+            "user_id": "owner-1",
+            "query": "Recall my full history.",
+            "scopes": ["episodic"],
+            "limit": 4,
+        },
+    )
+
+    assert denied.status_code == 403
