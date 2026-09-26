@@ -835,7 +835,7 @@ def health():
         "portability_certification_ready": True,
         "capability_router_ready": True,
         "main_street": True,
-        "release_layer": 163,
+        "release_layer": 164,
         "release_certification_ready": True,
         "release_provenance_ready": True,
         "answer_provenance_ready": True,
@@ -864,7 +864,7 @@ def cognition_status():
         "status": "ok",
         "architecture": "project_l_cognitive_core",
         "version": "13.0",
-        "release_layer": 163,
+        "release_layer": 164,
         "release_certification": build_release_certification(),
         "release_provenance": build_release_provenance(),
         "answer_provenance_ready": True,
@@ -1266,10 +1266,12 @@ def chat(req: ChatRequest):
 
     checkpoint("connected_actions")
     try:
-        route = route_capability(user_message)
+        route = route_capability(user_message, write_guard=checkpoint)
         log(f"CAPABILITY ROUTE: {route.get('capability')}")
+    except DurableTaskBindingError:
+        raise
     except Exception as e:
-        log(f"CAPABILITY ROUTER ERROR: {e}")
+        log(f"CAPABILITY ROUTER ERROR: {type(e).__name__}")
         route = {
             "capability": "l_core",
             "handled": False,
@@ -1965,7 +1967,7 @@ RESPONSE RULES:
         model_receipt=response_model_receipt,
         context_budget=cognitive_packet.get("context_budget", {}),
         assistant_persistence=assistant_persistence,
-        release_layer=163,
+        release_layer=164,
     )
     answer_provenance_check = verify_answer_provenance(
         answer_provenance,
