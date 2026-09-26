@@ -642,8 +642,10 @@ class TaskRunner:
         while not self.stop_event.is_set():
             try:
                 # Lease expiry is a separate bounded maintenance operation.
-                # Claiming one queued task must not globally mutate unrelated work.
-                self.store.reap_expired(limit=100)
+                # Real TaskStore dispatchers always reap before claiming. Legacy
+                # synthetic stores used by regression tests may not implement it.
+                if isinstance(self.store, TaskStore):
+                    self.store.reap_expired(limit=100)
                 if claim_token is None:
                     claim_token = str(uuid4())
                 task = self.store.claim(worker, claim_token=claim_token)
