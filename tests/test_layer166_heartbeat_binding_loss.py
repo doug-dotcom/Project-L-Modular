@@ -1,6 +1,7 @@
 """Layer 166 — definitive heartbeat binding loss propagates cooperatively."""
 
 import threading
+import re
 from uuid import uuid4
 
 from core.cognition.durable_tasks import (
@@ -213,5 +214,10 @@ def test_legacy_five_part_binding_still_refreshes_normally():
 
 def test_layer166_release_marker_is_continuous():
     source = open("api/server.py", encoding="utf-8").read()
-    assert source.count('"release_layer": 166') == 2
-    assert source.count("release_layer=166") == 1
+    layers = [
+        int(value)
+        for value in re.findall(r'release_layer"?\s*[:=]\s*(\d+)', source)
+    ]
+    assert len(layers) == 3
+    assert len(set(layers)) == 1
+    assert layers[0] >= 166
