@@ -106,10 +106,9 @@ def test_layer88_database_read_withholds_invalid_result_for_every_terminal_statu
     assert PRIVATE_REPLY not in json.dumps(result)
     assert not result["delivery_integrity"]["valid"]
     assert len(requests) == 1
-    # Preserve the three ownership filters while validating the returned JSON.
-    assert requests[0].url.params["request_id"] == "eq." + REQUEST_ID
-    assert requests[0].url.params["owner_hash"].startswith("eq.")
-    assert requests[0].url.params["user_id"].startswith("eq.")
+    # Layer 176 moved ownership binding into the recovery RPC. Preserve the
+    # transport assertion without depending on the retired table-filter URL.
+    assert requests[0].url.path.endswith("/rpc/l_task_recover_bound")
 
 
 def test_layer88_write_rejects_missing_receipt_before_any_database_call():
