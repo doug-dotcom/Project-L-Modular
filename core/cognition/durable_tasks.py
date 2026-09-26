@@ -100,12 +100,24 @@ def record_current_action_receipt(receipt):
             frozen_receipt,
         )
     except Exception:
-        # The provider action may already have happened and an RPC response can
-        # be lost after commit. Never expose transport details or continue as
-        # though the action were cleanly journaled.
-        raise DurableTaskBindingError(
-            'Connected action journal unavailable; work stopped'
-        )
+        # A provider action may already have happened and the journal write may
+        # have committed even if its acknowledgement was lost. Never replay the
+        # external action or retry the journal mutation. Reconcile with one
+        # read-only, exact-bound check instead.
+        try:
+            saved = store.confirm_action_bound(
+                request_id,
+                worker,
+                input_hash,
+                request,
+                frozen_receipt,
+            )
+        except Exception:
+            saved = False
+        if not saved:
+            raise DurableTaskBindingError(
+                'Connected action journal unavailable; work stopped'
+            )
     if not saved:
         if binding_lost is not None:
             binding_lost.set()
@@ -361,6 +373,15 @@ class TaskStore:
 
     def record_action_bound(self, request_id, worker, input_hash, request, receipt):
         return self.rpc('l_task_record_action_bound', {
+            'p_id': request_id,
+            'p_worker': worker,
+            'p_hash': input_hash,
+            'p_request': request,
+            'p_receipt': receipt,
+        })
+
+    def confirm_action_bound(self, request_id, worker, input_hash, request, receipt):
+        return self.rpc('l_task_confirm_action_bound', {
             'p_id': request_id,
             'p_worker': worker,
             'p_hash': input_hash,
