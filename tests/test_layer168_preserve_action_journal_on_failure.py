@@ -131,7 +131,7 @@ def test_successfully_journaled_receipt_is_frozen_against_caller_mutation():
     failure = next(
         params["p_result"]
         for name, params in client.calls
-        if name == "l_task_finish_bound"
+        if name == "l_task_finish_claim_bound"
     )
     assert journal["resource_id"] == "google-task-168"
     assert failure["route"]["action_receipt"]["resource_id"] == "google-task-168"
@@ -162,7 +162,7 @@ def test_rejected_terminal_failure_is_not_mistaken_for_persisted():
     run_bound(store, execute)
 
     finish_calls = [
-        params for name, params in client.calls if name == "l_task_finish_bound"
+        params for name, params in client.calls if name == "l_task_finish_claim_bound"
     ]
     assert len(finish_calls) == 1
     assert finish_calls[0]["p_status"] == "failed"
