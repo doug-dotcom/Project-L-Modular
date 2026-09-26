@@ -42,8 +42,10 @@ jobs:
           agents/carol/carol.py
           agents/quinn/quinn.py
           agents/allegra/growth_retrieval.py
+          core/cognition/action_receipt.py
           core/cognition/brain_pipeline.py
           core/cognition/brains_trust.py
+          core/cognition/durable_tasks.py
           core/cognition/longitudinal.py
           core/cognition/learning_engine.py
           core/cognition/memory_governance.py
