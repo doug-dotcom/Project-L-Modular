@@ -7,7 +7,7 @@ from core.cognition.durable_tasks import CONTEXT, TaskRunner, TaskStore, checkpo
 
 REQUEST_ID = "00000000-0000-4000-8000-000000000160"
 WORKER_ID = "22222222-2222-4222-8222-222222222160"
-CLAIM_TOKEN = "33333333-3333-4333-8333-333333333174"\n
+CLAIM_TOKEN = "33333333-3333-4333-8333-333333333174"
 
 def req():
     return {"request_id": REQUEST_ID, "message": "Bound request"}

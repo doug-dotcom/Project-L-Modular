@@ -6,7 +6,7 @@ from core.cognition.durable_tasks import TaskRunner, TaskStore, request_hash
 
 REQUEST_ID = "00000000-0000-4000-8000-000000000161"
 WORKER_ID = "22222222-2222-4222-8222-222222222161"
-CLAIM_TOKEN = "33333333-3333-4333-8333-333333333174"\n
+CLAIM_TOKEN = "33333333-3333-4333-8333-333333333174"
 
 class RpcClient:
     def __init__(self):
