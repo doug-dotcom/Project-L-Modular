@@ -255,6 +255,42 @@ def test_google_provider_confirmation_is_journaled_before_route_returns(monkeypa
     assert route["action_receipt"] == store.recorded[0][4]
 
 
+def test_invalid_provider_receipt_is_not_journaled(monkeypatch):
+    events = []
+    store = RecordingStore()
+
+    class MissingIdTasks(Tasks):
+        def insert(self, **kwargs):
+            title = kwargs["body"]["title"]
+            return Executable(
+                {"title": title},
+                events,
+                ("provider_insert", title),
+            )
+
+    class MissingIdService(GoogleService):
+        def tasks(self):
+            return MissingIdTasks(events)
+
+    monkeypatch.setattr(
+        google,
+        "_google_service",
+        lambda *_args: MissingIdService(events),
+    )
+    bind_context(store)
+    try:
+        route = route_capability(
+            "add to my tasks: call electrician",
+            write_guard=lambda _stage: None,
+        )
+    finally:
+        CONTEXT.task = None
+
+    assert route["status"] == "error"
+    assert store.recorded == []
+    assert events == [("provider_insert", "call electrician")]
+
+
 def test_provider_action_then_journal_rejection_cannot_be_clean_success(monkeypatch):
     events = []
     store = RecordingStore(record_ok=False)
