@@ -14,6 +14,88 @@ def _normalise(message: str) -> str:
     return str(message or "").strip().lower()
 
 
+FOUNDATION_SPECIALIST_HINTS = {
+    "fiona.company_brief": (
+        "fiona", "company brief", "company evidence brief",
+    ),
+    "money.explain_calculate": (
+        "my money", "money calculation", "compound interest", "explain money",
+    ),
+    "daash.exercise_explain": (
+        "daash", "explain exercise", "exercise technique", "what muscles",
+    ),
+    "translate.text": (
+        "shine translate", "translate:", "translate this", "translate to", "how do you say",
+    ),
+    "travel.plan_trip": (
+        "shine travel", "travel sherpa", "plan a trip", "plan my trip", "holiday plan",
+    ),
+    "dive.destination_brief": (
+        "shine dive", "dive brief", "scuba brief", "dive destination",
+    ),
+    "fish.destination_brief": (
+        "shine fish", "fishing brief", "fish destination",
+    ),
+    "ski.destination_brief": (
+        "shine ski", "ski brief", "snow brief", "ski destination",
+    ),
+    "dnd.campaign_context": (
+        "shine d&d", "shine dnd", "d&d campaign", "dnd campaign",
+    ),
+}
+
+
+def foundation_specialist_interest(message: str) -> bool:
+    text = _normalise(message)
+    return any(
+        hint in text
+        for hints in FOUNDATION_SPECIALIST_HINTS.values()
+        for hint in hints
+    )
+
+
+def _foundation_candidate(text: str) -> str | None:
+    matches = [
+        capability
+        for capability, hints in FOUNDATION_SPECIALIST_HINTS.items()
+        if any(hint in text for hint in hints)
+    ]
+    return matches[0] if len(matches) == 1 else None
+
+
+def _foundation_route_packet(fleet: dict | None, capability_id: str) -> dict:
+    status = str((fleet or {}).get("status") or "unavailable")
+    specialists = (fleet or {}).get("specialists")
+    specialists = specialists if isinstance(specialists, list) else []
+    selected = next(
+        (
+            item for item in specialists
+            if isinstance(item, dict) and item.get("capability_id") == capability_id
+        ),
+        None,
+    )
+    if selected is None:
+        return {
+            "fleet_status": status,
+            "capability_id": capability_id,
+            "executable": False,
+            "reason_code": str((fleet or {}).get("reason_code") or "specialist-not-in-live-fleet"),
+        }
+    return {
+        "fleet_status": status,
+        "specialist_count": int((fleet or {}).get("specialist_count") or len(specialists)),
+        "executable_count": int((fleet or {}).get("executable_count") or 0),
+        "blocked_count": int((fleet or {}).get("blocked_count") or 0),
+        "app_id": str(selected.get("app_id") or ""),
+        "app_name": str(selected.get("app_name") or ""),
+        "capability_id": capability_id,
+        "display_name": str(selected.get("display_name") or capability_id),
+        "executable": selected.get("executable") is True,
+        "reason_code": str(selected.get("reason_code") or "unknown"),
+        "runtime_available": selected.get("runtime_available") is True,
+    }
+
+
 def _personal_reflection(text: str) -> bool:
     return any(signal in text for signal in (
         "my journey", "how do i feel", "what do you think about me", "my trauma",
@@ -36,7 +118,7 @@ def _run(capability: str, handler, message: str) -> dict:
         }
 
 
-def route_capability(message: str, write_guard=None) -> dict:
+def route_capability(message: str, write_guard=None, foundation_fleet=None) -> dict:
     text = _normalise(message)
 
     from services.google_workspace_service import (
@@ -104,6 +186,17 @@ def route_capability(message: str, write_guard=None) -> dict:
         from agents.fiona import fiona
         if fiona.should_handle(text):
             return _run("financial_intelligence", fiona.handle_finance_request, message)
+
+    foundation_candidate = _foundation_candidate(text)
+    if foundation_candidate:
+        specialist = _foundation_route_packet(foundation_fleet, foundation_candidate)
+        return {
+            "handled": False,
+            "capability": "foundation_specialist",
+            "reply": "",
+            "status": "ready" if specialist["executable"] else "blocked",
+            "foundation_specialist": specialist,
+        }
 
     from services.external_research_service import research, should_handle
     if should_handle(message) and not _personal_reflection(text):
