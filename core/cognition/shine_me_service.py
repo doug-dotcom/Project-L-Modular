@@ -57,3 +57,39 @@ def prepare_shine_me_context(
         cognitive_packet=cognition,
         allowed_scopes=OWNER_SCOPES,
     )
+
+
+def answer_from_shine_me_context(context: Mapping[str, object]) -> dict:
+    """Give an inspectable first answer without inventing details or invoking a model."""
+    records = context.get("records")
+    if not isinstance(records, list) or not records:
+        return {
+            "status": "no_approved_evidence",
+            "reply": "I couldn't verify a relevant memory for that question yet.",
+            "evidence": [],
+        }
+
+    record = records[0]
+    if not isinstance(record, dict):
+        raise RuntimeError("Shine-Me evidence is malformed")
+    text = str(record.get("text") or "").strip()
+    source = str(record.get("source") or "").strip()
+    provenance = str(record.get("provenance") or "")
+    if not text or not source:
+        raise RuntimeError("Shine-Me evidence is incomplete")
+
+    if provenance == "user_statement":
+        reply = f"I found this in something you said: “{text}”"
+        status = "quoted_user_memory"
+    elif provenance == "model_statement":
+        reply = f"An earlier assistant wrote: “{text}” I can't verify that as something you said."
+        status = "unverified_model_memory"
+    else:
+        reply = f"I found this record: “{text}” Its original author isn't verified."
+        status = "unverified_source_memory"
+
+    return {
+        "status": status,
+        "reply": reply,
+        "evidence": [{"source": source, "provenance": provenance}],
+    }
