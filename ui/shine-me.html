@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shine-Me preview</title>
+  <script src="/ui/account.js?v=stage7-reset1"></script>
+  <link rel="stylesheet" href="/ui/account-evidence.css?v=stage7">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0f172a; color: #f8fafc; font: 16px/1.5 Arial, sans-serif; }
+    main { max-width: 700px; margin: auto; padding: 24px 16px 70px; }
+    header { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; }
+    a { color: #93c5fd; }
+    h1 { margin-bottom: 0; color: #22c55e; }
+    .muted { color: #cbd5e1; }
+    form { margin-top: 28px; }
+    label { display: block; margin-bottom: 8px; }
+    textarea { display: block; width: 100%; min-height: 100px; padding: 12px; border-radius: 10px; font: inherit; resize: vertical; }
+    button { padding: 10px 16px; min-height: 44px; margin-top: 12px; border-radius: 10px; border: 1px solid #64748b; background: #263b59; color: white; font: inherit; }
+    button:disabled { opacity: .5; }
+    #reply { margin-top: 28px; padding: 18px; border-radius: 12px; background: #18263d; white-space: pre-wrap; overflow-wrap: anywhere; }
+    #evidence { margin-top: 12px; color: #cbd5e1; overflow-wrap: anywhere; }
+    #accountGate { background: #18263d; border-radius: 12px; }
+  </style>
+</head>
+<body>
+  <div id="accountFallback">Loading secure sign-in…</div>
+  <main>
+    <header><a href="/">← Project L</a><span id="accountLabel"></span><button id="signOutL" type="button">Sign out</button></header>
+    <h1>Shine-Me</h1>
+    <p class="muted">Personal memory preview. Answers quote one approved record and show its source. This preview does not yet provide a full conversation or change memories.</p>
+    <form id="askForm">
+      <label for="question">Ask about something you have told me</label>
+      <textarea id="question" required maxlength="2000" placeholder="What do you remember about…?"></textarea>
+      <button id="askButton" type="submit">Ask Shine-Me</button>
+    </form>
+    <p id="evidenceStatus" role="status" aria-live="polite"></p>
+    <section id="reply" aria-live="polite" hidden></section>
+    <p id="evidence" hidden></p>
+    <details id="whyPanel" hidden><summary>Why this answer?</summary><p id="whyText"></p></details>
+  </main>
+  <script>
+    (() => {
+      const form = document.getElementById('askForm');
+      const question = document.getElementById('question');
+      const button = document.getElementById('askButton');
+      const status = document.getElementById('evidenceStatus');
+      const reply = document.getElementById('reply');
+      const evidence = document.getElementById('evidence');
+      const whyPanel = document.getElementById('whyPanel');
+      const whyText = document.getElementById('whyText');
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        const query = question.value.trim();
+        if (!query || query.length > 2000) return;
+        button.disabled = true;
+        reply.hidden = evidence.hidden = whyPanel.hidden = true;
+        whyPanel.open = false;
+        reply.textContent = evidence.textContent = whyText.textContent = '';
+        status.textContent = 'Checking approved memory…';
+        try {
+          const response = await fetch('/shine-me/ask', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({query}),
+            signal: AbortSignal.timeout(30000)
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(
+            response.status === 403 ? 'This account cannot access Shine-Me memory.' :
+            response.status === 503 ? 'Shine-Me memory is unavailable right now.' :
+            'The question could not be checked.'
+          );
+          reply.textContent = result.reply || 'No answer is available.';
+          reply.hidden = false;
+          const source = Array.isArray(result.evidence) ? result.evidence[0] : null;
+          if (source && typeof source.source === 'string') {
+            evidence.textContent = 'Source: ' + source.source + ' · ' + (source.provenance || 'unknown');
+            evidence.hidden = false;
+          }
+          if (result.why && typeof result.why.explanation === 'string') {
+            whyText.textContent = result.why.explanation + (source
+              ? ' Source: ' + result.why.source + '. Scope: ' + result.why.scope +
+                '. Authorship: ' + result.why.authorship + '.' : '');
+            whyPanel.hidden = false;
+          }
+          status.textContent = result.status === 'no_approved_evidence'
+            ? 'No approved memory was found for this question.'
+            : 'Answer based on the approved record shown below.';
+        } catch (error) {
+          status.textContent = error.name === 'TimeoutError'
+            ? 'The memory check timed out. Please try again.'
+            : (error.message || 'The memory check could not finish.');
+        } finally { button.disabled = false; }
+      });
+    })();
+  </script>
+</body>
+</html>
