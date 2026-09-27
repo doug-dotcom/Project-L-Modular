@@ -139,11 +139,15 @@ class ShineMeServiceTests(unittest.TestCase):
         self.assertEqual(answer["evidence"], [
             {"source": "memory_general:1", "provenance": "user_statement"}
         ])
+        self.assertEqual(answer["why"]["status"], "approved_quotation")
+        self.assertEqual(answer["why"]["authorship"], "user_statement")
+        self.assertIn("do not independently prove", answer["why"]["explanation"])
 
     def test_no_approved_memory_does_not_invent_an_answer(self):
         answer = answer_from_shine_me_context({"records": []})
         self.assertEqual(answer["status"], "no_approved_evidence")
         self.assertEqual(answer["evidence"], [])
+        self.assertEqual(answer["why"]["status"], "no_approved_source")
 
     def test_model_authored_memory_cannot_be_attributed_to_user(self):
         answer = answer_from_shine_me_context({"records": [{
