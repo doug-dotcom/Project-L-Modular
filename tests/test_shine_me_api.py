@@ -12,7 +12,9 @@ def make_client(monkeypatch, owner="owner-a", *, approved=True):
 
     def retrieve(query):
         calls.append("retrieve")
-        return {"evidence": [{
+        return {"recall_plan": {"status": "checked"},
+                "temporal_memory": {"status": "checked", "user_id": owner},
+                "evidence": [{
             "source": "memory_general:1", "role": "user",
             "quote_source": "I like context first.",
         }]}
