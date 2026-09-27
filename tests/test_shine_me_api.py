@@ -9,6 +9,7 @@ from api.shine_me import routes
 def make_client(monkeypatch, owner="owner-a", *, approved=True, freshness="unchanged"):
     monkeypatch.setenv("PROJECT_L_OWNER_ID", owner)
     monkeypatch.setenv("L_MEMORY_OWNER_ID", owner)
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "test-only-key")
     calls = []
 
     def retrieve(query):
@@ -42,7 +43,11 @@ def make_client(monkeypatch, owner="owner-a", *, approved=True, freshness="uncha
             request.state.account = {"user_id": user_id}
         return await call_next(request)
 
-    app.include_router(routes(retrieve, cognize, lambda receipt: {"status": freshness}))
+    def save(row):
+        calls.append(("save", row))
+        return type("Saved", (), {"data": [{"id": "review-1"}]})()
+
+    app.include_router(routes(retrieve, cognize, lambda receipt: {"status": freshness}, save))
     return TestClient(app), calls
 
 
@@ -175,3 +180,47 @@ def test_real_server_account_middleware_guards_shine_me(monkeypatch):
         "/shine-me/ask", json={"query": "personal memory"},
         headers={"Authorization": "Bearer other"},
     ).status_code == 403
+
+
+def test_owner_submits_source_checked_review_without_memory_write(monkeypatch):
+    client, calls = make_client(monkeypatch)
+    response = client.post("/shine-me/corrections", json={
+        "query": "What do I prefer?", "expected_source": "memory_general:1",
+        "issue_kind": "incomplete", "proposed_correction": " Context first, then detail. ",
+    }, headers={"x-test-verified-user": "owner-a"})
+    assert response.status_code == 200
+    assert response.json() == {"status": "pending_review", "id": "review-1"}
+    assert calls[:2] == ["retrieve", "cognize"]
+    saved = calls[2][1]
+    assert saved["owner_id"] == "owner-a"
+    assert saved["source"] == "memory_general:1"
+    assert saved["proposed_correction"] == "Context first, then detail."
+    assert saved["original_reply"].startswith("I found this in something you said")
+
+
+def test_correction_rejects_other_account_and_changed_source(monkeypatch):
+    client, calls = make_client(monkeypatch)
+    payload = {"query": "What do I prefer?", "expected_source": "memory_general:1",
+               "issue_kind": "wrong", "proposed_correction": "Context first."}
+    assert client.post("/shine-me/corrections", json=payload,
+                       headers={"x-test-verified-user": "other"}).status_code == 403
+    assert calls == []
+    payload["expected_source"] = "memory_general:another"
+    response = client.post("/shine-me/corrections", json=payload,
+                           headers={"x-test-verified-user": "owner-a"})
+    assert response.status_code == 409
+    assert calls == ["retrieve", "cognize"]
+
+
+def test_correction_requires_server_secret_and_approved_evidence(monkeypatch):
+    client, calls = make_client(monkeypatch)
+    payload = {"query": "What do I prefer?", "expected_source": "memory_general:1",
+               "issue_kind": "wrong", "proposed_correction": "Context first."}
+    monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY")
+    assert client.post("/shine-me/corrections", json=payload,
+                       headers={"x-test-verified-user": "owner-a"}).status_code == 503
+    assert calls == ["retrieve", "cognize"]
+    client, calls = make_client(monkeypatch, approved=False)
+    assert client.post("/shine-me/corrections", json=payload,
+                       headers={"x-test-verified-user": "owner-a"}).status_code == 409
+    assert calls == ["retrieve", "cognize"]

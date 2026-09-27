@@ -488,6 +488,7 @@ app.include_router(shine_me_routes(
         query, evidence, cognitive_plan=plan_cognition(query),
     ),
     lambda receipt: snapshot_freshness(supabase, receipt),
+    lambda row: supabase.table('shine_me_correction_reviews').insert(row).execute(),
 ))
 
 
