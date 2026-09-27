@@ -33,8 +33,10 @@
     <form id="askForm">
       <label for="question">Ask about something you have told me</label>
       <textarea id="question" required maxlength="2000" placeholder="What do you remember about…?"></textarea>
-      <button id="askButton" type="submit">Ask Shine-Me</button>
+      <button id="askButton" type="submit" disabled>Ask Shine-Me</button>
     </form>
+    <p id="connectionStatus" role="status" aria-live="polite">Sign in to check the memory connection.</p>
+    <button id="retryConnection" type="button" hidden>Check connection again</button>
     <p id="evidenceStatus" role="status" aria-live="polite"></p>
     <section id="reply" aria-live="polite" hidden></section>
     <p id="evidence" hidden></p>
@@ -46,14 +48,40 @@
       const question = document.getElementById('question');
       const button = document.getElementById('askButton');
       const status = document.getElementById('evidenceStatus');
+      const connection = document.getElementById('connectionStatus');
+      const retry = document.getElementById('retryConnection');
       const reply = document.getElementById('reply');
       const evidence = document.getElementById('evidence');
       const whyPanel = document.getElementById('whyPanel');
       const whyText = document.getElementById('whyText');
+      async function checkConnection() {
+        button.disabled = true;
+        retry.hidden = true;
+        connection.textContent = 'Checking your memory connection…';
+        try {
+          const response = await fetch('/shine-me/binding', {
+            cache: 'no-store', signal: AbortSignal.timeout(20000)
+          });
+          const result = await response.json();
+          if (response.ok && result.status === 'binding_ready') {
+            connection.textContent = 'Memory connection ready. You can ask a question.';
+            button.disabled = false;
+            return;
+          }
+          connection.textContent = response.status === 403
+            ? 'This account cannot access Shine-Me memory.'
+            : 'Shine-Me memory is unavailable right now.';
+        } catch (_) {
+          connection.textContent = 'Could not check the memory connection.';
+        }
+        retry.hidden = false;
+      }
+      window.addEventListener('l-account-ready', checkConnection);
+      retry.addEventListener('click', checkConnection);
       form.addEventListener('submit', async event => {
         event.preventDefault();
         const query = question.value.trim();
-        if (!query || query.length > 2000) return;
+        if (button.disabled || !query || query.length > 2000) return;
         button.disabled = true;
         reply.hidden = evidence.hidden = whyPanel.hidden = true;
         whyPanel.open = false;
