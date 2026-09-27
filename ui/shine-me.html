@@ -78,6 +78,14 @@
       const copyCorrection = document.getElementById('copyCorrection');
       const correctionStatus = document.getElementById('correctionStatus');
       let correctionSource = null;
+      function invalidateCorrectionDraft() {
+        correctionDraft.value = '';
+        correctionDraft.hidden = correctionDraftLabel.hidden = copyCorrection.hidden = true;
+        correctionStatus.textContent = '';
+      }
+      correctionText.addEventListener('input', invalidateCorrectionDraft);
+      correctionKind.addEventListener('change', invalidateCorrectionDraft);
+
       document.getElementById('prepareCorrection').addEventListener('click', () => {
         const proposed = correctionText.value.trim();
         if (!proposed || !correctionSource) {
