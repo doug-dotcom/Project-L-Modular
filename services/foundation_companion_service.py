@@ -312,3 +312,140 @@ def ensure_foundation_delegation(
 def safe_connection_result(result: dict) -> dict:
     """Strip bearer/delegation material before returning status to HTTP callers."""
     return {key: value for key, value in result.items() if key != "delegation_token"}
+
+
+
+def foundation_fleet_status(
+    db,
+    user_id: str,
+    *,
+    foundation_url: str | None = None,
+    timeout_seconds: float = 5.0,
+    get_impl=None,
+) -> dict:
+    """Return the live Concierge specialist fleet for this bound Companion user.
+
+    The response is deliberately projected: bearer/client credentials, delegation
+    tokens, grant UUIDs and adapter endpoints never leave this service boundary.
+    """
+    owner_id = _uuid(user_id)
+    authority = ensure_foundation_delegation(
+        db,
+        owner_id,
+        foundation_url=foundation_url,
+        timeout_seconds=timeout_seconds,
+    )
+    if authority.get("status") != "active":
+        return {
+            "status": str(authority.get("status") or "unavailable"),
+            "reason_code": str(authority.get("reason_code") or "foundation-authority-unavailable"),
+            "specialist_count": 0,
+            "executable_count": 0,
+            "blocked_count": 0,
+            "specialists": [],
+        }
+
+    client_token = _single_secret(
+        _rpc_data(db, "concierge_foundation_client_token_v1"),
+        "foundation-client",
+    )
+    delegation_token = _single_secret(
+        authority.get("delegation_token"),
+        "foundation-delegation",
+    )
+    get = get_impl or httpx.get
+    url = _foundation_url(foundation_url) + (
+        "/v1/concierge/fleet"
+        "?clientId=shine.companion"
+        "&purpose=concierge.cross-project-read"
+    )
+
+    try:
+        response = get(
+            url,
+            headers={
+                "X-Shine-Client-Token": client_token,
+                "X-Shine-Delegation-Token": delegation_token,
+            },
+            timeout=timeout_seconds,
+            follow_redirects=False,
+        )
+        body = _response_json(response)
+    except (httpx.HTTPError, RuntimeError):
+        return {
+            "status": "unavailable",
+            "reason_code": "concierge-fleet-unavailable",
+            "specialist_count": 0,
+            "executable_count": 0,
+            "blocked_count": 0,
+            "specialists": [],
+        }
+
+    if response.status_code != 200 or body.get("status") != "ok":
+        return {
+            "status": "unavailable",
+            "reason_code": str(body.get("reasonCode") or "concierge-fleet-unavailable"),
+            "specialist_count": 0,
+            "executable_count": 0,
+            "blocked_count": 0,
+            "specialists": [],
+        }
+
+    fleet = body.get("fleet")
+    if not isinstance(fleet, dict):
+        raise RuntimeError("foundation-fleet-response-invalid")
+    raw_specialists = fleet.get("specialists")
+    if not isinstance(raw_specialists, list) or len(raw_specialists) > 20:
+        raise RuntimeError("foundation-fleet-response-invalid")
+
+    specialists = []
+    for item in raw_specialists:
+        if not isinstance(item, dict):
+            raise RuntimeError("foundation-fleet-response-invalid")
+        capability_id = str(item.get("capabilityId") or "")
+        app_id = str(item.get("appId") or "")
+        if not capability_id or not app_id:
+            raise RuntimeError("foundation-fleet-response-invalid")
+        runtime = item.get("runtimeStatus") if isinstance(item.get("runtimeStatus"), dict) else {}
+        specialists.append({
+            "app_id": app_id,
+            "app_name": str(item.get("appName") or app_id),
+            "capability_id": capability_id,
+            "display_name": str(item.get("displayName") or capability_id),
+            "mode": str(item.get("mode") or "advisory"),
+            "executable": item.get("executable") is True,
+            "reason_code": str(item.get("reasonCode") or "unknown"),
+            "grant_status": str(item.get("grantStatus") or "missing"),
+            "runtime_available": runtime.get("available") is True,
+            "runtime_reason_code": str(runtime.get("reasonCode") or "unknown"),
+        })
+
+    specialist_count = int(fleet.get("specialistCount") or len(specialists))
+    executable_count = int(fleet.get("executableCount") or sum(1 for row in specialists if row["executable"]))
+    blocked_count = int(fleet.get("blockedCount") or max(0, specialist_count - executable_count))
+    if specialist_count != len(specialists) or executable_count < 0 or blocked_count < 0:
+        raise RuntimeError("foundation-fleet-response-invalid")
+
+    return {
+        "status": "healthy" if blocked_count == 0 else "degraded",
+        "reason_code": "concierge-fleet-ready" if blocked_count == 0 else "concierge-fleet-degraded",
+        "specialist_count": specialist_count,
+        "executable_count": executable_count,
+        "blocked_count": blocked_count,
+        "specialists": specialists,
+    }
+
+
+def executable_foundation_capabilities(fleet: dict | None) -> set[str]:
+    if not isinstance(fleet, dict):
+        return set()
+    specialists = fleet.get("specialists")
+    if not isinstance(specialists, list):
+        return set()
+    return {
+        str(item.get("capability_id"))
+        for item in specialists
+        if isinstance(item, dict)
+        and item.get("executable") is True
+        and item.get("capability_id")
+    }
