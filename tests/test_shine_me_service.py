@@ -12,7 +12,9 @@ class ShineMeServiceTests(unittest.TestCase):
 
     def retrieve(self, query):
         self.calls.append("retrieve")
-        return {"evidence": [{
+        return {"recall_plan": {"status": "checked"},
+                "temporal_memory": {"status": "checked", "user_id": "owner-a"},
+                "evidence": [{
             "source": "memory_general:1", "role": "user", "quote_source": "Context first"
         }]}
 
@@ -82,10 +84,27 @@ class ShineMeServiceTests(unittest.TestCase):
     def test_failed_freshness_check_stops_before_cognition(self):
         def retrieve(query):
             self.calls.append("retrieve")
-            return {"temporal_memory": {"status": "unavailable"}, "evidence": []}
+            return {"recall_plan": {"status": "checked"},
+                    "temporal_memory": {"status": "unavailable", "user_id": "owner-a"},
+                    "evidence": []}
         with self.assertRaises(RuntimeError):
             self.build(retrieve=retrieve)
         self.assertEqual(self.calls, ["retrieve"])
+
+    def test_temporal_owner_mismatch_stops_before_cognition(self):
+        def retrieve(query):
+            self.calls.append("retrieve")
+            return {"recall_plan": {"status": "checked"},
+                    "temporal_memory": {"status": "checked", "user_id": "other"},
+                    "evidence": [{"source": "memory_general:1", "quote_source": "Private"}]}
+        with self.assertRaises(PermissionError):
+            self.build(retrieve=retrieve)
+        self.assertEqual(self.calls, ["retrieve"])
+
+    def test_missing_retrieval_receipt_stops_before_cognition(self):
+        with self.assertRaises(RuntimeError):
+            self.build(retrieve=lambda query: {"evidence": []})
+        self.assertEqual(self.calls, [])
 
     def test_answer_quotes_only_user_authored_evidence(self):
         answer = answer_from_shine_me_context(self.build())
