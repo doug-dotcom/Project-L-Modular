@@ -8,6 +8,7 @@ from services.foundation_companion_service import (
     ensure_foundation_delegation,
     foundation_account_owner,
     foundation_connection_status,
+    foundation_fleet_status,
     safe_connection_result,
 )
 
@@ -41,5 +42,14 @@ def routes(db) -> APIRouter:
             raise
         except Exception as exc:
             raise HTTPException(503, "Foundation delegation refresh is temporarily unavailable.") from exc
+
+    @router.get("/fleet")
+    def fleet(request: Request) -> dict:
+        try:
+            return foundation_fleet_status(db, owner_id(request))
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise HTTPException(503, "Concierge specialist status is temporarily unavailable.") from exc
 
     return router
