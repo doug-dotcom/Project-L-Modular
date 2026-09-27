@@ -44,6 +44,24 @@ def _foundation_url(value: str | None = None) -> str:
     return url
 
 
+def foundation_account_owner(db) -> str | None:
+    """Resolve the provisioned L account that is allowed to own Foundation authority."""
+    result = (
+        db.table("l_account_config")
+        .select("user_id")
+        .eq("singleton", True)
+        .limit(2)
+        .execute()
+    )
+    rows = getattr(result, "data", None)
+    if not isinstance(rows, list) or len(rows) != 1:
+        return None
+    value = (rows[0] or {}).get("user_id")
+    if not value:
+        return None
+    return _uuid(value)
+
+
 def foundation_connection_status(db, user_id: str) -> dict:
     state = _rpc_data(
         db,
