@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from datetime import datetime, timezone
 from typing import Any
@@ -533,7 +534,10 @@ def invoke_foundation_specialist(
         raise ValueError("invalid capability id")
     if not isinstance(input_data, dict):
         raise ValueError("specialist input must be an object")
-    encoded_input = str(input_data)
+    try:
+        encoded_input = json.dumps(input_data, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    except (TypeError, ValueError) as exc:
+        raise ValueError("specialist input must be JSON serialisable") from exc
     if len(encoded_input) > 12000:
         raise ValueError("specialist input too large")
     if timeout_seconds < 1 or timeout_seconds > 180:
