@@ -63,6 +63,27 @@ class ShineMeServiceTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.build(cognize=lambda query, packet: None)
 
+    def test_incomplete_retrieval_stops_before_cognition(self):
+        for status in ("unavailable", "needs_clarification", "budget_exceeded"):
+            with self.subTest(status=status):
+                self.calls.clear()
+                def retrieve(query):
+                    self.calls.append("retrieve")
+                    return {"recall_plan": {"status": status}, "evidence": [
+                        {"source": "memory_general:1", "quote_source": "Stale"},
+                    ]}
+                with self.assertRaises(RuntimeError):
+                    self.build(retrieve=retrieve)
+                self.assertEqual(self.calls, ["retrieve"])
+
+    def test_failed_freshness_check_stops_before_cognition(self):
+        def retrieve(query):
+            self.calls.append("retrieve")
+            return {"temporal_memory": {"status": "unavailable"}, "evidence": []}
+        with self.assertRaises(RuntimeError):
+            self.build(retrieve=retrieve)
+        self.assertEqual(self.calls, ["retrieve"])
+
 
 if __name__ == "__main__":
     unittest.main()
