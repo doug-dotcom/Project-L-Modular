@@ -13,6 +13,24 @@ OWNER_SCOPES = frozenset({
 })
 
 
+def shine_me_binding_status(
+    *, verified_account: Mapping[str, object] | None,
+    configured_owner_id: str,
+    configured_memory_owner_id: str,
+) -> dict[str, str]:
+    """Report only the owner binding; this does not probe database availability."""
+    owner_id = str(configured_owner_id or "").strip()
+    if not owner_id:
+        raise RuntimeError("Shine-Me owner binding is not configured")
+    user_id = str((verified_account or {}).get("user_id") or "").strip()
+    if not user_id or user_id != owner_id:
+        raise PermissionError("Shine-Me account does not own this memory")
+    memory_owner_id = str(configured_memory_owner_id or "").strip()
+    if not memory_owner_id or memory_owner_id != owner_id:
+        return {"status": "unavailable", "reason": "memory_owner_binding"}
+    return {"status": "binding_ready", "reason": "owner_ids_match"}
+
+
 def prepare_shine_me_context(
     *,
     query: str,
@@ -27,15 +45,15 @@ def prepare_shine_me_context(
     The account must be supplied by the server's authentication middleware.
     Callers must not pass a user ID from the request body or model output.
     """
-    owner_id = str(configured_owner_id or "").strip()
-    if not owner_id:
-        raise RuntimeError("Shine-Me owner binding is not configured")
-    memory_owner_id = str(configured_memory_owner_id or "").strip()
-    if not memory_owner_id or memory_owner_id != owner_id:
+    binding = shine_me_binding_status(
+        verified_account=verified_account,
+        configured_owner_id=configured_owner_id,
+        configured_memory_owner_id=configured_memory_owner_id,
+    )
+    if binding["status"] != "binding_ready":
         raise RuntimeError("Shine-Me memory namespace is not bound to its owner")
-    user_id = str((verified_account or {}).get("user_id") or "").strip()
-    if not user_id or user_id != owner_id:
-        raise PermissionError("Shine-Me account does not own this memory")
+    owner_id = str(configured_owner_id).strip()
+    user_id = owner_id
     query = str(query or "").strip()
     if not 1 <= len(query) <= 2000:
         raise ValueError("Query must be between 1 and 2000 characters")
