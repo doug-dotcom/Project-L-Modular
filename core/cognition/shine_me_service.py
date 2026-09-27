@@ -95,6 +95,8 @@ def answer_from_shine_me_context(context: Mapping[str, object]) -> dict:
             "status": "no_approved_evidence",
             "reply": "I couldn't verify a relevant memory for that question yet.",
             "evidence": [],
+            "why": {"status": "no_approved_source",
+                    "explanation": "No retrieved source passed every publication check for this question."},
         }
 
     record = records[0]
@@ -120,4 +122,16 @@ def answer_from_shine_me_context(context: Mapping[str, object]) -> dict:
         "status": status,
         "reply": reply,
         "evidence": [{"source": source, "provenance": provenance}],
+        "why": {
+            "status": "approved_quotation",
+            "source": source,
+            "scope": str(record.get("scope") or "unknown"),
+            "authorship": provenance,
+            "explanation": (
+                "Rhee retrieved this record; the temporal, privacy, identity, emotional "
+                "salience and causal attribution gates all allowed it to surface. "
+                "The fact timeline freshness check also passed. These checks do not "
+                "independently prove the quoted claim is true."
+            ),
+        },
     }
