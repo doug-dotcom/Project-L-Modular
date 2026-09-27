@@ -109,6 +109,7 @@ from core.cognition.document_evidence import EvidenceStore, answer_from_document
 from api.account_documents import routes as account_document_routes
 from api.shine_ai_memory import router as shine_ai_memory_router
 from api.shine_me import routes as shine_me_routes
+from api.foundation_companion import routes as foundation_companion_routes
 from core.cognition.reflection import reflect_on_task
 from core.cognition.learning_engine import ingest_reflective_observation
 from core.cognition.working_memory import ActiveContextService
@@ -131,6 +132,7 @@ from core.cognition.portability import (
 )
 from governance.cognitive_guardrails import guardrail_prompt
 from services.capability_router_service import route_capability
+from services.foundation_companion_service import ensure_foundation_delegation
 
 from memory.continuity.live_short_term import (
     classify_short_term_domain,
@@ -482,6 +484,7 @@ def execute_durable_request(request):
 task_runner = TaskRunner(task_store, execute_durable_request)
 app.include_router(account_document_routes(supabase, task_store))
 app.include_router(shine_ai_memory_router)
+app.include_router(foundation_companion_routes(supabase))
 app.include_router(shine_me_routes(
     build_rhee_packet,
     lambda query, evidence: run_cognitive_core(
@@ -498,6 +501,15 @@ app.include_router(shine_me_routes(
 @app.on_event("startup")
 def start_durable_tasks():
     task_runner.start()
+    owner_id = str(os.getenv("PROJECT_L_OWNER_ID") or "").strip()
+    if supabase is not None and owner_id:
+        try:
+            foundation = ensure_foundation_delegation(supabase, owner_id)
+            log("FOUNDATION STARTUP AUTHORITY: " + str(foundation.get("status") or "unknown"))
+        except Exception:
+            # Foundation is optional to L's standalone purpose. A renewal outage
+            # must never stop the Companion from starting.
+            log("FOUNDATION STARTUP AUTHORITY: unavailable")
 
 
 @app.on_event("shutdown")
