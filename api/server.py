@@ -489,6 +489,9 @@ app.include_router(shine_me_routes(
     ),
     lambda receipt: snapshot_freshness(supabase, receipt),
     lambda row: supabase.table('shine_me_correction_reviews').insert(row).execute(),
+    lambda owner_id: supabase.table('shine_me_correction_reviews')
+        .select('id,owner_id,question,source,provenance,issue_kind,proposed_correction,status,created_at')
+        .eq('owner_id', owner_id).order('created_at', desc=True).limit(50).execute(),
 ))
 
 
