@@ -38,6 +38,7 @@
     <p id="evidenceStatus" role="status" aria-live="polite"></p>
     <section id="reply" aria-live="polite" hidden></section>
     <p id="evidence" hidden></p>
+    <details id="whyPanel" hidden><summary>Why this answer?</summary><p id="whyText"></p></details>
   </main>
   <script>
     (() => {
@@ -47,13 +48,16 @@
       const status = document.getElementById('evidenceStatus');
       const reply = document.getElementById('reply');
       const evidence = document.getElementById('evidence');
+      const whyPanel = document.getElementById('whyPanel');
+      const whyText = document.getElementById('whyText');
       form.addEventListener('submit', async event => {
         event.preventDefault();
         const query = question.value.trim();
         if (!query || query.length > 2000) return;
         button.disabled = true;
-        reply.hidden = evidence.hidden = true;
-        reply.textContent = evidence.textContent = '';
+        reply.hidden = evidence.hidden = whyPanel.hidden = true;
+        whyPanel.open = false;
+        reply.textContent = evidence.textContent = whyText.textContent = '';
         status.textContent = 'Checking approved memory…';
         try {
           const response = await fetch('/shine-me/ask', {
@@ -74,6 +78,12 @@
           if (source && typeof source.source === 'string') {
             evidence.textContent = 'Source: ' + source.source + ' · ' + (source.provenance || 'unknown');
             evidence.hidden = false;
+          }
+          if (result.why && typeof result.why.explanation === 'string') {
+            whyText.textContent = result.why.explanation + (source
+              ? ' Source: ' + result.why.source + '. Scope: ' + result.why.scope +
+                '. Authorship: ' + result.why.authorship + '.' : '');
+            whyPanel.hidden = false;
           }
           status.textContent = result.status === 'no_approved_evidence'
             ? 'No approved memory was found for this question.'
