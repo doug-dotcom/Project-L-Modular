@@ -141,9 +141,12 @@ def test_read_only_tasks_listing_does_not_require_write_guard(monkeypatch):
 def test_server_passes_bound_guard_to_capability_router_and_propagates_binding_loss():
     source = Path("api/server.py").read_text(encoding="utf-8")
 
-    call = "route_capability(user_message, write_guard=checkpoint)"
-    assert call in source
-    call_index = source.index(call)
+    call_index = source.index("route = route_capability(")
+    call_end = source.index(")", call_index)
+    call = source[call_index:call_end]
+    assert "user_message" in call
+    assert "write_guard=checkpoint" in call
+    assert "foundation_fleet=foundation_fleet" in call
     except_index = source.index("except DurableTaskBindingError:", call_index)
     generic_index = source.index("except Exception as e:", except_index)
     assert call_index < except_index < generic_index
