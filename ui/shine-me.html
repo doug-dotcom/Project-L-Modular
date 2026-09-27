@@ -46,12 +46,13 @@
     <details id="whyPanel" hidden><summary>Why this answer?</summary><p id="whyText"></p></details>
     <section id="correctionPanel" hidden>
       <h2>Flag this answer</h2>
-      <p class="muted">Draft a correction with the source attached. This does not save or change memory.</p>
+      <p class="muted">Submit a correction for review with the source attached. Review does not change memory automatically.</p>
       <label for="correctionKind">What needs fixing?</label>
       <select id="correctionKind"><option value="wrong">Wrong</option><option value="incomplete">Incomplete</option></select>
       <label for="correctionText">What should Shine-Me know?</label>
       <textarea id="correctionText" maxlength="2000" placeholder="Write your correction here…"></textarea>
-      <button id="prepareCorrection" type="button">Prepare correction</button>
+      <button id="saveCorrection" type="button">Submit for review</button>
+      <button id="prepareCorrection" type="button">Prepare copyable draft</button>
       <label for="correctionDraft" id="correctionDraftLabel" hidden>Correction draft</label>
       <textarea id="correctionDraft" readonly hidden></textarea>
       <button id="copyCorrection" type="button" hidden>Copy correction</button>
@@ -72,6 +73,7 @@
       const whyText = document.getElementById('whyText');
       const correctionPanel = document.getElementById('correctionPanel');
       const correctionKind = document.getElementById('correctionKind');
+      const saveCorrection = document.getElementById('saveCorrection');
       const correctionText = document.getElementById('correctionText');
       const correctionDraft = document.getElementById('correctionDraft');
       const correctionDraftLabel = document.getElementById('correctionDraftLabel');
@@ -86,6 +88,33 @@
       correctionText.addEventListener('input', invalidateCorrectionDraft);
       correctionKind.addEventListener('change', invalidateCorrectionDraft);
 
+      saveCorrection.addEventListener('click', async () => {
+        const proposed = correctionText.value.trim();
+        if (!proposed || !correctionSource) {
+          correctionStatus.textContent = 'Enter a correction for the sourced answer first.';
+          return;
+        }
+        saveCorrection.disabled = true;
+        correctionStatus.textContent = 'Checking the source and saving for review…';
+        try {
+          const response = await fetch('/shine-me/corrections', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({query: correctionSource.query,
+              expected_source: correctionSource.source,
+              issue_kind: correctionKind.value, proposed_correction: proposed}),
+            signal: AbortSignal.timeout(30000)
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(response.status === 409
+            ? 'The answer changed. Ask again and resubmit the correction.'
+            : 'Could not save for review. You can still copy the draft.');
+          correctionStatus.textContent = 'Saved for review (' + result.id + '). Memory has not changed.';
+        } catch (error) {
+          correctionStatus.textContent = error.name === 'TimeoutError'
+            ? 'The review request timed out. Check before trying again to avoid duplicates.'
+            : error.message;
+        } finally { saveCorrection.disabled = false; }
+      });
       document.getElementById('prepareCorrection').addEventListener('click', () => {
         const proposed = correctionText.value.trim();
         if (!proposed || !correctionSource) {
