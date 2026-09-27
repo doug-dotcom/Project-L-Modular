@@ -15,6 +15,56 @@ VERSION = "shine-me-context-v1"
 MAX_RECORDS = 4
 MAX_TEXT = 900
 _SCOPES = frozenset({"general", "identity", "episodic", "sport", "family", "recovery", "health", "project_l"})
+_PUBLICATION_GATES = (
+    "memory_temporal_drift",
+    "memory_privacy",
+    "memory_identity",
+    "memory_emotional_salience",
+    "memory_causal_attribution",
+)
+
+
+def approved_sources_from_cognition(cognitive_packet: Mapping[str, object]) -> frozenset[str]:
+    """Extract a source only when every publication gate approves that source.
+
+    Missing, inactive or inconsistent gate packets always produce no approval.
+    A model cannot authorise a source by adding it to a retrieval packet.
+    """
+    source: str | None = None
+    for key in _PUBLICATION_GATES:
+        gate = cognitive_packet.get(key)
+        if not isinstance(gate, Mapping):
+            return frozenset()
+        candidate = str(gate.get("source") or "").strip()
+        if (
+            gate.get("active") is not True
+            or gate.get("surface_allowed") is not True
+            or gate.get("decision") != "surface"
+            or not candidate
+            or (source is not None and candidate != source)
+        ):
+            return frozenset()
+        source = candidate
+    return frozenset({source}) if source else frozenset()
+
+
+def build_shine_me_from_cognition(
+    *,
+    verified_user_id: str,
+    retrieval_owner_id: str,
+    rhee_packet: Mapping[str, object],
+    cognitive_packet: Mapping[str, object],
+    allowed_scopes: frozenset[str],
+) -> dict:
+    """Bind Rhee evidence to the existing final memory publication decision."""
+    rows = rhee_packet.get("evidence")
+    return build_shine_me_context(
+        verified_user_id=verified_user_id,
+        retrieval_owner_id=retrieval_owner_id,
+        evidence=rows if isinstance(rows, list) else [],
+        allowed_scopes=allowed_scopes,
+        approved_sources=approved_sources_from_cognition(cognitive_packet),
+    )
 
 
 def build_shine_me_context(
