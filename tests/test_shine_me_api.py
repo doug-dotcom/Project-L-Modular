@@ -76,6 +76,7 @@ def test_owner_can_ask_for_gated_memory(monkeypatch):
     assert response.status_code == 200
     assert response.json()["status"] == "quoted_user_memory"
     assert "I like context first" in response.json()["reply"]
+    assert response.json()["why"]["source"] == "memory_general:1"
     assert calls == ["retrieve", "cognize"]
 
 
