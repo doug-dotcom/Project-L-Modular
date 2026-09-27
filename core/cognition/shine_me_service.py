@@ -43,10 +43,12 @@ def prepare_shine_me_context(
     temporal = rhee.get("temporal_memory") or {}
     if not isinstance(recall_plan, dict) or not isinstance(temporal, dict):
         raise RuntimeError("Memory retrieval status is invalid")
-    if recall_plan.get("status") in {"unavailable", "needs_clarification", "budget_exceeded"}:
+    if recall_plan.get("status") != "checked":
         raise RuntimeError("Memory retrieval did not complete")
-    if temporal.get("status") in {"unavailable", "needs_clarification"}:
+    if temporal.get("status") != "checked":
         raise RuntimeError("Memory freshness check did not complete")
+    if str(temporal.get("user_id") or "").strip() != owner_id:
+        raise PermissionError("Memory snapshot belongs to a different owner")
     cognition = cognize(query, rhee)
     if not isinstance(cognition, dict):
         raise RuntimeError("Memory approval is unavailable")
