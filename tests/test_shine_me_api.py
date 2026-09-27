@@ -47,7 +47,17 @@ def make_client(monkeypatch, owner="owner-a", *, approved=True, freshness="uncha
         calls.append(("save", row))
         return type("Saved", (), {"data": [{"id": "review-1"}]})()
 
-    app.include_router(routes(retrieve, cognize, lambda receipt: {"status": freshness}, save))
+    def list_reviews(owner_id):
+        calls.append(("list", owner_id))
+        return type("Reviews", (), {"data": [{
+            "id": "review-1", "owner_id": owner_id, "question": "What do I prefer?",
+            "source": "memory_general:1", "provenance": "user_statement",
+            "issue_kind": "wrong", "proposed_correction": "Context first.",
+            "status": "pending_review", "created_at": "2026-09-27T00:00:00Z",
+        }]})()
+
+    app.include_router(routes(retrieve, cognize, lambda receipt: {"status": freshness},
+                              save, list_reviews))
     return TestClient(app), calls
 
 
@@ -224,3 +234,38 @@ def test_correction_requires_server_secret_and_approved_evidence(monkeypatch):
     assert client.post("/shine-me/corrections", json=payload,
                        headers={"x-test-verified-user": "owner-a"}).status_code == 409
     assert calls == ["retrieve", "cognize"]
+
+
+def test_owner_lists_only_own_corrections_without_retrieval(monkeypatch):
+    client, calls = make_client(monkeypatch)
+    assert client.get("/shine-me/corrections",
+                      headers={"x-test-verified-user": "other"}).status_code == 403
+    assert calls == []
+    response = client.get("/shine-me/corrections",
+                          headers={"x-test-verified-user": "owner-a"})
+    assert response.status_code == 200
+    assert response.json()["items"][0]["status"] == "pending_review"
+    assert "owner_id" not in response.json()["items"][0]
+    assert calls == [("list", "owner-a")]
+
+
+def test_correction_list_rejects_cross_owner_storage_result(monkeypatch):
+    import os
+    from fastapi import FastAPI
+
+    client, calls = make_client(monkeypatch)
+    # Replace the route's storage callback by building an isolated router.
+    app = FastAPI()
+
+    @app.middleware("http")
+    async def verified(request, call_next):
+        request.state.account = {"user_id": "owner-a"}
+        return await call_next(request)
+
+    def wrong_owner(_):
+        return type("Reviews", (), {"data": [{"owner_id": "other"}]})()
+
+    app.include_router(routes(lambda _: {}, lambda *_: {}, lambda _: {},
+                              list_corrections=wrong_owner))
+    response = TestClient(app).get("/shine-me/corrections")
+    assert response.status_code == 503
