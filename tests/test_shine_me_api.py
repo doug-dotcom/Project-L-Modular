@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from api.shine_me import routes
 
 
-def make_client(monkeypatch, owner="owner-a", *, approved=True):
+def make_client(monkeypatch, owner="owner-a", *, approved=True, freshness="unchanged"):
     monkeypatch.setenv("PROJECT_L_OWNER_ID", owner)
     monkeypatch.setenv("L_MEMORY_OWNER_ID", owner)
     calls = []
@@ -42,7 +42,7 @@ def make_client(monkeypatch, owner="owner-a", *, approved=True):
             request.state.account = {"user_id": user_id}
         return await call_next(request)
 
-    app.include_router(routes(retrieve, cognize))
+    app.include_router(routes(retrieve, cognize, lambda receipt: {"status": freshness}))
     return TestClient(app), calls
 
 
@@ -121,6 +121,17 @@ def test_memory_namespace_mismatch_fails_before_retrieval(monkeypatch):
     )
     assert response.status_code == 503
     assert calls == []
+
+
+def test_changed_timeline_never_returns_a_memory(monkeypatch):
+    client, calls = make_client(monkeypatch, freshness="changed")
+    response = client.post(
+        "/shine-me/ask", json={"query": "my memory"},
+        headers={"x-test-verified-user": "owner-a"},
+    )
+    assert response.status_code == 503
+    assert "reply" not in response.json()
+    assert calls == ["retrieve", "cognize"]
 
 
 def test_missing_owner_configuration_fails_closed(monkeypatch):
