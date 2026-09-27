@@ -1,6 +1,9 @@
 import unittest
 
-from core.cognition.shine_me_service import prepare_shine_me_context
+from core.cognition.shine_me_service import (
+    answer_from_shine_me_context,
+    prepare_shine_me_context,
+)
 
 
 class ShineMeServiceTests(unittest.TestCase):
@@ -83,6 +86,27 @@ class ShineMeServiceTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.build(retrieve=retrieve)
         self.assertEqual(self.calls, ["retrieve"])
+
+    def test_answer_quotes_only_user_authored_evidence(self):
+        answer = answer_from_shine_me_context(self.build())
+        self.assertEqual(answer["status"], "quoted_user_memory")
+        self.assertIn("Context first", answer["reply"])
+        self.assertEqual(answer["evidence"], [
+            {"source": "memory_general:1", "provenance": "user_statement"}
+        ])
+
+    def test_no_approved_memory_does_not_invent_an_answer(self):
+        answer = answer_from_shine_me_context({"records": []})
+        self.assertEqual(answer["status"], "no_approved_evidence")
+        self.assertEqual(answer["evidence"], [])
+
+    def test_model_authored_memory_cannot_be_attributed_to_user(self):
+        answer = answer_from_shine_me_context({"records": [{
+            "text": "The user likes blue", "source": "memory_general:5",
+            "provenance": "model_statement",
+        }]})
+        self.assertEqual(answer["status"], "unverified_model_memory")
+        self.assertTrue(answer["reply"].startswith("An earlier assistant wrote:"))
 
 
 if __name__ == "__main__":
