@@ -485,8 +485,7 @@ app.include_router(shine_ai_memory_router)
 app.include_router(shine_me_routes(
     build_rhee_packet,
     lambda query, evidence: run_cognitive_core(
-        query, evidence, client=client, model=MODEL,
-        model_adapter=resolve_model_adapter(),
+        query, evidence, cognitive_plan=plan_cognition(query),
     ),
 ))
 
