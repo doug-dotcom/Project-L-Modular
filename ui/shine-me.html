@@ -25,6 +25,8 @@
     #correctionPanel { margin-top: 24px; padding: 18px; border-radius: 12px; background: #18263d; }
     #correctionPanel textarea { color: #0f172a; }
     #correctionDraft { min-height: 150px; }
+    #reviewList article { padding: 12px; margin: 12px 0; border: 1px solid #64748b; border-radius: 10px; overflow-wrap: anywhere; }
+    #reviewList p { white-space: pre-wrap; }
   </style>
 </head>
 <body>
@@ -58,6 +60,12 @@
       <button id="copyCorrection" type="button" hidden>Copy correction</button>
       <p id="correctionStatus" role="status" aria-live="polite"></p>
     </section>
+    <section id="reviewsPanel" hidden>
+      <h2>Your correction reviews</h2>
+      <button id="refreshReviews" type="button">Refresh reviews</button>
+      <p id="reviewsStatus" role="status" aria-live="polite"></p>
+      <div id="reviewList"></div>
+    </section>
   </main>
   <script>
     (() => {
@@ -79,6 +87,37 @@
       const correctionDraftLabel = document.getElementById('correctionDraftLabel');
       const copyCorrection = document.getElementById('copyCorrection');
       const correctionStatus = document.getElementById('correctionStatus');
+      const reviewsPanel = document.getElementById('reviewsPanel');
+      const reviewsStatus = document.getElementById('reviewsStatus');
+      const reviewList = document.getElementById('reviewList');
+      async function loadReviews() {
+        reviewsStatus.textContent = 'Loading your reviews…';
+        reviewList.replaceChildren();
+        try {
+          const response = await fetch('/shine-me/corrections', {
+            cache: 'no-store', signal: AbortSignal.timeout(20000)
+          });
+          if (!response.ok) throw new Error('Could not load correction reviews.');
+          const result = await response.json();
+          const rows = Array.isArray(result.items) ? result.items : [];
+          for (const row of rows) {
+            const card = document.createElement('article');
+            const title = document.createElement('strong');
+            title.textContent = (row.issue_kind || 'Correction') + ' · ' +
+              (row.status || 'unknown') + ' · ' + (row.created_at || '');
+            const summary = document.createElement('p');
+            summary.textContent = 'Question: ' + (row.question || '') +
+              '\\nSource: ' + (row.source || '') +
+              '\\nYour correction: ' + (row.proposed_correction || '');
+            card.append(title, summary);
+            reviewList.append(card);
+          }
+          reviewsStatus.textContent = rows.length
+            ? 'Showing your latest ' + rows.length + ' correction reviews.'
+            : 'No corrections submitted yet.';
+        } catch (_) { reviewsStatus.textContent = 'Could not load correction reviews.'; }
+      }
+      document.getElementById('refreshReviews').addEventListener('click', loadReviews);
       let correctionSource = null;
       function invalidateCorrectionDraft() {
         correctionDraft.value = '';
@@ -109,6 +148,7 @@
             ? 'The answer changed. Ask again and resubmit the correction.'
             : 'Could not save for review. You can still copy the draft.');
           correctionStatus.textContent = 'Saved for review (' + result.id + '). Memory has not changed.';
+          await loadReviews();
         } catch (error) {
           correctionStatus.textContent = error.name === 'TimeoutError'
             ? 'The review request timed out. Check before trying again to avoid duplicates.'
@@ -145,6 +185,8 @@
       });
       async function checkConnection() {
         button.disabled = true;
+        reviewsPanel.hidden = true;
+        reviewList.replaceChildren();
         retry.hidden = true;
         connection.textContent = 'Checking your owner binding…';
         try {
@@ -155,6 +197,8 @@
           if (response.ok && result.status === 'binding_ready') {
             connection.textContent = 'Owner binding ready. Memory availability is checked when you ask.';
             button.disabled = false;
+            reviewsPanel.hidden = false;
+            loadReviews();
             return;
           }
           connection.textContent = response.status === 403
