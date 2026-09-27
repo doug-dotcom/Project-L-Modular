@@ -27,6 +27,7 @@ def routes(retrieve, cognize) -> APIRouter:
                 query=payload.query,
                 verified_account=getattr(request.state, "account", None),
                 configured_owner_id=os.getenv("PROJECT_L_OWNER_ID", ""),
+                configured_memory_owner_id=os.getenv("L_MEMORY_OWNER_ID", ""),
                 retrieve=retrieve,
                 cognize=cognize,
             )
