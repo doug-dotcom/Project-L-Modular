@@ -5,7 +5,10 @@ import os
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
-from core.cognition.shine_me_service import prepare_shine_me_context
+from core.cognition.shine_me_service import (
+    answer_from_shine_me_context,
+    prepare_shine_me_context,
+)
 
 
 class ContextRequest(BaseModel):
@@ -15,8 +18,7 @@ class ContextRequest(BaseModel):
 def routes(retrieve, cognize) -> APIRouter:
     router = APIRouter(tags=["shine-me"])
 
-    @router.post("/shine-me/context")
-    def context(payload: ContextRequest, request: Request) -> dict:
+    def approved_context(payload: ContextRequest, request: Request) -> dict:
         # /shine-me/context is protected by the server's account middleware.
         # Require the account state as a second boundary: a recovery token is
         # never an identity and user_id is never accepted in the request body.
@@ -34,5 +36,13 @@ def routes(retrieve, cognize) -> APIRouter:
             raise HTTPException(400, str(exc)) from exc
         except Exception as exc:
             raise HTTPException(503, "Shine-Me context is temporarily unavailable.") from exc
+
+    @router.post("/shine-me/context")
+    def context(payload: ContextRequest, request: Request) -> dict:
+        return approved_context(payload, request)
+
+    @router.post("/shine-me/ask")
+    def ask(payload: ContextRequest, request: Request) -> dict:
+        return answer_from_shine_me_context(approved_context(payload, request))
 
     return router
