@@ -1,6 +1,7 @@
 """Owner-only context endpoint for the native Shine-Me companion."""
 
 import os
+from collections.abc import Callable
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
@@ -16,7 +17,14 @@ class ContextRequest(BaseModel):
     query: str = Field(min_length=1, max_length=2000)
 
 
-def routes(retrieve, cognize, check_freshness) -> APIRouter:
+class CorrectionRequest(BaseModel):
+    query: str = Field(min_length=1, max_length=2000)
+    expected_source: str = Field(min_length=1, max_length=160)
+    issue_kind: str = Field(pattern="^(wrong|incomplete)$")
+    proposed_correction: str = Field(min_length=1, max_length=2000)
+
+
+def routes(retrieve, cognize, check_freshness, save_correction: Callable[[dict], object] | None = None) -> APIRouter:
     router = APIRouter(tags=["shine-me"])
 
     def approved_context(payload: ContextRequest, request: Request) -> dict:
@@ -60,5 +68,37 @@ def routes(retrieve, cognize, check_freshness) -> APIRouter:
     @router.post("/shine-me/ask")
     def ask(payload: ContextRequest, request: Request) -> dict:
         return answer_from_shine_me_context(approved_context(payload, request))
+
+    @router.post("/shine-me/corrections")
+    def submit_correction(payload: CorrectionRequest, request: Request) -> dict:
+        # Recheck the verified owner and publication gates at submission time.
+        # Browser-supplied source text is only an expected match, never authority.
+        context = approved_context(ContextRequest(query=payload.query), request)
+        answer = answer_from_shine_me_context(context)
+        evidence = answer.get("evidence") or []
+        if not evidence or evidence[0].get("source") != payload.expected_source:
+            raise HTTPException(409, "The sourced answer changed. Ask again before submitting.")
+        if not os.getenv("SUPABASE_SERVICE_ROLE_KEY") or save_correction is None:
+            raise HTTPException(503, "Correction review is temporarily unavailable.")
+        owner_id = str(os.getenv("PROJECT_L_OWNER_ID") or "").strip()
+        row = {
+            "owner_id": owner_id,
+            "question": payload.query.strip(),
+            "source": evidence[0]["source"],
+            "provenance": evidence[0].get("provenance", "unknown"),
+            "original_reply": answer["reply"],
+            "issue_kind": payload.issue_kind,
+            "proposed_correction": payload.proposed_correction.strip(),
+        }
+        if not row["proposed_correction"]:
+            raise HTTPException(400, "Correction cannot be blank.")
+        try:
+            saved = save_correction(row)
+            data = getattr(saved, "data", None)
+            if not isinstance(data, list) or len(data) != 1 or not data[0].get("id"):
+                raise RuntimeError("Correction receipt missing")
+            return {"status": "pending_review", "id": str(data[0]["id"])}
+        except Exception as exc:
+            raise HTTPException(503, "Correction could not be saved for review.") from exc
 
     return router
