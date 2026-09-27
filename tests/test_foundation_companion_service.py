@@ -7,6 +7,7 @@ import pytest
 from services.foundation_companion_service import (
     ensure_foundation_delegation,
     foundation_account_owner,
+    foundation_fleet_status,
     safe_connection_result,
 )
 
@@ -220,3 +221,82 @@ def test_startup_owner_comes_from_provisioned_account_not_environment():
     assert foundation_account_owner(OwnerDb([{"user_id": USER}])) == USER
     assert foundation_account_owner(OwnerDb([])) is None
     assert foundation_account_owner(OwnerDb([{"user_id": USER}, {"user_id": LINK}])) is None
+
+
+
+def test_live_fleet_uses_delegation_without_exposing_credentials():
+    db = FakeDb(active_claim())
+    seen = {}
+
+    def get(url, *, headers, timeout, follow_redirects):
+        seen.update(url=url, headers=headers, timeout=timeout, follow_redirects=follow_redirects)
+        return FakeResponse(200, {
+            "status": "ok",
+            "reasonCode": "concierge-fleet-listed",
+            "fleet": {
+                "status": "healthy",
+                "specialistCount": 2,
+                "executableCount": 2,
+                "blockedCount": 0,
+                "specialists": [
+                    {
+                        "appId": "shine.fiona",
+                        "appName": "Fiona Finance",
+                        "capabilityId": "fiona.company_brief",
+                        "displayName": "Company evidence brief",
+                        "mode": "advisory",
+                        "executable": True,
+                        "reasonCode": "capability-ready",
+                        "grantStatus": "active",
+                        "grantId": "77777777-7777-4777-8777-777777777777",
+                        "runtimeStatus": {
+                            "available": True,
+                            "reasonCode": "capability-available",
+                        },
+                    },
+                    {
+                        "appId": "shine.travel",
+                        "appName": "Shine Travel",
+                        "capabilityId": "travel.plan_trip",
+                        "displayName": "Plan a trip",
+                        "mode": "advisory",
+                        "executable": True,
+                        "reasonCode": "capability-ready",
+                        "grantStatus": "active",
+                        "runtimeStatus": {
+                            "available": True,
+                            "reasonCode": "capability-available",
+                        },
+                    },
+                ],
+            },
+        })
+
+    result = foundation_fleet_status(db, USER, get_impl=get)
+
+    assert result["status"] == "healthy"
+    assert result["specialist_count"] == 2
+    assert result["executable_count"] == 2
+    assert result["blocked_count"] == 0
+    assert [row["capability_id"] for row in result["specialists"]] == [
+        "fiona.company_brief", "travel.plan_trip"
+    ]
+    assert all("grant_id" not in row for row in result["specialists"])
+    assert "delegation_token" not in result
+    assert seen["headers"]["X-Shine-Client-Token"] == "c" * 128
+    assert seen["headers"]["X-Shine-Delegation-Token"] == "d" * 128
+    assert "clientId=shine.companion" in seen["url"]
+    assert "purpose=concierge.cross-project-read" in seen["url"]
+
+
+def test_fleet_fails_closed_when_foundation_authority_is_not_connected():
+    db = FakeDb({"state": "not-connected", "reasonCode": "integration-client-not-linked"})
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("fleet network should not run without delegated authority")
+
+    result = foundation_fleet_status(db, USER, get_impl=forbidden)
+
+    assert result["status"] == "not-connected"
+    assert result["reason_code"] == "integration-client-not-linked"
+    assert result["specialists"] == []
