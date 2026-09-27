@@ -132,7 +132,7 @@ from core.cognition.portability import (
 )
 from governance.cognitive_guardrails import guardrail_prompt
 from services.capability_router_service import route_capability
-from services.foundation_companion_service import ensure_foundation_delegation
+from services.foundation_companion_service import ensure_foundation_delegation, foundation_account_owner
 
 from memory.continuity.live_short_term import (
     classify_short_term_domain,
@@ -501,7 +501,7 @@ app.include_router(shine_me_routes(
 @app.on_event("startup")
 def start_durable_tasks():
     task_runner.start()
-    owner_id = str(os.getenv("PROJECT_L_OWNER_ID") or "").strip()
+    owner_id = foundation_account_owner(supabase) if supabase is not None else None
     if supabase is not None and owner_id:
         try:
             foundation = ensure_foundation_delegation(supabase, owner_id)
