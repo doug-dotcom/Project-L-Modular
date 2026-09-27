@@ -46,6 +46,27 @@ def make_client(monkeypatch, owner="owner-a", *, approved=True):
     return TestClient(app), calls
 
 
+def test_owner_binding_check_never_retrieves_memory(monkeypatch):
+    client, calls = make_client(monkeypatch)
+    response = client.get(
+        "/shine-me/binding", headers={"x-test-verified-user": "owner-a"},
+    )
+    assert response.status_code == 200
+    assert response.json() == {"status": "binding_ready", "reason": "owner_ids_match"}
+    assert calls == []
+    monkeypatch.setenv("L_MEMORY_OWNER_ID", "other")
+    response = client.get(
+        "/shine-me/binding", headers={"x-test-verified-user": "owner-a"},
+    )
+    assert response.json()["status"] == "unavailable"
+    assert calls == []
+    response = client.get(
+        "/shine-me/binding", headers={"x-test-verified-user": "other"},
+    )
+    assert response.status_code == 403
+    assert calls == []
+
+
 def test_owner_can_ask_for_gated_memory(monkeypatch):
     client, calls = make_client(monkeypatch)
     response = client.post(
