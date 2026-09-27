@@ -108,6 +108,7 @@ from core.cognition.account_access import require_account
 from core.cognition.document_evidence import EvidenceStore, answer_from_document
 from api.account_documents import routes as account_document_routes
 from api.shine_ai_memory import router as shine_ai_memory_router
+from api.shine_me import routes as shine_me_routes
 from core.cognition.reflection import reflect_on_task
 from core.cognition.learning_engine import ingest_reflective_observation
 from core.cognition.working_memory import ActiveContextService
@@ -481,6 +482,13 @@ def execute_durable_request(request):
 task_runner = TaskRunner(task_store, execute_durable_request)
 app.include_router(account_document_routes(supabase, task_store))
 app.include_router(shine_ai_memory_router)
+app.include_router(shine_me_routes(
+    build_rhee_packet,
+    lambda query, evidence: run_cognitive_core(
+        query, evidence, client=client, model=MODEL,
+        model_adapter=resolve_model_adapter(),
+    ),
+))
 
 
 @app.on_event("startup")
