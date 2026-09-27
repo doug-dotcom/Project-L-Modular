@@ -16,7 +16,7 @@ class ContextRequest(BaseModel):
     query: str = Field(min_length=1, max_length=2000)
 
 
-def routes(retrieve, cognize) -> APIRouter:
+def routes(retrieve, cognize, check_freshness) -> APIRouter:
     router = APIRouter(tags=["shine-me"])
 
     def approved_context(payload: ContextRequest, request: Request) -> dict:
@@ -31,6 +31,7 @@ def routes(retrieve, cognize) -> APIRouter:
                 configured_memory_owner_id=os.getenv("L_MEMORY_OWNER_ID", ""),
                 retrieve=retrieve,
                 cognize=cognize,
+                check_freshness=check_freshness,
             )
         except PermissionError as exc:
             raise HTTPException(403, "This account cannot access Shine-Me memory.") from exc
