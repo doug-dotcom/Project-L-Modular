@@ -35,7 +35,7 @@
       <textarea id="question" required maxlength="2000" placeholder="What do you remember about…?"></textarea>
       <button id="askButton" type="submit" disabled>Ask Shine-Me</button>
     </form>
-    <p id="connectionStatus" role="status" aria-live="polite">Sign in to check the memory connection.</p>
+    <p id="connectionStatus" role="status" aria-live="polite">Sign in to check your memory access.</p>
     <button id="retryConnection" type="button" hidden>Check connection again</button>
     <p id="evidenceStatus" role="status" aria-live="polite"></p>
     <section id="reply" aria-live="polite" hidden></section>
@@ -57,14 +57,14 @@
       async function checkConnection() {
         button.disabled = true;
         retry.hidden = true;
-        connection.textContent = 'Checking your memory connection…';
+        connection.textContent = 'Checking your owner binding…';
         try {
           const response = await fetch('/shine-me/binding', {
             cache: 'no-store', signal: AbortSignal.timeout(20000)
           });
           const result = await response.json();
           if (response.ok && result.status === 'binding_ready') {
-            connection.textContent = 'Memory connection ready. You can ask a question.';
+            connection.textContent = 'Owner binding ready. Memory availability is checked when you ask.';
             button.disabled = false;
             return;
           }
@@ -72,7 +72,7 @@
             ? 'This account cannot access Shine-Me memory.'
             : 'Shine-Me memory is unavailable right now.';
         } catch (_) {
-          connection.textContent = 'Could not check the memory connection.';
+          connection.textContent = 'Could not check your owner binding.';
         }
         retry.hidden = false;
       }
