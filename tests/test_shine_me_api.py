@@ -8,6 +8,7 @@ from api.shine_me import routes
 
 def make_client(monkeypatch, owner="owner-a", *, approved=True):
     monkeypatch.setenv("PROJECT_L_OWNER_ID", owner)
+    monkeypatch.setenv("L_MEMORY_OWNER_ID", owner)
     calls = []
 
     def retrieve(query):
@@ -88,6 +89,17 @@ def test_veto_produces_honest_empty_answer(monkeypatch):
     assert response.json()["status"] == "no_approved_evidence"
     assert response.json()["evidence"] == []
     assert calls == ["retrieve", "cognize"]
+
+
+def test_memory_namespace_mismatch_fails_before_retrieval(monkeypatch):
+    client, calls = make_client(monkeypatch)
+    monkeypatch.setenv("L_MEMORY_OWNER_ID", "other")
+    response = client.post(
+        "/shine-me/ask", json={"query": "my memory"},
+        headers={"x-test-verified-user": "owner-a"},
+    )
+    assert response.status_code == 503
+    assert calls == []
 
 
 def test_missing_owner_configuration_fails_closed(monkeypatch):
