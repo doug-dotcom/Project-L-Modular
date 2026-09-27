@@ -37,6 +37,7 @@ class ShineMeServiceTests(unittest.TestCase):
             configured_memory_owner_id="owner-a",
             retrieve=self.retrieve,
             cognize=self.cognize,
+            check_freshness=lambda receipt: {"status": "unchanged"},
         )
         arguments.update(changes)
         return prepare_shine_me_context(**arguments)
@@ -123,6 +124,13 @@ class ShineMeServiceTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.build(retrieve=lambda query: {"evidence": []})
         self.assertEqual(self.calls, [])
+
+    def test_changed_or_unverifiable_timeline_blocks_answer(self):
+        for status in ("changed", "unavailable", "not_tracked"):
+            with self.subTest(status=status):
+                with self.assertRaises(RuntimeError):
+                    self.build(check_freshness=lambda receipt: {"status": status})
+        self.assertEqual(self.calls, ["retrieve", "cognize"] * 3)
 
     def test_answer_quotes_only_user_authored_evidence(self):
         answer = answer_from_shine_me_context(self.build())
