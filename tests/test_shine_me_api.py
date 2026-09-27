@@ -144,3 +144,34 @@ def test_missing_owner_configuration_fails_closed(monkeypatch):
     )
     assert response.status_code == 503
     assert calls == []
+
+
+def test_real_server_account_middleware_guards_shine_me(monkeypatch):
+    from fastapi import HTTPException
+    import api.server as server
+
+    monkeypatch.setenv("PROJECT_L_OWNER_ID", "owner-a")
+    monkeypatch.setenv("L_MEMORY_OWNER_ID", "owner-a")
+
+    def verified_account(client, authorization):
+        if authorization == "Bearer owner":
+            return {"user_id": "owner-a"}
+        if authorization == "Bearer other":
+            return {"user_id": "other"}
+        raise HTTPException(401, "Sign in required")
+
+    monkeypatch.setattr(server, "require_account", verified_account)
+    client = TestClient(server.app)
+    assert client.get("/shine-me/binding").status_code == 401
+    assert client.get(
+        "/shine-me/binding", headers={"Authorization": "Bearer other"}
+    ).status_code == 403
+    response = client.get(
+        "/shine-me/binding", headers={"Authorization": "Bearer owner"}
+    )
+    assert response.status_code == 200
+    assert response.json() == {"status": "binding_ready", "reason": "owner_ids_match"}
+    assert client.post(
+        "/shine-me/ask", json={"query": "personal memory"},
+        headers={"Authorization": "Bearer other"},
+    ).status_code == 403
