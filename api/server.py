@@ -131,8 +131,12 @@ from core.cognition.portability import (
     run_portability_certification,
 )
 from governance.cognitive_guardrails import guardrail_prompt
-from services.capability_router_service import route_capability
-from services.foundation_companion_service import ensure_foundation_delegation, foundation_account_owner
+from services.capability_router_service import route_capability, foundation_specialist_interest
+from services.foundation_companion_service import (
+    ensure_foundation_delegation,
+    foundation_account_owner,
+    foundation_fleet_status,
+)
 
 from memory.continuity.live_short_term import (
     classify_short_term_domain,
@@ -1299,8 +1303,38 @@ def chat(req: ChatRequest):
     # =================================================
 
     checkpoint("connected_actions")
+    foundation_fleet = None
+    if foundation_specialist_interest(user_message) and supabase is not None:
+        owner_id = foundation_account_owner(supabase)
+        if owner_id:
+            try:
+                foundation_fleet = foundation_fleet_status(
+                    supabase,
+                    owner_id,
+                    timeout_seconds=5.0,
+                )
+                log(
+                    "CONCIERGE FLEET: "
+                    f"status={foundation_fleet.get('status')} | "
+                    f"ready={foundation_fleet.get('executable_count', 0)}/"
+                    f"{foundation_fleet.get('specialist_count', 0)}"
+                )
+            except Exception as exc:
+                log(f"CONCIERGE FLEET ERROR: {type(exc).__name__}")
+                foundation_fleet = {
+                    "status": "unavailable",
+                    "reason_code": "concierge-fleet-unavailable",
+                    "specialist_count": 0,
+                    "executable_count": 0,
+                    "blocked_count": 0,
+                    "specialists": [],
+                }
     try:
-        route = route_capability(user_message, write_guard=checkpoint)
+        route = route_capability(
+            user_message,
+            write_guard=checkpoint,
+            foundation_fleet=foundation_fleet,
+        )
         log(f"CAPABILITY ROUTE: {route.get('capability')}")
     except DurableTaskBindingError:
         raise
