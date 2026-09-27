@@ -24,7 +24,11 @@ class CorrectionRequest(BaseModel):
     proposed_correction: str = Field(min_length=1, max_length=2000)
 
 
-def routes(retrieve, cognize, check_freshness, save_correction: Callable[[dict], object] | None = None) -> APIRouter:
+def routes(
+    retrieve, cognize, check_freshness,
+    save_correction: Callable[[dict], object] | None = None,
+    list_corrections: Callable[[str], object] | None = None,
+) -> APIRouter:
     router = APIRouter(tags=["shine-me"])
 
     def approved_context(payload: ContextRequest, request: Request) -> dict:
@@ -100,5 +104,27 @@ def routes(retrieve, cognize, check_freshness, save_correction: Callable[[dict],
             return {"status": "pending_review", "id": str(data[0]["id"])}
         except Exception as exc:
             raise HTTPException(503, "Correction could not be saved for review.") from exc
+
+    @router.get("/shine-me/corrections")
+    def corrections(request: Request) -> dict:
+        # The account middleware authenticates first; require the owner binding
+        # again before any database read. The storage callback filters by owner.
+        binding(request)
+        if not os.getenv("SUPABASE_SERVICE_ROLE_KEY") or list_corrections is None:
+            raise HTTPException(503, "Correction review is temporarily unavailable.")
+        owner_id = str(os.getenv("PROJECT_L_OWNER_ID") or "").strip()
+        try:
+            result = list_corrections(owner_id)
+            rows = getattr(result, "data", None)
+            if not isinstance(rows, list):
+                raise RuntimeError("Invalid review result")
+            fields = ("id", "question", "source", "provenance", "issue_kind",
+                      "proposed_correction", "status", "created_at")
+            if any(not isinstance(row, dict) or row.get("owner_id") != owner_id
+                   for row in rows):
+                raise RuntimeError("Review owner mismatch")
+            return {"items": [{key: row.get(key) for key in fields} for row in rows]}
+        except Exception as exc:
+            raise HTTPException(503, "Corrections could not be loaded.") from exc
 
     return router
