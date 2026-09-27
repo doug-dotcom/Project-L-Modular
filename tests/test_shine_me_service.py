@@ -3,6 +3,7 @@ import unittest
 from core.cognition.shine_me_service import (
     answer_from_shine_me_context,
     prepare_shine_me_context,
+    shine_me_binding_status,
 )
 
 
@@ -39,6 +40,15 @@ class ShineMeServiceTests(unittest.TestCase):
         )
         arguments.update(changes)
         return prepare_shine_me_context(**arguments)
+
+    def test_binding_status_is_narrow_and_has_no_owner_identifier(self):
+        status = shine_me_binding_status(
+            verified_account={"user_id": "owner-a"},
+            configured_owner_id="owner-a",
+            configured_memory_owner_id="owner-a",
+        )
+        self.assertEqual(status, {"status": "binding_ready", "reason": "owner_ids_match"})
+        self.assertNotIn("owner-a", str(status))
 
     def test_verified_owner_gets_only_gated_record(self):
         result = self.build()
