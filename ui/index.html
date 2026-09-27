@@ -353,6 +353,7 @@
             <button type="button" id="attachFileAction">📎 Upload file</button>
             <button type="button" id="privateFilesAction" aria-controls="evidencePanel" aria-expanded="false">Private files</button>
             <button type="button" id="spokenAction" aria-controls="voicePanel" aria-expanded="false">🎙️ Spoken conversation</button>
+            <button type="button" id="specialistsAction" aria-controls="specialistPanel" aria-expanded="false">Specialists</button>
             <button type="button" id="checkSavedAnswersAction">Check saved answers</button>
             <button type="button" id="closeChatTools" aria-label="Close chat tools">✕</button>
         </div>
@@ -396,6 +397,13 @@
         <p>Changing apps pauses voice. Resume explicitly when you return. Unsent text stays in this browser; an untranscribed recording may be lost if the page closes.</p>
         <button id="clearVoiceDraft" type="button">Clear text draft</button>
     </details>
+    <details id="specialistPanel" hidden>
+        <summary>Concierge specialists <span id="specialistFleetSummary">— checking…</span></summary>
+        <p id="specialistFleetNotice">Live status comes from Shine Foundation. A specialist is shown ready only when its runtime, adapter, consent revision and Companion grant all agree.</p>
+        <button type="button" id="refreshSpecialists">Refresh specialists</button>
+        <div id="specialistFleetStatus" role="status" aria-live="polite"></div>
+        <div id="specialistFleetList"></div>
+    </details>
     </section>
     <style>
         #chatTools[hidden], #chatTools [hidden] { display:none !important; }
@@ -404,7 +412,15 @@
         #chatToolsActions button { min-height:44px; padding:8px 12px; border-radius:12px; border:1px solid #64748b; background:#263b59; color:white; font-size:15px; }
         #chatToolsActions button[aria-expanded="true"] { border-color:#22c55e; background:#204735; }
         #closeChatTools { margin-left:auto; }
-        #chatTools #evidencePanel, #chatTools #voicePanel { max-height:none; overflow:visible; }
+        #chatTools #evidencePanel, #chatTools #voicePanel, #chatTools #specialistPanel { max-height:none; overflow:visible; }
+        #specialistPanel { padding:8px 16px 16px; }
+        #specialistPanel summary { cursor:pointer; min-height:44px; padding:8px 0; font-size:17px; }
+        #specialistPanel button { min-height:44px; padding:8px 12px; margin:4px 0 10px; }
+        .specialist-fleet-row { padding:10px 0; border-top:1px solid #334155; }
+        .specialist-fleet-row strong { display:block; }
+        .specialist-fleet-row small { display:block; margin-top:3px; color:#cbd5e1; }
+        .specialist-ready { color:#86efac; }
+        .specialist-blocked { color:#fca5a5; }
     </style>
     <div id="inputBar">
 
@@ -1251,7 +1267,8 @@
     </script>
 
 
-<script src="/ui/chat-tools.js?v=1"></script>
+<script src="/ui/chat-tools.js?v=2"></script>
+<script src="/ui/foundation-fleet.js?v=1"></script>
 <script src="/ui/recovery-status.js?v=118"></script>
 <script src="/ui/evidence.js?v=156"></script>
 <script src="/ui/voice.js"></script>
