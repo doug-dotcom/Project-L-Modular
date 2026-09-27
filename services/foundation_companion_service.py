@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID
 
@@ -449,3 +450,198 @@ def executable_foundation_capabilities(fleet: dict | None) -> set[str]:
         and item.get("executable") is True
         and item.get("capability_id")
     }
+
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _concierge_authority(db, user_id: str, *, foundation_url=None, timeout_seconds=12.0) -> dict:
+    authority = ensure_foundation_delegation(
+        db,
+        _uuid(user_id),
+        foundation_url=foundation_url,
+        timeout_seconds=timeout_seconds,
+    )
+    if authority.get("status") != "active":
+        return {
+            "status": str(authority.get("status") or "unavailable"),
+            "reason_code": str(authority.get("reason_code") or "foundation-authority-unavailable"),
+        }
+    return {
+        "status": "active",
+        "client_token": _single_secret(
+            _rpc_data(db, "concierge_foundation_client_token_v1"),
+            "foundation-client",
+        ),
+        "delegation_token": _single_secret(
+            authority.get("delegation_token"),
+            "foundation-delegation",
+        ),
+    }
+
+
+def _post_concierge(
+    *,
+    path: str,
+    envelope: dict,
+    client_token: str,
+    delegation_token: str,
+    foundation_url: str | None,
+    timeout_seconds: float,
+    post_impl=None,
+):
+    post = post_impl or httpx.post
+    return post(
+        _foundation_url(foundation_url) + path,
+        headers={
+            "Content-Type": "application/json",
+            "X-Shine-Client-Token": client_token,
+            "X-Shine-Delegation-Token": delegation_token,
+        },
+        json=envelope,
+        timeout=timeout_seconds,
+        follow_redirects=False,
+    )
+
+
+def invoke_foundation_specialist(
+    db,
+    user_id: str,
+    *,
+    request_id: str,
+    capability_id: str,
+    input_data: dict,
+    foundation_url: str | None = None,
+    timeout_seconds: float = 120.0,
+    post_impl=None,
+) -> dict:
+    """Plan and execute exactly one already-consented advisory specialist.
+
+    Project L never calls specialist endpoints directly. Foundation performs the
+    grant/consent/runtime gate, issues the one-time invocation ticket and records
+    execution. This function returns only a bounded result projection.
+    """
+    request_id = _uuid(request_id)
+    capability_id = str(capability_id or "")
+    if (
+        not capability_id
+        or len(capability_id) > 128
+        or any(ch not in "abcdefghijklmnopqrstuvwxyz0123456789._-" for ch in capability_id)
+    ):
+        raise ValueError("invalid capability id")
+    if not isinstance(input_data, dict):
+        raise ValueError("specialist input must be an object")
+    encoded_input = str(input_data)
+    if len(encoded_input) > 12000:
+        raise ValueError("specialist input too large")
+    if timeout_seconds < 1 or timeout_seconds > 180:
+        raise ValueError("timeout outside allowed range")
+
+    authority = _concierge_authority(
+        db,
+        user_id,
+        foundation_url=foundation_url,
+        timeout_seconds=min(timeout_seconds, 12.0),
+    )
+    if authority.get("status") != "active":
+        return {
+            "status": authority.get("status"),
+            "reason_code": authority.get("reason_code"),
+            "capability_id": capability_id,
+            "request_id": request_id,
+        }
+
+    requested_at = _utc_now()
+    plan_envelope = {
+        "conciergePlan": "shine-concierge/plan-v1",
+        "schemaVersion": "1.0.0",
+        "requestId": request_id,
+        "clientId": "shine.companion",
+        "purpose": "concierge.cross-project-read",
+        "capabilityIds": [capability_id],
+        "requestedAt": requested_at,
+    }
+    try:
+        plan_response = _post_concierge(
+            path="/v1/concierge/plan",
+            envelope=plan_envelope,
+            client_token=authority["client_token"],
+            delegation_token=authority["delegation_token"],
+            foundation_url=foundation_url,
+            timeout_seconds=min(timeout_seconds, 20.0),
+            post_impl=post_impl,
+        )
+        plan_body = _response_json(plan_response)
+    except (httpx.HTTPError, RuntimeError):
+        return {
+            "status": "unavailable",
+            "reason_code": "concierge-plan-unavailable",
+            "capability_id": capability_id,
+            "request_id": request_id,
+        }
+
+    if plan_response.status_code != 200 or plan_body.get("status") != "planned":
+        return {
+            "status": str(plan_body.get("status") or "unavailable"),
+            "reason_code": str(plan_body.get("reasonCode") or "concierge-plan-rejected"),
+            "capability_id": capability_id,
+            "request_id": request_id,
+        }
+
+    execute_envelope = {
+        "conciergeExecute": "shine-concierge/execute-v1",
+        "schemaVersion": "1.0.0",
+        "requestId": request_id,
+        "clientId": "shine.companion",
+        "inputs": {capability_id: input_data},
+        "requestedAt": _utc_now(),
+    }
+    try:
+        execute_response = _post_concierge(
+            path="/v1/concierge/execute",
+            envelope=execute_envelope,
+            client_token=authority["client_token"],
+            delegation_token=authority["delegation_token"],
+            foundation_url=foundation_url,
+            timeout_seconds=timeout_seconds,
+            post_impl=post_impl,
+        )
+        execute_body = _response_json(execute_response)
+    except (httpx.HTTPError, RuntimeError):
+        return {
+            "status": "unavailable",
+            "reason_code": "concierge-execution-unavailable",
+            "capability_id": capability_id,
+            "request_id": request_id,
+        }
+
+    status = str(execute_body.get("status") or "unavailable")
+    reason = str(execute_body.get("reasonCode") or "concierge-execution-unavailable")
+    safe = {
+        "status": status,
+        "reason_code": reason,
+        "capability_id": capability_id,
+        "request_id": request_id,
+    }
+    results = execute_body.get("results")
+    if isinstance(results, list):
+        matches = [
+            row for row in results
+            if isinstance(row, dict) and row.get("capabilityId") == capability_id
+        ]
+        if len(matches) == 1:
+            row = matches[0]
+            safe["specialist_status"] = str(row.get("status") or "")
+            safe["specialist_reason_code"] = str(row.get("reasonCode") or "")
+            if isinstance(row.get("result"), dict):
+                safe["result"] = row["result"]
+
+    if status == "completed" and "result" not in safe:
+        return {
+            **safe,
+            "status": "unavailable",
+            "reason_code": "concierge-result-missing",
+        }
+    return safe
