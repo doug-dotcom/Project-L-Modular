@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Request
 
 from services.foundation_companion_service import (
     ensure_foundation_delegation,
+    foundation_account_owner,
     foundation_connection_status,
     safe_connection_result,
 )
@@ -17,7 +18,7 @@ def routes(db) -> APIRouter:
     def owner_id(request: Request) -> str:
         account = getattr(request.state, "account", None)
         user_id = str((account or {}).get("user_id") or "")
-        configured = str(os.getenv("PROJECT_L_OWNER_ID") or "").strip()
+        configured = foundation_account_owner(db)
         if not user_id or not configured or user_id != configured:
             raise HTTPException(403, "This account cannot access the Foundation connection.")
         return user_id
