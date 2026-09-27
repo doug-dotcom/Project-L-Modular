@@ -39,6 +39,7 @@ def prepare_shine_me_context(
     configured_memory_owner_id: str,
     retrieve: Callable[[str], dict],
     cognize: Callable[[str, dict], dict],
+    check_freshness: Callable[[dict], dict],
 ) -> dict:
     """Retrieve and publish one gated memory for the verified owner only.
 
@@ -74,6 +75,9 @@ def prepare_shine_me_context(
     cognition = cognize(query, rhee)
     if not isinstance(cognition, dict):
         raise RuntimeError("Memory approval is unavailable")
+    freshness = check_freshness(temporal)
+    if not isinstance(freshness, dict) or freshness.get("status") != "unchanged":
+        raise RuntimeError("Memory changed or freshness could not be verified")
     return build_shine_me_from_cognition(
         verified_user_id=user_id,
         retrieval_owner_id=owner_id,
