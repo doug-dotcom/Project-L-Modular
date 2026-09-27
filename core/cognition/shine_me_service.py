@@ -39,6 +39,14 @@ def prepare_shine_me_context(
     rhee = retrieve(query)
     if not isinstance(rhee, dict):
         raise RuntimeError("Memory retrieval is unavailable")
+    recall_plan = rhee.get("recall_plan") or {}
+    temporal = rhee.get("temporal_memory") or {}
+    if not isinstance(recall_plan, dict) or not isinstance(temporal, dict):
+        raise RuntimeError("Memory retrieval status is invalid")
+    if recall_plan.get("status") in {"unavailable", "needs_clarification", "budget_exceeded"}:
+        raise RuntimeError("Memory retrieval did not complete")
+    if temporal.get("status") in {"unavailable", "needs_clarification"}:
+        raise RuntimeError("Memory freshness check did not complete")
     cognition = cognize(query, rhee)
     if not isinstance(cognition, dict):
         raise RuntimeError("Memory approval is unavailable")
