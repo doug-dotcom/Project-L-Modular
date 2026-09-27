@@ -33,6 +33,7 @@ class ShineMeServiceTests(unittest.TestCase):
             query="What do you remember?",
             verified_account={"user_id": "owner-a"},
             configured_owner_id="owner-a",
+            configured_memory_owner_id="owner-a",
             retrieve=self.retrieve,
             cognize=self.cognize,
         )
@@ -58,6 +59,13 @@ class ShineMeServiceTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.build(configured_owner_id="")
         self.assertEqual(self.calls, [])
+
+    def test_missing_or_different_memory_namespace_never_reaches_retrieval(self):
+        for memory_owner in ("", "other"):
+            with self.subTest(memory_owner=memory_owner):
+                with self.assertRaises(RuntimeError):
+                    self.build(configured_memory_owner_id=memory_owner)
+                self.assertEqual(self.calls, [])
 
     def test_unbounded_query_never_reaches_retrieval(self):
         with self.assertRaises(ValueError):
