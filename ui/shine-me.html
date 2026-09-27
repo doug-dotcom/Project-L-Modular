@@ -22,6 +22,9 @@
     #reply { margin-top: 28px; padding: 18px; border-radius: 12px; background: #18263d; white-space: pre-wrap; overflow-wrap: anywhere; }
     #evidence { margin-top: 12px; color: #cbd5e1; overflow-wrap: anywhere; }
     #accountGate { background: #18263d; border-radius: 12px; }
+    #correctionPanel { margin-top: 24px; padding: 18px; border-radius: 12px; background: #18263d; }
+    #correctionPanel textarea { color: #0f172a; }
+    #correctionDraft { min-height: 150px; }
   </style>
 </head>
 <body>
@@ -41,6 +44,19 @@
     <section id="reply" aria-live="polite" hidden></section>
     <p id="evidence" hidden></p>
     <details id="whyPanel" hidden><summary>Why this answer?</summary><p id="whyText"></p></details>
+    <section id="correctionPanel" hidden>
+      <h2>Flag this answer</h2>
+      <p class="muted">Draft a correction with the source attached. This does not save or change memory.</p>
+      <label for="correctionKind">What needs fixing?</label>
+      <select id="correctionKind"><option value="wrong">Wrong</option><option value="incomplete">Incomplete</option></select>
+      <label for="correctionText">What should Shine-Me know?</label>
+      <textarea id="correctionText" maxlength="2000" placeholder="Write your correction here…"></textarea>
+      <button id="prepareCorrection" type="button">Prepare correction</button>
+      <label for="correctionDraft" id="correctionDraftLabel" hidden>Correction draft</label>
+      <textarea id="correctionDraft" readonly hidden></textarea>
+      <button id="copyCorrection" type="button" hidden>Copy correction</button>
+      <p id="correctionStatus" role="status" aria-live="polite"></p>
+    </section>
   </main>
   <script>
     (() => {
@@ -54,6 +70,42 @@
       const evidence = document.getElementById('evidence');
       const whyPanel = document.getElementById('whyPanel');
       const whyText = document.getElementById('whyText');
+      const correctionPanel = document.getElementById('correctionPanel');
+      const correctionKind = document.getElementById('correctionKind');
+      const correctionText = document.getElementById('correctionText');
+      const correctionDraft = document.getElementById('correctionDraft');
+      const correctionDraftLabel = document.getElementById('correctionDraftLabel');
+      const copyCorrection = document.getElementById('copyCorrection');
+      const correctionStatus = document.getElementById('correctionStatus');
+      let correctionSource = null;
+      document.getElementById('prepareCorrection').addEventListener('click', () => {
+        const proposed = correctionText.value.trim();
+        if (!proposed || !correctionSource) {
+          correctionStatus.textContent = 'Enter your correction for the sourced answer first.';
+          return;
+        }
+        correctionDraft.value = [
+          'Shine-Me correction draft (not saved to memory)',
+          'Issue: ' + correctionKind.value,
+          'Question: ' + correctionSource.query,
+          'Source: ' + correctionSource.source,
+          'Provenance: ' + correctionSource.provenance,
+          'Original answer: ' + correctionSource.reply,
+          'My correction: ' + proposed
+        ].join('\n');
+        correctionDraft.hidden = correctionDraftLabel.hidden = copyCorrection.hidden = false;
+        correctionStatus.textContent = 'Draft ready. Copy it to share for review; memory has not changed.';
+      });
+      copyCorrection.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(correctionDraft.value);
+          correctionStatus.textContent = 'Copied. Memory has not changed.';
+        } catch (_) {
+          correctionDraft.focus();
+          correctionDraft.select();
+          correctionStatus.textContent = 'Select and copy the draft above. Memory has not changed.';
+        }
+      });
       async function checkConnection() {
         button.disabled = true;
         retry.hidden = true;
@@ -83,7 +135,10 @@
         const query = question.value.trim();
         if (button.disabled || !query || query.length > 2000) return;
         button.disabled = true;
-        reply.hidden = evidence.hidden = whyPanel.hidden = true;
+        reply.hidden = evidence.hidden = whyPanel.hidden = correctionPanel.hidden = true;
+        correctionSource = null;
+        correctionText.value = correctionDraft.value = correctionStatus.textContent = '';
+        correctionDraft.hidden = correctionDraftLabel.hidden = copyCorrection.hidden = true;
         whyPanel.open = false;
         reply.textContent = evidence.textContent = whyText.textContent = '';
         status.textContent = 'Checking approved memory…';
@@ -106,6 +161,9 @@
           if (source && typeof source.source === 'string') {
             evidence.textContent = 'Source: ' + source.source + ' · ' + (source.provenance || 'unknown');
             evidence.hidden = false;
+            correctionSource = {query, source: source.source,
+              provenance: source.provenance || 'unknown', reply: result.reply || ''};
+            correctionPanel.hidden = false;
           }
           if (result.why && typeof result.why.explanation === 'string') {
             whyText.textContent = result.why.explanation + (source
