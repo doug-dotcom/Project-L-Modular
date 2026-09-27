@@ -6,6 +6,7 @@ import pytest
 
 from services.foundation_companion_service import (
     ensure_foundation_delegation,
+    foundation_account_owner,
     safe_connection_result,
 )
 
@@ -187,3 +188,35 @@ def test_status_projection_never_returns_delegation_secret():
 def test_refresh_skew_is_bounded(value):
     with pytest.raises(ValueError):
         ensure_foundation_delegation(FakeDb(active_claim()), USER, skew_seconds=value)
+
+
+class OwnerQuery:
+    def __init__(self, rows):
+        self.rows = rows
+
+    def select(self, *_args):
+        return self
+
+    def eq(self, *_args):
+        return self
+
+    def limit(self, *_args):
+        return self
+
+    def execute(self):
+        return Result(self.rows)
+
+
+class OwnerDb:
+    def __init__(self, rows):
+        self.rows = rows
+
+    def table(self, name):
+        assert name == "l_account_config"
+        return OwnerQuery(self.rows)
+
+
+def test_startup_owner_comes_from_provisioned_account_not_environment():
+    assert foundation_account_owner(OwnerDb([{"user_id": USER}])) == USER
+    assert foundation_account_owner(OwnerDb([])) is None
+    assert foundation_account_owner(OwnerDb([{"user_id": USER}, {"user_id": LINK}])) is None
