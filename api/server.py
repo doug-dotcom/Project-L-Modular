@@ -487,6 +487,7 @@ app.include_router(shine_me_routes(
     lambda query, evidence: run_cognitive_core(
         query, evidence, cognitive_plan=plan_cognition(query),
     ),
+    lambda receipt: snapshot_freshness(supabase, receipt),
 ))
 
 
