@@ -18,6 +18,7 @@ def prepare_shine_me_context(
     query: str,
     verified_account: Mapping[str, object] | None,
     configured_owner_id: str,
+    configured_memory_owner_id: str,
     retrieve: Callable[[str], dict],
     cognize: Callable[[str, dict], dict],
 ) -> dict:
@@ -29,6 +30,9 @@ def prepare_shine_me_context(
     owner_id = str(configured_owner_id or "").strip()
     if not owner_id:
         raise RuntimeError("Shine-Me owner binding is not configured")
+    memory_owner_id = str(configured_memory_owner_id or "").strip()
+    if not memory_owner_id or memory_owner_id != owner_id:
+        raise RuntimeError("Shine-Me memory namespace is not bound to its owner")
     user_id = str((verified_account or {}).get("user_id") or "").strip()
     if not user_id or user_id != owner_id:
         raise PermissionError("Shine-Me account does not own this memory")
