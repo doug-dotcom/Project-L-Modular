@@ -358,6 +358,119 @@
         return result;
     }
 
+    function cancellationReceiptText(job) {
+        const integrity = String(job?.cancellation_receipt_integrity || '');
+        const receipt = job?.cancellation_receipt;
+        if (integrity === 'mismatch') {
+            return 'Cancellation history exists, but its receipt failed integrity verification. I have not reconstructed what happened.';
+        }
+        if (!receipt || receipt.integrity !== 'verified') return '';
+
+        const reason = String(receipt.reason_code || '');
+        const cancelled = new Date(receipt.cancelled_at);
+        const when = Number.isFinite(cancelled.getTime())
+            ? cancelled.toLocaleString('en-AU', {dateStyle: 'medium', timeStyle: 'short'})
+            : String(receipt.cancelled_at || 'unknown time');
+        const progress = receipt.progress || {};
+        const completed = Array.isArray(receipt.completed_capabilities)
+            ? receipt.completed_capabilities : [];
+        const pending = Array.isArray(receipt.pending_capabilities)
+            ? receipt.pending_capabilities : [];
+        const supersededBy = String(receipt.superseded_by_request_id || '');
+
+        const lines = [];
+        if (reason === 'superseded-by-newer-request') {
+            lines.push(
+                'Cancellation receipt — this delayed Concierge job was superseded by a newer request'
+                + (UUID.test(supersededBy) ? ' (' + supersededBy + ')' : '')
+                + '.'
+            );
+        } else if (reason === 'user-cancelled') {
+            lines.push('Cancellation receipt — this delayed Concierge job was cancelled by you.');
+        } else {
+            lines.push('Cancellation receipt — delayed Concierge work stopped: ' + (reason || 'cancelled') + '.');
+        }
+        lines.push(
+            'At cancellation, '
+            + Number(progress.completed_before_cancellation || 0)
+            + ' of '
+            + Number(progress.total_steps || 0)
+            + ' specialist steps had completed.'
+        );
+        if (completed.length) lines.push('Completed before cancellation: ' + completed.join(', ') + '.');
+        if (pending.length) lines.push('Still pending at cancellation: ' + pending.join(', ') + '.');
+        lines.push('Cancelled: ' + when + '.');
+        if (SHA256.test(String(receipt.receipt_sha256 || ''))) {
+            lines.push('Verified receipt SHA-256: ' + receipt.receipt_sha256 + '.');
+        }
+        return lines.join('\n');
+    }
+
+    async function taskCentre(limit = 50) {
+        const bounded = Number.isSafeInteger(limit)
+            ? Math.max(1, Math.min(100, limit))
+            : 50;
+        const data = await requestJson(
+            '/foundation/jobs?limit=' + encodeURIComponent(String(bounded)),
+            {method: 'GET'},
+        );
+        if (
+            data.status !== 'ok'
+            || data.version !== '1.0'
+            || !Array.isArray(data.items)
+            || data.items.length > bounded
+        ) {
+            throw new Error('concierge-task-centre-invalid');
+        }
+
+        return data.items.flatMap(item => {
+            if (!item || typeof item !== 'object' || Array.isArray(item)) return [];
+            const requestId = String(item.request_id || '');
+            const status = String(item.status || '');
+            const capabilities = Array.isArray(item.requested_capabilities)
+                ? item.requested_capabilities.map(value => String(value)).slice(0, 20)
+                : [];
+            if (!UUID.test(requestId) || !status || capabilities.length > 20) return [];
+
+            const receipt = item.cancellation_receipt;
+            const receiptIntegrity = item.cancellation_receipt_integrity == null
+                ? null
+                : String(item.cancellation_receipt_integrity);
+            if (
+                receipt != null
+                && (
+                    typeof receipt !== 'object'
+                    || Array.isArray(receipt)
+                    || receipt.integrity !== 'verified'
+                    || !SHA256.test(String(receipt.receipt_sha256 || ''))
+                    || String(receipt.request_id || '') !== requestId
+                )
+            ) {
+                return [];
+            }
+
+            const projected = {
+                requestId,
+                status,
+                requestedCapabilities: capabilities,
+                clientName: String(item.client_name || ''),
+                purpose: String(item.purpose || ''),
+                requestedAt: item.requested_at || null,
+                waitingOn: String(item.waiting_on || ''),
+                attentionRequired: item.attention_required === true,
+                attentionReason: String(item.attention_reason || ''),
+                canCancel: item.can_cancel === true,
+                supersededByRequestId: item.superseded_by_request_id
+                    ? String(item.superseded_by_request_id)
+                    : null,
+                cancellationReceiptIntegrity: receiptIntegrity,
+                cancellationReceipt: receipt || null,
+            };
+            projected.cancellationText = cancellationReceiptText(item);
+            return [projected];
+        });
+    }
+
     async function consumeOne() {
         if (!accountReady() || document.visibilityState === 'hidden') return false;
 
@@ -440,6 +553,7 @@
         refresh: () => poll(),
         history: (limit = 100) => delayedHistory(limit),
         pending: (limit = 100) => pendingJobs(limit),
+        jobs: (limit = 50) => taskCentre(limit),
         cancel: requestId => cancelPending(requestId),
     };
 })();
