@@ -1176,7 +1176,7 @@
                                 for (const item of conciergeJobs) {
                                     if (!item?.requestId) continue;
                                     run.conciergeJobs.set(item.requestId, item);
-                                    if (item.status === 'cancelled' && !known.has(item.requestId)) {
+                                    if (['cancelled', 'retired'].includes(item.status) && !known.has(item.requestId)) {
                                         const capabilities = Array.isArray(item.requestedCapabilities)
                                             ? item.requestedCapabilities.join(' + ')
                                             : '';
@@ -1184,6 +1184,8 @@
                                             requestId: item.requestId,
                                             message: capabilities
                                                 ? 'Concierge history — ' + capabilities
+                                                : item.status === 'retired'
+                                                ? 'Concierge retired-plan history'
                                                 : 'Concierge cancellation history',
                                             kind: 'concierge-history',
                                             pending: false,
@@ -1217,20 +1219,34 @@
                             let resultLabel = 'Status unavailable';
                             try {
                                 const taskCentreJob = run.conciergeJobs.get(task.requestId);
-                                if (task.kind === 'concierge-history' && taskCentreJob?.status === 'cancelled') {
-                                    const receiptVerified = taskCentreJob.cancellationReceiptIntegrity === 'verified'
-                                        && taskCentreJob.cancellationReceipt?.integrity === 'verified';
-                                    savedText = taskCentreJob.cancellationText
-                                        || 'Cancellation history exists, but no verified receipt was available.';
-                                    failed = !receiptVerified;
-                                    attention = !receiptVerified;
-                                    copyable = false;
-                                    working = false;
-                                    resultLabel = receiptVerified
-                                        ? (taskCentreJob.supersededByRequestId
-                                            ? 'Superseded Concierge job'
-                                            : 'Cancelled Concierge job')
-                                        : 'Cancellation receipt verification failed';
+                                if (task.kind === 'concierge-history' && ['cancelled', 'retired'].includes(taskCentreJob?.status)) {
+                                    if (taskCentreJob.status === 'retired') {
+                                        const receiptVerified = taskCentreJob.retirementReceiptIntegrity === 'verified'
+                                            && taskCentreJob.retirementReceipt?.integrity === 'verified';
+                                        savedText = taskCentreJob.retirementText
+                                            || 'Retirement history exists, but no verified receipt was available.';
+                                        failed = !receiptVerified;
+                                        attention = !receiptVerified;
+                                        copyable = false;
+                                        working = false;
+                                        resultLabel = receiptVerified
+                                            ? 'Retired Concierge plan'
+                                            : 'Retirement receipt verification failed';
+                                    } else {
+                                        const receiptVerified = taskCentreJob.cancellationReceiptIntegrity === 'verified'
+                                            && taskCentreJob.cancellationReceipt?.integrity === 'verified';
+                                        savedText = taskCentreJob.cancellationText
+                                            || 'Cancellation history exists, but no verified receipt was available.';
+                                        failed = !receiptVerified;
+                                        attention = !receiptVerified;
+                                        copyable = false;
+                                        working = false;
+                                        resultLabel = receiptVerified
+                                            ? (taskCentreJob.supersededByRequestId
+                                                ? 'Superseded Concierge job'
+                                                : 'Cancelled Concierge job')
+                                            : 'Cancellation receipt verification failed';
+                                    }
                                     clearPendingRequest(task.requestId);
                                 } else {
                                 const delayed = run.delayed.get(task.requestId);
@@ -1287,6 +1303,22 @@
                             }
                             if (!valid()) return;
                             const taskCentreJob = run.conciergeJobs.get(task.requestId);
+                            if (taskCentreJob?.status === 'retired' && task.kind !== 'concierge-history') {
+                                const receiptVerified = taskCentreJob.retirementReceiptIntegrity === 'verified'
+                                    && taskCentreJob.retirementReceipt?.integrity === 'verified';
+                                if (taskCentreJob.retirementText) {
+                                    savedText += '\n\n' + taskCentreJob.retirementText;
+                                }
+                                working = false;
+                                clearPendingRequest(task.requestId);
+                                if (!receiptVerified) {
+                                    attention = true;
+                                    resultLabel = 'Retirement receipt verification failed';
+                                } else {
+                                    resultLabel = 'Saved answer · delayed plan expired unused';
+                                }
+                            }
+
                             if (taskCentreJob?.status === 'cancelled' && task.kind !== 'concierge-history') {
                                 const receiptVerified = taskCentreJob.cancellationReceiptIntegrity === 'verified'
                                     && taskCentreJob.cancellationReceipt?.integrity === 'verified';
@@ -1482,7 +1514,7 @@
 
 <script src="/ui/chat-tools.js?v=2"></script>
 <script src="/ui/foundation-fleet.js?v=1"></script>
-<script src="/ui/concierge-completions.js?v=193"></script>
+<script src="/ui/concierge-completions.js?v=194"></script>
 <script src="/ui/recovery-status.js?v=118"></script>
 <script src="/ui/evidence.js?v=156"></script>
 <script src="/ui/voice.js"></script>
