@@ -907,7 +907,10 @@ def _shine_ai_verification_keyset(
                     "reason_code": "trust-witness-quorum-unverified",
                 }
             try:
-                persisted_policy = load_persisted_quorum_policy(db)
+                persisted_policy = load_persisted_quorum_policy(
+                    db,
+                    redis_client=redis_client,
+                )
             except WitnessQuorumError as exc:
                 reason = str(exc) or "trust-witness-quorum-policy-unverified"
                 return None, reason, {
@@ -923,6 +926,13 @@ def _shine_ai_verification_keyset(
                 != int(persisted_policy.get("minimumWitnesses") or 0)
                 or quorum.get("witness_ids")
                 != persisted_policy.get("acceptedWitnessIds")
+                or quorum.get("policy_storage_authenticated") is not True
+                or quorum.get("policy_storage_state_sha256")
+                != persisted_policy.get("policy_storage_state_sha256")
+                or quorum.get("policy_storage_auth_key_id")
+                != persisted_policy.get("policy_storage_auth_key_id")
+                or quorum.get("policy_storage_checkpoint_independent")
+                is not True
             ):
                 return None, "trust-witness-quorum-policy-cache-mismatch", {
                     "status": "invalid",
