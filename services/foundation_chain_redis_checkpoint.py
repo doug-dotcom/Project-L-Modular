@@ -179,6 +179,7 @@ def _project_chain(value: Any) -> dict[str, Any]:
             "foundation-chain-redis-chain-invalid"
         )
     return {
+        "status": "verified",
         "witness_id": WITNESS_ID,
         "chain_version": 1,
         "sequence": sequence,
