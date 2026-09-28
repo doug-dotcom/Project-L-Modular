@@ -1545,6 +1545,13 @@ def foundation_concierge_jobs_as_user(
         and ttl_contract.get("expiryDueMutatesState") is False
     )
 
+    urgency_contract_valid = (
+        ttl_contract_valid
+        and ttl_contract.get("warningSeconds") == 900
+        and ttl_contract.get("urgencyChangesExecution") is False
+        and ttl_contract.get("urgencyAutoStartsWork") is False
+    )
+
     def safe_capabilities(value):
         if not isinstance(value, list) or len(value) > 20:
             return []
@@ -1765,7 +1772,87 @@ def foundation_concierge_jobs_as_user(
                     "server_authoritative": True,
                 }
 
+        safe_plan_urgency = None
+        raw_urgency = raw.get("planUrgency")
+        if (
+            urgency_contract_valid
+            and safe_plan_ttl is not None
+            and isinstance(raw_urgency, dict)
+        ):
+            urgency_state = str(raw_urgency.get("state") or "")
+            priority = str(raw_urgency.get("priority") or "")
+            warning = raw_urgency.get("warningThresholdSeconds")
+            urgency_seconds = raw_urgency.get("secondsRemaining")
+            requires_attention = raw_urgency.get("requiresUserAttention")
+            auto_starts = raw_urgency.get("autoStartsExecution")
+            valid_urgency = (
+                warning == 900
+                and auto_starts is False
+                and isinstance(requires_attention, bool)
+            )
+            if urgency_state == "expiring-soon":
+                valid_urgency = (
+                    valid_urgency
+                    and priority == "high"
+                    and requires_attention is True
+                    and safe_plan_ttl["state"] == "counting-down"
+                    and isinstance(urgency_seconds, int)
+                    and not isinstance(urgency_seconds, bool)
+                    and 0 < urgency_seconds <= 900
+                    and urgency_seconds == safe_plan_ttl["seconds_remaining"]
+                )
+            elif urgency_state == "expiry-due":
+                valid_urgency = (
+                    valid_urgency
+                    and priority == "critical"
+                    and requires_attention is True
+                    and safe_plan_ttl["state"] == "expiry-due"
+                    and urgency_seconds == 0
+                )
+            elif urgency_state == "normal":
+                valid_urgency = (
+                    valid_urgency
+                    and priority == "normal"
+                    and requires_attention is False
+                    and safe_plan_ttl["state"] == "counting-down"
+                    and isinstance(urgency_seconds, int)
+                    and not isinstance(urgency_seconds, bool)
+                    and 900 < urgency_seconds <= 3600
+                    and urgency_seconds == safe_plan_ttl["seconds_remaining"]
+                )
+            elif urgency_state == "not-applicable":
+                valid_urgency = (
+                    valid_urgency
+                    and priority == "none"
+                    and requires_attention is False
+                    and safe_plan_ttl["state"] in {"started-exempt", "terminal"}
+                    and urgency_seconds is None
+                )
+            else:
+                valid_urgency = False
+
+            if valid_urgency:
+                safe_plan_urgency = {
+                    "version": "1.0",
+                    "state": urgency_state,
+                    "priority": priority,
+                    "reason_code": str(raw_urgency.get("reasonCode") or "")[:160],
+                    "warning_threshold_seconds": 900,
+                    "seconds_remaining": urgency_seconds,
+                    "requires_user_attention": requires_attention,
+                    "auto_starts_execution": False,
+                }
+
         progress = raw.get("progress") if isinstance(raw.get("progress"), dict) else {}
+        attention_order = raw.get("attentionOrder")
+        if (
+            not isinstance(attention_order, int)
+            or isinstance(attention_order, bool)
+            or attention_order < 0
+            or attention_order > 999
+        ):
+            attention_order = 999
+
         items.append({
             "request_id": request_id,
             "client_id": str(raw.get("clientId") or "")[:128],
@@ -1785,6 +1872,7 @@ def foundation_concierge_jobs_as_user(
             "waiting_on": str(raw.get("waitingOn") or "")[:40],
             "attention_required": raw.get("attentionRequired") is True,
             "attention_reason": str(raw.get("attentionReason") or "")[:160],
+            "attention_order": attention_order,
             "next_action": (
                 str(raw.get("nextAction"))[:80]
                 if raw.get("nextAction") is not None
@@ -1806,6 +1894,7 @@ def foundation_concierge_jobs_as_user(
             "retirement_receipt": safe_retirement,
             "local_retirement_reconciliation": local_retirement_reconciliation,
             "plan_ttl": safe_plan_ttl,
+            "plan_urgency": safe_plan_urgency,
         })
 
     return {
@@ -1826,6 +1915,10 @@ def foundation_concierge_jobs_as_user(
             "ttl_seconds": 3600,
             "server_authoritative": True,
             "client_clock_authoritative": False,
+            "warning_seconds": 900 if urgency_contract_valid else None,
+            "urgency_valid": urgency_contract_valid,
+            "urgency_changes_execution": False if urgency_contract_valid else None,
+            "urgency_auto_starts_work": False if urgency_contract_valid else None,
             "valid": ttl_contract_valid,
         },
         "summary": body.get("summary") if isinstance(body.get("summary"), dict) else {},
