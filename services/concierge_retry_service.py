@@ -499,6 +499,12 @@ def run_concierge_retry_once(
                 request_id=claim["request_id"],
                 packet_sha256=packet_store["packet_sha256"],
                 answer=generated["reply"],
+                temporal_receipt=(
+                    generated.get("temporal_receipt")
+                    if isinstance(generated.get("temporal_receipt"), dict)
+                    else None
+                ),
+                generated_at=str(generated.get("generated_at") or ""),
             )
 
         # Only an answer-bound completion becomes surfaceable. This is written
