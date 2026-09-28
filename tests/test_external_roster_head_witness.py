@@ -218,3 +218,169 @@ def test_foundation_receipt_must_bind_exact_roster_head():
             witness_url="https://foundation.example/witness",
             post_impl=fake_post,
         )
+
+
+
+def _raw_foundation_witness(head, auth_key_id, *, replayed=True):
+    return {
+        "status": "witnessed",
+        "replayed": replayed,
+        "witnessVersion": 1,
+        "witnessType": foundation_head.WITNESS_TYPE,
+        "authAlgorithm": "HMAC-SHA-256",
+        "witnessId": foundation_head.WITNESS_ID,
+        "authKeyId": auth_key_id,
+        "headVersion": 1,
+        "sequence": head["sequence"],
+        "headSha256": head["headSha256"],
+        "generation": head["generation"],
+        "policySha256": head["policySha256"],
+        "stateSha256": head["stateSha256"],
+        "authTag": "a" * 64,
+    }
+
+
+def test_layer211_foundation_witness_rotation_preserves_head_and_hides_tag():
+    db = FakeHistoryDB()
+    head = roster.build_roster_monotonic_head(db)["head"]
+    source_key = "foundation-roster-head-witness-v1"
+    target_key = "foundation-roster-head-witness-v2"
+    calls = []
+
+    def fake_post(_url, **kwargs):
+        request = kwargs["json"]
+        calls.append(request)
+        if request["operation"] == "external-roster-head-current":
+            key = source_key if len(calls) == 1 else target_key
+            return FakeResponse(
+                _raw_foundation_witness(head, key)
+            )
+        assert request["operation"] == "external-roster-head-rotate"
+        assert request["targetAuthKeyId"] == target_key
+        witness = _raw_foundation_witness(
+            head,
+            target_key,
+            replayed=False,
+        )
+        return FakeResponse({
+            "status": "rotated",
+            "receipt": {
+                "version": 1,
+                "eventType": (
+                    "decision_trace_trust_state_witness_quorum_policy_"
+                    "monotonic_head_witness_key_rotation"
+                ),
+                "witnessId": foundation_head.WITNESS_ID,
+                "sourceAuthKeyId": source_key,
+                "targetAuthKeyId": target_key,
+                "sequence": head["sequence"],
+                "headSha256": head["headSha256"],
+                "generation": head["generation"],
+                "policySha256": head["policySha256"],
+                "stateSha256": head["stateSha256"],
+            },
+            "witness": witness,
+        })
+
+    result = foundation_head.rotate_foundation_roster_head_witness(
+        db,
+        target_key,
+        witness_url="https://foundation.example/witness",
+        post_impl=fake_post,
+    )
+
+    assert result["status"] == "verified"
+    assert result["mode"] == "rotated"
+    assert result["source_auth_key_id"] == source_key
+    assert result["target_auth_key_id"] == target_key
+    assert result["head_sha256"] == HEAD_SHA
+    assert result["policy_sha256"] == POLICY_SHA
+    assert result["state_sha256"] == STATE_SHA
+    assert result["state_preserved"] is True
+    assert result["witness"]["auth_key_id"] == target_key
+    assert "authTag" not in result
+    assert "authTag" not in result["witness"]
+    assert [row["operation"] for row in calls] == [
+        "external-roster-head-current",
+        "external-roster-head-rotate",
+        "external-roster-head-current",
+    ]
+
+
+def test_layer211_rotation_rejects_truth_substitution():
+    db = FakeHistoryDB()
+    head = roster.build_roster_monotonic_head(db)["head"]
+    source_key = "foundation-roster-head-witness-v1"
+    target_key = "foundation-roster-head-witness-v2"
+    calls = []
+
+    def fake_post(_url, **kwargs):
+        request = kwargs["json"]
+        calls.append(request)
+        if request["operation"] == "external-roster-head-current":
+            return FakeResponse(
+                _raw_foundation_witness(head, source_key)
+            )
+
+        witness = _raw_foundation_witness(
+            head,
+            target_key,
+            replayed=False,
+        )
+        return FakeResponse({
+            "status": "rotated",
+            "receipt": {
+                "version": 1,
+                "eventType": (
+                    "decision_trace_trust_state_witness_quorum_policy_"
+                    "monotonic_head_witness_key_rotation"
+                ),
+                "witnessId": foundation_head.WITNESS_ID,
+                "sourceAuthKeyId": source_key,
+                "targetAuthKeyId": target_key,
+                "sequence": head["sequence"],
+                "headSha256": head["headSha256"],
+                "generation": head["generation"],
+                "policySha256": "f" * 64,
+                "stateSha256": head["stateSha256"],
+            },
+            "witness": witness,
+        })
+
+    with pytest.raises(
+        foundation_head.FoundationRosterHeadWitnessError,
+        match="foundation-roster-head-witness-rotation-response-invalid",
+    ):
+        foundation_head.rotate_foundation_roster_head_witness(
+            db,
+            target_key,
+            witness_url="https://foundation.example/witness",
+            post_impl=fake_post,
+        )
+
+
+def test_layer211_rotation_is_idempotent_when_target_already_bound():
+    db = FakeHistoryDB()
+    head = roster.build_roster_monotonic_head(db)["head"]
+    target_key = "foundation-roster-head-witness-v2"
+    calls = []
+
+    def fake_post(_url, **kwargs):
+        calls.append(kwargs["json"])
+        return FakeResponse(
+            _raw_foundation_witness(head, target_key)
+        )
+
+    result = foundation_head.rotate_foundation_roster_head_witness(
+        db,
+        target_key,
+        witness_url="https://foundation.example/witness",
+        post_impl=fake_post,
+    )
+
+    assert result["status"] == "verified"
+    assert result["mode"] == "already-rotated"
+    assert result["source_auth_key_id"] == target_key
+    assert result["target_auth_key_id"] == target_key
+    assert result["state_preserved"] is True
+    assert len(calls) == 1
