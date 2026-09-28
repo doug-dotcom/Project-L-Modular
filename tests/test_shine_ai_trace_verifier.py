@@ -136,3 +136,14 @@ def test_private_evidence_ids_do_not_affect_verified_trace():
 
     assert result["status"] == "verified"
     assert result["verified"] is True
+
+
+
+def test_live_verifier_requires_response_identity_headers():
+    result = verify_decision_trace(
+        response_fixture(),
+        require_response_identity=True,
+    )
+
+    assert result["status"] == "invalid"
+    assert result["reason_code"] == "decision-trace-response-identity-missing"
