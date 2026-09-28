@@ -23,6 +23,10 @@ from services.foundation_chain_checkpoint import (
     FoundationChainCheckpointError,
     ensure_foundation_chain_checkpoint,
 )
+from services.foundation_chain_redis_checkpoint import (
+    RedisFoundationChainCheckpointError,
+    ensure_redis_foundation_chain_checkpoint,
+)
 from services.foundation_companion_service import (
     foundation_account_owner,
     foundation_fleet_status,
@@ -52,7 +56,7 @@ from services.shine_trust_storage import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v9"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v10"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -359,6 +363,47 @@ def _foundation_chain_checkpoint_receipt_valid(
     ):
         return False
     return True
+
+
+def _foundation_chain_redis_checkpoint_receipt_valid(
+    value: Any,
+    chain: Any,
+) -> bool:
+    if not isinstance(value, dict) or not isinstance(chain, dict):
+        return False
+    return (
+        value.get("status") == "verified"
+        and value.get("checkpoint_version") == 1
+        and value.get("witness_id") == "foundation-project-l"
+        and value.get("chain_version") == 1
+        and value.get("storage") == "railway-redis-volume"
+        and value.get("sequence") == chain.get("sequence")
+        and value.get("previous_chain_tag")
+            == chain.get("previous_chain_tag")
+        and value.get("chain_tag") == chain.get("chain_tag")
+    )
+
+
+def _foundation_chain_redundancy_receipt_valid(
+    value: Any,
+    chain: Any,
+) -> bool:
+    if not isinstance(value, dict) or not isinstance(chain, dict):
+        return False
+    return (
+        value.get("status") == "verified"
+        and value.get("witness_id") == "foundation-project-l"
+        and value.get("chain_version") == 1
+        and value.get("sequence") == chain.get("sequence")
+        and value.get("previous_chain_tag")
+            == chain.get("previous_chain_tag")
+        and value.get("chain_tag") == chain.get("chain_tag")
+        and value.get("verified_store_count") == 2
+        and value.get("stores") == [
+            "project-l-supabase-vault-hmac",
+            "railway-redis-volume",
+        ]
+    )
 
 
 def _trace_keyset_pins() -> tuple[str, ...]:
@@ -997,6 +1042,54 @@ def _shine_ai_verification_keyset(
                     "reason_code":
                         "trust-witness-foundation-chain-checkpoint-mismatch",
                 }
+            cached_redis_checkpoint = quorum.get(
+                "foundation_chain_redis_checkpoint"
+            )
+            if not _foundation_chain_redis_checkpoint_receipt_valid(
+                cached_redis_checkpoint,
+                chain,
+            ):
+                return None, "trust-witness-foundation-chain-redis-checkpoint-unverified", {
+                    "status": "invalid",
+                    "reason_code":
+                        "trust-witness-foundation-chain-redis-checkpoint-unverified",
+                }
+            try:
+                live_redis_checkpoint = (
+                    ensure_redis_foundation_chain_checkpoint(
+                        chain,
+                        redis_client=redis_client,
+                    )
+                )
+            except RedisFoundationChainCheckpointError as exc:
+                reason = str(exc) or (
+                    "trust-witness-foundation-chain-redis-checkpoint-unavailable"
+                )
+                return None, reason, {
+                    "status": "invalid",
+                    "reason_code": reason,
+                }
+            if not _foundation_chain_redis_checkpoint_receipt_valid(
+                live_redis_checkpoint,
+                chain,
+            ):
+                return None, "trust-witness-foundation-chain-redis-checkpoint-mismatch", {
+                    "status": "invalid",
+                    "reason_code":
+                        "trust-witness-foundation-chain-redis-checkpoint-mismatch",
+                }
+            redundancy = quorum.get(
+                "foundation_chain_checkpoint_redundancy"
+            )
+            if not _foundation_chain_redundancy_receipt_valid(
+                redundancy,
+                chain,
+            ):
+                return None, "trust-witness-foundation-chain-redundancy-unverified", {
+                    "status": "invalid",
+                    "reason_code":
+                        "trust-witness-foundation-chain-redundancy-unverified",
+                }
         elif _foundation_witness_required():
             witness = cached_trust.get("external_witness")
             if (
@@ -1047,6 +1140,42 @@ def _shine_ai_verification_keyset(
                     "status": "invalid",
                     "reason_code":
                         "foundation-witness-chain-checkpoint-mismatch",
+                }
+            cached_redis_checkpoint = witness.get(
+                "chain_redis_checkpoint"
+            )
+            if not _foundation_chain_redis_checkpoint_receipt_valid(
+                cached_redis_checkpoint,
+                witness,
+            ):
+                return None, "foundation-witness-chain-redis-checkpoint-unverified", {
+                    "status": "invalid",
+                    "reason_code":
+                        "foundation-witness-chain-redis-checkpoint-unverified",
+                }
+            try:
+                live_redis_checkpoint = (
+                    ensure_redis_foundation_chain_checkpoint(
+                        witness,
+                        redis_client=redis_client,
+                    )
+                )
+            except RedisFoundationChainCheckpointError as exc:
+                reason = str(exc) or (
+                    "foundation-witness-chain-redis-checkpoint-unavailable"
+                )
+                return None, reason, {
+                    "status": "invalid",
+                    "reason_code": reason,
+                }
+            if not _foundation_chain_redis_checkpoint_receipt_valid(
+                live_redis_checkpoint,
+                witness,
+            ):
+                return None, "foundation-witness-chain-redis-checkpoint-mismatch", {
+                    "status": "invalid",
+                    "reason_code":
+                        "foundation-witness-chain-redis-checkpoint-mismatch",
                 }
         return cached, None, cached_trust
 
@@ -1171,9 +1300,34 @@ def _shine_ai_verification_keyset(
                     },
                 },
             }
+        try:
+            chain_redis_checkpoint = (
+                ensure_redis_foundation_chain_checkpoint(
+                    external_witness,
+                    redis_client=redis_client,
+                )
+            )
+        except RedisFoundationChainCheckpointError as exc:
+            reason = str(exc) or (
+                "foundation-witness-chain-redis-checkpoint-unavailable"
+            )
+            return None, reason, {
+                **trust,
+                "status": "invalid",
+                "reason_code": reason,
+                "external_witness": {
+                    **external_witness,
+                    "chain_checkpoint": chain_checkpoint,
+                    "chain_redis_checkpoint": {
+                        "status": "invalid",
+                        "reason_code": reason,
+                    },
+                },
+            }
         external_witness = {
             **external_witness,
             "chain_checkpoint": chain_checkpoint,
+            "chain_redis_checkpoint": chain_redis_checkpoint,
         }
         trust["external_witness"] = external_witness
 
@@ -1565,6 +1719,34 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                             "storage", "ledger_rows", "mode",
                         ),
                     ),
+                    "chain_redis_checkpoint": _project(
+                        (
+                            item.get("decision_trace_trust", {}).get(
+                                "external_witness",
+                                {},
+                            ).get("chain_redis_checkpoint", {})
+                            if (
+                                isinstance(
+                                    item.get("decision_trace_trust"),
+                                    dict,
+                                )
+                                and isinstance(
+                                    item.get(
+                                        "decision_trace_trust",
+                                        {},
+                                    ).get("external_witness"),
+                                    dict,
+                                )
+                            )
+                            else {}
+                        ),
+                        (
+                            "status", "checkpoint_version", "witness_id",
+                            "chain_version", "sequence",
+                            "previous_chain_tag", "chain_tag",
+                            "storage", "mode",
+                        ),
+                    ),
                 },
                 "witness_quorum": {
                     **_project(
@@ -1644,6 +1826,67 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                             "chain_version", "sequence",
                             "previous_chain_tag", "chain_tag",
                             "storage", "ledger_rows", "mode",
+                        ),
+                    ),
+                    "foundation_chain_redis_checkpoint": _project(
+                        (
+                            item.get("decision_trace_trust", {}).get(
+                                "witness_quorum",
+                                {},
+                            ).get(
+                                "foundation_chain_redis_checkpoint",
+                                {},
+                            )
+                            if (
+                                isinstance(
+                                    item.get("decision_trace_trust"),
+                                    dict,
+                                )
+                                and isinstance(
+                                    item.get(
+                                        "decision_trace_trust",
+                                        {},
+                                    ).get("witness_quorum"),
+                                    dict,
+                                )
+                            )
+                            else {}
+                        ),
+                        (
+                            "status", "checkpoint_version", "witness_id",
+                            "chain_version", "sequence",
+                            "previous_chain_tag", "chain_tag",
+                            "storage", "mode",
+                        ),
+                    ),
+                    "foundation_chain_checkpoint_redundancy": _project(
+                        (
+                            item.get("decision_trace_trust", {}).get(
+                                "witness_quorum",
+                                {},
+                            ).get(
+                                "foundation_chain_checkpoint_redundancy",
+                                {},
+                            )
+                            if (
+                                isinstance(
+                                    item.get("decision_trace_trust"),
+                                    dict,
+                                )
+                                and isinstance(
+                                    item.get(
+                                        "decision_trace_trust",
+                                        {},
+                                    ).get("witness_quorum"),
+                                    dict,
+                                )
+                            )
+                            else {}
+                        ),
+                        (
+                            "status", "witness_id", "chain_version",
+                            "sequence", "previous_chain_tag", "chain_tag",
+                            "verified_store_count", "stores",
                         ),
                     ),
                 },
