@@ -60,7 +60,7 @@ from services.shine_trust_storage import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v13"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v14"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -1035,6 +1035,21 @@ def _shine_ai_verification_keyset(
                 or quorum.get(
                     "external_roster_storage_checkpoint_independent"
                 ) is not True
+                or quorum.get("external_roster_chain_verified") is not True
+                or quorum.get("external_roster_chain_version")
+                    != persisted_roster.get("roster_chain_version")
+                or quorum.get("external_roster_chain_sequence")
+                    != persisted_roster.get("roster_chain_sequence")
+                or quorum.get("external_roster_chain_checkpoint_sha256")
+                    != persisted_roster.get(
+                        "roster_chain_checkpoint_sha256"
+                    )
+                or quorum.get("external_roster_chain_head_sha256")
+                    != persisted_roster.get(
+                        "roster_chain_head_sha256"
+                    )
+                or quorum.get("external_roster_chain_head_independent")
+                    is not True
             ):
                 return None, "trust-witness-quorum-policy-cache-mismatch", {
                     "status": "invalid",
@@ -1823,6 +1838,17 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                             "external_roster_storage_state_sha256",
                             "external_roster_storage_checkpoint_independent",
                             "external_roster_storage_checkpoint_retention",
+                            "external_roster_chain_verified",
+                            "external_roster_chain_version",
+                            "external_roster_chain_sequence",
+                            "external_roster_chain_previous_checkpoint_sha256",
+                            "external_roster_chain_checkpoint_sha256",
+                            "external_roster_chain_head_version",
+                            "external_roster_chain_head_sha256",
+                            "external_roster_chain_head_auth_key_id",
+                            "external_roster_chain_head_independent",
+                            "external_roster_chain_head_retention",
+                            "external_roster_chain_history_records_verified",
                             "minimum_witnesses", "verified_witness_count",
                             "witness_ids", "sequence", "head_sha256",
                             "generation", "keyset_sha256", "state_sha256",
