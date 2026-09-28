@@ -73,6 +73,11 @@ as $$
 declare
   v_token_hash text;
   v_state foundation.project_l_trace_witness_state%rowtype;
+  v_event foundation.project_l_trace_witness_events%rowtype;
+  v_secret text;
+  v_material text;
+  v_auth_input text;
+  v_expected_tag text;
 begin
   if p_client_token is null or length(p_client_token)<32
      or p_witness_id !~ '^[a-z0-9][a-z0-9._-]{0,63}$' then
@@ -107,6 +112,67 @@ begin
     return jsonb_build_object(
       'status','empty',
       'witnessId',p_witness_id
+    );
+  end if;
+
+  select decrypted_secret
+  into v_secret
+  from vault.decrypted_secrets
+  where name='project_l_trace_witness_hmac_v1'
+  order by created_at desc
+  limit 1;
+
+  if v_secret is null or length(v_secret)<32 then
+    return jsonb_build_object(
+      'status','unavailable',
+      'reasonCode','witness-signing-key-unavailable'
+    );
+  end if;
+
+  v_material :=
+    '{"witnessVersion":1,"witnessType":"decision_trace_trust_state_monotonic_head_witness",' ||
+    '"witnessId":"' || v_state.witness_id || '","headVersion":1,' ||
+    '"sequence":' || v_state.sequence::text ||
+    ',"headSha256":"' || v_state.head_sha256 ||
+    '","generation":' || v_state.generation::text ||
+    ',"keyset_sha256":"' || v_state.keyset_sha256 ||
+    '","stateSha256":"' || v_state.state_sha256 || '"}';
+
+  v_auth_input :=
+    'shine-ai:decision-trace-trust-state-monotonic-head-witness:v1' ||
+    E'\n' || v_state.auth_key_id || E'\n' || v_material;
+
+  v_expected_tag := encode(
+    extensions.hmac(v_auth_input,v_secret,'sha256'),
+    'hex'
+  );
+
+  if v_expected_tag<>v_state.auth_tag then
+    return jsonb_build_object(
+      'status','unavailable',
+      'reasonCode','witness-auth-integrity-failed'
+    );
+  end if;
+
+  select *
+  into v_event
+  from foundation.project_l_trace_witness_events e
+  where e.witness_id=v_state.witness_id
+    and e.sequence=v_state.sequence
+  order by e.event_id desc
+  limit 1;
+
+  if not found
+     or v_event.head_sha256 is distinct from v_state.head_sha256
+     or v_event.generation is distinct from v_state.generation
+     or v_event.keyset_sha256 is distinct from v_state.keyset_sha256
+     or v_event.state_sha256 is distinct from v_state.state_sha256
+     or v_event.auth_key_id is distinct from v_state.auth_key_id
+     or v_event.auth_tag is distinct from v_state.auth_tag
+     or v_event.client_id is distinct from v_state.client_id then
+    return jsonb_build_object(
+      'status','unavailable',
+      'reasonCode','witness-history-integrity-failed'
     );
   end if;
 

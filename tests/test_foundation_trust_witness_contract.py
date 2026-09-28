@@ -92,3 +92,37 @@ def test_edge_uses_custom_service_auth_and_never_reads_witness_secret():
     assert "set local role foundation_gateway" in edge
     assert "decrypted_secret" not in edge
     assert "project_l_trace_witness_hmac_v1" not in edge
+
+
+def test_foundation_witness_readback_reauthenticates_persisted_state():
+    sql = sql_source()
+    current = sql.split(
+        "create or replace function foundation."
+        "project_l_trace_witness_current_v1"
+    )[1].split(
+        "create or replace function foundation."
+        "project_l_trace_witness_record_v1"
+    )[0]
+
+    assert "select decrypted_secret" in current
+    assert "v_expected_tag := encode(" in current
+    assert "extensions.hmac(v_auth_input,v_secret,'sha256')" in current
+    assert "v_expected_tag<>v_state.auth_tag" in current
+    assert "witness-auth-integrity-failed" in current
+
+
+def test_foundation_witness_readback_cross_checks_append_only_event():
+    sql = sql_source()
+    current = sql.split(
+        "create or replace function foundation."
+        "project_l_trace_witness_current_v1"
+    )[1].split(
+        "create or replace function foundation."
+        "project_l_trace_witness_record_v1"
+    )[0]
+
+    assert "from foundation.project_l_trace_witness_events e" in current
+    assert "e.sequence=v_state.sequence" in current
+    assert "v_event.auth_tag is distinct from v_state.auth_tag" in current
+    assert "v_event.client_id is distinct from v_state.client_id" in current
+    assert "witness-history-integrity-failed" in current
