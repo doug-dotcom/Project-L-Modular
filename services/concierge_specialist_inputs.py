@@ -48,7 +48,6 @@ FOCI = ("overview", "earnings", "dividends", "risks", "valuation")
 ABILITIES = ("beginner", "intermediate", "advanced", "expert")
 DIVE_CERTIFICATIONS = (
     ("advanced open water", "Advanced Open Water"),
-    ("open water", "Open Water"),
     ("nitrox", "Enriched Air Nitrox"),
     ("enriched air", "Enriched Air Nitrox"),
 )
@@ -201,6 +200,14 @@ def _compile_translate(capability_id: str, message: str) -> dict:
     if lang_match:
         source = SUPPORTED_LANGUAGES[lang_match.group(1).lower()]
         target = SUPPORTED_LANGUAGES[lang_match.group(2).lower()]
+    else:
+        target_match = re.search(
+            rf"\bto\s+({language_pattern})\b",
+            lower,
+            re.IGNORECASE,
+        )
+        if target_match:
+            target = SUPPORTED_LANGUAGES[target_match.group(1).lower()]
 
     translated_text = None
     quoted = QUOTED.search(text)
@@ -270,7 +277,7 @@ def _compile_fish(capability_id: str, message: str) -> dict:
         return _missing(capability_id, "destination")
     data = {"destination": destination}
     species_match = re.search(
-        r"\b(?:targeting|chasing|for)\s+([A-Za-z][A-Za-z '\-]{1,60})(?=[,.!?]|$)",
+        r"\b(?:targeting|chasing)\s+([A-Za-z][A-Za-z '\-]{1,60})(?=[,.!?]|$)",
         text,
         re.IGNORECASE,
     )
