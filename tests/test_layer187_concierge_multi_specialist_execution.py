@@ -39,6 +39,13 @@ class Query:
         self.filters[key] = value
         return self
 
+    def neq(self, key, value):
+        self.filters["__neq__:" + key] = value
+        return self
+
+    def order(self, *args, **kwargs):
+        return self
+
     def limit(self, value):
         return self
 
@@ -53,7 +60,12 @@ class Query:
         if self.mode == "select":
             return Result([
                 row.copy() for row in rows
-                if all(str(row.get(k)) == str(v) for k, v in self.filters.items())
+                if all(
+                    str(row.get(k.removeprefix("__neq__:"))) != str(v)
+                    if k.startswith("__neq__:")
+                    else str(row.get(k)) == str(v)
+                    for k, v in self.filters.items()
+                )
             ])
         if self.mode == "insert":
             rows.append(self.payload.copy())
