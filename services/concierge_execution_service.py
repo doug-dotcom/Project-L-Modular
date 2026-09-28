@@ -90,12 +90,44 @@ def execute_concierge_route(
     )
 
 
+def _execution_summary(execution: dict) -> dict:
+    return {
+        "status": str(execution.get("status") or "unavailable"),
+        "reason_code": str(execution.get("reason_code") or ""),
+        "foundation_status": str(execution.get("foundation_status") or ""),
+        "foundation_reason_code": str(
+            execution.get("foundation_reason_code") or ""
+        ),
+        "selected_capabilities": list(
+            execution.get("selected_capabilities") or []
+        )[:4],
+        "executed_capabilities": list(
+            execution.get("executed_capabilities") or []
+        )[:4],
+        "completed_capabilities": list(
+            execution.get("completed_capabilities") or []
+        )[:4],
+        "unavailable_capabilities": list(
+            execution.get("unavailable_capabilities") or []
+        )[:4],
+        "skipped_capabilities": list(
+            execution.get("skipped_capabilities") or []
+        )[:4],
+        "execution_performed": execution.get("execution_performed") is True,
+        "retry_scheduled": execution.get("retry_scheduled") is True,
+        "synthesis_ready": execution.get("synthesis_ready") is True,
+        "synthesis_must_disclose_partial": (
+            execution.get("synthesis_must_disclose_partial") is True
+        ),
+    }
+
+
 def bind_concierge_execution(route: dict, execution: dict) -> dict:
     """Attach execution truth to the route and expose bounded evidence to L."""
     bound = dict(route or {})
     if not isinstance(execution, dict):
         return bound
-    bound["foundation_execution"] = execution
+    bound["foundation_execution"] = _execution_summary(execution)
     status = str(execution.get("status") or bound.get("status") or "unavailable")
     bound["status"] = status
 
@@ -166,7 +198,7 @@ def bind_concierge_execution(route: dict, execution: dict) -> dict:
         bound["reply"] = ""
         bound["status"] = "unavailable"
         bound["foundation_execution"] = {
-            **execution,
+            **_execution_summary(execution),
             "status": "unavailable",
             "reason_code": "concierge-synthesis-evidence-too-large",
             "synthesis_ready": False,
