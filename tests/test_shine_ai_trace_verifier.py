@@ -4,6 +4,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 from services.shine_ai_trace_verifier import (
     digest_verification_keyset,
+    validate_persisted_trust_state,
     verify_decision_trace,
     verify_decision_trace_authenticity,
     verify_keyset_transition,
@@ -459,3 +460,45 @@ def test_continuity_rejects_authoriser_not_in_previous_generation():
         result["reason_code"]
         == "keyset-transition-authorizer-not-previously-trusted"
     )
+
+
+
+def test_persisted_trust_state_revalidates_embedded_keyset():
+    keyset = keyset_a_generation_1()
+    state = {
+        "generation": 1,
+        "keyset_sha256": keyset["keyset_sha256"],
+        "trusted_keyset": keyset,
+        "source": "genesis-pin",
+    }
+
+    result = validate_persisted_trust_state(state)
+
+    assert result["status"] == "valid"
+    assert result["valid"] is True
+    assert result["generation"] == 1
+    assert result["trusted_key_count"] == 1
+
+
+def test_persisted_trust_state_rejects_generation_or_fingerprint_tamper():
+    keyset = keyset_a_generation_1()
+
+    wrong_generation = validate_persisted_trust_state({
+        "generation": 2,
+        "keyset_sha256": keyset["keyset_sha256"],
+        "trusted_keyset": keyset,
+        "source": "genesis-pin",
+    })
+    assert wrong_generation["status"] == "invalid"
+    assert wrong_generation["reason_code"] == "persisted-trust-state-binding-mismatch"
+
+    tampered = dict(keyset)
+    tampered["keyset_sha256"] = "f" * 64
+    wrong_fingerprint = validate_persisted_trust_state({
+        "generation": 1,
+        "keyset_sha256": keyset["keyset_sha256"],
+        "trusted_keyset": tampered,
+        "source": "genesis-pin",
+    })
+    assert wrong_fingerprint["status"] == "invalid"
+    assert wrong_fingerprint["reason_code"] == "persisted-trust-state-binding-mismatch"
