@@ -29,9 +29,17 @@ from services.shine_ai_trace_verifier import (
     verify_decision_trace_authenticity,
     verify_keyset_transition,
 )
+from services.shine_trust_storage import (
+    TrustStorageError,
+    create_authenticated_envelope,
+    prepare_rollback_checkpoint,
+    project_trust_state,
+    verify_authenticated_envelope,
+    verify_state_against_checkpoint,
+)
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v4"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v5"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -283,10 +291,15 @@ def _trace_keyset_pins() -> tuple[str, ...]:
     return values
 
 
-def _trace_trust_state(db) -> tuple[dict | None, str | None]:
+def _trace_trust_state(
+    db,
+    *,
+    redis_client=None,
+    require_checkpoint_match: bool = True,
+) -> tuple[dict | None, str | None]:
     try:
         result = db.rpc(
-            "shine_ai_trace_trust_snapshot_v2",
+            "shine_ai_trace_trust_snapshot_v3",
             {},
         ).execute()
     except Exception:
@@ -296,46 +309,179 @@ def _trace_trust_state(db) -> tuple[dict | None, str | None]:
     status = str(payload.get("status") or "")
     if status == "unbootstrapped":
         return None, None
+    if status == "unsealed":
+        return None, str(
+            payload.get("reason_code")
+            or "trust-state-authentication-missing"
+        )
     if status != "trusted":
         return None, str(
             payload.get("reason_code")
             or "trace-trust-storage-inconsistent"
         )
 
-    trusted_keyset = (
+    raw_keyset = (
         payload.get("trusted_keyset")
         if isinstance(payload.get("trusted_keyset"), dict)
         else {}
     )
+    try:
+        state = project_trust_state(raw_keyset)
+    except TrustStorageError as exc:
+        return None, str(exc)
+
     try:
         generation = int(payload.get("generation"))
     except (TypeError, ValueError):
         return None, "trace-trust-snapshot-invalid"
     keyset_sha256 = str(payload.get("keyset_sha256") or "")
     if (
-        generation < 1
-        or len(keyset_sha256) != 64
-        or any(ch not in "0123456789abcdef" for ch in keyset_sha256)
+        generation != state["generation"]
+        or keyset_sha256 != state["keyset_sha256"]
     ):
-        return None, "trace-trust-snapshot-invalid"
+        return None, "trace-trust-snapshot-state-mismatch"
+
+    envelope = {
+        "envelopeVersion": 1,
+        "envelopeType": "decision_trace_trust_state_authenticated",
+        "authAlgorithm": "HMAC-SHA-256",
+        "authKeyId": payload.get("storage_auth_key_id"),
+        "stateSha256": payload.get("state_sha256"),
+        "authTag": payload.get("storage_auth_tag"),
+        "state": state,
+    }
+    try:
+        verified_state = verify_authenticated_envelope(envelope)
+    except TrustStorageError as exc:
+        return None, str(exc)
+    if verified_state != state:
+        return None, "trust-state-envelope-state-mismatch"
+
+    storage = None
+    if require_checkpoint_match:
+        try:
+            storage = verify_state_against_checkpoint(
+                state,
+                redis_client=redis_client,
+            )
+        except TrustStorageError as exc:
+            return None, str(exc)
 
     return {
         "generation": generation,
         "keyset_sha256": keyset_sha256,
-        "trusted_keyset": trusted_keyset,
+        "trusted_keyset": {
+            "active_key_id": state["active_key_id"],
+            "verification_keys": state["verification_keys"],
+            "keyset_sha256": state["keyset_sha256"],
+            "generation": state["generation"],
+        },
+        "trusted_state": state,
+        "state_sha256": envelope["stateSha256"],
+        "storage_auth_key_id": envelope["authKeyId"],
         "source": payload.get("source"),
         "authorization_key_id": payload.get("authorization_key_id"),
         "authorization_public_key_sha256": payload.get(
             "authorization_public_key_sha256"
         ),
         "ledger_rows": payload.get("ledger_rows"),
+        "storage": storage,
     }, None
+
+
+def _seal_existing_trace_trust_state(
+    db,
+    *,
+    redis_client=None,
+) -> tuple[dict | None, str | None]:
+    """One-time genesis seal for the already trusted Layer 191/192 state."""
+    try:
+        current = db.rpc(
+            "shine_ai_trace_trust_snapshot_v3",
+            {},
+        ).execute()
+    except Exception:
+        return None, "trace-trust-snapshot-unavailable"
+    payload = current.data if isinstance(current.data, dict) else {}
+    status = str(payload.get("status") or "")
+    if status == "trusted":
+        return _trace_trust_state(
+            db,
+            redis_client=redis_client,
+            require_checkpoint_match=True,
+        )
+    if status != "unsealed":
+        return None, str(
+            payload.get("reason_code")
+            or "trace-trust-seal-state-invalid"
+        )
+
+    raw_keyset = (
+        payload.get("trusted_keyset")
+        if isinstance(payload.get("trusted_keyset"), dict)
+        else {}
+    )
+    try:
+        state = project_trust_state(raw_keyset)
+    except TrustStorageError as exc:
+        return None, str(exc)
+    pins = _trace_keyset_pins()
+    if (
+        state["generation"] != 1
+        or state["keyset_sha256"] not in set(pins)
+    ):
+        return None, "trace-trust-seal-genesis-pin-mismatch"
+
+    try:
+        envelope = create_authenticated_envelope(state)
+        prepare_rollback_checkpoint(
+            state,
+            allow_genesis=True,
+            redis_client=redis_client,
+        )
+    except TrustStorageError as exc:
+        return None, str(exc)
+
+    try:
+        result = db.rpc(
+            "shine_ai_trace_trust_seal_v3",
+            {
+                "p_expected_generation": state["generation"],
+                "p_expected_keyset_sha256": state["keyset_sha256"],
+                "p_expected_trusted_keyset": raw_keyset,
+                "p_state_sha256": envelope["stateSha256"],
+                "p_storage_auth_key_id": envelope["authKeyId"],
+                "p_storage_auth_tag": envelope["authTag"],
+            },
+        ).execute()
+    except Exception:
+        return None, "trace-trust-seal-commit-failed"
+    sealed = result.data if isinstance(result.data, dict) else {}
+    if sealed.get("status") not in {"sealed", "already_sealed"}:
+        return None, "trace-trust-seal-unverified"
+
+    return _trace_trust_state(
+        db,
+        redis_client=redis_client,
+        require_checkpoint_match=True,
+    )
+
+
+def _envelope_params(state: dict) -> tuple[dict, dict]:
+    envelope = create_authenticated_envelope(state)
+    return envelope, {
+        "p_state_sha256": envelope["stateSha256"],
+        "p_storage_auth_key_id": envelope["authKeyId"],
+        "p_storage_auth_tag": envelope["authTag"],
+    }
 
 
 def _accept_trace_keyset_candidate(
     db,
     candidate: dict,
     transition: dict | None,
+    *,
+    redis_client=None,
 ) -> tuple[dict | None, str | None, dict]:
     pins = _trace_keyset_pins()
     digest = digest_verification_keyset(candidate)
@@ -343,6 +489,7 @@ def _accept_trace_keyset_candidate(
     if (
         digest is None
         or not isinstance(generation, int)
+        or isinstance(generation, bool)
         or generation < 1
     ):
         return None, "trace-keyset-candidate-invalid", {
@@ -350,7 +497,19 @@ def _accept_trace_keyset_candidate(
             "reason_code": "trace-keyset-candidate-invalid",
         }
 
-    state, state_error = _trace_trust_state(db)
+    try:
+        candidate_state = project_trust_state(candidate)
+    except TrustStorageError as exc:
+        return None, str(exc), {
+            "status": "invalid",
+            "reason_code": str(exc),
+        }
+
+    state, state_error = _trace_trust_state(
+        db,
+        redis_client=redis_client,
+        require_checkpoint_match=False,
+    )
     if state_error is not None:
         return None, state_error, {
             "status": "invalid",
@@ -372,12 +531,25 @@ def _accept_trace_keyset_candidate(
                 "keyset_sha256": digest,
             }
         try:
+            checkpoint = prepare_rollback_checkpoint(
+                candidate_state,
+                allow_genesis=True,
+                redis_client=redis_client,
+            )
+            envelope, auth_params = _envelope_params(candidate_state)
+        except TrustStorageError as exc:
+            return None, str(exc), {
+                "status": "unavailable",
+                "reason_code": str(exc),
+            }
+        try:
             result = db.rpc(
-                "shine_ai_trace_trust_bootstrap_v2",
+                "shine_ai_trace_trust_bootstrap_v3",
                 {
                     "p_generation": 1,
                     "p_keyset_sha256": digest,
                     "p_trusted_keyset": candidate,
+                    **auth_params,
                 },
             ).execute()
         except Exception:
@@ -391,11 +563,27 @@ def _accept_trace_keyset_candidate(
                 "status": "unavailable",
                 "reason_code": "trace-keyset-ledger-bootstrap-unverified",
             }
+        verified, error = _trace_trust_state(
+            db,
+            redis_client=redis_client,
+            require_checkpoint_match=True,
+        )
+        if error is not None or verified is None:
+            return None, error or "trace-keyset-bootstrap-verification-failed", {
+                "status": "unavailable",
+                "reason_code": error
+                or "trace-keyset-bootstrap-verification-failed",
+            }
         return candidate, None, {
             "status": "trusted",
             "acceptance_mode": "genesis-pin",
             "generation": 1,
             "keyset_sha256": digest,
+            "state_sha256": envelope["stateSha256"],
+            "storage_auth_key_id": envelope["authKeyId"],
+            "checkpoint_mode": checkpoint.get("mode"),
+            "storage_authenticated": True,
+            "checkpoint_independent": True,
         }
 
     try:
@@ -411,13 +599,93 @@ def _accept_trace_keyset_candidate(
         if isinstance(state.get("trusted_keyset"), dict)
         else {}
     )
+    previous_state = (
+        state.get("trusted_state")
+        if isinstance(state.get("trusted_state"), dict)
+        else project_trust_state(trusted_keyset)
+    )
 
     if generation == trusted_generation and digest == trusted_digest:
+        if candidate_state == previous_state:
+            try:
+                storage = verify_state_against_checkpoint(
+                    candidate_state,
+                    redis_client=redis_client,
+                )
+            except TrustStorageError as exc:
+                return None, str(exc), {
+                    "status": "invalid",
+                    "reason_code": str(exc),
+                }
+            return candidate, None, {
+                "status": "trusted",
+                "acceptance_mode": "existing-ledger",
+                "generation": generation,
+                "keyset_sha256": digest,
+                "state_sha256": storage.get("state_sha256"),
+                "storage_auth_key_id": state.get("storage_auth_key_id"),
+                "checkpoint_mode": "existing-checkpoint",
+                "storage_authenticated": True,
+                "checkpoint_independent": True,
+            }
+
+        # Same trusted keyset, new active-key observation. The live
+        # authenticated capabilities response is allowed to move this
+        # observation forward, but the independent checkpoint moves first.
+        try:
+            checkpoint = prepare_rollback_checkpoint(
+                candidate_state,
+                previous_state=previous_state,
+                redis_client=redis_client,
+            )
+            envelope, auth_params = _envelope_params(candidate_state)
+        except TrustStorageError as exc:
+            return None, str(exc), {
+                "status": "invalid",
+                "reason_code": str(exc),
+            }
+        try:
+            result = db.rpc(
+                "shine_ai_trace_trust_observe_v3",
+                {
+                    "p_expected_generation": generation,
+                    "p_expected_keyset_sha256": digest,
+                    "p_trusted_keyset": candidate,
+                    **auth_params,
+                },
+            ).execute()
+        except Exception:
+            return None, "trace-keyset-observation-commit-failed", {
+                "status": "unavailable",
+                "reason_code": "trace-keyset-observation-commit-failed",
+            }
+        payload = result.data if isinstance(result.data, dict) else {}
+        if payload.get("status") != "observed":
+            return None, "trace-keyset-observation-unverified", {
+                "status": "unavailable",
+                "reason_code": "trace-keyset-observation-unverified",
+            }
+        verified, error = _trace_trust_state(
+            db,
+            redis_client=redis_client,
+            require_checkpoint_match=True,
+        )
+        if error is not None or verified is None:
+            return None, error or "trace-keyset-observation-verification-failed", {
+                "status": "unavailable",
+                "reason_code": error
+                or "trace-keyset-observation-verification-failed",
+            }
         return candidate, None, {
             "status": "trusted",
-            "acceptance_mode": "existing-ledger",
+            "acceptance_mode": "active-key-observation",
             "generation": generation,
             "keyset_sha256": digest,
+            "state_sha256": envelope["stateSha256"],
+            "storage_auth_key_id": envelope["authKeyId"],
+            "checkpoint_mode": checkpoint.get("mode"),
+            "storage_authenticated": True,
+            "checkpoint_independent": True,
         }
 
     if generation < trusted_generation:
@@ -446,11 +714,8 @@ def _accept_trace_keyset_candidate(
             "candidate_generation": generation,
         }
 
-    previous = dict(trusted_keyset)
-    previous["generation"] = trusted_generation
-    previous["keyset_sha256"] = trusted_digest
     continuity = verify_keyset_transition(
-        previous,
+        trusted_keyset,
         candidate,
         transition,
     )
@@ -461,8 +726,21 @@ def _accept_trace_keyset_candidate(
         ), continuity
 
     try:
+        checkpoint = prepare_rollback_checkpoint(
+            candidate_state,
+            previous_state=previous_state,
+            redis_client=redis_client,
+        )
+        envelope, auth_params = _envelope_params(candidate_state)
+    except TrustStorageError as exc:
+        return None, str(exc), {
+            "status": "unavailable",
+            "reason_code": str(exc),
+        }
+
+    try:
         result = db.rpc(
-            "shine_ai_trace_trust_advance_v2",
+            "shine_ai_trace_trust_advance_v3",
             {
                 "p_expected_generation": trusted_generation,
                 "p_expected_keyset_sha256": trusted_digest,
@@ -478,6 +756,7 @@ def _accept_trace_keyset_candidate(
                 "p_certificate_sha256": continuity[
                     "certificate_sha256"
                 ],
+                **auth_params,
             },
         ).execute()
     except Exception:
@@ -492,10 +771,27 @@ def _accept_trace_keyset_candidate(
             "reason_code": "trace-keyset-ledger-advance-unverified",
         }
 
+    verified, error = _trace_trust_state(
+        db,
+        redis_client=redis_client,
+        require_checkpoint_match=True,
+    )
+    if error is not None or verified is None:
+        return None, error or "trace-keyset-advance-verification-failed", {
+            "status": "unavailable",
+            "reason_code": error
+            or "trace-keyset-advance-verification-failed",
+        }
+
     return candidate, None, {
         **continuity,
         "status": "trusted",
         "acceptance_mode": "signed-transition",
+        "state_sha256": envelope["stateSha256"],
+        "storage_auth_key_id": envelope["authKeyId"],
+        "checkpoint_mode": checkpoint.get("mode"),
+        "storage_authenticated": True,
+        "checkpoint_independent": True,
     }
 
 
@@ -504,6 +800,7 @@ def _shine_ai_verification_keyset(
     *,
     timeout_seconds: float = 4.0,
     get_impl=None,
+    redis_client=None,
 ) -> tuple[dict | None, str | None, dict]:
     pins = _trace_keyset_pins()
     if not pins:
@@ -521,6 +818,16 @@ def _shine_ai_verification_keyset(
         and _TRACE_KEYSET_CACHE.get("pin") == pin_identity
         and float(_TRACE_KEYSET_CACHE.get("expires_at") or 0.0) > now
     ):
+        try:
+            verify_state_against_checkpoint(
+                cached,
+                redis_client=redis_client,
+            )
+        except TrustStorageError as exc:
+            return None, str(exc), {
+                "status": "invalid",
+                "reason_code": str(exc),
+            }
         return cached, None, cached_trust
 
     base = os.getenv("SHINE_AI_BASE_URL", "").rstrip("/")
@@ -580,6 +887,7 @@ def _shine_ai_verification_keyset(
         db,
         keyset,
         transition,
+        redis_client=redis_client,
     )
     if trusted is None:
         return None, error or "trace-keyset-trust-mismatch", trust
@@ -605,6 +913,7 @@ def _shine_ai_advisory(
     timeout_seconds: float = 6.0,
     post_impl=None,
     capabilities_get_impl=None,
+    trust_redis_client=None,
 ) -> dict:
     base = os.getenv("SHINE_AI_BASE_URL", "").rstrip("/")
     if not base.startswith("https://"):
@@ -665,6 +974,7 @@ def _shine_ai_advisory(
         _shine_ai_verification_keyset(
             db,
             get_impl=capabilities_get_impl,
+            redis_client=trust_redis_client,
         )
     )
     headers = _shine_ai_headers(body)
@@ -913,7 +1223,9 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                     "from_keyset_sha256", "to_keyset_sha256",
                     "authorization_key_id",
                     "authorization_public_key_sha256",
-                    "certificate_sha256",
+                    "certificate_sha256", "state_sha256",
+                    "storage_auth_key_id", "checkpoint_mode",
+                    "storage_authenticated", "checkpoint_independent",
                 ),
             ),
         }

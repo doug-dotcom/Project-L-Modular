@@ -2,7 +2,25 @@ import hashlib
 import hmac
 import json
 
+import pytest
+
 from services import shine_runtime_service as runtime
+from services import shine_trust_storage as trust_storage
+
+
+@pytest.fixture(autouse=True)
+def trust_storage_env(monkeypatch):
+    monkeypatch.setenv(
+        "SHINE_AI_TRUST_STATE_STORAGE_KEYRING_JSON",
+        json.dumps({
+            "storage-a": "S" * 48,
+            "storage-b": "T" * 48,
+        }),
+    )
+    monkeypatch.setenv(
+        "SHINE_AI_TRUST_STATE_STORAGE_ACTIVE_KEY_ID",
+        "storage-a",
+    )
 
 
 def test_shine_ai_signature_matches_keyring_contract(monkeypatch):
@@ -481,7 +499,7 @@ def test_runtime_trace_binds_recovery_control_plane_without_private_content():
     changed["recovery"]["reason_codes"] = ["PRIVATE-REASON-TEXT-NOT-HASHED"]
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v4"
+    assert first["version"] == "shine/runtime-trace-v5"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-REASON-TEXT-NOT-HASHED" not in json.dumps(second)
 
@@ -497,11 +515,143 @@ class FakeTrustResult:
         self.data = data
 
 
+class FakeTrustRedis:
+    def __init__(self):
+        self.rows = {}
+
+    def hgetall(self, key):
+        return dict(self.rows.get(key, {}))
+
+    def eval(self, _script, _numkeys, key, *args):
+        (
+            expected_generation,
+            expected_state_sha,
+            expected_keyset_sha,
+            next_generation,
+            next_state_sha,
+            next_keyset_sha,
+            checkpoint_json,
+        ) = args
+        expected_generation = int(expected_generation)
+        next_generation = int(next_generation)
+        current = self.rows.get(key)
+
+        if current is None:
+            if expected_generation != 0:
+                return ["missing"]
+            self.rows[key] = {
+                "generation": str(next_generation),
+                "state_sha256": next_state_sha,
+                "keyset_sha256": next_keyset_sha,
+                "checkpoint_json": checkpoint_json,
+            }
+            return ["created"]
+
+        current_generation = int(current["generation"])
+        if current_generation != expected_generation:
+            return ["precondition-generation", str(current_generation)]
+        if current["state_sha256"] != expected_state_sha:
+            return ["precondition-state", current["state_sha256"]]
+        if current["keyset_sha256"] != expected_keyset_sha:
+            return ["precondition-keyset", current["keyset_sha256"]]
+        if next_generation < current_generation:
+            return ["rollback"]
+        if next_generation > current_generation + 1:
+            return ["generation-skip"]
+        if (
+            next_generation == current_generation
+            and next_keyset_sha != current["keyset_sha256"]
+        ):
+            return ["equivocation"]
+
+        self.rows[key] = {
+            "generation": str(next_generation),
+            "state_sha256": next_state_sha,
+            "keyset_sha256": next_keyset_sha,
+            "checkpoint_json": checkpoint_json,
+        }
+        return [
+            "refreshed"
+            if next_generation == current_generation
+            else "advanced"
+        ]
+
+
+def seed_checkpoint(redis, keyset):
+    state = trust_storage.project_trust_state(keyset)
+    checkpoint = trust_storage.create_rollback_checkpoint(state)
+    redis.rows[trust_storage.REDIS_CHECKPOINT_KEY] = {
+        "generation": str(state["generation"]),
+        "state_sha256": checkpoint["stateSha256"],
+        "keyset_sha256": checkpoint["keyset_sha256"],
+        "checkpoint_json": json.dumps(
+            checkpoint,
+            separators=(",", ":"),
+        ),
+    }
+
+
 class FakeTrustDB:
-    def __init__(self, state=None, *, inconsistent_reason=None):
+    def __init__(
+        self,
+        state=None,
+        *,
+        inconsistent_reason=None,
+        sealed=True,
+    ):
         self.state = state
         self.inconsistent_reason = inconsistent_reason
         self.rpc_calls = []
+        self.sealed = sealed
+        if self.state is not None and sealed:
+            self._seal_current()
+
+    def _seal_current(self):
+        keyset = self.state["trusted_keyset"]
+        envelope = trust_storage.create_authenticated_envelope(keyset)
+        self.state["state_sha256"] = envelope["stateSha256"]
+        self.state["storage_auth_key_id"] = envelope["authKeyId"]
+        self.state["storage_auth_tag"] = envelope["authTag"]
+        self.sealed = True
+
+    def _snapshot(self, version):
+        if self.inconsistent_reason:
+            return FakeTrustResult({
+                "status": "inconsistent",
+                "reason_code": self.inconsistent_reason,
+            })
+        if self.state is None:
+            return FakeTrustResult({"status": "unbootstrapped"})
+
+        payload = {
+            "status": "trusted",
+            "generation": self.state["generation"],
+            "keyset_sha256": self.state["keyset_sha256"],
+            "trusted_keyset": self.state["trusted_keyset"],
+            "source": self.state.get("source"),
+            "authorization_key_id": self.state.get(
+                "authorization_key_id"
+            ),
+            "authorization_public_key_sha256": self.state.get(
+                "authorization_public_key_sha256"
+            ),
+            "ledger_rows": self.state.get("ledger_rows", 1),
+        }
+        if version == 3:
+            if not self.sealed:
+                return FakeTrustResult({
+                    **payload,
+                    "status": "unsealed",
+                    "reason_code": "trust-state-authentication-missing",
+                })
+            payload.update({
+                "state_sha256": self.state["state_sha256"],
+                "storage_auth_key_id": self.state[
+                    "storage_auth_key_id"
+                ],
+                "storage_auth_tag": self.state["storage_auth_tag"],
+            })
+        return FakeTrustResult(payload)
 
     def rpc(self, name, params):
         self.rpc_calls.append((name, params))
@@ -510,28 +660,33 @@ class FakeTrustDB:
         class Call:
             def execute(self):
                 if name == "shine_ai_trace_trust_snapshot_v2":
-                    if db.inconsistent_reason:
-                        return FakeTrustResult({
-                            "status": "inconsistent",
-                            "reason_code": db.inconsistent_reason,
-                        })
-                    if db.state is None:
-                        return FakeTrustResult({"status": "unbootstrapped"})
+                    return db._snapshot(2)
+                if name == "shine_ai_trace_trust_snapshot_v3":
+                    return db._snapshot(3)
+                if name == "shine_ai_trace_trust_seal_v3":
+                    assert db.state is not None
+                    assert (
+                        db.state["generation"]
+                        == params["p_expected_generation"]
+                    )
+                    assert (
+                        db.state["keyset_sha256"]
+                        == params["p_expected_keyset_sha256"]
+                    )
+                    db.state["state_sha256"] = params["p_state_sha256"]
+                    db.state["storage_auth_key_id"] = params[
+                        "p_storage_auth_key_id"
+                    ]
+                    db.state["storage_auth_tag"] = params[
+                        "p_storage_auth_tag"
+                    ]
+                    db.sealed = True
                     return FakeTrustResult({
-                        "status": "trusted",
+                        "status": "sealed",
                         "generation": db.state["generation"],
                         "keyset_sha256": db.state["keyset_sha256"],
-                        "trusted_keyset": db.state["trusted_keyset"],
-                        "source": db.state.get("source"),
-                        "authorization_key_id": db.state.get(
-                            "authorization_key_id"
-                        ),
-                        "authorization_public_key_sha256": db.state.get(
-                            "authorization_public_key_sha256"
-                        ),
-                        "ledger_rows": db.state.get("ledger_rows", 1),
                     })
-                if name == "shine_ai_trace_trust_bootstrap_v2":
+                if name == "shine_ai_trace_trust_bootstrap_v3":
                     assert params["p_generation"] == 1
                     db.state = {
                         "generation": 1,
@@ -539,13 +694,48 @@ class FakeTrustDB:
                         "trusted_keyset": params["p_trusted_keyset"],
                         "source": "genesis-pin",
                         "ledger_rows": 1,
+                        "state_sha256": params["p_state_sha256"],
+                        "storage_auth_key_id": params[
+                            "p_storage_auth_key_id"
+                        ],
+                        "storage_auth_tag": params[
+                            "p_storage_auth_tag"
+                        ],
                     }
+                    db.sealed = True
                     return FakeTrustResult({
                         "status": "trusted",
                         "generation": 1,
                         "keyset_sha256": params["p_keyset_sha256"],
                     })
-                if name == "shine_ai_trace_trust_advance_v2":
+                if name == "shine_ai_trace_trust_observe_v3":
+                    assert db.state is not None
+                    assert (
+                        db.state["generation"]
+                        == params["p_expected_generation"]
+                    )
+                    assert (
+                        db.state["keyset_sha256"]
+                        == params["p_expected_keyset_sha256"]
+                    )
+                    db.state["trusted_keyset"] = params[
+                        "p_trusted_keyset"
+                    ]
+                    db.state["state_sha256"] = params["p_state_sha256"]
+                    db.state["storage_auth_key_id"] = params[
+                        "p_storage_auth_key_id"
+                    ]
+                    db.state["storage_auth_tag"] = params[
+                        "p_storage_auth_tag"
+                    ]
+                    db.sealed = True
+                    return FakeTrustResult({
+                        "status": "observed",
+                        "generation": db.state["generation"],
+                        "keyset_sha256": db.state["keyset_sha256"],
+                    })
+                if name == "shine_ai_trace_trust_advance_v3":
+                    assert db.state is not None
                     assert (
                         db.state["generation"]
                         == params["p_expected_generation"]
@@ -566,7 +756,15 @@ class FakeTrustDB:
                             "p_authorization_public_key_sha256"
                         ],
                         "ledger_rows": db.state.get("ledger_rows", 1) + 1,
+                        "state_sha256": params["p_state_sha256"],
+                        "storage_auth_key_id": params[
+                            "p_storage_auth_key_id"
+                        ],
+                        "storage_auth_tag": params[
+                            "p_storage_auth_tag"
+                        ],
                     }
+                    db.sealed = True
                     return FakeTrustResult({
                         "status": "advanced",
                         "generation": params["p_next_generation"],
@@ -608,6 +806,7 @@ def test_trace_keyset_discovery_requires_pin_and_caches_public_trust(monkeypatch
         "trust": None,
     })
     db = FakeTrustDB()
+    redis = FakeTrustRedis()
     payload = {
         "decision_trace_signing": {
             "enabled": True,
@@ -635,6 +834,7 @@ def test_trace_keyset_discovery_requires_pin_and_caches_public_trust(monkeypatch
     keyset, error, trust = runtime._shine_ai_verification_keyset(
         db,
         get_impl=fake_get,
+        redis_client=redis,
     )
     assert error is None
     assert keyset["keyset_sha256"] == TRACE_SINGLE_KEYSET_SHA256
@@ -648,7 +848,8 @@ def test_trace_keyset_discovery_requires_pin_and_caches_public_trust(monkeypatch
         db,
         get_impl=lambda *args, **kwargs: (_ for _ in ()).throw(
             AssertionError("cached trust must not refetch")
-        )
+        ),
+        redis_client=redis,
     )
     assert error is None
     assert cached == keyset
@@ -665,6 +866,7 @@ def test_trace_keyset_discovery_requires_pin_and_caches_public_trust(monkeypatch
     reloaded, error, reloaded_trust = runtime._shine_ai_verification_keyset(
         db,
         get_impl=fake_get,
+        redis_client=redis,
     )
     assert error is None
     assert reloaded == keyset
@@ -732,7 +934,7 @@ def test_runtime_trace_binds_authenticity_without_signature_bytes():
     changed["components"]["shine_ai"]["decision_trace_authenticity"]["authenticated"] = False
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v4"
+    assert first["version"] == "shine/runtime-trace-v5"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(first)
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(second)
@@ -757,6 +959,8 @@ def test_signed_transition_advances_durable_trust_once(monkeypatch):
         "trusted_keyset": previous,
         "source": "genesis-pin",
     })
+    redis = FakeTrustRedis()
+    seed_checkpoint(redis, previous)
     next_keyset = {
         "active_key_id": "trace-v2",
         "verification_keys": {
@@ -795,6 +999,7 @@ def test_signed_transition_advances_durable_trust_once(monkeypatch):
         db,
         next_keyset,
         {"certificate": "fixture"},
+        redis_client=redis,
     )
 
     assert error is None
@@ -802,7 +1007,7 @@ def test_signed_transition_advances_durable_trust_once(monkeypatch):
     assert trust["status"] == "trusted"
     assert trust["acceptance_mode"] == "signed-transition"
     assert db.state["generation"] == 2
-    assert db.rpc_calls[-1][0] == "shine_ai_trace_trust_advance_v2"
+    assert db.rpc_calls[-1][0] == "shine_ai_trace_trust_snapshot_v3"
 
 
 def test_keyset_generation_skip_is_rejected_before_ledger_mutation():
@@ -836,7 +1041,7 @@ def test_keyset_generation_skip_is_rejected_before_ledger_mutation():
     assert error == "trace-keyset-generation-skip"
     assert trust["status"] == "invalid"
     assert all(
-        name == "shine_ai_trace_trust_snapshot_v2"
+        name == "shine_ai_trace_trust_snapshot_v3"
         for name, _params in db.rpc_calls
     )
 
@@ -887,7 +1092,7 @@ def test_runtime_trace_binds_trust_generation_without_certificate_signature():
     changed["components"]["shine_ai"]["decision_trace_trust"]["generation"] = 3
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v4"
+    assert first["version"] == "shine/runtime-trace-v5"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-CERTIFICATE-SIGNATURE" not in json.dumps(first)
 
@@ -939,7 +1144,7 @@ def test_persisted_trust_rejects_valid_older_generation_as_rollback():
     assert trust["trusted_generation"] == 2
     assert trust["candidate_generation"] == 1
     assert all(
-        name == "shine_ai_trace_trust_snapshot_v2"
+        name == "shine_ai_trace_trust_snapshot_v3"
         for name, _params in db.rpc_calls
     )
 
@@ -989,7 +1194,7 @@ def test_persisted_trust_rejects_same_generation_keyset_fork():
     assert error == "trace-keyset-equivocation-detected"
     assert trust["status"] == "invalid"
     assert all(
-        name == "shine_ai_trace_trust_snapshot_v2"
+        name == "shine_ai_trace_trust_snapshot_v3"
         for name, _params in db.rpc_calls
     )
 
@@ -1056,6 +1261,173 @@ def test_automatic_genesis_bootstrap_never_starts_from_later_generation(
     assert error == "trace-keyset-genesis-generation-invalid"
     assert trust["status"] == "invalid"
     assert all(
-        name == "shine_ai_trace_trust_snapshot_v2"
+        name == "shine_ai_trace_trust_snapshot_v3"
         for name, _params in db.rpc_calls
     )
+
+
+
+def test_existing_generation_one_is_sealed_and_checkpointed(monkeypatch):
+    monkeypatch.setenv(
+        "SHINE_AI_TRACE_ACCEPTED_KEYSET_SHA256",
+        TRACE_SINGLE_KEYSET_SHA256,
+    )
+    keyset = {
+        "active_key_id": "trace-v1",
+        "verification_keys": {
+            "trace-v1": {
+                "public_key_b64": TRACE_PUBLIC_KEY_B64,
+                "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+            },
+        },
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "generation": 1,
+    }
+    db = FakeTrustDB(
+        {
+            "generation": 1,
+            "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+            "trusted_keyset": keyset,
+            "source": "genesis-pin",
+            "ledger_rows": 1,
+        },
+        sealed=False,
+    )
+    redis = FakeTrustRedis()
+
+    sealed, error = runtime._seal_existing_trace_trust_state(
+        db,
+        redis_client=redis,
+    )
+
+    assert error is None
+    assert sealed is not None
+    assert db.sealed is True
+    assert sealed["storage"]["status"] == "verified"
+    assert (
+        sealed["storage"]["independent_retention"]
+        == "railway-redis-volume"
+    )
+    assert any(
+        name == "shine_ai_trace_trust_seal_v3"
+        for name, _params in db.rpc_calls
+    )
+    checkpoint = trust_storage.read_rollback_checkpoint(
+        redis_client=redis
+    )
+    assert checkpoint["generation"] == 1
+    assert checkpoint["keyset_sha256"] == TRACE_SINGLE_KEYSET_SHA256
+
+
+def test_authenticated_state_rejects_database_tag_tampering():
+    keyset = {
+        "active_key_id": "trace-v1",
+        "verification_keys": {
+            "trace-v1": {
+                "public_key_b64": TRACE_PUBLIC_KEY_B64,
+                "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+            },
+        },
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "generation": 1,
+    }
+    db = FakeTrustDB({
+        "generation": 1,
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "trusted_keyset": keyset,
+        "source": "genesis-pin",
+        "ledger_rows": 1,
+    })
+    redis = FakeTrustRedis()
+    seed_checkpoint(redis, keyset)
+    db.state["storage_auth_tag"] = "0" * 64
+
+    state, error = runtime._trace_trust_state(
+        db,
+        redis_client=redis,
+    )
+
+    assert state is None
+    assert error == "trust-state-envelope-auth-failed"
+
+
+def test_independent_checkpoint_rejects_rolled_back_database():
+    current = {
+        "active_key_id": "trace-v2",
+        "verification_keys": {
+            "trace-v2": {
+                "public_key_b64": TRACE_PUBLIC_KEY_B64,
+                "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+            },
+        },
+        "keyset_sha256": "",
+        "generation": 2,
+    }
+    current["keyset_sha256"] = runtime._canonical_sha256({
+        "version": 1,
+        "keys": current["verification_keys"],
+    })
+    older = {
+        "active_key_id": "trace-v1",
+        "verification_keys": {
+            "trace-v1": {
+                "public_key_b64": TRACE_PUBLIC_KEY_B64,
+                "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+            },
+        },
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "generation": 1,
+    }
+    redis = FakeTrustRedis()
+    seed_checkpoint(redis, current)
+    db = FakeTrustDB({
+        "generation": 1,
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "trusted_keyset": older,
+        "source": "genesis-pin",
+        "ledger_rows": 1,
+    })
+
+    state, error = runtime._trace_trust_state(
+        db,
+        redis_client=redis,
+    )
+
+    assert state is None
+    assert error == "trust-checkpoint-rollback-detected"
+
+
+def test_runtime_trace_binds_storage_proof_without_hmac_tag_or_redis_url():
+    packet = runtime_for_human_status()
+    packet["components"]["shine_ai"]["decision_trace_trust"] = {
+        "status": "trusted",
+        "acceptance_mode": "existing-ledger",
+        "generation": 1,
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "state_sha256": "a" * 64,
+        "storage_auth_key_id": "storage-a",
+        "checkpoint_mode": "existing-checkpoint",
+        "storage_authenticated": True,
+        "checkpoint_independent": True,
+        "storage_auth_tag": "PRIVATE-HMAC-TAG",
+        "redis_url": "PRIVATE-REDIS-URL",
+    }
+    first = runtime.build_runtime_trace(
+        packet,
+        {"status": "not_required"},
+    )
+
+    changed = json.loads(json.dumps(packet))
+    changed["components"]["shine_ai"]["decision_trace_trust"][
+        "state_sha256"
+    ] = "b" * 64
+    second = runtime.build_runtime_trace(
+        changed,
+        {"status": "not_required"},
+    )
+
+    rendered = json.dumps(first)
+    assert first["version"] == "shine/runtime-trace-v5"
+    assert first["lineage_sha256"] != second["lineage_sha256"]
+    assert "PRIVATE-HMAC-TAG" not in rendered
+    assert "PRIVATE-REDIS-URL" not in rendered
