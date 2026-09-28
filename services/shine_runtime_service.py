@@ -27,10 +27,11 @@ from services.shine_ai_trace_verifier import (
     digest_verification_keyset,
     verify_decision_trace,
     verify_decision_trace_authenticity,
+    verify_keyset_transition,
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v3"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v4"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -42,6 +43,7 @@ _TRACE_KEYSET_CACHE: dict[str, Any] = {
     "expires_at": 0.0,
     "pin": "",
     "keyset": None,
+    "trust": None,
 }
 
 
@@ -281,27 +283,201 @@ def _trace_keyset_pins() -> tuple[str, ...]:
     return values
 
 
+def _trace_trust_state(db) -> dict | None:
+    try:
+        rows = (
+            db.table("shine_ai_trace_trust_state")
+            .select(
+                "generation,keyset_sha256,trusted_keyset,source,"
+                "authorization_key_id,authorization_public_key_sha256,"
+                "accepted_at,updated_at"
+            )
+            .eq("singleton", True)
+            .limit(1)
+            .execute()
+        )
+    except Exception:
+        return None
+    data = rows.data if isinstance(rows.data, list) else []
+    return data[0] if data and isinstance(data[0], dict) else None
+
+
+def _accept_trace_keyset_candidate(
+    db,
+    candidate: dict,
+    transition: dict | None,
+) -> tuple[dict | None, str | None, dict]:
+    pins = _trace_keyset_pins()
+    digest = digest_verification_keyset(candidate)
+    generation = candidate.get("generation")
+    if (
+        digest is None
+        or not isinstance(generation, int)
+        or generation < 1
+    ):
+        return None, "trace-keyset-candidate-invalid", {
+            "status": "invalid",
+            "reason_code": "trace-keyset-candidate-invalid",
+        }
+
+    state = _trace_trust_state(db)
+    if state is None:
+        if digest not in set(pins):
+            return None, "trace-keyset-genesis-pin-mismatch", {
+                "status": "unavailable",
+                "reason_code": "trace-keyset-genesis-pin-mismatch",
+                "generation": generation,
+                "keyset_sha256": digest,
+            }
+        source = "genesis-pin" if generation == 1 else "out-of-band-pin"
+        try:
+            result = db.rpc(
+                "shine_ai_trace_trust_bootstrap_v1",
+                {
+                    "p_generation": generation,
+                    "p_keyset_sha256": digest,
+                    "p_trusted_keyset": candidate,
+                    "p_source": source,
+                },
+            ).execute()
+        except Exception:
+            return None, "trace-keyset-ledger-bootstrap-failed", {
+                "status": "unavailable",
+                "reason_code": "trace-keyset-ledger-bootstrap-failed",
+            }
+        payload = result.data if isinstance(result.data, dict) else {}
+        if payload.get("status") not in {"trusted", "already_trusted"}:
+            return None, "trace-keyset-ledger-bootstrap-unverified", {
+                "status": "unavailable",
+                "reason_code": "trace-keyset-ledger-bootstrap-unverified",
+            }
+        return candidate, None, {
+            "status": "trusted",
+            "acceptance_mode": source,
+            "generation": generation,
+            "keyset_sha256": digest,
+        }
+
+    try:
+        trusted_generation = int(state.get("generation"))
+    except (TypeError, ValueError):
+        return None, "trace-keyset-ledger-invalid", {
+            "status": "invalid",
+            "reason_code": "trace-keyset-ledger-invalid",
+        }
+    trusted_digest = str(state.get("keyset_sha256") or "")
+    trusted_keyset = (
+        state.get("trusted_keyset")
+        if isinstance(state.get("trusted_keyset"), dict)
+        else {}
+    )
+
+    if generation == trusted_generation and digest == trusted_digest:
+        return candidate, None, {
+            "status": "trusted",
+            "acceptance_mode": "existing-ledger",
+            "generation": generation,
+            "keyset_sha256": digest,
+        }
+
+    if generation <= trusted_generation:
+        return None, "trace-keyset-stale-or-conflicting", {
+            "status": "invalid",
+            "reason_code": "trace-keyset-stale-or-conflicting",
+            "trusted_generation": trusted_generation,
+            "candidate_generation": generation,
+        }
+    if generation != trusted_generation + 1:
+        return None, "trace-keyset-generation-skip", {
+            "status": "invalid",
+            "reason_code": "trace-keyset-generation-skip",
+            "trusted_generation": trusted_generation,
+            "candidate_generation": generation,
+        }
+
+    previous = dict(trusted_keyset)
+    previous["generation"] = trusted_generation
+    previous["keyset_sha256"] = trusted_digest
+    continuity = verify_keyset_transition(
+        previous,
+        candidate,
+        transition,
+    )
+    if continuity.get("status") != "verified":
+        return None, str(
+            continuity.get("reason_code")
+            or "trace-keyset-transition-invalid"
+        ), continuity
+
+    try:
+        result = db.rpc(
+            "shine_ai_trace_trust_advance_v1",
+            {
+                "p_expected_generation": trusted_generation,
+                "p_expected_keyset_sha256": trusted_digest,
+                "p_next_generation": generation,
+                "p_next_keyset_sha256": digest,
+                "p_next_trusted_keyset": candidate,
+                "p_authorization_key_id": continuity[
+                    "authorization_key_id"
+                ],
+                "p_authorization_public_key_sha256": continuity[
+                    "authorization_public_key_sha256"
+                ],
+                "p_certificate_sha256": continuity[
+                    "certificate_sha256"
+                ],
+            },
+        ).execute()
+    except Exception:
+        return None, "trace-keyset-ledger-advance-failed", {
+            "status": "unavailable",
+            "reason_code": "trace-keyset-ledger-advance-failed",
+        }
+    payload = result.data if isinstance(result.data, dict) else {}
+    if payload.get("status") != "advanced":
+        return None, "trace-keyset-ledger-advance-unverified", {
+            "status": "unavailable",
+            "reason_code": "trace-keyset-ledger-advance-unverified",
+        }
+
+    return candidate, None, {
+        **continuity,
+        "status": "trusted",
+        "acceptance_mode": "signed-transition",
+    }
+
+
 def _shine_ai_verification_keyset(
+    db,
     *,
     timeout_seconds: float = 4.0,
     get_impl=None,
-) -> tuple[dict | None, str | None]:
+) -> tuple[dict | None, str | None, dict]:
     pins = _trace_keyset_pins()
     if not pins:
-        return None, "trace-keyset-pin-unavailable"
+        return None, "trace-keyset-pin-unavailable", {
+            "status": "unavailable",
+            "reason_code": "trace-keyset-pin-unavailable",
+        }
     pin_identity = ",".join(pins)
     now = time.monotonic()
     cached = _TRACE_KEYSET_CACHE.get("keyset")
+    cached_trust = _TRACE_KEYSET_CACHE.get("trust")
     if (
         isinstance(cached, dict)
+        and isinstance(cached_trust, dict)
         and _TRACE_KEYSET_CACHE.get("pin") == pin_identity
         and float(_TRACE_KEYSET_CACHE.get("expires_at") or 0.0) > now
     ):
-        return cached, None
+        return cached, None, cached_trust
 
     base = os.getenv("SHINE_AI_BASE_URL", "").rstrip("/")
     if not base.startswith("https://"):
-        return None, "shine-ai-runtime-url-unavailable"
+        return None, "shine-ai-runtime-url-unavailable", {
+            "status": "unavailable",
+            "reason_code": "shine-ai-runtime-url-unavailable",
+        }
     get = get_impl or httpx.get
     try:
         headers = _shine_ai_signed_headers(
@@ -317,9 +493,15 @@ def _shine_ai_verification_keyset(
         )
         data = _response_json(response)
     except Exception:
-        return None, "trace-keyset-discovery-unavailable"
+        return None, "trace-keyset-discovery-unavailable", {
+            "status": "unavailable",
+            "reason_code": "trace-keyset-discovery-unavailable",
+        }
     if int(response.status_code) >= 400:
-        return None, "trace-keyset-discovery-rejected"
+        return None, "trace-keyset-discovery-rejected", {
+            "status": "unavailable",
+            "reason_code": "trace-keyset-discovery-rejected",
+        }
 
     signing = (
         data.get("decision_trace_signing")
@@ -330,21 +512,34 @@ def _shine_ai_verification_keyset(
         "active_key_id": signing.get("active_key_id"),
         "verification_keys": signing.get("verification_keys"),
         "keyset_sha256": signing.get("keyset_sha256"),
+        "generation": signing.get("keyset_generation"),
     }
-    digest = digest_verification_keyset(keyset)
-    if (
-        signing.get("enabled") is not True
-        or digest is None
-        or digest not in set(pins)
-    ):
-        return None, "trace-keyset-trust-mismatch"
+    transition = (
+        signing.get("transition")
+        if isinstance(signing.get("transition"), dict)
+        else None
+    )
+    if signing.get("enabled") is not True:
+        return None, "trace-keyset-signing-disabled", {
+            "status": "unavailable",
+            "reason_code": "trace-keyset-signing-disabled",
+        }
+
+    trusted, error, trust = _accept_trace_keyset_candidate(
+        db,
+        keyset,
+        transition,
+    )
+    if trusted is None:
+        return None, error or "trace-keyset-trust-mismatch", trust
 
     _TRACE_KEYSET_CACHE.update({
         "expires_at": now + TRACE_KEYSET_CACHE_SECONDS,
         "pin": pin_identity,
-        "keyset": keyset,
+        "keyset": trusted,
+        "trust": trust,
     })
-    return keyset, None
+    return trusted, None, trust
 
 
 def _shine_ai_advisory(
@@ -355,6 +550,7 @@ def _shine_ai_advisory(
     concierge: dict,
     foundation: dict,
     defence: dict,
+    db,
     timeout_seconds: float = 6.0,
     post_impl=None,
     capabilities_get_impl=None,
@@ -414,8 +610,11 @@ def _shine_ai_advisory(
     body = json.dumps(
         payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     ).encode("utf-8")
-    trusted_keyset, trust_error = _shine_ai_verification_keyset(
-        get_impl=capabilities_get_impl,
+    trusted_keyset, trust_error, trust_continuity = (
+        _shine_ai_verification_keyset(
+            db,
+            get_impl=capabilities_get_impl,
+        )
     )
     headers = _shine_ai_headers(body)
     post = post_impl or httpx.post
@@ -456,7 +655,9 @@ def _shine_ai_advisory(
         verify_decision_trace_authenticity(
             data,
             trusted_keyset=trusted_keyset,
-            accepted_keyset_sha256=list(_trace_keyset_pins()),
+            accepted_keyset_sha256=[
+                str(trusted_keyset.get("keyset_sha256") or "")
+            ],
             header_version=response_version,
             header_release=response_release,
         )
@@ -494,6 +695,7 @@ def _shine_ai_advisory(
         ),
         "decision_trace_verification": decision_verification,
         "decision_trace_authenticity": decision_authenticity,
+        "decision_trace_trust": trust_continuity,
         "recovery": (
             _project(
                 data.get("recovery"),
@@ -648,6 +850,19 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                     "version", "status", "authenticated", "reason_code",
                     "key_id", "public_key_sha256", "keyset_sha256",
                     "service_version", "service_release", "lineage_sha256",
+                ),
+            ),
+            "decision_trace_trust": _project(
+                item.get("decision_trace_trust", {}),
+                (
+                    "version", "status", "reason_code", "acceptance_mode",
+                    "generation", "trusted_generation",
+                    "candidate_generation", "from_generation",
+                    "to_generation", "keyset_sha256",
+                    "from_keyset_sha256", "to_keyset_sha256",
+                    "authorization_key_id",
+                    "authorization_public_key_sha256",
+                    "certificate_sha256",
                 ),
             ),
         }
@@ -824,6 +1039,12 @@ def build_runtime_recovery(
         else {}
     )
     authenticity_status = str(authenticity.get("status") or "")
+    trust = (
+        shine_ai.get("decision_trace_trust")
+        if isinstance(shine_ai.get("decision_trace_trust"), dict)
+        else {}
+    )
+    trust_status = str(trust.get("status") or "")
 
     if str(source.get("status") or "") == "degraded" or component_degraded:
         if mode == "none":
@@ -840,6 +1061,11 @@ def build_runtime_recovery(
         mode = "degraded"
         stage = "authenticity"
         reasons.append("authenticity-degraded")
+
+    if trust_status in {"invalid", "unavailable"}:
+        mode = "degraded"
+        stage = "trust-continuity"
+        reasons.append("trust-continuity-degraded")
 
     execution_status = str(execution_item.get("status") or "")
     timed_out = execution_item.get("observation_timed_out") is True
@@ -1064,6 +1290,7 @@ def preflight_shine_request(
         concierge=concierge,
         foundation=foundation,
         defence=defence,
+        db=db,
         post_impl=shine_ai_post_impl,
     )
     runtime["components"]["shine_ai"] = shine_ai
@@ -1103,6 +1330,22 @@ def preflight_shine_request(
     ):
         runtime["warnings"].append(
             f"shine-ai-authenticity:{ai_authenticity.get('status')}"
+        )
+
+    ai_trust = (
+        (runtime["components"].get("shine_ai") or {}).get(
+            "decision_trace_trust",
+            {},
+        )
+        if isinstance(runtime["components"].get("shine_ai"), dict)
+        else {}
+    )
+    if (
+        isinstance(ai_trust, dict)
+        and ai_trust.get("status") in {"invalid", "unavailable"}
+    ):
+        runtime["warnings"].append(
+            f"shine-ai-trust:{ai_trust.get('status')}"
         )
 
     runtime["status"] = "ready" if not runtime["warnings"] else "degraded"
