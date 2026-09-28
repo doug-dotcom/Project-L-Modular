@@ -24,9 +24,59 @@ class Rpc:
         return Result(self.data)
 
 
+class Query:
+    def __init__(self, db, table, mode="select", payload=None):
+        self.db = db
+        self.table_name = table
+        self.mode = mode
+        self.payload = payload
+        self.filters = {}
+
+    def select(self, *args):
+        return self
+
+    def eq(self, key, value):
+        self.filters[key] = value
+        return self
+
+    def limit(self, value):
+        return self
+
+    def insert(self, payload):
+        return Query(self.db, self.table_name, "insert", payload)
+
+    def update(self, payload):
+        return Query(self.db, self.table_name, "update", payload)
+
+    def execute(self):
+        rows = self.db.tables.setdefault(self.table_name, [])
+        if self.mode == "select":
+            return Result([
+                row.copy() for row in rows
+                if all(str(row.get(k)) == str(v) for k, v in self.filters.items())
+            ])
+        if self.mode == "insert":
+            rows.append(self.payload.copy())
+            return Result([self.payload.copy()])
+        if self.mode == "update":
+            changed = []
+            for row in rows:
+                if all(str(row.get(k)) == str(v) for k, v in self.filters.items()):
+                    row.update(self.payload)
+                    changed.append(row.copy())
+            return Result(changed)
+        raise AssertionError(self.mode)
+
+
 class FakeDb:
     def __init__(self):
         self.calls = []
+        self.tables = {
+            "companion_foundation_pending_jobs": [],
+        }
+
+    def table(self, name):
+        return Query(self, name)
 
     def rpc(self, name, params=None):
         self.calls.append((name, params or {}))
