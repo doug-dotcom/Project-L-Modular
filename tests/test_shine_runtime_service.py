@@ -499,7 +499,7 @@ def test_runtime_trace_binds_recovery_control_plane_without_private_content():
     changed["recovery"]["reason_codes"] = ["PRIVATE-REASON-TEXT-NOT-HASHED"]
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v5"
+    assert first["version"] == "shine/runtime-trace-v6"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-REASON-TEXT-NOT-HASHED" not in json.dumps(second)
 
@@ -934,7 +934,7 @@ def test_runtime_trace_binds_authenticity_without_signature_bytes():
     changed["components"]["shine_ai"]["decision_trace_authenticity"]["authenticated"] = False
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v5"
+    assert first["version"] == "shine/runtime-trace-v6"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(first)
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(second)
@@ -1092,7 +1092,7 @@ def test_runtime_trace_binds_trust_generation_without_certificate_signature():
     changed["components"]["shine_ai"]["decision_trace_trust"]["generation"] = 3
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v5"
+    assert first["version"] == "shine/runtime-trace-v6"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-CERTIFICATE-SIGNATURE" not in json.dumps(first)
 
@@ -1427,7 +1427,102 @@ def test_runtime_trace_binds_storage_proof_without_hmac_tag_or_redis_url():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v5"
+    assert first["version"] == "shine/runtime-trace-v6"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-HMAC-TAG" not in rendered
     assert "PRIVATE-REDIS-URL" not in rendered
+
+
+
+def test_required_external_witness_cannot_be_missing_from_cached_trust(
+    monkeypatch,
+):
+    monkeypatch.setenv(
+        "SHINE_AI_TRACE_ACCEPTED_KEYSET_SHA256",
+        TRACE_SINGLE_KEYSET_SHA256,
+    )
+    monkeypatch.setenv(
+        "SHINE_FOUNDATION_TRUST_WITNESS_REQUIRED",
+        "true",
+    )
+    keyset = {
+        "active_key_id": "trace-v1",
+        "verification_keys": {
+            "trace-v1": {
+                "public_key_b64": TRACE_PUBLIC_KEY_B64,
+                "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+            },
+        },
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "generation": 1,
+    }
+    redis = FakeTrustRedis()
+    seed_checkpoint(redis, keyset)
+    runtime._TRACE_KEYSET_CACHE.update({
+        "expires_at": float("inf"),
+        "pin": TRACE_SINGLE_KEYSET_SHA256,
+        "keyset": keyset,
+        "trust": {
+            "status": "trusted",
+            "acceptance_mode": "existing-ledger",
+        },
+    })
+
+    trusted, error, trust = runtime._shine_ai_verification_keyset(
+        FakeTrustDB({
+            "generation": 1,
+            "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+            "trusted_keyset": keyset,
+            "source": "genesis-pin",
+            "ledger_rows": 1,
+        }),
+        redis_client=redis,
+    )
+
+    assert trusted is None
+    assert error == "foundation-witness-unverified"
+    assert trust["status"] == "invalid"
+
+
+def test_runtime_trace_binds_external_witness_without_foundation_auth_tag():
+    packet = runtime_for_human_status()
+    packet["components"]["shine_ai"]["decision_trace_trust"] = {
+        "status": "trusted",
+        "acceptance_mode": "existing-ledger",
+        "generation": 1,
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "state_sha256": "a" * 64,
+        "storage_authenticated": True,
+        "checkpoint_independent": True,
+        "external_witness": {
+            "status": "verified",
+            "witness_id": "foundation-project-l",
+            "sequence": 1,
+            "head_sha256": "b" * 64,
+            "generation": 1,
+            "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+            "state_sha256": "a" * 64,
+            "auth_key_id": "foundation-witness-v1",
+            "mode": "existing-witness",
+            "independent_retention": "foundation-supabase",
+            "authTag": "PRIVATE-FOUNDATION-HMAC",
+        },
+    }
+    first = runtime.build_runtime_trace(
+        packet,
+        {"status": "not_required"},
+    )
+
+    changed = json.loads(json.dumps(packet))
+    changed["components"]["shine_ai"]["decision_trace_trust"][
+        "external_witness"
+    ]["sequence"] = 2
+    second = runtime.build_runtime_trace(
+        changed,
+        {"status": "not_required"},
+    )
+
+    rendered = json.dumps(first)
+    assert first["version"] == "shine/runtime-trace-v6"
+    assert first["lineage_sha256"] != second["lineage_sha256"]
+    assert "PRIVATE-FOUNDATION-HMAC" not in rendered

@@ -29,10 +29,15 @@ STATE_AUTH_DOMAIN = "shine-ai:decision-trace-trust-state:v1"
 CHECKPOINT_AUTH_DOMAIN = (
     "shine-ai:decision-trace-trust-state-checkpoint:v1"
 )
+MONOTONIC_HEAD_AUTH_DOMAIN = (
+    "shine-ai:decision-trace-trust-state-monotonic-head:v1"
+)
 REDIS_CHECKPOINT_KEY = "shine:project-l:trace-trust:checkpoint:v1"
+REDIS_MONOTONIC_HEAD_KEY = "shine:project-l:trace-trust:monotonic-head:v1"
 
 _ENVELOPE_TYPE = "decision_trace_trust_state_authenticated"
 _CHECKPOINT_TYPE = "decision_trace_trust_state_rollback_checkpoint"
+_HEAD_TYPE = "decision_trace_trust_state_monotonic_head"
 
 _CHECKPOINT_CAS = r"""
 local key = KEYS[1]
@@ -99,6 +104,53 @@ if next_generation == current_generation then
 end
 return {'advanced'}
 """
+
+_HEAD_CAS = r"""
+local key = KEYS[1]
+local expected_sequence = tonumber(ARGV[1])
+local expected_head_sha = ARGV[2]
+local next_sequence = tonumber(ARGV[3])
+local next_head_sha = ARGV[4]
+local head_json = ARGV[5]
+
+local current_sequence_raw = redis.call('HGET', key, 'sequence')
+if not current_sequence_raw then
+  if expected_sequence ~= 0 or next_sequence ~= 1 then
+    return {'missing'}
+  end
+  redis.call(
+    'HSET',
+    key,
+    'sequence', tostring(next_sequence),
+    'head_sha256', next_head_sha,
+    'head_json', head_json
+  )
+  return {'created'}
+end
+
+local current_sequence = tonumber(current_sequence_raw)
+local current_head_sha = redis.call('HGET', key, 'head_sha256') or ''
+
+if current_sequence ~= expected_sequence then
+  return {'precondition-sequence', tostring(current_sequence)}
+end
+if current_head_sha ~= expected_head_sha then
+  return {'precondition-head', current_head_sha}
+end
+if next_sequence ~= current_sequence + 1 then
+  return {'sequence-invalid'}
+end
+
+redis.call(
+  'HSET',
+  key,
+  'sequence', tostring(next_sequence),
+  'head_sha256', next_head_sha,
+  'head_json', head_json
+)
+return {'advanced'}
+"""
+
 
 
 class TrustStorageError(RuntimeError):
@@ -594,6 +646,289 @@ def prepare_rollback_checkpoint(
     }
 
 
+def _checkpoint_sha256(checkpoint: Any) -> str:
+    verified = verify_rollback_checkpoint(checkpoint)
+    return _sha256_text(_canonical_json(verified))
+
+
+def create_monotonic_head(
+    state: Any,
+    checkpoint: Any,
+    sequence: int,
+    *,
+    auth_key_id: str | None = None,
+) -> dict[str, Any]:
+    projected = project_trust_state(state)
+    verified_checkpoint = verify_rollback_checkpoint(checkpoint)
+    if (
+        verified_checkpoint["generation"] != projected["generation"]
+        or verified_checkpoint["keyset_sha256"]
+        != projected["keyset_sha256"]
+        or verified_checkpoint["stateSha256"]
+        != digest_trust_state(projected)
+    ):
+        raise TrustStorageError("trust-head-checkpoint-state-mismatch")
+    if (
+        not isinstance(sequence, int)
+        or isinstance(sequence, bool)
+        or sequence < 1
+        or sequence > 10_000_000
+    ):
+        raise TrustStorageError("trust-head-sequence-invalid")
+
+    active, keyring = _storage_keyring()
+    key_id = auth_key_id or active
+    if KEY_ID_RE.fullmatch(key_id) is None or key_id not in keyring:
+        raise TrustStorageError("trust-storage-auth-key-unavailable")
+
+    head = {
+        "headVersion": 1,
+        "headType": _HEAD_TYPE,
+        "authAlgorithm": "HMAC-SHA-256",
+        "authKeyId": key_id,
+        "checkpointChainVersion": 1,
+        "sequence": sequence,
+        "checkpointSha256": _checkpoint_sha256(
+            verified_checkpoint
+        ),
+        "generation": projected["generation"],
+        "keyset_sha256": projected["keyset_sha256"],
+        "stateSha256": verified_checkpoint["stateSha256"],
+    }
+    material = _canonical_json({
+        "headVersion": 1,
+        "headType": _HEAD_TYPE,
+        "checkpointChainVersion": 1,
+        "sequence": head["sequence"],
+        "checkpointSha256": head["checkpointSha256"],
+        "generation": head["generation"],
+        "keyset_sha256": head["keyset_sha256"],
+        "stateSha256": head["stateSha256"],
+    })
+    head_sha256 = _sha256_text(material)
+    auth_input = (
+        MONOTONIC_HEAD_AUTH_DOMAIN
+        + "\n"
+        + key_id
+        + "\n"
+        + head_sha256
+        + "\n"
+        + material
+    )
+    return {
+        **head,
+        "headSha256": head_sha256,
+        "authTag": _hmac_sha256(keyring[key_id], auth_input),
+    }
+
+
+def verify_monotonic_head(head: Any) -> dict[str, Any]:
+    if not isinstance(head, dict):
+        raise TrustStorageError("trust-head-invalid")
+    required = (
+        "headVersion",
+        "headType",
+        "authAlgorithm",
+        "authKeyId",
+        "checkpointChainVersion",
+        "sequence",
+        "checkpointSha256",
+        "generation",
+        "keyset_sha256",
+        "stateSha256",
+        "headSha256",
+        "authTag",
+    )
+    if any(key not in head for key in required):
+        raise TrustStorageError("trust-head-invalid")
+    key_id = head.get("authKeyId")
+    sequence = head.get("sequence")
+    generation = head.get("generation")
+    hashes = (
+        head.get("checkpointSha256"),
+        head.get("keyset_sha256"),
+        head.get("stateSha256"),
+        head.get("headSha256"),
+        head.get("authTag"),
+    )
+    if (
+        head.get("headVersion") != 1
+        or head.get("headType") != _HEAD_TYPE
+        or head.get("authAlgorithm") != "HMAC-SHA-256"
+        or head.get("checkpointChainVersion") != 1
+        or not isinstance(key_id, str)
+        or KEY_ID_RE.fullmatch(key_id) is None
+        or not isinstance(sequence, int)
+        or isinstance(sequence, bool)
+        or sequence < 1
+        or sequence > 10_000_000
+        or not isinstance(generation, int)
+        or isinstance(generation, bool)
+        or generation < 1
+        or generation > 1_000_000
+        or any(
+            not isinstance(value, str)
+            or SHA256_RE.fullmatch(value) is None
+            for value in hashes
+        )
+    ):
+        raise TrustStorageError("trust-head-invalid")
+
+    material = _canonical_json({
+        "headVersion": 1,
+        "headType": _HEAD_TYPE,
+        "checkpointChainVersion": 1,
+        "sequence": sequence,
+        "checkpointSha256": head["checkpointSha256"],
+        "generation": generation,
+        "keyset_sha256": head["keyset_sha256"],
+        "stateSha256": head["stateSha256"],
+    })
+    expected_head_sha = _sha256_text(material)
+    if not hmac.compare_digest(
+        expected_head_sha,
+        head["headSha256"],
+    ):
+        raise TrustStorageError("trust-head-digest-mismatch")
+
+    expected_tag = _hmac_sha256(
+        _secret_for(key_id),
+        MONOTONIC_HEAD_AUTH_DOMAIN
+        + "\n"
+        + key_id
+        + "\n"
+        + head["headSha256"]
+        + "\n"
+        + material,
+    )
+    if not hmac.compare_digest(expected_tag, head["authTag"]):
+        raise TrustStorageError("trust-head-auth-failed")
+    return {key: head[key] for key in required}
+
+
+def read_monotonic_head(*, redis_client=None) -> dict[str, Any] | None:
+    client = _redis_client(redis_client)
+    try:
+        data = client.hgetall(REDIS_MONOTONIC_HEAD_KEY)
+    except RedisError as exc:
+        raise TrustStorageError(
+            "trust-head-redis-unavailable"
+        ) from exc
+    if not data:
+        return None
+    raw = data.get("head_json")
+    if not isinstance(raw, str) or not raw:
+        raise TrustStorageError("trust-head-storage-invalid")
+    try:
+        head = json.loads(raw)
+    except Exception as exc:
+        raise TrustStorageError("trust-head-storage-invalid") from exc
+    verified = verify_monotonic_head(head)
+    if (
+        str(data.get("sequence") or "") != str(verified["sequence"])
+        or data.get("head_sha256") != verified["headSha256"]
+    ):
+        raise TrustStorageError("trust-head-storage-mismatch")
+    return verified
+
+
+def prepare_monotonic_head(
+    state: Any,
+    *,
+    redis_client=None,
+) -> dict[str, Any]:
+    projected = project_trust_state(state)
+    client = _redis_client(redis_client)
+    checkpoint = read_rollback_checkpoint(redis_client=client)
+    if checkpoint is None:
+        raise TrustStorageError("trust-checkpoint-missing")
+    if not _checkpoint_matches_state(checkpoint, projected):
+        raise TrustStorageError("trust-head-checkpoint-state-mismatch")
+
+    current = read_monotonic_head(redis_client=client)
+    state_sha = checkpoint["stateSha256"]
+
+    if current is not None:
+        if (
+            current["generation"] == projected["generation"]
+            and current["keyset_sha256"]
+            == projected["keyset_sha256"]
+            and current["stateSha256"] == state_sha
+        ):
+            return {
+                "status": "ready",
+                "mode": "existing-head",
+                "head": current,
+            }
+        if current["generation"] > projected["generation"]:
+            raise TrustStorageError("trust-head-rollback-detected")
+        if current["generation"] < projected["generation"] - 1:
+            raise TrustStorageError("trust-head-generation-skip")
+        if (
+            current["generation"] == projected["generation"]
+            and current["keyset_sha256"]
+            != projected["keyset_sha256"]
+        ):
+            raise TrustStorageError("trust-head-keyset-equivocation")
+        if (
+            current["generation"] + 1 == projected["generation"]
+            and current["keyset_sha256"]
+            == projected["keyset_sha256"]
+        ):
+            raise TrustStorageError(
+                "trust-head-generation-without-keyset-change"
+            )
+        if current["stateSha256"] == state_sha:
+            raise TrustStorageError("trust-head-state-not-advanced")
+        sequence = current["sequence"] + 1
+        expected_sequence = current["sequence"]
+        expected_head_sha = current["headSha256"]
+    else:
+        if projected["generation"] != 1:
+            raise TrustStorageError("trust-head-genesis-missing")
+        sequence = 1
+        expected_sequence = 0
+        expected_head_sha = ""
+
+    candidate = create_monotonic_head(
+        projected,
+        checkpoint,
+        sequence,
+    )
+    raw_candidate = _canonical_json(candidate)
+    try:
+        result = client.eval(
+            _HEAD_CAS,
+            1,
+            REDIS_MONOTONIC_HEAD_KEY,
+            str(expected_sequence),
+            expected_head_sha,
+            str(sequence),
+            candidate["headSha256"],
+            raw_candidate,
+        )
+    except RedisError as exc:
+        raise TrustStorageError("trust-head-redis-unavailable") from exc
+
+    code = (
+        str(result[0])
+        if isinstance(result, (list, tuple)) and result
+        else str(result or "")
+    )
+    if code not in {"created", "advanced"}:
+        raise TrustStorageError(
+            "trust-head-cas-" + (code or "failed")
+        )
+    stored = read_monotonic_head(redis_client=client)
+    if stored is None or stored["headSha256"] != candidate["headSha256"]:
+        raise TrustStorageError("trust-head-write-unverified")
+    return {
+        "status": "ready",
+        "mode": code,
+        "head": stored,
+    }
+
+
 def verify_state_against_checkpoint(
     state: Any,
     *,
@@ -627,17 +962,23 @@ def verify_state_against_checkpoint(
 
 __all__ = [
     "CHECKPOINT_AUTH_DOMAIN",
+    "MONOTONIC_HEAD_AUTH_DOMAIN",
     "REDIS_CHECKPOINT_KEY",
+    "REDIS_MONOTONIC_HEAD_KEY",
     "STATE_AUTH_DOMAIN",
     "TrustStorageError",
     "create_authenticated_envelope",
     "create_rollback_checkpoint",
+    "create_monotonic_head",
     "digest_trust_state",
+    "prepare_monotonic_head",
     "prepare_rollback_checkpoint",
     "project_trust_state",
+    "read_monotonic_head",
     "read_rollback_checkpoint",
     "serialize_trust_state",
     "verify_authenticated_envelope",
+    "verify_monotonic_head",
     "verify_rollback_checkpoint",
     "verify_state_against_checkpoint",
 ]

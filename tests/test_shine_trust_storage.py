@@ -45,58 +45,100 @@ class FakeRedis:
         return dict(self.rows.get(key, {}))
 
     def eval(self, _script, _numkeys, key, *args):
-        (
-            expected_generation,
-            expected_state_sha,
-            expected_keyset_sha,
-            next_generation,
-            next_state_sha,
-            next_keyset_sha,
-            checkpoint_json,
-        ) = args
-        expected_generation = int(expected_generation)
-        next_generation = int(next_generation)
-        current = self.rows.get(key)
+        if len(args) == 7:
+            (
+                expected_generation,
+                expected_state_sha,
+                expected_keyset_sha,
+                next_generation,
+                next_state_sha,
+                next_keyset_sha,
+                checkpoint_json,
+            ) = args
+            expected_generation = int(expected_generation)
+            next_generation = int(next_generation)
+            current = self.rows.get(key)
 
-        if current is None:
-            if expected_generation != 0:
-                return ["missing"]
+            if current is None:
+                if expected_generation != 0:
+                    return ["missing"]
+                self.rows[key] = {
+                    "generation": str(next_generation),
+                    "state_sha256": next_state_sha,
+                    "keyset_sha256": next_keyset_sha,
+                    "checkpoint_json": checkpoint_json,
+                }
+                return ["created"]
+
+            current_generation = int(current["generation"])
+            if current_generation != expected_generation:
+                return ["precondition-generation", str(current_generation)]
+            if current["state_sha256"] != expected_state_sha:
+                return ["precondition-state", current["state_sha256"]]
+            if current["keyset_sha256"] != expected_keyset_sha:
+                return ["precondition-keyset", current["keyset_sha256"]]
+            if next_generation < current_generation:
+                return ["rollback"]
+            if next_generation > current_generation + 1:
+                return ["generation-skip"]
+            if (
+                next_generation == current_generation
+                and next_keyset_sha != current["keyset_sha256"]
+            ):
+                return ["equivocation"]
+
             self.rows[key] = {
                 "generation": str(next_generation),
                 "state_sha256": next_state_sha,
                 "keyset_sha256": next_keyset_sha,
                 "checkpoint_json": checkpoint_json,
             }
-            return ["created"]
+            return [
+                "refreshed"
+                if next_generation == current_generation
+                else "advanced"
+            ]
 
-        current_generation = int(current["generation"])
-        if current_generation != expected_generation:
-            return ["precondition-generation", str(current_generation)]
-        if current["state_sha256"] != expected_state_sha:
-            return ["precondition-state", current["state_sha256"]]
-        if current["keyset_sha256"] != expected_keyset_sha:
-            return ["precondition-keyset", current["keyset_sha256"]]
-        if next_generation < current_generation:
-            return ["rollback"]
-        if next_generation > current_generation + 1:
-            return ["generation-skip"]
-        if (
-            next_generation == current_generation
-            and next_keyset_sha != current["keyset_sha256"]
-        ):
-            return ["equivocation"]
+        if len(args) == 5:
+            (
+                expected_sequence,
+                expected_head_sha,
+                next_sequence,
+                next_head_sha,
+                head_json,
+            ) = args
+            expected_sequence = int(expected_sequence)
+            next_sequence = int(next_sequence)
+            current = self.rows.get(key)
+            if current is None:
+                if expected_sequence != 0 or next_sequence != 1:
+                    return ["missing"]
+                self.rows[key] = {
+                    "sequence": str(next_sequence),
+                    "head_sha256": next_head_sha,
+                    "head_json": head_json,
+                }
+                return ["created"]
+            if int(current["sequence"]) != expected_sequence:
+                return [
+                    "precondition-sequence",
+                    current["sequence"],
+                ]
+            if current["head_sha256"] != expected_head_sha:
+                return [
+                    "precondition-head",
+                    current["head_sha256"],
+                ]
+            if next_sequence != expected_sequence + 1:
+                return ["sequence-invalid"]
+            self.rows[key] = {
+                "sequence": str(next_sequence),
+                "head_sha256": next_head_sha,
+                "head_json": head_json,
+            }
+            return ["advanced"]
 
-        self.rows[key] = {
-            "generation": str(next_generation),
-            "state_sha256": next_state_sha,
-            "keyset_sha256": next_keyset_sha,
-            "checkpoint_json": checkpoint_json,
-        }
-        return [
-            "refreshed"
-            if next_generation == current_generation
-            else "advanced"
-        ]
+        raise AssertionError(args)
 
 
 @pytest.fixture(autouse=True)
@@ -334,3 +376,139 @@ def test_retired_storage_key_stops_old_checkpoint_verification(monkeypatch):
         match="trust-storage-auth-key-retired",
     ):
         storage.verify_rollback_checkpoint(checkpoint)
+
+
+
+def test_monotonic_head_bootstraps_and_is_idempotent():
+    redis = FakeRedis()
+    state = single_state()
+    storage.prepare_rollback_checkpoint(
+        state,
+        allow_genesis=True,
+        redis_client=redis,
+    )
+
+    first = storage.prepare_monotonic_head(
+        state,
+        redis_client=redis,
+    )
+    second = storage.prepare_monotonic_head(
+        state,
+        redis_client=redis,
+    )
+
+    assert first["mode"] == "created"
+    assert first["head"]["sequence"] == 1
+    assert second["mode"] == "existing-head"
+    assert second["head"]["headSha256"] == first["head"]["headSha256"]
+    assert storage.verify_monotonic_head(
+        first["head"]
+    )["headSha256"] == first["head"]["headSha256"]
+
+
+def test_monotonic_head_advances_on_active_key_observation():
+    redis = FakeRedis()
+    previous = overlap_state("trace-v1", generation=2)
+    current = overlap_state("trace-v2", generation=2)
+
+    previous_cp = storage.create_rollback_checkpoint(previous)
+    redis.rows[storage.REDIS_CHECKPOINT_KEY] = {
+        "generation": "2",
+        "state_sha256": previous_cp["stateSha256"],
+        "keyset_sha256": previous_cp["keyset_sha256"],
+        "checkpoint_json": json.dumps(
+            previous_cp,
+            separators=(",", ":"),
+        ),
+    }
+    first = storage.prepare_monotonic_head(
+        previous,
+        redis_client=redis,
+    )
+
+    storage.prepare_rollback_checkpoint(
+        current,
+        previous_state=previous,
+        redis_client=redis,
+    )
+    second = storage.prepare_monotonic_head(
+        current,
+        redis_client=redis,
+    )
+
+    assert first["head"]["sequence"] == 1
+    assert second["mode"] == "advanced"
+    assert second["head"]["sequence"] == 2
+    assert second["head"]["generation"] == 2
+    assert (
+        second["head"]["keyset_sha256"]
+        == first["head"]["keyset_sha256"]
+    )
+    assert (
+        second["head"]["stateSha256"]
+        != first["head"]["stateSha256"]
+    )
+
+
+def test_monotonic_head_advances_generation_and_rejects_rollback():
+    redis = FakeRedis()
+    previous = single_state()
+    current = overlap_state("trace-v2", generation=2)
+
+    storage.prepare_rollback_checkpoint(
+        previous,
+        allow_genesis=True,
+        redis_client=redis,
+    )
+    first = storage.prepare_monotonic_head(
+        previous,
+        redis_client=redis,
+    )
+    storage.prepare_rollback_checkpoint(
+        current,
+        previous_state=previous,
+        redis_client=redis,
+    )
+    second = storage.prepare_monotonic_head(
+        current,
+        redis_client=redis,
+    )
+
+    assert first["head"]["sequence"] == 1
+    assert second["head"]["sequence"] == 2
+    assert second["head"]["generation"] == 2
+    assert (
+        second["head"]["keyset_sha256"]
+        != first["head"]["keyset_sha256"]
+    )
+
+    with pytest.raises(
+        storage.TrustStorageError,
+        match="trust-head-checkpoint-state-mismatch",
+    ):
+        storage.prepare_monotonic_head(
+            previous,
+            redis_client=redis,
+        )
+
+
+def test_monotonic_head_authentication_rejects_tampering():
+    redis = FakeRedis()
+    state = single_state()
+    storage.prepare_rollback_checkpoint(
+        state,
+        allow_genesis=True,
+        redis_client=redis,
+    )
+    result = storage.prepare_monotonic_head(
+        state,
+        redis_client=redis,
+    )
+    tampered = dict(result["head"])
+    tampered["headSha256"] = "0" * 64
+
+    with pytest.raises(
+        storage.TrustStorageError,
+        match="trust-head-digest-mismatch",
+    ):
+        storage.verify_monotonic_head(tampered)
