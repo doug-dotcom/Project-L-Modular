@@ -652,11 +652,28 @@ def build_runtime_recovery(
         stage = str(ai_recovery.get("failure_stage") or "intelligence")
         reasons.append("intelligence-degraded")
 
-    if str(source.get("status") or "") == "degraded":
+    component_degraded = any(
+        isinstance(value, dict)
+        and str(value.get("status") or "") in {"unavailable", "failed", "blocked"}
+        for value in components.values()
+    )
+    verification = (
+        shine_ai.get("decision_trace_verification")
+        if isinstance(shine_ai.get("decision_trace_verification"), dict)
+        else {}
+    )
+    verification_status = str(verification.get("status") or "")
+
+    if str(source.get("status") or "") == "degraded" or component_degraded:
         if mode == "none":
             mode = "degraded"
             stage = "preflight"
         reasons.append("preflight-degraded")
+
+    if verification_status in {"invalid", "unavailable"}:
+        mode = "degraded"
+        stage = "attestation"
+        reasons.append("attestation-degraded")
 
     execution_status = str(execution_item.get("status") or "")
     timed_out = execution_item.get("observation_timed_out") is True
