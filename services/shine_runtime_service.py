@@ -26,8 +26,9 @@ from services.foundation_companion_service import (
 from services.shine_ai_trace_verifier import verify_decision_trace
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v1"
-HUMAN_STATUS_VERSION = "shine/human-status-v1"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v2"
+HUMAN_STATUS_VERSION = "shine/human-status-v2"
+RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
 MAX_RESPONSE_BYTES = 128 * 1024
 MAX_CONTEXT_TEXT = 10_000
@@ -346,6 +347,17 @@ def _shine_ai_advisory(
             else {}
         ),
         "decision_trace_verification": decision_verification,
+        "recovery": (
+            _project(
+                data.get("recovery"),
+                (
+                    "version", "mode", "failure_stage",
+                    "action", "automatic_retry_count",
+                ),
+            )
+            if isinstance(data.get("recovery"), dict)
+            else {}
+        ),
     }
 
 
@@ -467,6 +479,13 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                 "request_id",
             )),
             "decision_trace": safe_trace,
+            "recovery": _project(
+                item.get("recovery", {}),
+                (
+                    "version", "mode", "failure_stage",
+                    "action", "automatic_retry_count",
+                ),
+            ),
             "decision_trace_verification": _project(
                 item.get("decision_trace_verification", {}),
                 (
@@ -527,6 +546,20 @@ def build_runtime_trace(runtime: dict | None, execution: dict | None = None) -> 
         "sha256": _canonical_sha256(execution_projection),
     }
 
+    recovery_projection = _project(
+        source.get("recovery", {}),
+        (
+            "version", "mode", "stage", "automatic_retry_count",
+            "observation_poll_count", "observation_timed_out",
+            "can_continue", "needs_user_action", "next_step",
+            "write_replay_allowed", "paid_model_retry_allowed",
+        ),
+    )
+    recovery_receipt = {
+        "sha256": _canonical_sha256(recovery_projection),
+        "mode": str(recovery_projection.get("mode") or "none"),
+    }
+
     lineage_material = {
         "version": RUNTIME_TRACE_VERSION,
         "runtime_version": source.get("version"),
@@ -539,6 +572,7 @@ def build_runtime_trace(runtime: dict | None, execution: dict | None = None) -> 
         ),
         "components": component_receipts,
         "concierge_execution": execution_receipt,
+        "recovery": recovery_receipt,
     }
     return {
         **lineage_material,
@@ -585,6 +619,89 @@ def _needs_user_action(execution: Any) -> bool:
     return False
 
 
+def build_runtime_recovery(
+    runtime: dict | None,
+    execution: dict | None = None,
+    *,
+    final: bool,
+) -> dict:
+    """Normalise recovery without authorising replay of side effects."""
+    source = runtime if isinstance(runtime, dict) else {}
+    components = source.get("components") if isinstance(source.get("components"), dict) else {}
+    execution_item = execution if isinstance(execution, dict) else {}
+    reasons: list[str] = []
+    mode = "none"
+    stage = "none"
+
+    shine_ai = components.get("shine_ai") if isinstance(components.get("shine_ai"), dict) else {}
+    ai_recovery = (
+        shine_ai.get("recovery")
+        if isinstance(shine_ai.get("recovery"), dict)
+        else {}
+    )
+    try:
+        automatic_retry_count = max(
+            0,
+            min(10, int(ai_recovery.get("automatic_retry_count") or 0)),
+        )
+    except (TypeError, ValueError):
+        automatic_retry_count = 0
+
+    if str(ai_recovery.get("mode") or "") == "degraded":
+        mode = "degraded"
+        stage = str(ai_recovery.get("failure_stage") or "intelligence")
+        reasons.append("intelligence-degraded")
+
+    if str(source.get("status") or "") == "degraded":
+        if mode == "none":
+            mode = "degraded"
+            stage = "preflight"
+        reasons.append("preflight-degraded")
+
+    execution_status = str(execution_item.get("status") or "")
+    timed_out = execution_item.get("observation_timed_out") is True
+    if execution_status in {"unavailable", "failed", "empty"}:
+        mode = "degraded"
+        stage = "specialist-execution"
+        reasons.append("specialist-unavailable")
+    elif execution_status == "pending" or timed_out:
+        if mode not in {"degraded", "user-action"}:
+            mode = "partial"
+        stage = "specialist-execution"
+        reasons.append("specialist-incomplete")
+        if timed_out:
+            reasons.append("observation-window-expired")
+
+    needs_user_action = _needs_user_action(execution_item)
+    if needs_user_action:
+        mode = "user-action"
+        stage = "action-gate"
+        reasons.append("user-action-required")
+
+    can_continue = not needs_user_action
+    next_step = "user-action" if needs_user_action else "continue"
+    if mode == "none" and not final:
+        next_step = "continue"
+
+    return {
+        "version": RECOVERY_VERSION,
+        "mode": mode,
+        "stage": stage,
+        "final": bool(final),
+        "automatic_retry_count": automatic_retry_count,
+        "observation_poll_count": int(execution_item.get("observation_poll_count") or 0),
+        "observation_timed_out": timed_out,
+        "can_continue": can_continue,
+        "needs_user_action": needs_user_action,
+        "next_step": next_step,
+        "reason_codes": sorted(set(reasons)),
+        # Safety invariants: recovery never replays effects or paid inference.
+        "write_replay_allowed": False,
+        "paid_model_retry_allowed": False,
+        "read_only_observation_allowed": True,
+    }
+
+
 def build_human_status(
     runtime: dict | None,
     execution: dict | None = None,
@@ -594,7 +711,14 @@ def build_human_status(
     """Collapse backend detail into one stable human-facing Shine state."""
     source = runtime if isinstance(runtime, dict) else {}
     components = source.get("components") if isinstance(source.get("components"), dict) else {}
-    runtime_trace = build_runtime_trace(source, execution)
+    recovery = (
+        source.get("recovery")
+        if isinstance(source.get("recovery"), dict)
+        else build_runtime_recovery(source, execution, final=final)
+    )
+    trace_source = dict(source)
+    trace_source["recovery"] = recovery
+    runtime_trace = build_runtime_trace(trace_source, execution)
 
     bad_component_statuses = {"unavailable", "failed", "blocked"}
     degraded = str(source.get("status") or "") == "degraded"
@@ -624,11 +748,17 @@ def build_human_status(
         if isinstance(execution, dict)
         else ""
     )
-    if execution_status in {"unavailable", "failed"}:
+    if execution_status in {"unavailable", "failed", "empty", "pending"}:
         degraded = True
         issue_count += 1
 
-    needs_user_action = _needs_user_action(execution)
+    recovery_mode = str(recovery.get("mode") or "none")
+    needs_user_action = recovery.get("needs_user_action") is True
+    if recovery_mode in {"degraded", "partial"}:
+        degraded = True
+        if issue_count == 0:
+            issue_count = 1
+
     if needs_user_action:
         state = "action-required"
     elif not final:
@@ -645,6 +775,14 @@ def build_human_status(
         "details_available": True,
         "issue_count": issue_count,
         "trace_lineage_sha256": runtime_trace.get("lineage_sha256"),
+        "recovery": {
+            "state": recovery_mode,
+            "automatic_retry_count": int(recovery.get("automatic_retry_count") or 0),
+            "safe_to_continue": recovery.get("can_continue") is True,
+            "next_step": recovery.get("next_step"),
+            "write_replay_allowed": False,
+            "paid_model_retry_allowed": False,
+        },
     }
 
 
@@ -769,6 +907,10 @@ def preflight_shine_request(
         )
 
     runtime["status"] = "ready" if not runtime["warnings"] else "degraded"
+    runtime["recovery"] = build_runtime_recovery(
+        runtime,
+        final=False,
+    )
     runtime["trace"] = build_runtime_trace(runtime)
     runtime["human_status"] = build_human_status(
         runtime,
