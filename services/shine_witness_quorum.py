@@ -23,6 +23,10 @@ from services.foundation_chain_checkpoint import (
     FoundationChainCheckpointError,
     ensure_foundation_chain_checkpoint,
 )
+from services.foundation_chain_redis_checkpoint import (
+    RedisFoundationChainCheckpointError,
+    ensure_redis_foundation_chain_checkpoint,
+)
 from services.foundation_trust_witness import (
     FoundationWitnessError,
     ensure_foundation_trust_witness,
@@ -745,6 +749,45 @@ def ensure_trust_witness_quorum(
     except FoundationChainCheckpointError as exc:
         raise WitnessQuorumError(str(exc)) from exc
 
+    try:
+        foundation_chain_redis_checkpoint = (
+            ensure_redis_foundation_chain_checkpoint(
+                foundation_chain,
+                redis_client=redis_client,
+            )
+        )
+    except RedisFoundationChainCheckpointError as exc:
+        raise WitnessQuorumError(str(exc)) from exc
+
+    for key in (
+        "witness_id",
+        "chain_version",
+        "sequence",
+        "previous_chain_tag",
+        "chain_tag",
+    ):
+        if (
+            foundation_chain_checkpoint.get(key)
+            != foundation_chain_redis_checkpoint.get(key)
+        ):
+            raise WitnessQuorumError(
+                "trust-witness-foundation-chain-checkpoint-disagreement"
+            )
+
+    foundation_chain_checkpoint_redundancy = {
+        "status": "verified",
+        "witness_id": FOUNDATION_WITNESS_ID,
+        "chain_version": 1,
+        "sequence": foundation_chain["sequence"],
+        "previous_chain_tag": foundation_chain["previous_chain_tag"],
+        "chain_tag": foundation_chain["chain_tag"],
+        "verified_store_count": 2,
+        "stores": [
+            "project-l-supabase-vault-hmac",
+            "railway-redis-volume",
+        ],
+    }
+
     return {
         "status": "verified",
         "policy_generation": policy["generation"],
@@ -766,6 +809,10 @@ def ensure_trust_witness_quorum(
         ],
         "foundation_chain": foundation_chain,
         "foundation_chain_checkpoint": foundation_chain_checkpoint,
+        "foundation_chain_redis_checkpoint":
+            foundation_chain_redis_checkpoint,
+        "foundation_chain_checkpoint_redundancy":
+            foundation_chain_checkpoint_redundancy,
     }
 
 
