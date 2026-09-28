@@ -97,6 +97,7 @@ from core.cognition.durable_tasks import (
     TaskRunner,
     TaskStore,
     checkpoint,
+    current_task_request,
     task_database_client,
 )
 from core.cognition.delivery_integrity import (
@@ -136,6 +137,13 @@ from services.foundation_companion_service import (
     ensure_foundation_delegation,
     foundation_account_owner,
     foundation_fleet_status,
+)
+from services.shine_runtime_service import (
+    concierge_route_packet,
+    dispatch_runtime_concierge,
+    load_runtime_execution,
+    preflight_shine_request,
+    prompt_runtime_context,
 )
 
 from memory.continuity.live_short_term import (
@@ -522,17 +530,53 @@ def stop_durable_tasks():
 
 
 @app.post("/chat/start")
-def start_chat(req: ChatRequest, x_l_recovery_token: str = Header(default="")):
-    """Acknowledge only after the task has been durably committed."""
+def start_chat(
+    req: ChatRequest,
+    request: Request,
+    x_l_recovery_token: str = Header(default=""),
+):
+    """Acknowledge only after the task, including its Shine preflight, is durable."""
     request_id = normalise_request_id(req.request_id)
     if not request_id:
         raise HTTPException(400, "A valid request ID is required")
     if not req.message.strip() or len(req.message) > 100000:
         raise HTTPException(400, "Send a message between 1 and 100000 characters")
+
+    account = getattr(request.state, "account", {}) or {}
+    account_user_id = str(account.get("user_id") or "")
+    authorization = request.headers.get("authorization", "")
     try:
-        request = {"message": req.message, "request_id": request_id,
-                   "conversation_id": req.conversation_id}
-        result = task_store.submit(request, x_l_recovery_token)
+        shine_runtime = preflight_shine_request(
+            supabase,
+            user_id=account_user_id,
+            authorization=authorization,
+            message=req.message,
+            request_id=request_id,
+            conversation_id=req.conversation_id,
+        ) if supabase is not None and account_user_id else {
+            "version": "shine/runtime-v1",
+            "request_id": request_id,
+            "status": "degraded",
+            "components": {"l": {"status": "active"}},
+            "warnings": ["runtime-preflight-unavailable"],
+        }
+    except Exception:
+        shine_runtime = {
+            "version": "shine/runtime-v1",
+            "request_id": request_id,
+            "status": "degraded",
+            "components": {"l": {"status": "active"}},
+            "warnings": ["runtime-preflight-unavailable"],
+        }
+
+    try:
+        durable_request = {
+            "message": req.message,
+            "request_id": request_id,
+            "conversation_id": req.conversation_id,
+            "shine_runtime": shine_runtime,
+        }
+        result = task_store.submit(durable_request, x_l_recovery_token)
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
     except Exception as exc:
@@ -546,7 +590,28 @@ def start_chat(req: ChatRequest, x_l_recovery_token: str = Header(default="")):
         raise HTTPException(409, "This request ID already belongs to a different message")
     if result["status"] == "not_found":
         raise HTTPException(404, "Task not found")
-    return {**result, "durable": True}
+
+    # Specialist execution starts only after L's immutable task is committed.
+    # Write-capable "do" work remains inside L's request-bound action journal.
+    concierge_dispatch = dispatch_runtime_concierge(
+        shine_runtime,
+        authorization=authorization,
+    )
+    component_status = {
+        name: str(value.get("status") or "unknown")
+        for name, value in (shine_runtime.get("components") or {}).items()
+        if isinstance(value, dict)
+    }
+    return {
+        **result,
+        "durable": True,
+        "shine_runtime": {
+            "version": shine_runtime.get("version"),
+            "status": shine_runtime.get("status"),
+            "components": component_status,
+            "concierge_dispatch": concierge_dispatch,
+        },
+    }
 
 
 @app.get("/chat/result/{request_id}")
@@ -1201,6 +1266,13 @@ def chat(req: ChatRequest):
     request_id = normalise_request_id(req.request_id)
     conversation_scope = str(req.conversation_id or "doug_primary")[:100]
     active_model_adapter = resolve_model_adapter()
+    durable_request = current_task_request()
+    shine_runtime = (
+        durable_request.get("shine_runtime")
+        if isinstance(durable_request.get("shine_runtime"), dict)
+        else None
+    )
+    runtime_execution = {"status": "not_required", "results": [], "tasks": []}
     store_chat_result(request_id, "pending")
 
     if not user_message:
@@ -1299,53 +1371,79 @@ def chat(req: ChatRequest):
         rhee_context = "Rhee context unavailable."
 
     # =================================================
-    # DETERMINISTIC CAPABILITY ROUTER
+    # UNIFIED SHINE ORCHESTRATION
     # =================================================
 
     checkpoint("connected_actions")
-    foundation_fleet = None
-    if foundation_specialist_interest(user_message) and supabase is not None:
-        owner_id = foundation_account_owner(supabase)
-        if owner_id:
-            try:
-                foundation_fleet = foundation_fleet_status(
-                    supabase,
-                    owner_id,
-                    timeout_seconds=5.0,
-                )
-                log(
-                    "CONCIERGE FLEET: "
-                    f"status={foundation_fleet.get('status')} | "
-                    f"ready={foundation_fleet.get('executable_count', 0)}/"
-                    f"{foundation_fleet.get('specialist_count', 0)}"
-                )
-            except Exception as exc:
-                log(f"CONCIERGE FLEET ERROR: {type(exc).__name__}")
-                foundation_fleet = {
-                    "status": "unavailable",
-                    "reason_code": "concierge-fleet-unavailable",
-                    "specialist_count": 0,
-                    "executable_count": 0,
-                    "blocked_count": 0,
-                    "specialists": [],
-                }
-    try:
-        route = route_capability(
-            user_message,
-            write_guard=checkpoint,
-            foundation_fleet=foundation_fleet,
+    runtime_route = None
+    owner_id = foundation_account_owner(supabase) if supabase is not None else None
+    if shine_runtime is not None and supabase is not None and owner_id:
+        runtime_execution = load_runtime_execution(
+            supabase,
+            shine_runtime,
+            user_id=owner_id,
+            wait_seconds=6.0,
         )
-        log(f"CAPABILITY ROUTE: {route.get('capability')}")
-    except DurableTaskBindingError:
-        raise
-    except Exception as e:
-        log(f"CAPABILITY ROUTER ERROR: {type(e).__name__}")
-        route = {
-            "capability": "l_core",
-            "handled": False,
-            "reply": "",
-            "status": "error",
-        }
+        runtime_route = concierge_route_packet(runtime_execution)
+
+    foundation_fleet = None
+    runtime_foundation = (
+        (shine_runtime or {}).get("components", {}).get("foundation", {})
+        if isinstance(shine_runtime, dict)
+        else {}
+    )
+    if isinstance(runtime_foundation, dict) and runtime_foundation.get("status"):
+        foundation_fleet = runtime_foundation
+
+    if runtime_route is not None:
+        route = runtime_route
+        log(
+            "SHINE CONCIERGE ROUTE: "
+            f"status={runtime_execution.get('status')} | "
+            f"results={len(runtime_execution.get('results', []))}"
+        )
+    else:
+        if foundation_specialist_interest(user_message) and supabase is not None and foundation_fleet is None:
+            if owner_id:
+                try:
+                    foundation_fleet = foundation_fleet_status(
+                        supabase,
+                        owner_id,
+                        timeout_seconds=5.0,
+                    )
+                    log(
+                        "FOUNDATION FLEET: "
+                        f"status={foundation_fleet.get('status')} | "
+                        f"ready={foundation_fleet.get('executable_count', 0)}/"
+                        f"{foundation_fleet.get('specialist_count', 0)}"
+                    )
+                except Exception as exc:
+                    log(f"FOUNDATION FLEET ERROR: {type(exc).__name__}")
+                    foundation_fleet = {
+                        "status": "unavailable",
+                        "reason_code": "foundation-fleet-unavailable",
+                        "specialist_count": 0,
+                        "executable_count": 0,
+                        "blocked_count": 0,
+                        "specialists": [],
+                    }
+        try:
+            route = route_capability(
+                user_message,
+                write_guard=checkpoint,
+                foundation_fleet=foundation_fleet,
+            )
+            log(f"CAPABILITY ROUTE: {route.get('capability')}")
+        except DurableTaskBindingError:
+            raise
+        except Exception as e:
+            log(f"CAPABILITY ROUTER ERROR: {type(e).__name__}")
+            route = {
+                "capability": "l_core",
+                "handled": False,
+                "reply": "",
+                "status": "error",
+            }
 
     working_memory_packet = active_context_service.begin_turn(
         conversation_scope,
@@ -1380,6 +1478,10 @@ def chat(req: ChatRequest):
         "guardrails": {"passed": True, "issues": []},
         "working_memory": working_memory_packet,
         "model_independence": build_model_independence_packet(active_model_adapter),
+        "shine_runtime": {
+            "preflight": shine_runtime or {"status": "legacy"},
+            "concierge_execution": runtime_execution,
+        },
         "portability": portability_manifest(),
     }
 
@@ -1415,6 +1517,10 @@ def chat(req: ChatRequest):
         )
         cognitive_context = generation_context["context"]
         cognitive_packet["context_budget"] = generation_context["receipt"]
+        cognitive_packet["shine_runtime"] = {
+            "preflight": shine_runtime or {"status": "legacy"},
+            "concierge_execution": runtime_execution,
+        }
         log(
             "COGNITIVE CONTEXT BUDGET: "
             + json.dumps(cognitive_packet["context_budget"], sort_keys=True)
@@ -1467,6 +1573,18 @@ COGNITIVE ARCHITECTURE:
 - Cognitive Portability Certification gives a clean stateless model L's bootstrap only and passes only when it reconstructs Doug, L, priorities, projects, changes, pattern lifecycle, communication, Deep Recall and inference boundaries with traceable evidence.
 - Quinn supplies governed principles, never decisions.
 - External research, finance, email, calendar and tasks are services.
+
+SHINE UNIFIED RUNTIME:
+{prompt_runtime_context(shine_runtime, runtime_execution)}
+
+RUNTIME AUTHORITY RULES:
+- L remains the only user-facing voice and final synthesiser.
+- Foundation is authoritative for registered capability availability and permissions.
+- Concierge results are delegated service evidence, not a second assistant voice.
+- Shine AI's route advisory is advisory intelligence, never permission to execute an action.
+- Defence review evidence is snapshot-scoped; it never certifies a later unreviewed revision.
+- Preserve exact service status. Never convert pending, blocked, unavailable or failed work into success.
+- Write-capable actions remain inside L's request-bound durable action journal in this runtime version.
 
 COGNITIVE CONTROLLER PLAN:
 {json.dumps(cognitive_packet.get("controller", cognitive_plan), ensure_ascii=False, indent=2)}
@@ -2123,10 +2241,21 @@ RESPONSE RULES:
         except Exception as e:
             log(f"VOICE ERROR: {e}")
 
+    component_status = {
+        name: str(value.get("status") or "unknown")
+        for name, value in ((shine_runtime or {}).get("components") or {}).items()
+        if isinstance(value, dict)
+    }
     payload = {
         "reply": reply,
         "server": "vx",
         "route": route,
+        "shine_runtime": {
+            "version": (shine_runtime or {}).get("version"),
+            "status": (shine_runtime or {}).get("status", "legacy"),
+            "components": component_status,
+            "concierge_execution": runtime_execution.get("status"),
+        },
         "rhee": {
             "context_size": len(rhee_context),
             "recall_active": rhee_packet.get("recall_active"),
