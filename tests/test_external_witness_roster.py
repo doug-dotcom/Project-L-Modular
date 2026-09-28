@@ -3,6 +3,7 @@ import json
 import pytest
 
 from services import external_witness_roster as roster
+from services import roster_transition_evidence_chain_witness as chain_witness
 
 
 POLICY_SHA = (
@@ -185,6 +186,73 @@ class FakeRedis:
         return dict(self.rows.get(key, {}))
 
     def eval(self, _script, _numkeys, key, *args):
+        if len(args) == 6:
+            (
+                generation,
+                rows,
+                previous_chain_tag,
+                evidence_sha,
+                chain_tag,
+                checkpoint_json,
+            ) = args
+            generation = int(generation)
+            rows = int(rows)
+            current = self.rows.get(key)
+            if current is None:
+                if (
+                    generation != 1
+                    or rows != 0
+                    or previous_chain_tag
+                    or evidence_sha
+                    or chain_tag
+                ):
+                    return ["bootstrap-invalid"]
+                self.rows[key] = {
+                    "generation": "1",
+                    "rows": "0",
+                    "previous_chain_tag": "",
+                    "evidence_sha256": "",
+                    "chain_tag": "",
+                    "checkpoint_json": checkpoint_json,
+                }
+                return ["created"]
+
+            current_generation = int(current["generation"])
+            current_rows = int(current["rows"])
+            if generation < current_generation:
+                return ["rollback"]
+            if generation == current_generation:
+                if (
+                    rows != current_rows
+                    or previous_chain_tag
+                        != current["previous_chain_tag"]
+                    or evidence_sha != current["evidence_sha256"]
+                    or chain_tag != current["chain_tag"]
+                ):
+                    return ["fork"]
+                current["checkpoint_json"] = checkpoint_json
+                return ["existing"]
+            if generation != current_generation + 1:
+                return ["generation-gap"]
+            if rows != current_rows + 1:
+                return ["row-gap"]
+            if previous_chain_tag != current["chain_tag"]:
+                if not (
+                    current_generation == 1
+                    and current["chain_tag"] == ""
+                    and previous_chain_tag == "0" * 64
+                ):
+                    return ["predecessor-chain-mismatch"]
+            self.rows[key] = {
+                "generation": str(generation),
+                "rows": str(rows),
+                "previous_chain_tag": previous_chain_tag,
+                "evidence_sha256": evidence_sha,
+                "chain_tag": chain_tag,
+                "checkpoint_json": checkpoint_json,
+            }
+            return ["advanced"]
+
         if len(args) == 4:
             generation, policy_sha, state_sha, checkpoint_json = args
             previous_policy_sha = ""
@@ -261,6 +329,17 @@ def env(monkeypatch):
         "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_STORAGE_ACTIVE_KEY_ID",
         "roster-a",
     )
+    monkeypatch.setenv(
+        chain_witness.KEYRING_ENV,
+        json.dumps({
+            "chain-a": "C" * 48,
+            "chain-b": "D" * 48,
+        }),
+    )
+    monkeypatch.setenv(
+        chain_witness.ACTIVE_KEY_ENV,
+        "chain-a",
+    )
     monkeypatch.setattr(
         roster,
         "ensure_foundation_roster_head_witness",
@@ -334,6 +413,23 @@ def test_authenticated_roster_bootstraps_and_survives_restart():
         first["roster_storage_checkpoint_retention"]
         == "railway-redis-volume"
     )
+    assert (
+        first["roster_transition_evidence_chain_witness_status"]
+        == "verified"
+    )
+    assert (
+        first["roster_transition_evidence_chain_witness_generation"]
+        == 1
+    )
+    assert (
+        first["roster_transition_evidence_chain_witness_rows"]
+        == 0
+    )
+    assert (
+        first["roster_transition_evidence_chain_witness_storage"]
+        == "railway-redis-volume"
+    )
+    assert first["roster_transition_evidence_chain_witness_tag"] is None
     assert second == first
 
 
@@ -718,3 +814,123 @@ def test_layer207_redis_transition_authorization_is_separate_domain(
     assert auth["toGeneration"] == 2
     assert auth["authKeyId"] == "roster-transition-a"
     assert len(auth["authTag"]) == 64
+
+
+
+def test_layer212_generation_two_chain_witness_flows_into_roster_receipt(
+    monkeypatch,
+):
+    state = {
+        "generation": 2,
+        "previousPolicySha256": "1" * 64,
+        "policySha256": "2" * 64,
+    }
+    evidence = {
+        "status": "verified",
+        "generation": 2,
+        "previousPolicySha256": "1" * 64,
+        "policySha256": "2" * 64,
+        "evidenceSha256": "3" * 64,
+    }
+    chain = {
+        "status": "verified",
+        "chainVersion": 1,
+        "latestGeneration": 2,
+        "rows": 1,
+        "latestPreviousChainTag": "0" * 64,
+        "latestEvidenceSha256": "3" * 64,
+        "latestChainTag": "4" * 64,
+    }
+
+    monkeypatch.setattr(
+        roster,
+        "_transition_evidence",
+        lambda _db, _generation: evidence,
+    )
+    monkeypatch.setattr(
+        roster,
+        "_transition_evidence_chain",
+        lambda _db: chain,
+    )
+    monkeypatch.setattr(
+        roster,
+        "ensure_chain_witness",
+        lambda value, **_kwargs: {
+            "status": "verified",
+            "mode": "advanced",
+            "generation": value["latestGeneration"],
+            "rows": value["rows"],
+            "chain_tag": value["latestChainTag"],
+            "evidence_sha256": value["latestEvidenceSha256"],
+            "auth_key_id": "chain-a",
+            "storage": "railway-redis-volume",
+        },
+    )
+    monkeypatch.setattr(
+        roster,
+        "ensure_evidence_mirror",
+        lambda _value, **_kwargs: {
+            "status": "verified",
+            "mode": "advanced",
+            "generation": 2,
+            "evidence_sha256": "3" * 64,
+            "storage": "railway-redis-volume",
+        },
+    )
+
+    result = roster._verify_transition_evidence_retention(
+        object(),
+        state,
+    )
+
+    assert result["chain_status"] == "verified"
+    assert result["chain_generation"] == 2
+    assert result["chain_tag"] == "4" * 64
+    assert result["chain_witness_status"] == "verified"
+    assert result["chain_witness_generation"] == 2
+    assert result["chain_witness_rows"] == 1
+    assert result["chain_witness_tag"] == "4" * 64
+    assert result["chain_witness_evidence_sha256"] == "3" * 64
+    assert result["chain_witness_auth_key_id"] == "chain-a"
+    assert result["chain_witness_storage"] == "railway-redis-volume"
+
+
+def test_layer212_generation_two_requires_predecessor_chain_tag(monkeypatch):
+    state = {
+        "generation": 2,
+        "previousPolicySha256": "1" * 64,
+        "policySha256": "2" * 64,
+    }
+    monkeypatch.setattr(
+        roster,
+        "_transition_evidence",
+        lambda _db, _generation: {
+            "status": "verified",
+            "generation": 2,
+            "previousPolicySha256": "1" * 64,
+            "policySha256": "2" * 64,
+            "evidenceSha256": "3" * 64,
+        },
+    )
+    monkeypatch.setattr(
+        roster,
+        "_transition_evidence_chain",
+        lambda _db: {
+            "status": "verified",
+            "chainVersion": 1,
+            "latestGeneration": 2,
+            "rows": 1,
+            "latestPreviousChainTag": None,
+            "latestEvidenceSha256": "3" * 64,
+            "latestChainTag": "4" * 64,
+        },
+    )
+
+    with pytest.raises(
+        roster.ExternalWitnessRosterError,
+        match="external-witness-roster-transition-evidence-chain-head-mismatch",
+    ):
+        roster._verify_transition_evidence_retention(
+            object(),
+            state,
+        )
