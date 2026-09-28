@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 from typing import Any
 
 import httpx
@@ -18,6 +19,9 @@ DEFAULT_FOUNDATION_WITNESS_URL = (
 )
 WITNESS_ID = "foundation-project-l"
 MAX_RESPONSE_BYTES = 32 * 1024
+SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
+CHAIN_VERSION = 1
+GENESIS_CHAIN_TAG = "0" * 64
 
 
 class FoundationWitnessError(RuntimeError):
@@ -165,6 +169,10 @@ def _witness_projection(value: Any) -> dict:
         "keyset_sha256": value.get("keyset_sha256"),
         "state_sha256": value.get("stateSha256"),
         "auth_key_id": value.get("authKeyId"),
+        "chain_version": value.get("chainVersion"),
+        "previous_chain_tag": value.get("previousChainTag"),
+        "chain_tag": value.get("chainTag"),
+        "history_status": "verified",
     }
     if (
         fields["witness_id"] != WITNESS_ID
@@ -183,6 +191,16 @@ def _witness_projection(value: Any) -> dict:
         )
         or not isinstance(fields["auth_key_id"], str)
         or not fields["auth_key_id"]
+        or fields["chain_version"] != CHAIN_VERSION
+        or any(
+            not isinstance(fields[key], str)
+            or SHA256_RE.fullmatch(fields[key]) is None
+            for key in ("previous_chain_tag", "chain_tag")
+        )
+        or (
+            fields["sequence"] == 1
+            and fields["previous_chain_tag"] != GENESIS_CHAIN_TAG
+        )
     ):
         raise FoundationWitnessError("foundation-witness-response-invalid")
     return fields
@@ -245,6 +263,10 @@ def ensure_foundation_trust_witness(
             raise FoundationWitnessError(
                 "foundation-witness-commit-mismatch"
             )
+        if witnessed["previous_chain_tag"] != GENESIS_CHAIN_TAG:
+            raise FoundationWitnessError(
+                "foundation-witness-chain-genesis-mismatch"
+            )
         return {
             "status": "verified",
             **witnessed,
@@ -279,6 +301,10 @@ def ensure_foundation_trust_witness(
     if not _matches_head(witnessed, head):
         raise FoundationWitnessError(
             "foundation-witness-commit-mismatch"
+        )
+    if witnessed["previous_chain_tag"] != current["chain_tag"]:
+        raise FoundationWitnessError(
+            "foundation-witness-chain-continuity-mismatch"
         )
     return {
         "status": "verified",

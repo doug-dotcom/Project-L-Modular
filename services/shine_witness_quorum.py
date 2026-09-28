@@ -632,6 +632,44 @@ def load_persisted_quorum_policy(db) -> dict[str, Any]:
     }
 
 
+def _foundation_chain_receipt(witness: Any) -> dict[str, Any]:
+    if not isinstance(witness, dict):
+        raise WitnessQuorumError("trust-witness-foundation-chain-invalid")
+
+    sequence = witness.get("sequence")
+    chain_version = witness.get("chain_version")
+    previous_chain_tag = witness.get("previous_chain_tag")
+    chain_tag = witness.get("chain_tag")
+    if (
+        witness.get("witness_id") != FOUNDATION_WITNESS_ID
+        or witness.get("history_status") != "verified"
+        or chain_version != 1
+        or not isinstance(sequence, int)
+        or isinstance(sequence, bool)
+        or sequence < 1
+        or not isinstance(previous_chain_tag, str)
+        or SHA256_RE.fullmatch(previous_chain_tag) is None
+        or not isinstance(chain_tag, str)
+        or SHA256_RE.fullmatch(chain_tag) is None
+        or (
+            sequence == 1
+            and previous_chain_tag != "0" * 64
+        )
+    ):
+        raise WitnessQuorumError(
+            "trust-witness-foundation-chain-invalid"
+        )
+
+    return {
+        "status": "verified",
+        "witness_id": FOUNDATION_WITNESS_ID,
+        "chain_version": chain_version,
+        "sequence": sequence,
+        "previous_chain_tag": previous_chain_tag,
+        "chain_tag": chain_tag,
+    }
+
+
 def ensure_trust_witness_quorum(
     db,
     state: Any,
@@ -687,6 +725,14 @@ def ensure_trust_witness_quorum(
         ):
             raise WitnessQuorumError("trust-witness-quorum-disagreement")
 
+    foundation_chain = _foundation_chain_receipt(
+        by_id[FOUNDATION_WITNESS_ID]
+    )
+    if foundation_chain["sequence"] != first["sequence"]:
+        raise WitnessQuorumError(
+            "trust-witness-foundation-chain-sequence-mismatch"
+        )
+
     return {
         "status": "verified",
         "policy_generation": policy["generation"],
@@ -706,6 +752,7 @@ def ensure_trust_witness_quorum(
             by_id[item]["independent_retention"]
             for item in sorted(by_id)
         ],
+        "foundation_chain": foundation_chain,
     }
 
 
