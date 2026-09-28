@@ -1265,6 +1265,57 @@ def _delayed_answer_freshness(db, temporal_receipt) -> dict:
     }
 
 
+def list_pending_concierge_jobs(
+    db,
+    user_id: str,
+    *,
+    limit: int = 100,
+) -> dict:
+    owner_id = _uuid(user_id)
+    if not isinstance(limit, int) or isinstance(limit, bool) or limit < 1 or limit > 100:
+        raise ValueError("pending Concierge job limit invalid")
+    result = (
+        db.table("companion_foundation_pending_jobs")
+        .select(
+            "job_id,source_conversation_id,source_message_id,request_text,"
+            "capability_ids,status,created_at,updated_at"
+        )
+        .eq("user_id", owner_id)
+        .eq("status", "ready")
+        .order("created_at", desc=True)
+        .limit(limit)
+        .execute()
+    )
+    rows = _pending_job_rows(result)
+    items = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        try:
+            request_id = _uuid(row.get("job_id"))
+        except Exception:
+            continue
+        capabilities = row.get("capability_ids")
+        if not isinstance(capabilities, list):
+            continue
+        items.append({
+            "request_id": request_id,
+            "source_conversation_id": str(row.get("source_conversation_id") or "")[:180],
+            "source_message_id": str(row.get("source_message_id") or "")[:180],
+            "request_text": str(row.get("request_text") or "")[:100000],
+            "capability_ids": [str(value)[:128] for value in capabilities[:20]],
+            "status": "ready",
+            "created_at": row.get("created_at"),
+            "updated_at": row.get("updated_at"),
+        })
+    return {
+        "status": "ok",
+        "version": "1.0",
+        "items": items,
+        "returned_count": len(items),
+    }
+
+
 def claim_delayed_completion(
     db,
     user_id: str,
