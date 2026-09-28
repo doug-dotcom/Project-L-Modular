@@ -1547,6 +1547,27 @@ def foundation_concierge_jobs_as_user(
             else:
                 rejected_receipts += 1
 
+        local_retirement_reconciliation = None
+        if safe_retirement is not None and db is not None:
+            try:
+                reconciled = _rpc_data(
+                    db,
+                    "companion_mark_local_concierge_retired_v1",
+                    {
+                        "p_user_id": _uuid(user_id),
+                        "p_request_id": request_id,
+                        "p_reason_code": safe_retirement["reason_code"],
+                        "p_retired_at": safe_retirement["retired_at"],
+                        "p_receipt_sha256": safe_retirement["receipt_sha256"],
+                    },
+                )
+                if isinstance(reconciled, dict):
+                    local_retirement_reconciliation = str(
+                        reconciled.get("status") or ""
+                    )[:40]
+            except Exception:
+                local_retirement_reconciliation = "update-failed"
+
         progress = raw.get("progress") if isinstance(raw.get("progress"), dict) else {}
         items.append({
             "request_id": request_id,
@@ -1586,6 +1607,7 @@ def foundation_concierge_jobs_as_user(
                 retirement_integrity or None
             ),
             "retirement_receipt": safe_retirement,
+            "local_retirement_reconciliation": local_retirement_reconciliation,
         })
 
     return {
