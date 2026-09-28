@@ -430,6 +430,15 @@ def normalise_request_id(value):
         return ""
 
 
+def normalise_conversation_id(value):
+    if value is None or str(value).strip() == "":
+        return None
+    try:
+        return str(UUID(str(value)))
+    except (TypeError, ValueError, AttributeError):
+        return ""
+
+
 def store_chat_result(request_id, status, payload=None):
     # Durable workers publish only through the owner-checked database path.
     if getattr(TASK_CONTEXT, "task", None):
@@ -561,11 +570,14 @@ def start_chat(req: ChatRequest, x_l_recovery_token: str = Header(default="")):
     request_id = normalise_request_id(req.request_id)
     if not request_id:
         raise HTTPException(400, "A valid request ID is required")
+    conversation_id = normalise_conversation_id(req.conversation_id)
+    if req.conversation_id is not None and conversation_id == "":
+        raise HTTPException(400, "A valid conversation ID is required")
     if not req.message.strip() or len(req.message) > 100000:
         raise HTTPException(400, "Send a message between 1 and 100000 characters")
     try:
         request = {"message": req.message, "request_id": request_id,
-                   "conversation_id": req.conversation_id}
+                   "conversation_id": conversation_id}
         result = task_store.submit(request, x_l_recovery_token)
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
