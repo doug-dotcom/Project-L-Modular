@@ -55,6 +55,23 @@ def main() -> None:
             + str(error or trust.get("reason_code") or "keyset-unavailable")
         )
 
+    quorum = (
+        trust.get("witness_quorum")
+        if isinstance(trust.get("witness_quorum"), dict)
+        else {}
+    )
+    if (
+        quorum.get("status") != "verified"
+        or int(quorum.get("minimum_witnesses") or 0) != 2
+        or int(quorum.get("verified_witness_count") or 0) != 2
+        or quorum.get("witness_ids")
+        != ["foundation-project-l", "redis-project-l"]
+    ):
+        raise SystemExit(
+            "Project L Shine-AI trace trust smoke: FAIL "
+            "witness-quorum-unverified"
+        )
+
     storage = sealed.get("storage") if isinstance(sealed.get("storage"), dict) else {}
     print(
         "Project L Shine-AI trace trust smoke: PASS "
@@ -62,7 +79,9 @@ def main() -> None:
         f"keys={len(keyset.get('verification_keys') or {})} "
         f"mode={trust.get('acceptance_mode')} "
         f"storage=authenticated "
-        f"checkpoint={storage.get('independent_retention')}"
+        f"checkpoint={storage.get('independent_retention')} "
+        f"quorum={quorum.get('verified_witness_count')}/"
+        f"{quorum.get('minimum_witnesses')}"
     )
 
 
