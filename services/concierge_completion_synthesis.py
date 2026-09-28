@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 
 from agents.rhee.rhee_v3 import build_context_packet as default_rhee_builder
 from core.cognition.context_budget import build_generation_cognitive_context
@@ -231,6 +232,12 @@ DELAYED COMPLETION RULES:
         "status": "ready",
         "reason_code": "delayed-synthesis-ready",
         "reply": reply,
+        "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "temporal_receipt": (
+            rhee_packet.get("temporal_memory")
+            if isinstance(rhee_packet.get("temporal_memory"), dict)
+            else None
+        ),
         "model_receipt": _safe_model_receipt(result),
         "context_budget": generation.get("receipt", {}),
         "cognition": {
