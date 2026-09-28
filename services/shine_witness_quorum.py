@@ -1477,6 +1477,12 @@ def ensure_trust_witness_quorum(
             roster["roster_head_witness_auth_key_id"],
         "external_roster_head_witness_independent_retention":
             roster["roster_head_witness_independent_retention"],
+        "external_roster_head_witness_rotation_supported":
+            roster["roster_head_witness_rotation_supported"],
+        "external_roster_head_witness_rotation_mode":
+            roster["roster_head_witness_rotation_mode"],
+        "external_roster_head_witness_rotation":
+            roster["roster_head_witness_rotation"],
         "minimum_witnesses": policy["minimumWitnesses"],
         "verified_witness_count": len(by_id),
         "witness_ids": sorted(by_id),
