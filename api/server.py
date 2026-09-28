@@ -1245,7 +1245,10 @@ def cognition_portability_certification():
 def chat(req: ChatRequest):
     user_message = (req.message or "").strip()
     request_id = normalise_request_id(req.request_id)
-    conversation_scope = str(req.conversation_id or "doug_primary")[:100]
+    conversation_id = normalise_conversation_id(req.conversation_id)
+    if req.conversation_id is not None and conversation_id == "":
+        raise HTTPException(400, "A valid conversation ID is required")
+    conversation_scope = str(conversation_id or "doug_primary")[:100]
     active_model_adapter = resolve_model_adapter()
     store_chat_result(request_id, "pending")
 
