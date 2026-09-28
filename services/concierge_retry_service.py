@@ -141,7 +141,8 @@ def _load_local_job(db, owner_id: str, request_id: str) -> dict | None:
         db.table("companion_foundation_pending_jobs")
         .select(
             "job_id,user_id,link_request_id,purpose,capability_ids,inputs,"
-            "source_conversation_id,source_message_id,request_text,status"
+            "source_conversation_id,source_message_id,request_text,status,"
+            "cancellation_reason,superseded_by_request_id,cancelled_at"
         )
         .eq("job_id", request_id)
         .eq("user_id", owner_id)
@@ -390,6 +391,25 @@ def run_concierge_retry_once(
         return claim
 
     job = _load_local_job(db, claim["owner_shine_id"], claim["request_id"])
+    if job is not None and str(job.get("status") or "") == "cancelled":
+        reason = str(job.get("cancellation_reason") or "concierge-request-cancelled")[:160]
+        finish = _finish_remote_retry(
+            db,
+            claim,
+            outcome="abandoned",
+            reason_code=reason,
+            foundation_url=foundation_url,
+            post_impl=post_impl,
+        )
+        return {
+            "status": "cancelled",
+            "reason_code": reason,
+            "finish_status": finish.get("status"),
+            "superseded_by_request_id": (
+                str(job.get("superseded_by_request_id") or "") or None
+            ),
+        }
+
     inputs = _local_inputs_for_claim(job, claim) if job else None
     if job is None or inputs is None:
         finish = _finish_remote_retry(
