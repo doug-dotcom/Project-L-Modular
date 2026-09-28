@@ -25,13 +25,14 @@ from services.foundation_companion_service import (
 )
 from services.shine_ai_trace_verifier import (
     digest_verification_keyset,
+    validate_persisted_trust_state,
     verify_decision_trace,
     verify_decision_trace_authenticity,
     verify_keyset_transition,
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v4"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v5"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -307,7 +308,6 @@ def _accept_trace_keyset_candidate(
     candidate: dict,
     transition: dict | None,
 ) -> tuple[dict | None, str | None, dict]:
-    pins = _trace_keyset_pins()
     digest = digest_verification_keyset(candidate)
     generation = candidate.get("generation")
     if (
@@ -318,81 +318,132 @@ def _accept_trace_keyset_candidate(
         return None, "trace-keyset-candidate-invalid", {
             "status": "invalid",
             "reason_code": "trace-keyset-candidate-invalid",
+            "anti_rollback": True,
         }
 
     state = _trace_trust_state(db)
     if state is None:
+        pins = _trace_keyset_pins()
+        if generation != 1:
+            return None, "trace-keyset-genesis-generation-required", {
+                "status": "invalid",
+                "reason_code": "trace-keyset-genesis-generation-required",
+                "candidate_generation": generation,
+                "anti_rollback": True,
+            }
+        if not pins:
+            return None, "trace-keyset-pin-unavailable", {
+                "status": "unavailable",
+                "reason_code": "trace-keyset-pin-unavailable",
+                "candidate_generation": generation,
+                "anti_rollback": True,
+            }
         if digest not in set(pins):
             return None, "trace-keyset-genesis-pin-mismatch", {
-                "status": "unavailable",
+                "status": "invalid",
                 "reason_code": "trace-keyset-genesis-pin-mismatch",
                 "generation": generation,
                 "keyset_sha256": digest,
+                "anti_rollback": True,
             }
-        source = "genesis-pin" if generation == 1 else "out-of-band-pin"
         try:
             result = db.rpc(
                 "shine_ai_trace_trust_bootstrap_v1",
                 {
-                    "p_generation": generation,
+                    "p_generation": 1,
                     "p_keyset_sha256": digest,
                     "p_trusted_keyset": candidate,
-                    "p_source": source,
+                    "p_source": "genesis-pin",
                 },
             ).execute()
         except Exception:
             return None, "trace-keyset-ledger-bootstrap-failed", {
                 "status": "unavailable",
                 "reason_code": "trace-keyset-ledger-bootstrap-failed",
+                "anti_rollback": True,
             }
         payload = result.data if isinstance(result.data, dict) else {}
         if payload.get("status") not in {"trusted", "already_trusted"}:
             return None, "trace-keyset-ledger-bootstrap-unverified", {
                 "status": "unavailable",
                 "reason_code": "trace-keyset-ledger-bootstrap-unverified",
+                "anti_rollback": True,
             }
         return candidate, None, {
             "status": "trusted",
-            "acceptance_mode": source,
-            "generation": generation,
+            "acceptance_mode": "genesis-pin",
+            "generation": 1,
             "keyset_sha256": digest,
+            "anti_rollback": True,
+            "persisted_state_valid": True,
+            "rollback_rejected": False,
+            "equivocation_rejected": False,
         }
 
-    try:
-        trusted_generation = int(state.get("generation"))
-    except (TypeError, ValueError):
-        return None, "trace-keyset-ledger-invalid", {
+    persisted = validate_persisted_trust_state(state)
+    if persisted.get("status") != "valid":
+        return None, "trace-keyset-persisted-state-invalid", {
+            **persisted,
             "status": "invalid",
-            "reason_code": "trace-keyset-ledger-invalid",
+            "reason_code": str(
+                persisted.get("reason_code")
+                or "trace-keyset-persisted-state-invalid"
+            ),
+            "anti_rollback": True,
+            "persisted_state_valid": False,
         }
-    trusted_digest = str(state.get("keyset_sha256") or "")
-    trusted_keyset = (
-        state.get("trusted_keyset")
-        if isinstance(state.get("trusted_keyset"), dict)
-        else {}
-    )
 
-    if generation == trusted_generation and digest == trusted_digest:
+    trusted_generation = int(persisted["generation"])
+    trusted_digest = str(persisted["keyset_sha256"])
+    trusted_keyset = state["trusted_keyset"]
+
+    if generation < trusted_generation:
+        return None, "trace-keyset-rollback", {
+            "status": "invalid",
+            "reason_code": "trace-keyset-rollback",
+            "trusted_generation": trusted_generation,
+            "candidate_generation": generation,
+            "anti_rollback": True,
+            "persisted_state_valid": True,
+            "rollback_rejected": True,
+            "equivocation_rejected": False,
+        }
+
+    if generation == trusted_generation:
+        if digest != trusted_digest:
+            return None, "trace-keyset-same-generation-equivocation", {
+                "status": "invalid",
+                "reason_code": "trace-keyset-same-generation-equivocation",
+                "trusted_generation": trusted_generation,
+                "candidate_generation": generation,
+                "trusted_keyset_sha256": trusted_digest,
+                "candidate_keyset_sha256": digest,
+                "anti_rollback": True,
+                "persisted_state_valid": True,
+                "rollback_rejected": False,
+                "equivocation_rejected": True,
+            }
         return candidate, None, {
             "status": "trusted",
             "acceptance_mode": "existing-ledger",
             "generation": generation,
             "keyset_sha256": digest,
+            "anti_rollback": True,
+            "persisted_state_valid": True,
+            "rollback_rejected": False,
+            "equivocation_rejected": False,
         }
 
-    if generation <= trusted_generation:
-        return None, "trace-keyset-stale-or-conflicting", {
-            "status": "invalid",
-            "reason_code": "trace-keyset-stale-or-conflicting",
-            "trusted_generation": trusted_generation,
-            "candidate_generation": generation,
-        }
     if generation != trusted_generation + 1:
         return None, "trace-keyset-generation-skip", {
             "status": "invalid",
             "reason_code": "trace-keyset-generation-skip",
             "trusted_generation": trusted_generation,
             "candidate_generation": generation,
+            "anti_rollback": True,
+            "persisted_state_valid": True,
+            "rollback_rejected": False,
+            "equivocation_rejected": False,
         }
 
     previous = dict(trusted_keyset)
@@ -407,7 +458,11 @@ def _accept_trace_keyset_candidate(
         return None, str(
             continuity.get("reason_code")
             or "trace-keyset-transition-invalid"
-        ), continuity
+        ), {
+            **continuity,
+            "anti_rollback": True,
+            "persisted_state_valid": True,
+        }
 
     try:
         result = db.rpc(
@@ -433,18 +488,26 @@ def _accept_trace_keyset_candidate(
         return None, "trace-keyset-ledger-advance-failed", {
             "status": "unavailable",
             "reason_code": "trace-keyset-ledger-advance-failed",
+            "anti_rollback": True,
+            "persisted_state_valid": True,
         }
     payload = result.data if isinstance(result.data, dict) else {}
     if payload.get("status") != "advanced":
         return None, "trace-keyset-ledger-advance-unverified", {
             "status": "unavailable",
             "reason_code": "trace-keyset-ledger-advance-unverified",
+            "anti_rollback": True,
+            "persisted_state_valid": True,
         }
 
     return candidate, None, {
         **continuity,
         "status": "trusted",
         "acceptance_mode": "signed-transition",
+        "anti_rollback": True,
+        "persisted_state_valid": True,
+        "rollback_rejected": False,
+        "equivocation_rejected": False,
     }
 
 
@@ -454,29 +517,12 @@ def _shine_ai_verification_keyset(
     timeout_seconds: float = 4.0,
     get_impl=None,
 ) -> tuple[dict | None, str | None, dict]:
-    pins = _trace_keyset_pins()
-    if not pins:
-        return None, "trace-keyset-pin-unavailable", {
-            "status": "unavailable",
-            "reason_code": "trace-keyset-pin-unavailable",
-        }
-    pin_identity = ",".join(pins)
-    now = time.monotonic()
-    cached = _TRACE_KEYSET_CACHE.get("keyset")
-    cached_trust = _TRACE_KEYSET_CACHE.get("trust")
-    if (
-        isinstance(cached, dict)
-        and isinstance(cached_trust, dict)
-        and _TRACE_KEYSET_CACHE.get("pin") == pin_identity
-        and float(_TRACE_KEYSET_CACHE.get("expires_at") or 0.0) > now
-    ):
-        return cached, None, cached_trust
-
     base = os.getenv("SHINE_AI_BASE_URL", "").rstrip("/")
     if not base.startswith("https://"):
         return None, "shine-ai-runtime-url-unavailable", {
             "status": "unavailable",
             "reason_code": "shine-ai-runtime-url-unavailable",
+            "anti_rollback": True,
         }
     get = get_impl or httpx.get
     try:
@@ -496,11 +542,13 @@ def _shine_ai_verification_keyset(
         return None, "trace-keyset-discovery-unavailable", {
             "status": "unavailable",
             "reason_code": "trace-keyset-discovery-unavailable",
+            "anti_rollback": True,
         }
     if int(response.status_code) >= 400:
         return None, "trace-keyset-discovery-rejected", {
             "status": "unavailable",
             "reason_code": "trace-keyset-discovery-rejected",
+            "anti_rollback": True,
         }
 
     signing = (
@@ -508,6 +556,22 @@ def _shine_ai_verification_keyset(
         if isinstance(data.get("decision_trace_signing"), dict)
         else {}
     )
+    if (
+        signing.get("enabled") is not True
+        or signing.get("transition_verification_supported") is not True
+        or signing.get("client_trust_state_version") != 1
+        or signing.get("client_trust_state_supported") is not True
+        or signing.get("rollback_protection_supported") is not True
+        or signing.get("same_generation_equivocation_rejected") is not True
+        or signing.get("keyset_fingerprint_excludes_active_key") is not True
+        or signing.get("trust_anchor") != "pin-keyset-sha256"
+    ):
+        return None, "trace-keyset-antirollback-contract-unavailable", {
+            "status": "unavailable",
+            "reason_code": "trace-keyset-antirollback-contract-unavailable",
+            "anti_rollback": True,
+        }
+
     keyset = {
         "active_key_id": signing.get("active_key_id"),
         "verification_keys": signing.get("verification_keys"),
@@ -519,11 +583,6 @@ def _shine_ai_verification_keyset(
         if isinstance(signing.get("transition"), dict)
         else None
     )
-    if signing.get("enabled") is not True:
-        return None, "trace-keyset-signing-disabled", {
-            "status": "unavailable",
-            "reason_code": "trace-keyset-signing-disabled",
-        }
 
     trusted, error, trust = _accept_trace_keyset_candidate(
         db,
@@ -533,9 +592,10 @@ def _shine_ai_verification_keyset(
     if trusted is None:
         return None, error or "trace-keyset-trust-mismatch", trust
 
+    # Diagnostic cache only. Security decisions always re-observe capabilities.
     _TRACE_KEYSET_CACHE.update({
-        "expires_at": now + TRACE_KEYSET_CACHE_SECONDS,
-        "pin": pin_identity,
+        "expires_at": 0.0,
+        "pin": "",
         "keyset": trusted,
         "trust": trust,
     })
@@ -863,6 +923,9 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                     "authorization_key_id",
                     "authorization_public_key_sha256",
                     "certificate_sha256",
+                    "anti_rollback", "persisted_state_valid",
+                    "rollback_rejected", "equivocation_rejected",
+                    "trusted_keyset_sha256", "candidate_keyset_sha256",
                 ),
             ),
         }
