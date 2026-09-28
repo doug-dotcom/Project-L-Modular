@@ -121,6 +121,50 @@ def main() -> None:
             "foundation-chain-checkpoint-unverified"
         )
 
+    redis_chain_checkpoint = (
+        quorum.get("foundation_chain_redis_checkpoint")
+        if isinstance(
+            quorum.get("foundation_chain_redis_checkpoint"),
+            dict,
+        )
+        else {}
+    )
+    redundancy = (
+        quorum.get("foundation_chain_checkpoint_redundancy")
+        if isinstance(
+            quorum.get("foundation_chain_checkpoint_redundancy"),
+            dict,
+        )
+        else {}
+    )
+    if (
+        redis_chain_checkpoint.get("status") != "verified"
+        or redis_chain_checkpoint.get("checkpoint_version") != 1
+        or redis_chain_checkpoint.get("witness_id")
+            != "foundation-project-l"
+        or redis_chain_checkpoint.get("chain_version") != 1
+        or redis_chain_checkpoint.get("sequence") != chain.get("sequence")
+        or redis_chain_checkpoint.get("chain_tag") != chain.get("chain_tag")
+        or redis_chain_checkpoint.get("previous_chain_tag")
+            != chain.get("previous_chain_tag")
+        or redis_chain_checkpoint.get("storage")
+            != "railway-redis-volume"
+        or redundancy.get("status") != "verified"
+        or int(redundancy.get("verified_store_count") or 0) != 2
+        or redundancy.get("sequence") != chain.get("sequence")
+        or redundancy.get("chain_tag") != chain.get("chain_tag")
+        or redundancy.get("previous_chain_tag")
+            != chain.get("previous_chain_tag")
+        or redundancy.get("stores") != [
+            "project-l-supabase-vault-hmac",
+            "railway-redis-volume",
+        ]
+    ):
+        raise SystemExit(
+            "Project L Shine-AI trace trust smoke: FAIL "
+            "foundation-chain-checkpoint-redundancy-unverified"
+        )
+
     storage = sealed.get("storage") if isinstance(sealed.get("storage"), dict) else {}
     print(
         "Project L Shine-AI trace trust smoke: PASS "
@@ -131,11 +175,12 @@ def main() -> None:
         f"checkpoint={storage.get('independent_retention')} "
         f"quorum={quorum.get('verified_witness_count')}/"
         f"{quorum.get('minimum_witnesses')} "
-        f"policy=persisted-g{quorum.get('policy_trust_generation')} "        f"policy_storage={quorum.get('policy_storage_auth_key_id')} "
+        f"policy=persisted-g{quorum.get('policy_trust_generation')} "
+        f"policy_storage={quorum.get('policy_storage_auth_key_id')} "
         f"policy_checkpoint={quorum.get('policy_storage_checkpoint_retention')} "
-
         f"foundation_chain=verified "
-        f"chain_checkpoint=verified"
+        f"chain_checkpoint=verified "
+        f"chain_checkpoint_redundancy=2/2"
     )
 
 
