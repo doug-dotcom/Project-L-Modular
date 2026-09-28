@@ -50,7 +50,9 @@ def _safe_rpc_error(exc: Exception) -> str:
 
 class MemoryRetrieveRequest(BaseModel):
     app: str = Field(min_length=1, max_length=100)
-    user_id: str = Field(min_length=1, max_length=200)
+    # Legacy compatibility only. Project L derives the authoritative owner
+    # internally and never trusts this field for authorisation.
+    user_id: str | None = Field(default=None, max_length=200)
     query: str = Field(min_length=1, max_length=2_000)
     scopes: list[str] = Field(min_length=1, max_length=6)
     limit: int = Field(default=4, ge=1, le=6)
@@ -72,11 +74,42 @@ class MemoryRetrieveResponse(BaseModel):
     receipt: dict[str, object]
 
 
+def _authoritative_owner() -> str:
+    try:
+        result = (
+            _database()
+            .table("l_account_config")
+            .select("user_id")
+            .eq("singleton", True)
+            .limit(2)
+            .execute()
+        )
+    except Exception as exc:
+        print("SHINE_AI_MEMORY_OWNER_ERROR " + _safe_rpc_error(exc), flush=True)
+        raise HTTPException(
+            status_code=503,
+            detail="Project L memory owner resolution is temporarily unavailable.",
+        ) from exc
+
+    rows = result.data if isinstance(result.data, list) else []
+    if len(rows) != 1 or not isinstance(rows[0], dict):
+        raise HTTPException(
+            status_code=503,
+            detail="Project L memory owner binding is not singular.",
+        )
+    try:
+        return str(UUID(str(rows[0].get("user_id") or "")))
+    except (TypeError, ValueError, AttributeError) as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Project L memory owner binding is invalid.",
+        ) from exc
+
+
 def _configured_owner(service_token: str) -> str:
     expected_token = os.getenv("SHINE_AI_MEMORY_TOKEN", "").strip()
-    owner_id = os.getenv("PROJECT_L_OWNER_ID", "").strip()
 
-    if not expected_token or not owner_id:
+    if not expected_token:
         raise HTTPException(
             status_code=503,
             detail="Project L's Shine-AI memory bridge is disabled.",
@@ -88,22 +121,15 @@ def _configured_owner(service_token: str) -> str:
         )
     if not service_token or not secrets.compare_digest(service_token, expected_token):
         raise HTTPException(status_code=401, detail="Invalid service credentials.")
-    try:
-        return str(UUID(owner_id))
-    except (TypeError, ValueError, AttributeError) as exc:
-        raise HTTPException(
-            status_code=503,
-            detail="Project L's memory owner binding is invalid.",
-        ) from exc
+
+    return _authoritative_owner()
 
 
 def _validate_access(request: MemoryRetrieveRequest, owner_id: str) -> frozenset[str]:
-    try:
-        request_owner = str(UUID(request.user_id))
-    except (TypeError, ValueError, AttributeError):
-        raise HTTPException(status_code=403, detail="Memory owner mismatch.") from None
-    if request_owner != owner_id:
-        raise HTTPException(status_code=403, detail="Memory owner mismatch.")
+    # owner_id is intentionally server-derived. request.user_id, when present,
+    # is compatibility metadata only and cannot grant or deny access.
+    if not owner_id:
+        raise HTTPException(status_code=503, detail="Memory owner unavailable.")
 
     allowed_scopes = _APP_SCOPE_POLICY.get(request.app)
     if allowed_scopes is None:
@@ -315,6 +341,8 @@ def retrieve_memory(
             "records_returned": len(records),
             "owner_bound": scope_receipt.get("ownerBound") is True,
             "permission_scoped": True,
+            "owner_source": "project-l-account-config",
+            "caller_owner_ignored": request.user_id is not None,
             "quarantine_excluded": scope_receipt.get("quarantineExcluded") is True,
             "corrections_preferred": scope_receipt.get("correctionsPreferred") is True,
             "compression": compression,
