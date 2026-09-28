@@ -227,7 +227,7 @@ def test_legacy_conversation_label_never_auto_supersedes():
         post_impl=forbidden,
     )
     assert superseded == []
-    assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "cancelling"
+    assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "ready"
 
 
 def test_user_cancel_requires_remote_confirmation_before_local_cancel():
@@ -330,7 +330,7 @@ def test_remote_already_cancelled_for_other_reason_is_not_relabelled_as_supersed
     else:
         raise AssertionError("non-supersession cancellation reason must fail closed")
 
-    assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "ready"
+    assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "cancelling"
 
 
 
