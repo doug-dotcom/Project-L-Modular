@@ -52,8 +52,8 @@ local witness_json = ARGV[6]
 
 local current_sequence_raw = redis.call('HGET', key, 'sequence')
 if not current_sequence_raw then
-  if next_sequence ~= 1 then
-    return {'genesis-invalid'}
+  if next_sequence < 1 then
+    return {'bootstrap-invalid'}
   end
   redis.call(
     'HSET',
