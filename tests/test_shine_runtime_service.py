@@ -481,7 +481,7 @@ def test_runtime_trace_binds_recovery_control_plane_without_private_content():
     changed["recovery"]["reason_codes"] = ["PRIVATE-REASON-TEXT-NOT-HASHED"]
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v4"
+    assert first["version"] == "shine/runtime-trace-v5"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-REASON-TEXT-NOT-HASHED" not in json.dumps(second)
 
@@ -574,7 +574,63 @@ class FakeCapabilityResponse:
         return self._payload
 
 
-def test_trace_keyset_discovery_requires_pin_and_caches_public_trust(monkeypatch):
+def _layer142_capabilities(keyset, transition=None):
+    return {
+        "decision_trace_signing": {
+            "enabled": True,
+            "active_key_id": keyset["active_key_id"],
+            "verification_keys": keyset["verification_keys"],
+            "keyset_sha256": keyset["keyset_sha256"],
+            "keyset_generation": keyset["generation"],
+            "transition": transition,
+            "transition_verification_supported": True,
+            "client_trust_state_version": 1,
+            "client_trust_state_supported": True,
+            "rollback_protection_supported": True,
+            "same_generation_equivocation_rejected": True,
+            "keyset_fingerprint_excludes_active_key": True,
+            "trust_anchor": "pin-keyset-sha256",
+        },
+    }
+
+
+def _runtime_single_keyset(generation=1):
+    return {
+        "active_key_id": "trace-v1",
+        "verification_keys": {
+            "trace-v1": {
+                "public_key_b64": TRACE_PUBLIC_KEY_B64,
+                "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+            },
+        },
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "generation": generation,
+    }
+
+
+def _runtime_dual_keyset(active_key_id="trace-v1", generation=1):
+    keys = {
+        "trace-v1": {
+            "public_key_b64": TRACE_PUBLIC_KEY_B64,
+            "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+        },
+        "trace-v2": {
+            "public_key_b64": TRACE_PUBLIC_KEY_B64,
+            "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+        },
+    }
+    return {
+        "active_key_id": active_key_id,
+        "verification_keys": keys,
+        "keyset_sha256": runtime._canonical_sha256({
+            "version": 1,
+            "keys": keys,
+        }),
+        "generation": generation,
+    }
+
+
+def test_trace_keyset_discovery_bootstraps_then_reobserves_every_time(monkeypatch):
     monkeypatch.setenv("SHINE_AI_BASE_URL", "https://shine-ai.example")
     monkeypatch.setenv("SHINE_AI_APP_ID", "shine-me")
     monkeypatch.setenv("SHINE_AI_APP_KEY_ID", "runtime-1")
@@ -583,28 +639,9 @@ def test_trace_keyset_discovery_requires_pin_and_caches_public_trust(monkeypatch
         "SHINE_AI_TRACE_ACCEPTED_KEYSET_SHA256",
         TRACE_SINGLE_KEYSET_SHA256,
     )
-    runtime._TRACE_KEYSET_CACHE.update({
-        "expires_at": 0.0,
-        "pin": "",
-        "keyset": None,
-        "trust": None,
-    })
     db = FakeTrustDB()
-    payload = {
-        "decision_trace_signing": {
-            "enabled": True,
-            "active_key_id": "trace-v1",
-            "verification_keys": {
-                "trace-v1": {
-                    "public_key_b64": TRACE_PUBLIC_KEY_B64,
-                    "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
-                },
-            },
-            "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
-            "keyset_generation": 1,
-            "transition": None,
-        },
-    }
+    keyset = _runtime_single_keyset()
+    payload = _layer142_capabilities(keyset)
     calls = []
 
     def fake_get(url, **kwargs):
@@ -614,65 +651,197 @@ def test_trace_keyset_discovery_requires_pin_and_caches_public_trust(monkeypatch
         assert "X-Shine-Signature" in kwargs["headers"]
         return FakeCapabilityResponse(payload)
 
-    keyset, error, trust = runtime._shine_ai_verification_keyset(
+    first, error, trust = runtime._shine_ai_verification_keyset(
         db,
         get_impl=fake_get,
     )
     assert error is None
-    assert keyset["keyset_sha256"] == TRACE_SINGLE_KEYSET_SHA256
-    assert keyset["generation"] == 1
-    assert trust["status"] == "trusted"
+    assert first == keyset
     assert trust["acceptance_mode"] == "genesis-pin"
+    assert trust["anti_rollback"] is True
     assert db.state["keyset_sha256"] == TRACE_SINGLE_KEYSET_SHA256
     assert len(calls) == 1
 
-    cached, error, cached_trust = runtime._shine_ai_verification_keyset(
-        db,
-        get_impl=lambda *args, **kwargs: (_ for _ in ()).throw(
-            AssertionError("cached trust must not refetch")
-        )
-    )
-    assert error is None
-    assert cached == keyset
-    assert cached_trust == trust
-    assert len(calls) == 1
-
-    # Simulate a process restart: cache is empty but the durable ledger remains.
-    runtime._TRACE_KEYSET_CACHE.update({
-        "expires_at": 0.0,
-        "pin": "",
-        "keyset": None,
-        "trust": None,
-    })
-    reloaded, error, reloaded_trust = runtime._shine_ai_verification_keyset(
+    # Security decisions must re-observe capabilities rather than trust cache.
+    second, error, second_trust = runtime._shine_ai_verification_keyset(
         db,
         get_impl=fake_get,
     )
     assert error is None
-    assert reloaded == keyset
-    assert reloaded_trust["acceptance_mode"] == "existing-ledger"
+    assert second == keyset
+    assert second_trust["acceptance_mode"] == "existing-ledger"
     assert len(calls) == 2
 
-
-def test_trace_keyset_discovery_fails_closed_without_independent_pin(monkeypatch):
+    # Genesis pin is no longer an availability dependency once trust is persisted.
     monkeypatch.delenv("SHINE_AI_TRACE_ACCEPTED_KEYSET_SHA256", raising=False)
-    runtime._TRACE_KEYSET_CACHE.update({
-        "expires_at": 0.0,
-        "pin": "",
-        "keyset": None,
-        "trust": None,
-    })
+    third, error, third_trust = runtime._shine_ai_verification_keyset(
+        db,
+        get_impl=fake_get,
+    )
+    assert error is None
+    assert third == keyset
+    assert third_trust["acceptance_mode"] == "existing-ledger"
+    assert len(calls) == 3
+
+
+def test_trace_keyset_discovery_requires_pin_for_empty_generation1_state(monkeypatch):
+    monkeypatch.setenv("SHINE_AI_BASE_URL", "https://shine-ai.example")
+    monkeypatch.setenv("SHINE_AI_APP_ID", "shine-me")
+    monkeypatch.setenv("SHINE_AI_APP_KEY_ID", "runtime-1")
+    monkeypatch.setenv("SHINE_AI_APP_SECRET", "s" * 48)
+    monkeypatch.delenv("SHINE_AI_TRACE_ACCEPTED_KEYSET_SHA256", raising=False)
+    payload = _layer142_capabilities(_runtime_single_keyset())
 
     keyset, error, trust = runtime._shine_ai_verification_keyset(
         FakeTrustDB(),
-        get_impl=lambda *args, **kwargs: (_ for _ in ()).throw(
-            AssertionError("unpinned trust must not contact service")
-        ),
+        get_impl=lambda *args, **kwargs: FakeCapabilityResponse(payload),
     )
 
     assert keyset is None
     assert error == "trace-keyset-pin-unavailable"
     assert trust["status"] == "unavailable"
+    assert trust["anti_rollback"] is True
+
+
+def test_later_generation_cannot_bootstrap_from_pin(monkeypatch):
+    candidate = _runtime_dual_keyset(generation=2)
+    monkeypatch.setenv(
+        "SHINE_AI_TRACE_ACCEPTED_KEYSET_SHA256",
+        candidate["keyset_sha256"],
+    )
+    db = FakeTrustDB()
+
+    trusted, error, trust = runtime._accept_trace_keyset_candidate(
+        db,
+        candidate,
+        None,
+    )
+
+    assert trusted is None
+    assert error == "trace-keyset-genesis-generation-required"
+    assert trust["candidate_generation"] == 2
+    assert db.rpc_calls == []
+
+
+def test_persisted_trust_state_is_revalidated_before_use():
+    candidate = _runtime_single_keyset()
+    tampered = dict(candidate)
+    tampered["generation"] = 2
+    db = FakeTrustDB({
+        "generation": 1,
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "trusted_keyset": tampered,
+        "source": "genesis-pin",
+    })
+
+    trusted, error, trust = runtime._accept_trace_keyset_candidate(
+        db,
+        candidate,
+        None,
+    )
+
+    assert trusted is None
+    assert error == "trace-keyset-persisted-state-invalid"
+    assert trust["persisted_state_valid"] is False
+    assert db.rpc_calls == []
+
+
+def test_valid_older_generation_is_rejected_as_rollback():
+    current = _runtime_dual_keyset(generation=2)
+    db = FakeTrustDB({
+        "generation": 2,
+        "keyset_sha256": current["keyset_sha256"],
+        "trusted_keyset": current,
+        "source": "signed-transition",
+    })
+    older = _runtime_single_keyset(generation=1)
+
+    trusted, error, trust = runtime._accept_trace_keyset_candidate(
+        db,
+        older,
+        None,
+    )
+
+    assert trusted is None
+    assert error == "trace-keyset-rollback"
+    assert trust["rollback_rejected"] is True
+    assert trust["trusted_generation"] == 2
+    assert trust["candidate_generation"] == 1
+    assert db.rpc_calls == []
+
+
+def test_same_generation_different_keyset_is_rejected_as_equivocation():
+    current = _runtime_single_keyset(generation=1)
+    db = FakeTrustDB({
+        "generation": 1,
+        "keyset_sha256": current["keyset_sha256"],
+        "trusted_keyset": current,
+        "source": "genesis-pin",
+    })
+    fork = _runtime_dual_keyset(generation=1)
+
+    trusted, error, trust = runtime._accept_trace_keyset_candidate(
+        db,
+        fork,
+        None,
+    )
+
+    assert trusted is None
+    assert error == "trace-keyset-same-generation-equivocation"
+    assert trust["equivocation_rejected"] is True
+    assert db.rpc_calls == []
+
+
+def test_same_generation_active_key_flip_is_valid_without_new_generation():
+    current = _runtime_dual_keyset(active_key_id="trace-v1", generation=1)
+    db = FakeTrustDB({
+        "generation": 1,
+        "keyset_sha256": current["keyset_sha256"],
+        "trusted_keyset": current,
+        "source": "genesis-pin",
+    })
+    flipped = _runtime_dual_keyset(active_key_id="trace-v2", generation=1)
+
+    trusted, error, trust = runtime._accept_trace_keyset_candidate(
+        db,
+        flipped,
+        None,
+    )
+
+    assert error is None
+    assert trusted == flipped
+    assert trust["acceptance_mode"] == "existing-ledger"
+    assert trust["generation"] == 1
+    assert trust["equivocation_rejected"] is False
+    assert db.rpc_calls == []
+
+
+def test_live_capability_observation_detects_rollback_after_newer_state(monkeypatch):
+    monkeypatch.setenv("SHINE_AI_BASE_URL", "https://shine-ai.example")
+    monkeypatch.setenv("SHINE_AI_APP_ID", "shine-me")
+    monkeypatch.setenv("SHINE_AI_APP_KEY_ID", "runtime-1")
+    monkeypatch.setenv("SHINE_AI_APP_SECRET", "s" * 48)
+    monkeypatch.delenv("SHINE_AI_TRACE_ACCEPTED_KEYSET_SHA256", raising=False)
+
+    current = _runtime_dual_keyset(generation=2)
+    db = FakeTrustDB({
+        "generation": 2,
+        "keyset_sha256": current["keyset_sha256"],
+        "trusted_keyset": current,
+        "source": "signed-transition",
+    })
+    older_payload = _layer142_capabilities(
+        _runtime_single_keyset(generation=1)
+    )
+
+    trusted, error, trust = runtime._shine_ai_verification_keyset(
+        db,
+        get_impl=lambda *args, **kwargs: FakeCapabilityResponse(older_payload),
+    )
+
+    assert trusted is None
+    assert error == "trace-keyset-rollback"
+    assert trust["rollback_rejected"] is True
 
 
 def test_invalid_signature_authenticity_becomes_recovery_degradation():
@@ -714,7 +883,7 @@ def test_runtime_trace_binds_authenticity_without_signature_bytes():
     changed["components"]["shine_ai"]["decision_trace_authenticity"]["authenticated"] = False
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v4"
+    assert first["version"] == "shine/runtime-trace-v5"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(first)
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(second)
@@ -866,6 +1035,6 @@ def test_runtime_trace_binds_trust_generation_without_certificate_signature():
     changed["components"]["shine_ai"]["decision_trace_trust"]["generation"] = 3
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v4"
+    assert first["version"] == "shine/runtime-trace-v5"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-CERTIFICATE-SIGNATURE" not in json.dumps(first)
