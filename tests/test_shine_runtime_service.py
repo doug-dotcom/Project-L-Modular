@@ -3545,6 +3545,24 @@ def test_runtime_trace_binds_off_device_roster_head_without_witness_hmac():
                 "foundation-roster-head-witness-v1",
             "external_roster_head_witness_independent_retention":
                 "foundation-supabase-vault-hmac",
+            "external_roster_head_witness_rotation_supported": True,
+            "external_roster_head_witness_rotation_mode": "rotated",
+            "external_roster_head_witness_rotation": {
+                "status": "verified",
+                "mode": "rotated",
+                "source_auth_key_id":
+                    "foundation-roster-head-witness-v1",
+                "target_auth_key_id":
+                    "foundation-roster-head-witness-v2",
+                "sequence": 1,
+                "head_sha256": "9" * 64,
+                "generation": 1,
+                "policy_sha256": "a" * 64,
+                "state_sha256": "b" * 64,
+                "state_preserved": True,
+                "auth_tag": "PRIVATE-ROTATION-HMAC",
+                "secret": "PRIVATE-ROTATION-SECRET",
+            },
             "external_roster_head_witness_auth_tag":
                 "PRIVATE-ROSTER-HEAD-WITNESS-HMAC",
         },
@@ -3567,3 +3585,16 @@ def test_runtime_trace_binds_off_device_roster_head_without_witness_hmac():
     assert first["version"] == "shine/runtime-trace-v16"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-ROSTER-HEAD-WITNESS-HMAC" not in rendered
+    assert "PRIVATE-ROTATION-HMAC" not in rendered
+    assert "PRIVATE-ROTATION-SECRET" not in rendered
+
+    rotated = json.loads(json.dumps(packet))
+    rotation = rotated["components"]["shine_ai"]["decision_trace_trust"][
+        "witness_quorum"
+    ]["external_roster_head_witness_rotation"]
+    rotation["target_auth_key_id"] = "foundation-roster-head-witness-v3"
+    third = runtime.build_runtime_trace(
+        rotated,
+        {"status": "not_required"},
+    )
+    assert first["lineage_sha256"] != third["lineage_sha256"]
