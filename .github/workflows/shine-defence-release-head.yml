@@ -44,6 +44,16 @@ jobs:
             const body=await response.json();
             const headSha=String(body.sha??'').toLowerCase();
             const headCommittedAt=body.commit?.committer?.date??body.commit?.author?.date;
+            const changedFiles=Array.isArray(body.files)?body.files.map(file=>String(file.filename??'')):[];
+            const ignored=path=>
+              path.startsWith('.github/')||
+              path.startsWith('docs/')||
+              /^README(?:\.|$)/i.test(path)||
+              /^LICENSE(?:\.|$)/i.test(path);
+            const deploymentRelevant=
+              changedFiles.length===0||
+              changedFiles.length>=300||
+              changedFiles.some(path=>!ignored(path));
             if(!/^[a-f0-9]{40}$/.test(headSha)||!headCommittedAt||Number.isNaN(Date.parse(headCommittedAt))){
               throw new Error('invalid GitHub head response');
             }
@@ -55,7 +65,9 @@ jobs:
                 repository:repo,
                 branch,
                 headSha,
-                headCommittedAt:new Date(headCommittedAt).toISOString()
+                headCommittedAt:new Date(headCommittedAt).toISOString(),
+                deploymentRelevant,
+                changedFileCount:changedFiles.length
               }]
             }));
             console.log('Release head:',targetId,branch,headSha);
