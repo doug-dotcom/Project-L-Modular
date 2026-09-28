@@ -21,6 +21,7 @@ from redis.exceptions import RedisError
 
 from services.external_witness_roster import (
     ExternalWitnessRosterError,
+    build_monotonic_roster_head,
     load_persisted_external_witness_roster,
 )
 from services.foundation_chain_checkpoint import (
@@ -34,6 +35,7 @@ from services.foundation_chain_redis_checkpoint import (
 from services.foundation_trust_witness import (
     FoundationWitnessError,
     ensure_foundation_policy_transition_authorization,
+    ensure_foundation_roster_head_witness,
     ensure_foundation_trust_witness,
 )
 from services.shine_trust_storage import (
@@ -1274,6 +1276,20 @@ def ensure_trust_witness_quorum(
     except ExternalWitnessRosterError as exc:
         raise WitnessQuorumError(str(exc)) from exc
 
+    try:
+        roster_head = build_monotonic_roster_head(
+            db,
+            expected_roster=roster,
+        )
+        roster_head_witness = ensure_foundation_roster_head_witness(
+            db,
+            roster_head,
+            get_impl=foundation_get_impl,
+            post_impl=foundation_post_impl,
+        )
+    except (ExternalWitnessRosterError, FoundationWitnessError) as exc:
+        raise WitnessQuorumError(str(exc)) from exc
+
     if (
         roster["minimumWitnesses"] != policy["minimumWitnesses"]
         or roster["acceptedWitnessIds"] != policy["acceptedWitnessIds"]
@@ -1432,6 +1448,18 @@ def ensure_trust_witness_quorum(
             roster["roster_storage_checkpoint_retention"],
         "external_roster_storage_rotation":
             roster["roster_storage_rotation"],
+        "external_roster_head_sequence": roster_head["sequence"],
+        "external_roster_head_sha256": roster_head["headSha256"],
+        "external_roster_head_checkpoint_sha256":
+            roster_head["checkpointSha256"],
+        "external_roster_head_witness_status":
+            roster_head_witness["status"],
+        "external_roster_head_witness_id":
+            roster_head_witness["witness_id"],
+        "external_roster_head_witness_mode":
+            roster_head_witness["mode"],
+        "external_roster_head_witness_independent_retention":
+            roster_head_witness["independent_retention"],
         "minimum_witnesses": policy["minimumWitnesses"],
         "verified_witness_count": len(by_id),
         "witness_ids": sorted(by_id),
