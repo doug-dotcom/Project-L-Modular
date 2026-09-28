@@ -3,6 +3,8 @@ from fastapi.testclient import TestClient
 
 import api.shine_ai_memory as bridge
 
+OWNER = "4ad046b3-06a5-4e62-a3ef-17a4f83dcdde"
+
 
 def client() -> TestClient:
     app = FastAPI()
@@ -12,55 +14,78 @@ def client() -> TestClient:
 
 def configure(monkeypatch):
     monkeypatch.setenv("SHINE_AI_MEMORY_TOKEN", "x" * 32)
-    monkeypatch.setenv("PROJECT_L_OWNER_ID", "owner-1")
+    monkeypatch.setenv("PROJECT_L_OWNER_ID", OWNER)
+    bridge._db_client = None
 
 
-def packet():
+def owner_context():
     return {
-        "engine": "rhee",
-        "version": "v5.0",
-        "recall_active": True,
-        "recall_plan": {"status": "checked"},
-        "evidence": [
+        "status": "ok",
+        "scope": {
+            "ownerBound": True,
+            "quarantineExcluded": True,
+            "correctionsPreferred": True,
+        },
+        "compression": {
+            "charBudget": 7200,
+            "sourceChars": 1200,
+            "returnedChars": 900,
+        },
+        "matches": [
             {
-                "source": "episodic_memories:12",
-                "quote_source": "Bali diving qualifications and dive history.",
-                "role": "user",
+                "id": "5507",
+                "domain": "sport",
+                "content": "Diving training memory.",
+                "authority": {"class": "direct_user_promoted_memory"},
+                "provenance": {
+                    "sourceTable": "memory_sport",
+                    "sourceId": "5507",
+                    "sourceRole": "user",
+                    "ownerBound": True,
+                },
             },
             {
-                "source": "memory_sport:5507",
-                "quote_source": "Diving training memory.",
-                "role": "user",
+                "id": "abc",
+                "domain": "general",
+                "content": "General Shine Dive memory.",
+                "authority": {"class": "promoted_memory_unlinked_provenance"},
+                "provenance": {
+                    "sourceTable": "memory_general",
+                    "sourceId": "abc",
+                    "sourceRole": "unknown",
+                    "ownerBound": True,
+                },
             },
             {
-                "source": "memory_general:abc",
-                "quote_source": "General Shine Dive memory.",
-                "role": "unknown",
-            },
-            {
-                "source": "memory_recovery:5391",
-                "quote_source": "Recovery information must not cross this scope boundary.",
-                "role": "user",
-            },
-            {
-                "source": "raw_catchall:5685",
-                "quote_source": "Raw conversation is not exposed by the first bridge policy.",
-                "role": "user",
+                "id": "5391",
+                "domain": "recovery",
+                "content": "Recovery information must not cross this scope boundary.",
+                "authority": {"class": "direct_user_promoted_memory"},
+                "provenance": {
+                    "sourceTable": "memory_recovery",
+                    "sourceId": "5391",
+                    "sourceRole": "user",
+                    "ownerBound": True,
+                },
             },
         ],
     }
 
 
-def test_retrieval_is_service_authenticated_scoped_and_bounded(monkeypatch):
+def test_retrieval_is_service_authenticated_owner_scoped_and_bounded(monkeypatch):
     configure(monkeypatch)
-    monkeypatch.setattr(bridge, "build_rhee_packet", lambda query: packet())
+    monkeypatch.setattr(
+        bridge,
+        "_owner_context",
+        lambda owner_id, query, limit: owner_context(),
+    )
 
     response = client().post(
         "/internal/shine-ai/memory/retrieve",
         headers={"X-Shine-Service-Token": "x" * 32},
         json={
             "app": "shine-dive",
-            "user_id": "owner-1",
+            "user_id": OWNER,
             "query": "What diving qualifications have I completed?",
             "scopes": ["episodic", "sport", "general"],
             "limit": 2,
@@ -70,33 +95,37 @@ def test_retrieval_is_service_authenticated_scoped_and_bounded(monkeypatch):
     assert response.status_code == 200
     body = response.json()
     assert body["source"] == "project-l"
-    assert body["engine"] == "rhee"
+    assert body["engine"] == "project-l-memory-context-v2"
     assert len(body["records"]) == 2
-    assert body["records"][0]["id"] == "episodic_memories:12"
+    assert body["records"][0]["id"] == "memory_sport:5507"
     assert body["records"][0]["priority"] == "high"
     assert all("recovery" not in record["text"].lower() for record in body["records"])
+    assert body["receipt"]["owner_bound"] is True
+    assert body["receipt"]["permission_scoped"] is True
+    assert body["receipt"]["legacy_global_search_used"] is False
+    assert body["receipt"]["unavailable_scopes"] == ["episodic"]
     assert body["receipt"]["read_only"] is True
     assert body["receipt"]["bounded"] is True
 
 
-def test_invalid_service_token_is_rejected_before_recall(monkeypatch):
+def test_invalid_service_token_is_rejected_before_owner_scoped_query(monkeypatch):
     configure(monkeypatch)
     called = {"value": False}
 
-    def should_not_run(query):
+    def should_not_run(owner_id, query, limit):
         called["value"] = True
-        return packet()
+        return owner_context()
 
-    monkeypatch.setattr(bridge, "build_rhee_packet", should_not_run)
+    monkeypatch.setattr(bridge, "_owner_context", should_not_run)
 
     response = client().post(
         "/internal/shine-ai/memory/retrieve",
         headers={"X-Shine-Service-Token": "wrong"},
         json={
             "app": "shine-dive",
-            "user_id": "owner-1",
+            "user_id": OWNER,
             "query": "Dive history",
-            "scopes": ["episodic"],
+            "scopes": ["sport"],
         },
     )
 
@@ -106,16 +135,20 @@ def test_invalid_service_token_is_rejected_before_recall(monkeypatch):
 
 def test_owner_and_scope_boundaries_are_enforced(monkeypatch):
     configure(monkeypatch)
-    monkeypatch.setattr(bridge, "build_rhee_packet", lambda query: packet())
+    monkeypatch.setattr(
+        bridge,
+        "_owner_context",
+        lambda owner_id, query, limit: owner_context(),
+    )
 
     wrong_owner = client().post(
         "/internal/shine-ai/memory/retrieve",
         headers={"X-Shine-Service-Token": "x" * 32},
         json={
             "app": "shine-dive",
-            "user_id": "someone-else",
+            "user_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
             "query": "Dive history",
-            "scopes": ["episodic"],
+            "scopes": ["sport"],
         },
     )
     assert wrong_owner.status_code == 403
@@ -125,7 +158,7 @@ def test_owner_and_scope_boundaries_are_enforced(monkeypatch):
         headers={"X-Shine-Service-Token": "x" * 32},
         json={
             "app": "shine-dive",
-            "user_id": "owner-1",
+            "user_id": OWNER,
             "query": "Health history",
             "scopes": ["health"],
         },
@@ -133,34 +166,45 @@ def test_owner_and_scope_boundaries_are_enforced(monkeypatch):
     assert forbidden_scope.status_code == 403
 
 
-def test_broad_recall_is_rejected(monkeypatch):
+def test_broad_recall_is_rejected_before_database_query(monkeypatch):
     configure(monkeypatch)
-    monkeypatch.setattr(bridge, "build_rhee_packet", lambda query: packet())
+    called = {"value": False}
+
+    def should_not_run(owner_id, query, limit):
+        called["value"] = True
+        return owner_context()
+
+    monkeypatch.setattr(bridge, "_owner_context", should_not_run)
 
     response = client().post(
         "/internal/shine-ai/memory/retrieve",
         headers={"X-Shine-Service-Token": "x" * 32},
         json={
             "app": "shine-dive",
-            "user_id": "owner-1",
+            "user_id": OWNER,
             "query": "Deep recall everything you know about me",
-            "scopes": ["episodic"],
+            "scopes": ["sport"],
         },
     )
 
     assert response.status_code == 422
+    assert called["value"] is False
 
 
 def test_daash_bridge_is_limited_to_sport_scope(monkeypatch):
     configure(monkeypatch)
-    monkeypatch.setattr(bridge, "build_rhee_packet", lambda query: packet())
+    monkeypatch.setattr(
+        bridge,
+        "_owner_context",
+        lambda owner_id, query, limit: owner_context(),
+    )
 
     allowed = client().post(
         "/internal/shine-ai/memory/retrieve",
         headers={"X-Shine-Service-Token": "x" * 32},
         json={
             "app": "daash",
-            "user_id": "owner-1",
+            "user_id": OWNER,
             "query": "What training history is relevant to this programme?",
             "scopes": ["sport"],
             "limit": 4,
@@ -171,13 +215,14 @@ def test_daash_bridge_is_limited_to_sport_scope(monkeypatch):
     body = allowed.json()
     assert [record["id"] for record in body["records"]] == ["memory_sport:5507"]
     assert body["receipt"]["requested_scopes"] == ["sport"]
+    assert body["receipt"]["unavailable_scopes"] == []
 
     denied = client().post(
         "/internal/shine-ai/memory/retrieve",
         headers={"X-Shine-Service-Token": "x" * 32},
         json={
             "app": "daash",
-            "user_id": "owner-1",
+            "user_id": OWNER,
             "query": "Recall my full history.",
             "scopes": ["episodic"],
             "limit": 4,
@@ -185,3 +230,14 @@ def test_daash_bridge_is_limited_to_sport_scope(monkeypatch):
     )
 
     assert denied.status_code == 403
+
+
+def test_query_terms_are_bounded_and_drop_low_value_words():
+    terms = bridge._query_terms(
+        "What diving qualifications have I completed in Bali and what did I do?"
+    )
+    assert "diving" in terms
+    assert "qualifications" in terms
+    assert "bali" in terms
+    assert "what" not in terms
+    assert len(terms) <= 24
