@@ -60,7 +60,7 @@ from services.shine_trust_storage import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v16"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v17"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -1866,6 +1866,14 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                             "external_roster_transition_evidence_chain_rows",
                             "external_roster_transition_evidence_chain_generation",
                             "external_roster_transition_evidence_chain_tag",
+                            "external_roster_transition_evidence_chain_witness_status",
+                            "external_roster_transition_evidence_chain_witness_mode",
+                            "external_roster_transition_evidence_chain_witness_generation",
+                            "external_roster_transition_evidence_chain_witness_rows",
+                            "external_roster_transition_evidence_chain_witness_tag",
+                            "external_roster_transition_evidence_chain_witness_evidence_sha256",
+                            "external_roster_transition_evidence_chain_witness_auth_key_id",
+                            "external_roster_transition_evidence_chain_witness_storage",
                             "external_roster_head_verified",
                             "external_roster_head_sequence",
                             "external_roster_head_checkpoint_sha256",
