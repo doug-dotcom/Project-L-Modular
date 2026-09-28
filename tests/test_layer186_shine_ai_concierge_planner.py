@@ -1,6 +1,7 @@
 import json
 
 from services.concierge_planner_service import plan_concierge_specialists
+from services.capability_router_service import needs_concierge_planning, route_capability
 
 
 class FixtureAdapter:
@@ -157,3 +158,51 @@ def test_no_specialist_selection_is_not_required():
     )
     assert plan["status"] == "not_required"
     assert plan["steps"] == []
+
+
+def test_ambiguous_multi_domain_request_requires_shine_ai_planning():
+    assert needs_concierge_planning(
+        "Plan a trip to Vanuatu and give me a dive brief for Vanuatu"
+    ) is True
+    assert needs_concierge_planning(
+        "Fiona: give me a company brief on ASX:ANZ"
+    ) is False
+
+
+def test_valid_multi_specialist_plan_becomes_one_governed_orchestration_route():
+    adapter = FixtureAdapter({
+        "selectedCapabilities": ["travel.plan_trip", "dive.destination_brief"],
+        "clarificationNeeded": False,
+        "clarifyingQuestion": "",
+    })
+    plan = plan_concierge_specialists(
+        "Plan a trip to Vanuatu and give me a dive brief for Vanuatu",
+        fleet(),
+        model_adapter=adapter,
+    )
+    route = route_capability(
+        "Plan a trip to Vanuatu and give me a dive brief for Vanuatu",
+        foundation_fleet=fleet(),
+        concierge_plan=plan,
+    )
+    assert route["handled"] is False
+    assert route["capability"] == "foundation_orchestration"
+    assert route["status"] == "ready"
+    assert route["foundation_orchestration"]["selected_capabilities"] == [
+        "travel.plan_trip",
+        "dive.destination_brief",
+    ]
+
+
+def test_server_wires_rhee_context_and_active_model_into_concierge_planner():
+    from pathlib import Path
+
+    source = Path("api/server.py").read_text(encoding="utf-8")
+    call = "plan_concierge_specialists("
+    index = source.index(call, source.index("def chat("))
+    window = source[index:index + 500]
+    assert "user_message" in window
+    assert "foundation_fleet" in window
+    assert "model_adapter=active_model_adapter" in window
+    assert "l_context=rhee_context" in window
+    assert "concierge_plan=concierge_plan" in source
