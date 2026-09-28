@@ -780,42 +780,7 @@ begin
     end;
 
   if v_previous_chain_tag is null
-     or v_previous_chain_tag !~ '^[a-f0-9]{64}
-  on conflict (witness_id) do update
-  set sequence=excluded.sequence,
-      head_sha256=excluded.head_sha256,
-      generation=excluded.generation,
-      keyset_sha256=excluded.keyset_sha256,
-      state_sha256=excluded.state_sha256,
-      auth_key_id=excluded.auth_key_id,
-      auth_tag=excluded.auth_tag,
-      client_id=excluded.client_id,
-      chain_version=excluded.chain_version,
-      chain_tag=excluded.chain_tag,
-      witnessed_at=excluded.witnessed_at;
-
-  return jsonb_build_object(
-    'status','witnessed',
-    'replayed',false,
-    'witnessVersion',1,
-    'witnessType','decision_trace_trust_state_monotonic_head_witness',
-    'authAlgorithm','HMAC-SHA-256',
-    'witnessId',p_witness_id,
-    'authKeyId',v_auth_key_id,
-    'headVersion',1,
-    'sequence',p_sequence,
-    'headSha256',p_head_sha256,
-    'generation',p_generation,
-    'keyset_sha256',p_keyset_sha256,
-    'stateSha256',p_state_sha256,
-    'authTag',v_auth_tag,
-    'chainVersion',1,
-    'previousChainTag',v_previous_chain_tag,
-    'chainTag',v_chain_tag,
-    'witnessedAt',pg_catalog.now()
-  );
-end;
-$$; then
+     or v_previous_chain_tag !~ '^[a-f0-9]{64}$' then
     return jsonb_build_object(
       'status','unavailable',
       'reasonCode','witness-chain-predecessor-unavailable'
@@ -871,6 +836,8 @@ $$; then
       auth_key_id=excluded.auth_key_id,
       auth_tag=excluded.auth_tag,
       client_id=excluded.client_id,
+      chain_version=excluded.chain_version,
+      chain_tag=excluded.chain_tag,
       witnessed_at=excluded.witnessed_at;
 
   return jsonb_build_object(
@@ -888,6 +855,9 @@ $$; then
     'keyset_sha256',p_keyset_sha256,
     'stateSha256',p_state_sha256,
     'authTag',v_auth_tag,
+    'chainVersion',1,
+    'previousChainTag',v_previous_chain_tag,
+    'chainTag',v_chain_tag,
     'witnessedAt',pg_catalog.now()
   );
 end;
