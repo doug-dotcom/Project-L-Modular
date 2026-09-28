@@ -1,0 +1,555 @@
+"""Durable Foundation Concierge retry/resume worker for Project L."""
+
+from __future__ import annotations
+
+import threading
+from datetime import datetime, timedelta, timezone
+from typing import Any
+from uuid import UUID, uuid4
+
+import httpx
+
+from services.foundation_companion_service import (
+    _foundation_url,
+    _response_json,
+    _rpc_data,
+    _single_secret,
+    ensure_foundation_delegation,
+    set_pending_concierge_job_status,
+)
+
+
+CLIENT_ID = "shine.companion"
+MAX_RETRY_CAPABILITIES = 4
+DEFAULT_RETRY_POLL_SECONDS = 30.0
+MAX_LOCAL_INPUT_BYTES = 48 * 1024
+
+
+def _iso_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _uuid(value: Any) -> str:
+    return str(UUID(str(value)))
+
+
+def _client_token(db) -> str:
+    return _single_secret(
+        _rpc_data(db, "concierge_foundation_client_token_v1"),
+        "foundation-client",
+    )
+
+
+def _post(
+    *,
+    db,
+    path: str,
+    body: dict,
+    foundation_url: str | None,
+    timeout_seconds: float,
+    delegation_token: str | None = None,
+    post_impl=None,
+):
+    headers = {
+        "Content-Type": "application/json",
+        "X-Shine-Client-Token": _client_token(db),
+    }
+    if delegation_token:
+        headers["X-Shine-Delegation-Token"] = delegation_token
+    post = post_impl or httpx.post
+    return post(
+        _foundation_url(foundation_url) + path,
+        headers=headers,
+        json=body,
+        timeout=timeout_seconds,
+        follow_redirects=False,
+    )
+
+
+def claim_foundation_retry(
+    db,
+    *,
+    foundation_url: str | None = None,
+    timeout_seconds: float = 12.0,
+    post_impl=None,
+) -> dict:
+    try:
+        response = _post(
+            db=db,
+            path="/v1/concierge/retry/claim",
+            body={"clientId": CLIENT_ID},
+            foundation_url=foundation_url,
+            timeout_seconds=timeout_seconds,
+            post_impl=post_impl,
+        )
+        body = _response_json(response)
+    except (httpx.HTTPError, RuntimeError):
+        return {"status": "unavailable", "reason_code": "retry-claim-unavailable"}
+
+    if response.status_code != 200 or body.get("status") != "ok":
+        return {
+            "status": str(body.get("status") or "unavailable"),
+            "reason_code": str(body.get("reasonCode") or "retry-claim-failed"),
+        }
+    retry = body.get("retry")
+    if not isinstance(retry, dict):
+        return {"status": "unavailable", "reason_code": "retry-claim-invalid"}
+    if retry.get("claimed") is not True:
+        return {"status": "idle", "reason_code": "no-retry-due"}
+
+    try:
+        capability_ids = [str(item) for item in list(retry.get("capabilityIds") or [])]
+        claimed = {
+            "status": "claimed",
+            "reason_code": "retry-claimed",
+            "retry_job_id": _uuid(retry.get("retryJobId")),
+            "request_id": _uuid(retry.get("requestId")),
+            "owner_shine_id": _uuid(retry.get("ownerShineId")),
+            "claim_token": _uuid(retry.get("claimToken")),
+            "capability_ids": capability_ids,
+            "attempt": int(retry.get("attempt") or 1),
+            "max_attempts": int(retry.get("maxAttempts") or 1),
+            "expires_at": retry.get("expiresAt"),
+        }
+    except (ValueError, TypeError):
+        return {"status": "unavailable", "reason_code": "retry-claim-invalid"}
+
+    if (
+        not capability_ids
+        or len(capability_ids) > MAX_RETRY_CAPABILITIES
+        or len(set(capability_ids)) != len(capability_ids)
+    ):
+        return {"status": "unavailable", "reason_code": "retry-claim-invalid"}
+    return claimed
+
+
+def _load_local_job(db, owner_id: str, request_id: str) -> dict | None:
+    result = (
+        db.table("companion_foundation_pending_jobs")
+        .select(
+            "job_id,user_id,link_request_id,purpose,capability_ids,inputs,"
+            "source_conversation_id,source_message_id,status"
+        )
+        .eq("job_id", request_id)
+        .eq("user_id", owner_id)
+        .limit(2)
+        .execute()
+    )
+    rows = getattr(result, "data", None)
+    if not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict):
+        return None
+    return rows[0]
+
+
+def _finish_remote_retry(
+    db,
+    claim: dict,
+    *,
+    outcome: str,
+    reason_code: str,
+    retry_after: str | None = None,
+    foundation_url: str | None = None,
+    timeout_seconds: float = 12.0,
+    post_impl=None,
+) -> dict:
+    if outcome not in {"completed", "retry", "abandoned"}:
+        raise ValueError("invalid retry outcome")
+    envelope = {
+        "retryFinish": "shine-foundation/concierge-retry-finish-v1",
+        "schemaVersion": "1.0.0",
+        "clientId": CLIENT_ID,
+        "retryJobId": claim["retry_job_id"],
+        "claimToken": claim["claim_token"],
+        "outcome": outcome,
+        "reasonCode": str(reason_code or "retry-finished")[:160],
+    }
+    if retry_after:
+        envelope["retryAfter"] = retry_after
+    try:
+        response = _post(
+            db=db,
+            path="/v1/concierge/retry/finish",
+            body=envelope,
+            foundation_url=foundation_url,
+            timeout_seconds=timeout_seconds,
+            post_impl=post_impl,
+        )
+        body = _response_json(response)
+    except (httpx.HTTPError, RuntimeError):
+        return {"status": "unavailable", "reason_code": "retry-finish-unavailable"}
+    if response.status_code != 200 or body.get("status") != "ok":
+        return {
+            "status": str(body.get("status") or "unavailable"),
+            "reason_code": str(body.get("reasonCode") or "retry-finish-failed"),
+        }
+    return {
+        "status": "ok",
+        "reason_code": "retry-finished",
+        "retry": body.get("retry") if isinstance(body.get("retry"), dict) else {},
+    }
+
+
+def _emit_completion_event(
+    db,
+    *,
+    job: dict,
+    event_type: str,
+    reason_code: str,
+) -> None:
+    if event_type not in {"retry-completed", "retry-abandoned"}:
+        raise ValueError("invalid completion event type")
+    owner_id = _uuid(job.get("user_id"))
+    request_id = _uuid(job.get("job_id"))
+    existing = (
+        db.table("companion_concierge_completion_outbox")
+        .select("event_id")
+        .eq("user_id", owner_id)
+        .eq("concierge_request_id", request_id)
+        .eq("event_type", event_type)
+        .limit(1)
+        .execute()
+    )
+    rows = getattr(existing, "data", None)
+    if isinstance(rows, list) and rows:
+        return
+    db.table("companion_concierge_completion_outbox").insert({
+        "event_id": str(uuid4()),
+        "user_id": owner_id,
+        "concierge_request_id": request_id,
+        "event_type": event_type,
+        "summary_state": "ready-to-surface",
+        "reason_code": str(reason_code or event_type)[:160],
+        "capability_ids": list(job.get("capability_ids") or [])[:20],
+        "source_conversation_id": job.get("source_conversation_id"),
+        "source_message_id": job.get("source_message_id"),
+        "expires_at": (
+            datetime.now(timezone.utc) + timedelta(days=7)
+        ).isoformat().replace("+00:00", "Z"),
+    }).execute()
+
+
+def _local_inputs_for_claim(job: dict, claim: dict) -> dict | None:
+    if str(job.get("status") or "") != "ready":
+        return None
+    local_capabilities = [str(item) for item in list(job.get("capability_ids") or [])]
+    claimed = claim["capability_ids"]
+    if any(capability_id not in local_capabilities for capability_id in claimed):
+        return None
+    inputs = job.get("inputs")
+    if not isinstance(inputs, dict):
+        return None
+    selected = {}
+    for capability_id in claimed:
+        value = inputs.get(capability_id)
+        if not isinstance(value, dict):
+            return None
+        selected[capability_id] = value
+    try:
+        size = len(str(selected).encode("utf-8"))
+    except Exception:
+        return None
+    if size > MAX_LOCAL_INPUT_BYTES:
+        return None
+    return selected
+
+
+def _resume_foundation(
+    db,
+    claim: dict,
+    job: dict,
+    inputs: dict,
+    *,
+    foundation_url: str | None = None,
+    timeout_seconds: float = 145.0,
+    post_impl=None,
+) -> dict:
+    authority = ensure_foundation_delegation(
+        db,
+        claim["owner_shine_id"],
+        foundation_url=foundation_url,
+        timeout_seconds=min(timeout_seconds, 12.0),
+        post_impl=post_impl,
+    )
+    if authority.get("status") != "active":
+        return {
+            "status": "authority-unavailable",
+            "reason_code": str(
+                authority.get("reason_code") or authority.get("status") or
+                "foundation-authority-unavailable"
+            ),
+        }
+
+    envelope = {
+        "conciergeExecute": "shine-concierge/execute-v1",
+        "schemaVersion": "1.0.0",
+        "requestId": claim["request_id"],
+        "clientId": CLIENT_ID,
+        "inputs": inputs,
+        "requestedAt": _iso_now(),
+    }
+    try:
+        response = _post(
+            db=db,
+            path="/v1/concierge/resume",
+            body=envelope,
+            foundation_url=foundation_url,
+            timeout_seconds=timeout_seconds,
+            delegation_token=_single_secret(
+                authority.get("delegation_token"),
+                "foundation-delegation",
+            ),
+            post_impl=post_impl,
+        )
+        body = _response_json(response)
+    except (httpx.HTTPError, RuntimeError):
+        return {"status": "network-uncertain", "reason_code": "concierge-resume-unavailable"}
+
+    return {
+        "status": str(body.get("status") or "unavailable"),
+        "reason_code": str(body.get("reasonCode") or "concierge-resume-unavailable"),
+        "results": body.get("results") if isinstance(body.get("results"), list) else [],
+        "retry": body.get("retry") if isinstance(body.get("retry"), dict) else None,
+        "unavailable_capabilities": (
+            body.get("unavailableCapabilities")
+            if isinstance(body.get("unavailableCapabilities"), list)
+            else []
+        ),
+        "synthesis_ready": body.get("synthesisReady") is True,
+        "synthesis_must_disclose_partial": (
+            body.get("synthesisMustDisclosePartial") is True
+        ),
+        "http_status": int(response.status_code),
+    }
+
+
+def _retry_after_from_resume(resume: dict) -> str | None:
+    values = []
+    for item in resume.get("unavailable_capabilities") or []:
+        if isinstance(item, dict) and isinstance(item.get("retryAfter"), str):
+            values.append(item["retryAfter"])
+    return min(values) if values else None
+
+
+def run_concierge_retry_once(
+    db,
+    *,
+    foundation_url: str | None = None,
+    post_impl=None,
+) -> dict:
+    claim = claim_foundation_retry(
+        db,
+        foundation_url=foundation_url,
+        post_impl=post_impl,
+    )
+    if claim.get("status") != "claimed":
+        return claim
+
+    job = _load_local_job(db, claim["owner_shine_id"], claim["request_id"])
+    inputs = _local_inputs_for_claim(job, claim) if job else None
+    if job is None or inputs is None:
+        finish = _finish_remote_retry(
+            db,
+            claim,
+            outcome="abandoned",
+            reason_code="companion-retry-context-missing",
+            foundation_url=foundation_url,
+            post_impl=post_impl,
+        )
+        if job:
+            try:
+                set_pending_concierge_job_status(
+                    db,
+                    user_id=claim["owner_shine_id"],
+                    job_id=claim["request_id"],
+                    status="failed",
+                )
+                _emit_completion_event(
+                    db,
+                    job=job,
+                    event_type="retry-abandoned",
+                    reason_code="companion-retry-context-missing",
+                )
+            except Exception:
+                pass
+        return {
+            "status": "abandoned",
+            "reason_code": "companion-retry-context-missing",
+            "finish_status": finish.get("status"),
+        }
+
+    resume = _resume_foundation(
+        db,
+        claim,
+        job,
+        inputs,
+        foundation_url=foundation_url,
+        post_impl=post_impl,
+    )
+    status = resume.get("status")
+
+    if status == "completed":
+        finish = _finish_remote_retry(
+            db,
+            claim,
+            outcome="completed",
+            reason_code="concierge-resume-completed",
+            foundation_url=foundation_url,
+            post_impl=post_impl,
+        )
+        if finish.get("status") == "ok":
+            set_pending_concierge_job_status(
+                db,
+                user_id=claim["owner_shine_id"],
+                job_id=claim["request_id"],
+                status="completed",
+            )
+            _emit_completion_event(
+                db,
+                job=job,
+                event_type="retry-completed",
+                reason_code="concierge-resume-completed",
+            )
+        return {
+            "status": "completed",
+            "reason_code": "concierge-resume-completed",
+            "finish_status": finish.get("status"),
+            "reused_count": sum(
+                1 for row in resume.get("results") or []
+                if isinstance(row, dict) and row.get("reused") is True
+            ),
+        }
+
+    if status == "partial":
+        # Foundation execution already queued the next retry for the still-transient
+        # capability subset. Close this claimed job to avoid duplicating that queue.
+        finish = _finish_remote_retry(
+            db,
+            claim,
+            outcome="completed",
+            reason_code="concierge-resume-partial-requeued",
+            foundation_url=foundation_url,
+            post_impl=post_impl,
+        )
+        return {
+            "status": "partial",
+            "reason_code": "concierge-resume-partial-requeued",
+            "finish_status": finish.get("status"),
+            "next_retry_scheduled": isinstance(resume.get("retry"), dict),
+            "reused_count": sum(
+                1 for row in resume.get("results") or []
+                if isinstance(row, dict) and row.get("reused") is True
+            ),
+        }
+
+    if status in {"network-uncertain", "unavailable", "authority-unavailable"}:
+        finish = _finish_remote_retry(
+            db,
+            claim,
+            outcome="retry",
+            reason_code=str(resume.get("reason_code") or "concierge-resume-retry"),
+            retry_after=_retry_after_from_resume(resume),
+            foundation_url=foundation_url,
+            post_impl=post_impl,
+        )
+        return {
+            "status": "retry",
+            "reason_code": str(resume.get("reason_code") or "concierge-resume-retry"),
+            "finish_status": finish.get("status"),
+        }
+
+    finish = _finish_remote_retry(
+        db,
+        claim,
+        outcome="abandoned",
+        reason_code=str(resume.get("reason_code") or "concierge-resume-terminal-failure"),
+        foundation_url=foundation_url,
+        post_impl=post_impl,
+    )
+    if finish.get("status") == "ok":
+        set_pending_concierge_job_status(
+            db,
+            user_id=claim["owner_shine_id"],
+            job_id=claim["request_id"],
+            status="failed",
+        )
+        _emit_completion_event(
+            db,
+            job=job,
+            event_type="retry-abandoned",
+            reason_code=str(
+                resume.get("reason_code") or "concierge-resume-terminal-failure"
+            ),
+        )
+    return {
+        "status": "abandoned",
+        "reason_code": str(
+            resume.get("reason_code") or "concierge-resume-terminal-failure"
+        ),
+        "finish_status": finish.get("status"),
+    }
+
+
+class ConciergeRetryRunner:
+    """Single bounded background consumer for Foundation retry jobs."""
+
+    def __init__(
+        self,
+        db,
+        *,
+        poll_seconds: float = DEFAULT_RETRY_POLL_SECONDS,
+        foundation_url: str | None = None,
+        logger=None,
+    ):
+        self.db = db
+        self.poll_seconds = max(5.0, float(poll_seconds))
+        self.foundation_url = foundation_url
+        self.logger = logger
+        self.stop_event = threading.Event()
+        self.thread = None
+
+    def start(self):
+        if self.thread is not None and self.thread.is_alive():
+            return
+        self.stop_event.clear()
+        self.thread = threading.Thread(
+            target=self._loop,
+            daemon=True,
+            name="l-concierge-retry",
+        )
+        self.thread.start()
+
+    def stop(self):
+        self.stop_event.set()
+        thread = self.thread
+        if thread is not None and thread.is_alive():
+            thread.join(timeout=2.0)
+
+    def _log(self, message: str):
+        if callable(self.logger):
+            try:
+                self.logger(message)
+            except Exception:
+                pass
+
+    def _loop(self):
+        while not self.stop_event.is_set():
+            delay = self.poll_seconds
+            try:
+                result = run_concierge_retry_once(
+                    self.db,
+                    foundation_url=self.foundation_url,
+                )
+                status = str(result.get("status") or "unknown")
+                if status not in {"idle", "unavailable"}:
+                    self._log(
+                        "CONCIERGE RETRY: "
+                        f"status={status} | reason={result.get('reason_code', '')}"
+                    )
+                if status in {"completed", "partial", "abandoned"}:
+                    delay = 1.0
+            except Exception as exc:
+                self._log(
+                    "CONCIERGE RETRY ERROR: "
+                    f"{type(exc).__name__}"
+                )
+            self.stop_event.wait(delay)
