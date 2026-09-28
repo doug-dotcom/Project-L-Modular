@@ -1281,6 +1281,21 @@ def ensure_trust_witness_quorum(
         raise WitnessQuorumError(
             "trust-witness-external-roster-policy-mismatch"
         )
+    if (
+        roster.get("roster_head_verified") is not True
+        or roster.get("roster_head_witness_verified") is not True
+        or int(roster.get("roster_head_generation") or 0)
+            != int(roster.get("generation") or 0)
+        or roster.get("roster_head_policy_sha256")
+            != roster.get("policySha256")
+        or roster.get("roster_head_state_sha256")
+            != roster.get("roster_storage_state_sha256")
+        or roster.get("roster_head_witness_independent_retention")
+            != "foundation-supabase-vault-hmac"
+    ):
+        raise WitnessQuorumError(
+            "trust-witness-external-roster-head-unverified"
+        )
 
     try:
         redis_witness = ensure_redis_trust_witness(
@@ -1432,6 +1447,28 @@ def ensure_trust_witness_quorum(
             roster["roster_storage_checkpoint_retention"],
         "external_roster_storage_rotation":
             roster["roster_storage_rotation"],
+        "external_roster_head_verified":
+            roster["roster_head_verified"],
+        "external_roster_head_sequence":
+            roster["roster_head_sequence"],
+        "external_roster_head_checkpoint_sha256":
+            roster["roster_head_checkpoint_sha256"],
+        "external_roster_head_sha256":
+            roster["roster_head_sha256"],
+        "external_roster_head_generation":
+            roster["roster_head_generation"],
+        "external_roster_head_policy_sha256":
+            roster["roster_head_policy_sha256"],
+        "external_roster_head_state_sha256":
+            roster["roster_head_state_sha256"],
+        "external_roster_head_witness_verified":
+            roster["roster_head_witness_verified"],
+        "external_roster_head_witness_id":
+            roster["roster_head_witness_id"],
+        "external_roster_head_witness_auth_key_id":
+            roster["roster_head_witness_auth_key_id"],
+        "external_roster_head_witness_independent_retention":
+            roster["roster_head_witness_independent_retention"],
         "minimum_witnesses": policy["minimumWitnesses"],
         "verified_witness_count": len(by_id),
         "witness_ids": sorted(by_id),
