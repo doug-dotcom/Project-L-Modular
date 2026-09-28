@@ -178,7 +178,7 @@ def _defence_snapshot(data: dict) -> dict:
         if isinstance(item, dict):
             reviews.append(_project(item, (
                 "appId", "repo", "reviewCommitSha", "profileVersion",
-                "policies", "status",
+                "policies", "status", "limitation",
             )))
     boundaries = result.get("boundaries") if isinstance(result.get("boundaries"), dict) else {}
     return {
@@ -408,7 +408,7 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
         reviews = [
             _project(row, (
                 "appId", "reviewCommitSha", "profileVersion",
-                "policies", "status", "limitation",
+                "policies", "status",
             ))
             for row in item.get("reviews", [])
             if isinstance(row, dict)
