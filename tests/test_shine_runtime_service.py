@@ -498,27 +498,10 @@ class FakeTrustResult:
 
 
 class FakeTrustDB:
-    def __init__(self, state=None):
+    def __init__(self, state=None, *, inconsistent_reason=None):
         self.state = state
+        self.inconsistent_reason = inconsistent_reason
         self.rpc_calls = []
-        self._table = None
-
-    def table(self, name):
-        assert name == "shine_ai_trace_trust_state"
-        self._table = name
-        return self
-
-    def select(self, *_args):
-        return self
-
-    def eq(self, *_args):
-        return self
-
-    def limit(self, *_args):
-        return self
-
-    def execute(self):
-        return FakeTrustResult([self.state] if self.state else [])
 
     def rpc(self, name, params):
         self.rpc_calls.append((name, params))
@@ -526,28 +509,63 @@ class FakeTrustDB:
 
         class Call:
             def execute(self):
-                if name == "shine_ai_trace_trust_bootstrap_v1":
+                if name == "shine_ai_trace_trust_snapshot_v2":
+                    if db.inconsistent_reason:
+                        return FakeTrustResult({
+                            "status": "inconsistent",
+                            "reason_code": db.inconsistent_reason,
+                        })
+                    if db.state is None:
+                        return FakeTrustResult({"status": "unbootstrapped"})
+                    return FakeTrustResult({
+                        "status": "trusted",
+                        "generation": db.state["generation"],
+                        "keyset_sha256": db.state["keyset_sha256"],
+                        "trusted_keyset": db.state["trusted_keyset"],
+                        "source": db.state.get("source"),
+                        "authorization_key_id": db.state.get(
+                            "authorization_key_id"
+                        ),
+                        "authorization_public_key_sha256": db.state.get(
+                            "authorization_public_key_sha256"
+                        ),
+                        "ledger_rows": db.state.get("ledger_rows", 1),
+                    })
+                if name == "shine_ai_trace_trust_bootstrap_v2":
+                    assert params["p_generation"] == 1
                     db.state = {
-                        "generation": params["p_generation"],
+                        "generation": 1,
                         "keyset_sha256": params["p_keyset_sha256"],
                         "trusted_keyset": params["p_trusted_keyset"],
-                        "source": params["p_source"],
+                        "source": "genesis-pin",
+                        "ledger_rows": 1,
                     }
                     return FakeTrustResult({
                         "status": "trusted",
-                        "generation": params["p_generation"],
+                        "generation": 1,
                         "keyset_sha256": params["p_keyset_sha256"],
                     })
-                if name == "shine_ai_trace_trust_advance_v1":
+                if name == "shine_ai_trace_trust_advance_v2":
+                    assert (
+                        db.state["generation"]
+                        == params["p_expected_generation"]
+                    )
+                    assert (
+                        db.state["keyset_sha256"]
+                        == params["p_expected_keyset_sha256"]
+                    )
                     db.state = {
                         "generation": params["p_next_generation"],
                         "keyset_sha256": params["p_next_keyset_sha256"],
                         "trusted_keyset": params["p_next_trusted_keyset"],
                         "source": "signed-transition",
-                        "authorization_key_id": params["p_authorization_key_id"],
+                        "authorization_key_id": params[
+                            "p_authorization_key_id"
+                        ],
                         "authorization_public_key_sha256": params[
                             "p_authorization_public_key_sha256"
                         ],
+                        "ledger_rows": db.state.get("ledger_rows", 1) + 1,
                     }
                     return FakeTrustResult({
                         "status": "advanced",
@@ -784,7 +802,7 @@ def test_signed_transition_advances_durable_trust_once(monkeypatch):
     assert trust["status"] == "trusted"
     assert trust["acceptance_mode"] == "signed-transition"
     assert db.state["generation"] == 2
-    assert db.rpc_calls[-1][0] == "shine_ai_trace_trust_advance_v1"
+    assert db.rpc_calls[-1][0] == "shine_ai_trace_trust_advance_v2"
 
 
 def test_keyset_generation_skip_is_rejected_before_ledger_mutation():
@@ -817,7 +835,10 @@ def test_keyset_generation_skip_is_rejected_before_ledger_mutation():
     assert trusted is None
     assert error == "trace-keyset-generation-skip"
     assert trust["status"] == "invalid"
-    assert db.rpc_calls == []
+    assert all(
+        name == "shine_ai_trace_trust_snapshot_v2"
+        for name, _params in db.rpc_calls
+    )
 
 
 def test_invalid_trust_continuity_degrades_human_status():
@@ -869,3 +890,172 @@ def test_runtime_trace_binds_trust_generation_without_certificate_signature():
     assert first["version"] == "shine/runtime-trace-v4"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-CERTIFICATE-SIGNATURE" not in json.dumps(first)
+
+
+def test_persisted_trust_rejects_valid_older_generation_as_rollback():
+    trusted_keyset = {
+        "active_key_id": "trace-v2",
+        "verification_keys": {
+            "trace-v2": {
+                "public_key_b64": TRACE_PUBLIC_KEY_B64,
+                "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+            },
+        },
+        "keyset_sha256": "",
+        "generation": 2,
+    }
+    trusted_keyset["keyset_sha256"] = runtime._canonical_sha256({
+        "version": 1,
+        "keys": trusted_keyset["verification_keys"],
+    })
+    db = FakeTrustDB({
+        "generation": 2,
+        "keyset_sha256": trusted_keyset["keyset_sha256"],
+        "trusted_keyset": trusted_keyset,
+        "source": "signed-transition",
+        "ledger_rows": 2,
+    })
+    older = {
+        "active_key_id": "trace-v1",
+        "verification_keys": {
+            "trace-v1": {
+                "public_key_b64": TRACE_PUBLIC_KEY_B64,
+                "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+            },
+        },
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "generation": 1,
+    }
+
+    accepted, error, trust = runtime._accept_trace_keyset_candidate(
+        db,
+        older,
+        None,
+    )
+
+    assert accepted is None
+    assert error == "trace-keyset-rollback-detected"
+    assert trust["status"] == "invalid"
+    assert trust["trusted_generation"] == 2
+    assert trust["candidate_generation"] == 1
+    assert all(
+        name == "shine_ai_trace_trust_snapshot_v2"
+        for name, _params in db.rpc_calls
+    )
+
+
+def test_persisted_trust_rejects_same_generation_keyset_fork():
+    trusted = {
+        "active_key_id": "trace-v1",
+        "verification_keys": {
+            "trace-v1": {
+                "public_key_b64": TRACE_PUBLIC_KEY_B64,
+                "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+            },
+        },
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "generation": 1,
+    }
+    db = FakeTrustDB({
+        "generation": 1,
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "trusted_keyset": trusted,
+        "source": "genesis-pin",
+        "ledger_rows": 1,
+    })
+    fork = {
+        "active_key_id": "trace-fork",
+        "verification_keys": {
+            "trace-fork": {
+                "public_key_b64": TRACE_PUBLIC_KEY_B64,
+                "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+            },
+        },
+        "keyset_sha256": "",
+        "generation": 1,
+    }
+    fork["keyset_sha256"] = runtime._canonical_sha256({
+        "version": 1,
+        "keys": fork["verification_keys"],
+    })
+
+    accepted, error, trust = runtime._accept_trace_keyset_candidate(
+        db,
+        fork,
+        None,
+    )
+
+    assert accepted is None
+    assert error == "trace-keyset-equivocation-detected"
+    assert trust["status"] == "invalid"
+    assert all(
+        name == "shine_ai_trace_trust_snapshot_v2"
+        for name, _params in db.rpc_calls
+    )
+
+
+def test_runtime_refuses_inconsistent_persisted_high_water_state():
+    db = FakeTrustDB(
+        inconsistent_reason="trust-generation-high-water-mismatch"
+    )
+    candidate = {
+        "active_key_id": "trace-v1",
+        "verification_keys": {
+            "trace-v1": {
+                "public_key_b64": TRACE_PUBLIC_KEY_B64,
+                "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+            },
+        },
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "generation": 1,
+    }
+
+    accepted, error, trust = runtime._accept_trace_keyset_candidate(
+        db,
+        candidate,
+        None,
+    )
+
+    assert accepted is None
+    assert error == "trust-generation-high-water-mismatch"
+    assert trust["status"] == "invalid"
+    assert trust["reason_code"] == "trust-generation-high-water-mismatch"
+
+
+def test_automatic_genesis_bootstrap_never_starts_from_later_generation(
+    monkeypatch,
+):
+    candidate = {
+        "active_key_id": "trace-v2",
+        "verification_keys": {
+            "trace-v2": {
+                "public_key_b64": TRACE_PUBLIC_KEY_B64,
+                "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+            },
+        },
+        "keyset_sha256": "",
+        "generation": 2,
+    }
+    candidate["keyset_sha256"] = runtime._canonical_sha256({
+        "version": 1,
+        "keys": candidate["verification_keys"],
+    })
+    monkeypatch.setenv(
+        "SHINE_AI_TRACE_ACCEPTED_KEYSET_SHA256",
+        candidate["keyset_sha256"],
+    )
+    db = FakeTrustDB()
+
+    accepted, error, trust = runtime._accept_trace_keyset_candidate(
+        db,
+        candidate,
+        None,
+    )
+
+    assert accepted is None
+    assert error == "trace-keyset-genesis-generation-invalid"
+    assert trust["status"] == "invalid"
+    assert all(
+        name == "shine_ai_trace_trust_snapshot_v2"
+        for name, _params in db.rpc_calls
+    )
