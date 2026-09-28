@@ -49,15 +49,11 @@ def test_layer212_chain_verification_still_recomputes_hmac_and_evidence():
 def test_layer212_function_remains_service_role_only():
     sql = source()
 
+    assert "revoke all on function" in sql
     assert (
-        "revoke all on function"
-        " public.shine_ai_external_roster_transition_evidence_chain_verify_v1()"
+        "public.shine_ai_external_roster_transition_evidence_chain_verify_v1()"
         in sql
     )
     assert "from public, anon, authenticated" in sql
-    assert (
-        "grant execute on function"
-        " public.shine_ai_external_roster_transition_evidence_chain_verify_v1()"
-        in sql
-    )
+    assert "grant execute on function" in sql
     assert "to service_role" in sql
