@@ -6,6 +6,7 @@ from services.shine_ai_trace_verifier import (
     digest_verification_keyset,
     verify_decision_trace,
     verify_decision_trace_authenticity,
+    verify_keyset_transition,
 )
 
 
@@ -293,3 +294,168 @@ def test_authenticity_requires_an_independent_keyset_pin():
     )
     assert result["status"] == "unavailable"
     assert result["reason_code"] == "trusted-keyset-pin-unavailable"
+
+
+
+TEST_PRIVATE_KEY_V2_B64 = "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8="
+
+
+def keyset_a_generation_1():
+    value = single_keyset()
+    value["generation"] = 1
+    return value
+
+
+def keyset_ab_generation_2():
+    value = overlap_keyset()
+    value["generation"] = 2
+    return value
+
+
+def keyset_b_generation_3():
+    value = {
+        "active_key_id": "trace-v2",
+        "verification_keys": {
+            "trace-v2": {
+                "public_key_b64": TEST_PUBLIC_KEY_V2_B64,
+                "public_key_sha256": TEST_PUBLIC_KEY_V2_SHA256,
+            },
+        },
+        "keyset_sha256": "",
+        "generation": 3,
+    }
+    value["keyset_sha256"] = digest_verification_keyset(value)
+    return value
+
+
+def sign_transition(
+    previous,
+    next_keyset,
+    *,
+    authorization_key_id,
+    authorization_public_key_sha256,
+    private_key_b64,
+):
+    certificate = {
+        "version": 1,
+        "algorithm": "ed25519",
+        "domain": "shine-ai:decision-trace-keyset-transition:v1",
+        "from_generation": previous["generation"],
+        "to_generation": next_keyset["generation"],
+        "from_keyset_sha256": previous["keyset_sha256"],
+        "to_keyset_sha256": next_keyset["keyset_sha256"],
+        "authorization_key_id": authorization_key_id,
+        "authorization_public_key_sha256": authorization_public_key_sha256,
+    }
+    message = (
+        certificate["domain"]
+        + "\n"
+        + str(certificate["from_generation"])
+        + "\n"
+        + str(certificate["to_generation"])
+        + "\n"
+        + certificate["from_keyset_sha256"]
+        + "\n"
+        + certificate["to_keyset_sha256"]
+        + "\n"
+        + certificate["authorization_key_id"]
+        + "\n"
+        + certificate["authorization_public_key_sha256"]
+    ).encode("utf-8")
+    signer = Ed25519PrivateKey.from_private_bytes(
+        base64.b64decode(private_key_b64)
+    )
+    certificate["signature_b64"] = base64.b64encode(
+        signer.sign(message)
+    ).decode("ascii")
+    return certificate
+
+
+def test_continuity_accepts_a_only_to_a_plus_b_generation():
+    previous = keyset_a_generation_1()
+    next_keyset = keyset_ab_generation_2()
+    certificate = sign_transition(
+        previous,
+        next_keyset,
+        authorization_key_id="trace-v1",
+        authorization_public_key_sha256=TEST_PUBLIC_KEY_SHA256,
+        private_key_b64=TEST_PRIVATE_KEY_B64,
+    )
+
+    result = verify_keyset_transition(
+        previous,
+        next_keyset,
+        certificate,
+    )
+
+    assert result["status"] == "verified"
+    assert result["verified"] is True
+    assert result["from_generation"] == 1
+    assert result["to_generation"] == 2
+    assert result["authorization_key_id"] == "trace-v1"
+    assert len(result["certificate_sha256"]) == 64
+
+
+def test_continuity_accepts_b_authorised_retirement_of_a():
+    previous = keyset_ab_generation_2()
+    next_keyset = keyset_b_generation_3()
+    certificate = sign_transition(
+        previous,
+        next_keyset,
+        authorization_key_id="trace-v2",
+        authorization_public_key_sha256=TEST_PUBLIC_KEY_V2_SHA256,
+        private_key_b64=TEST_PRIVATE_KEY_V2_B64,
+    )
+
+    result = verify_keyset_transition(
+        previous,
+        next_keyset,
+        certificate,
+    )
+
+    assert result["status"] == "verified"
+    assert result["from_generation"] == 2
+    assert result["to_generation"] == 3
+    assert result["authorization_key_id"] == "trace-v2"
+
+
+def test_continuity_rejects_generation_skip():
+    previous = keyset_a_generation_1()
+    skipped = keyset_ab_generation_2()
+    skipped["generation"] = 3
+    certificate = sign_transition(
+        previous,
+        skipped,
+        authorization_key_id="trace-v1",
+        authorization_public_key_sha256=TEST_PUBLIC_KEY_SHA256,
+        private_key_b64=TEST_PRIVATE_KEY_B64,
+    )
+
+    result = verify_keyset_transition(previous, skipped, certificate)
+
+    assert result["status"] == "invalid"
+    assert result["reason_code"] == "keyset-transition-generation-invalid"
+
+
+def test_continuity_rejects_authoriser_not_in_previous_generation():
+    previous = keyset_a_generation_1()
+    next_keyset = keyset_ab_generation_2()
+    certificate = sign_transition(
+        previous,
+        next_keyset,
+        authorization_key_id="trace-v2",
+        authorization_public_key_sha256=TEST_PUBLIC_KEY_V2_SHA256,
+        private_key_b64=TEST_PRIVATE_KEY_V2_B64,
+    )
+
+    result = verify_keyset_transition(
+        previous,
+        next_keyset,
+        certificate,
+    )
+
+    assert result["status"] == "invalid"
+    assert (
+        result["reason_code"]
+        == "keyset-transition-authorizer-not-previously-trusted"
+    )
