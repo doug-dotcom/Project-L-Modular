@@ -532,8 +532,8 @@ def stop_durable_tasks():
 @app.post("/chat/start")
 def start_chat(
     req: ChatRequest,
-    request: Request,
     x_l_recovery_token: str = Header(default=""),
+    request: Request = None,
 ):
     """Acknowledge only after the task, including its Shine preflight, is durable."""
     request_id = normalise_request_id(req.request_id)
@@ -542,9 +542,9 @@ def start_chat(
     if not req.message.strip() or len(req.message) > 100000:
         raise HTTPException(400, "Send a message between 1 and 100000 characters")
 
-    account = getattr(request.state, "account", {}) or {}
+    account = getattr(getattr(request, "state", None), "account", {}) or {}
     account_user_id = str(account.get("user_id") or "")
-    authorization = request.headers.get("authorization", "")
+    authorization = request.headers.get("authorization", "") if request is not None else ""
     try:
         shine_runtime = preflight_shine_request(
             supabase,
@@ -1266,10 +1266,12 @@ def chat(req: ChatRequest):
     request_id = normalise_request_id(req.request_id)
     conversation_scope = str(req.conversation_id or "doug_primary")[:100]
     active_model_adapter = resolve_model_adapter()
-    durable_request = current_task_request()
+    task_request_reader = globals().get("current_task_request")
+    durable_request = task_request_reader() if callable(task_request_reader) else {}
     shine_runtime = (
         durable_request.get("shine_runtime")
-        if isinstance(durable_request.get("shine_runtime"), dict)
+        if isinstance(durable_request, dict)
+        and isinstance(durable_request.get("shine_runtime"), dict)
         else None
     )
     runtime_execution = {"status": "not_required", "results": [], "tasks": []}
@@ -1376,15 +1378,20 @@ def chat(req: ChatRequest):
 
     checkpoint("connected_actions")
     runtime_route = None
-    owner_id = foundation_account_owner(supabase) if supabase is not None else None
-    if shine_runtime is not None and supabase is not None and owner_id:
-        runtime_execution = load_runtime_execution(
-            supabase,
-            shine_runtime,
-            user_id=owner_id,
-            wait_seconds=6.0,
-        )
-        runtime_route = concierge_route_packet(runtime_execution)
+    owner_id = None
+    if shine_runtime is not None and supabase is not None:
+        try:
+            owner_id = foundation_account_owner(supabase)
+        except Exception:
+            owner_id = None
+        if owner_id:
+            runtime_execution = load_runtime_execution(
+                supabase,
+                shine_runtime,
+                user_id=owner_id,
+                wait_seconds=6.0,
+            )
+            runtime_route = concierge_route_packet(runtime_execution)
 
     foundation_fleet = None
     runtime_foundation = (
@@ -1404,6 +1411,11 @@ def chat(req: ChatRequest):
         )
     else:
         if foundation_specialist_interest(user_message) and supabase is not None and foundation_fleet is None:
+            if owner_id is None:
+                try:
+                    owner_id = foundation_account_owner(supabase)
+                except Exception:
+                    owner_id = None
             if owner_id:
                 try:
                     foundation_fleet = foundation_fleet_status(
@@ -1428,11 +1440,14 @@ def chat(req: ChatRequest):
                         "specialists": [],
                     }
         try:
-            route = route_capability(
-                user_message,
-                write_guard=checkpoint,
-                foundation_fleet=foundation_fleet,
-            )
+            if foundation_fleet is None:
+                route = route_capability(user_message, write_guard=checkpoint)
+            else:
+                route = route_capability(
+                    user_message,
+                    write_guard=checkpoint,
+                    foundation_fleet=foundation_fleet,
+                )
             log(f"CAPABILITY ROUTE: {route.get('capability')}")
         except DurableTaskBindingError:
             raise
