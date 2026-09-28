@@ -332,3 +332,20 @@ def test_layer195_source_contracts_are_present():
     assert "def mark_local_concierge_retired(" in foundation_service
     assert '"status": "retired" if expiry_block else foundation_status' in foundation_service
     assert "mark_local_concierge_retired" in execution_service
+
+
+
+def test_cancel_ui_accepts_retired_terminal_outcome():
+    from pathlib import Path
+
+    bridge = Path("ui/concierge-completions.js").read_text(encoding="utf-8")
+    index = Path("ui/index.html").read_text(encoding="utf-8")
+
+    cancel_block = bridge[
+        bridge.index("async function cancelPending"):
+        bridge.index("function cancellationReceiptText")
+    ]
+    assert "'retired'" in cancel_block
+    assert "cancelled.status === 'retired'" in index
+    assert "had already expired" in index
+    assert 'concierge-completions.js?v=195' in index
