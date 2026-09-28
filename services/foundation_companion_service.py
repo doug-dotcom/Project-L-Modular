@@ -1052,6 +1052,8 @@ def _supersede_previous_concierge_jobs(
             reason_code="superseded-by-newer-request",
             superseded_by_request_id=new_request_id,
         )
+        if local_intent.get("status") == "retired":
+            continue
         if local_intent.get("status") not in {"cancelling", "already-cancelled"}:
             raise RuntimeError("local-concierge-supersession-intent-failed")
         envelope = {
