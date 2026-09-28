@@ -45,7 +45,7 @@ def test_foundation_roster_head_witness_is_high_water_and_idempotent():
 
 
 def test_foundation_roster_head_tables_are_not_directly_exposed():
-    value = sql()
+    value = " ".join(sql().split())
 
     assert "enable row level security" in value
     assert "revoke all on foundation.project_l_roster_head_witness_state" in value

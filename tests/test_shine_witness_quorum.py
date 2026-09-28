@@ -449,6 +449,10 @@ def quorum_env(monkeypatch):
             "roster_storage_checkpoint_independent": True,
             "roster_storage_checkpoint_retention":
                 "railway-redis-volume",
+            "roster_transition_evidence_status": "not-applicable",
+            "roster_transition_evidence_generation": 1,
+            "roster_transition_evidence_sha256": None,
+            "roster_transition_evidence_retention": None,
             "roster_head_verified": True,
             "roster_head_sequence": 1,
             "roster_head_checkpoint_sha256": "8" * 64,
@@ -1442,6 +1446,10 @@ def test_quorum_rejects_external_roster_policy_mismatch(monkeypatch):
             "roster_storage_checkpoint_independent": True,
             "roster_storage_checkpoint_retention":
                 "railway-redis-volume",
+            "roster_transition_evidence_status": "not-applicable",
+            "roster_transition_evidence_generation": 1,
+            "roster_transition_evidence_sha256": None,
+            "roster_transition_evidence_retention": None,
             "roster_head_verified": True,
             "roster_head_sequence": 1,
             "roster_head_checkpoint_sha256": "8" * 64,
