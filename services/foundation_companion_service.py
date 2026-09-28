@@ -931,9 +931,11 @@ def _supersede_previous_concierge_jobs(
             body = _response_json(response)
         except (httpx.HTTPError, RuntimeError) as exc:
             raise RuntimeError("concierge-supersession-unavailable") from exc
-        if response.status_code != 200 or body.get("status") not in {
-            "superseded", "already-superseded"
-        }:
+        if (
+            response.status_code != 200
+            or body.get("status") not in {"superseded", "already-superseded"}
+            or body.get("reasonCode") != "superseded-by-newer-request"
+        ):
             raise RuntimeError(
                 str(body.get("reasonCode") or "concierge-supersession-rejected")
             )
