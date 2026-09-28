@@ -978,8 +978,8 @@ def cancel_foundation_concierge_request_as_user(
     if len(matches) != 1:
         return {"status": "not-found", "request_id": request_id}
     status = str(matches[0].get("status") or "")
-    if status == "completed":
-        return {"status": "completed", "request_id": request_id}
+    if status in {"completed", "failed"}:
+        return {"status": status, "request_id": request_id}
     if status == "cancelled":
         return {"status": "already-cancelled", "request_id": request_id}
 
