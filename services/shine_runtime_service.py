@@ -39,7 +39,7 @@ from services.shine_trust_storage import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v4"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v5"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -580,6 +580,7 @@ def _accept_trace_keyset_candidate(
             "generation": 1,
             "keyset_sha256": digest,
             "state_sha256": envelope["stateSha256"],
+            "storage_auth_key_id": envelope["authKeyId"],
             "checkpoint_mode": checkpoint.get("mode"),
             "storage_authenticated": True,
             "checkpoint_independent": True,
@@ -622,6 +623,8 @@ def _accept_trace_keyset_candidate(
                 "generation": generation,
                 "keyset_sha256": digest,
                 "state_sha256": storage.get("state_sha256"),
+                "storage_auth_key_id": state.get("storage_auth_key_id"),
+                "checkpoint_mode": "existing-checkpoint",
                 "storage_authenticated": True,
                 "checkpoint_independent": True,
             }
@@ -679,6 +682,7 @@ def _accept_trace_keyset_candidate(
             "generation": generation,
             "keyset_sha256": digest,
             "state_sha256": envelope["stateSha256"],
+            "storage_auth_key_id": envelope["authKeyId"],
             "checkpoint_mode": checkpoint.get("mode"),
             "storage_authenticated": True,
             "checkpoint_independent": True,
@@ -784,6 +788,7 @@ def _accept_trace_keyset_candidate(
         "status": "trusted",
         "acceptance_mode": "signed-transition",
         "state_sha256": envelope["stateSha256"],
+        "storage_auth_key_id": envelope["authKeyId"],
         "checkpoint_mode": checkpoint.get("mode"),
         "storage_authenticated": True,
         "checkpoint_independent": True,
@@ -1218,7 +1223,9 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                     "from_keyset_sha256", "to_keyset_sha256",
                     "authorization_key_id",
                     "authorization_public_key_sha256",
-                    "certificate_sha256",
+                    "certificate_sha256", "state_sha256",
+                    "storage_auth_key_id", "checkpoint_mode",
+                    "storage_authenticated", "checkpoint_independent",
                 ),
             ),
         }
