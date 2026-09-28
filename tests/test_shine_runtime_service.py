@@ -3131,3 +3131,122 @@ def test_runtime_trace_binds_external_roster_without_hmac_or_keyring():
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-ROSTER-HMAC" not in rendered
     assert "PRIVATE-ROSTER-KEYRING" not in rendered
+
+
+
+def test_cached_trust_rejects_authenticated_roster_drift(monkeypatch):
+    monkeypatch.setenv(
+        "SHINE_AI_TRACE_ACCEPTED_KEYSET_SHA256",
+        TRACE_SINGLE_KEYSET_SHA256,
+    )
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_REQUIRED",
+        "true",
+    )
+    keyset = {
+        "active_key_id": "trace-v1",
+        "verification_keys": {
+            "trace-v1": {
+                "public_key_b64": TRACE_PUBLIC_KEY_B64,
+                "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+            },
+        },
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "generation": 1,
+    }
+    redis = FakeTrustRedis()
+    seed_checkpoint(redis, keyset)
+    monkeypatch.setattr(
+        runtime,
+        "load_persisted_quorum_policy",
+        lambda *_args, **_kwargs: {
+            "generation": 1,
+            "minimumWitnesses": 2,
+            "acceptedWitnessIds": [
+                "foundation-project-l",
+                "redis-project-l",
+            ],
+            "policySha256":
+                "26b6d1a3b4183cfa596f8c9c06c18e73"
+                "aa0eda6a80a6362649130e9357bf220e",
+            "policy_storage_authenticated": True,
+            "policy_storage_auth_key_id": "policy-a",
+            "policy_storage_state_sha256":
+                "5a444bfc1b3816def3ad06530303f497"
+                "c3579ca1b3c1afb19da6e2bc167f633b",
+            "policy_storage_checkpoint_independent": True,
+        },
+    )
+    monkeypatch.setattr(
+        runtime,
+        "load_persisted_external_witness_roster",
+        lambda *_args, **_kwargs: {
+            "generation": 2,
+            "minimumWitnesses": 2,
+            "acceptedWitnessIds": [
+                "foundation-project-l",
+                "redis-project-l",
+            ],
+            "policySha256": "b" * 64,
+            "roster_storage_authenticated": True,
+            "roster_storage_auth_key_id": "roster-a",
+            "roster_storage_state_sha256": "c" * 64,
+            "roster_storage_checkpoint_independent": True,
+        },
+    )
+    runtime._TRACE_KEYSET_CACHE.update({
+        "expires_at": float("inf"),
+        "pin": TRACE_SINGLE_KEYSET_SHA256,
+        "keyset": keyset,
+        "trust": {
+            "status": "trusted",
+            "acceptance_mode": "existing-ledger",
+            "witness_quorum": {
+                "status": "verified",
+                "policy_generation": 1,
+                "policy_sha256":
+                    "26b6d1a3b4183cfa596f8c9c06c18e73"
+                    "aa0eda6a80a6362649130e9357bf220e",
+                "policy_storage_authenticated": True,
+                "policy_storage_auth_key_id": "policy-a",
+                "policy_storage_state_sha256":
+                    "5a444bfc1b3816def3ad06530303f497"
+                    "c3579ca1b3c1afb19da6e2bc167f633b",
+                "policy_storage_checkpoint_independent": True,
+                "external_roster_generation": 1,
+                "external_roster_policy_sha256":
+                    "a5c456d49e47f1be3f2a7b7ed017328"
+                    "844484ba05c4e6ef3212412c6361156c4",
+                "external_roster_minimum_witnesses": 2,
+                "external_roster_witness_ids": [
+                    "foundation-project-l",
+                    "redis-project-l",
+                ],
+                "external_roster_storage_authenticated": True,
+                "external_roster_storage_auth_key_id": "roster-a",
+                "external_roster_storage_state_sha256": "f" * 64,
+                "external_roster_storage_checkpoint_independent": True,
+                "minimum_witnesses": 2,
+                "verified_witness_count": 2,
+                "witness_ids": [
+                    "foundation-project-l",
+                    "redis-project-l",
+                ],
+            },
+        },
+    })
+
+    trusted, error, trust = runtime._shine_ai_verification_keyset(
+        FakeTrustDB({
+            "generation": 1,
+            "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+            "trusted_keyset": keyset,
+            "source": "genesis-pin",
+            "ledger_rows": 1,
+        }),
+        redis_client=redis,
+    )
+
+    assert trusted is None
+    assert error == "trust-witness-quorum-policy-cache-mismatch"
+    assert trust["status"] == "invalid"
