@@ -355,3 +355,49 @@ def test_single_specialist_route_uses_same_foundation_execution_path():
     )
     assert execution["status"] == "completed"
     assert execution["completed_capabilities"] == ["fiona.company_brief"]
+
+
+
+def test_large_specialist_evidence_is_bounded_without_claiming_empty_success():
+    route = multi_route()
+    execution = {
+        "status": "completed",
+        "reason_code": "concierge-execution-completed",
+        "foundation_status": "completed",
+        "completed_capabilities": ["travel.plan_trip"],
+        "unavailable_capabilities": [],
+        "skipped_capabilities": [],
+        "retry_scheduled": False,
+        "synthesis_ready": True,
+        "synthesis_must_disclose_partial": False,
+        "results": [{
+            "capability_id": "travel.plan_trip",
+            "app_name": "Shine Travel",
+            "display_name": "Plan a trip",
+            "status": "completed",
+            "reason_code": "capability-completed",
+            "result": {"summary": "x" * 20000},
+        }],
+    }
+    bound = bind_concierge_execution(route, execution)
+    assert bound["handled"] is True
+    assert len(bound["reply"]) <= 12000
+    evidence = json.loads(bound["reply"])
+    assert evidence["result_payloads_truncated_for_context_budget"] is True
+    assert evidence["results"][0]["result_preview"]
+    assert evidence["results"][0]["result_truncated"] is True
+
+
+def test_server_executes_concierge_before_working_memory_and_cognition():
+    from pathlib import Path
+
+    source = Path("api/server.py").read_text(encoding="utf-8")
+    execute_index = source.index("concierge_execution = execute_concierge_route(")
+    bind_index = source.index("route = bind_concierge_execution(", execute_index)
+    working_index = source.index(
+        "working_memory_packet = active_context_service.begin_turn(",
+        bind_index,
+    )
+    cognition_index = source.index("cognitive_packet = run_cognitive_core(", working_index)
+    assert execute_index < bind_index < working_index < cognition_index
+    assert "checkpoint(\"concierge_execution\")" in source
