@@ -1113,6 +1113,35 @@ def load_persisted_external_witness_roster(
                         or "external-witness-roster-transition-unverified"
                     )
                 )
+            try:
+                evidence_result = db.rpc(
+                    "shine_ai_external_roster_transition_evidence_record_v1",
+                    {
+                        "p_generation": candidate["generation"],
+                        "p_previous_policy_sha256":
+                            candidate["previousPolicySha256"],
+                        "p_policy_sha256": candidate["policySha256"],
+                        "p_authorization_sha256": authorization_sha,
+                        "p_authorizing_witness_ids": witness_ids,
+                        "p_authorizations": authorizations,
+                    },
+                ).execute()
+            except Exception as exc:
+                raise ExternalWitnessRosterError(
+                    "external-witness-roster-transition-evidence-unavailable"
+                ) from exc
+            evidence = (
+                evidence_result.data
+                if isinstance(evidence_result.data, dict)
+                else {}
+            )
+            if evidence.get("status") != "verified":
+                raise ExternalWitnessRosterError(
+                    str(
+                        evidence.get("reason_code")
+                        or "external-witness-roster-transition-evidence-unverified"
+                    )
+                )
             payload = _snapshot(db)
             state = project_trust_state(payload.get("trust_state"))
             if state != next_state:
