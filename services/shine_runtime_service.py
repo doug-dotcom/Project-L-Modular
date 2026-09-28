@@ -23,15 +23,26 @@ from services.foundation_companion_service import (
     foundation_account_owner,
     foundation_fleet_status,
 )
-from services.shine_ai_trace_verifier import verify_decision_trace
+from services.shine_ai_trace_verifier import (
+    digest_verification_keyset,
+    verify_decision_trace,
+    verify_decision_trace_authenticity,
+)
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v2"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v3"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
+SHINE_AI_CAPABILITIES_PATH = "/v1/capabilities"
+TRACE_KEYSET_CACHE_SECONDS = 300.0
 MAX_RESPONSE_BYTES = 128 * 1024
 MAX_CONTEXT_TEXT = 10_000
+_TRACE_KEYSET_CACHE: dict[str, Any] = {
+    "expires_at": 0.0,
+    "pin": "",
+    "keyset": None,
+}
 
 
 def _uuid(value: Any) -> str:
@@ -195,12 +206,22 @@ def _defence_snapshot(data: dict) -> dict:
     }
 
 
-def _shine_ai_headers(body: bytes, *, now: int | None = None, nonce: str | None = None) -> dict:
+def _shine_ai_signed_headers(
+    method: str,
+    path: str,
+    body: bytes,
+    *,
+    now: int | None = None,
+    nonce: str | None = None,
+) -> dict:
     app_id = os.getenv("SHINE_AI_APP_ID", "shine-me").strip()
     secret = os.getenv("SHINE_AI_APP_SECRET", "").strip()
     key_id = os.getenv("SHINE_AI_APP_KEY_ID", "").strip()
     if not app_id or len(secret) < 32:
         raise RuntimeError("shine-ai-runtime-credential-unavailable")
+    method = str(method or "").upper()
+    if method not in {"GET", "POST"} or not path.startswith("/v1/"):
+        raise RuntimeError("shine-ai-runtime-request-shape-invalid")
     stamp = str(int(time.time() if now is None else now))
     request_nonce = nonce or secrets.token_hex(16)
     if not 16 <= len(request_nonce) <= 128:
@@ -208,19 +229,122 @@ def _shine_ai_headers(body: bytes, *, now: int | None = None, nonce: str | None 
     parts = [app_id]
     if key_id:
         parts.append(key_id)
-    parts.extend([stamp, request_nonce, "POST", SHINE_AI_PATH])
+    parts.extend([stamp, request_nonce, method, path])
     signed = b"\n".join([part.encode("utf-8") for part in parts] + [body])
     signature = hmac.new(secret.encode("utf-8"), signed, hashlib.sha256).hexdigest()
     headers = {
-        "Content-Type": "application/json",
         "X-Shine-App": app_id,
         "X-Shine-Timestamp": stamp,
         "X-Shine-Nonce": request_nonce,
         "X-Shine-Signature": signature,
     }
+    if body:
+        headers["Content-Type"] = "application/json"
     if key_id:
         headers["X-Shine-Key-Id"] = key_id
     return headers
+
+
+def _shine_ai_headers(
+    body: bytes,
+    *,
+    now: int | None = None,
+    nonce: str | None = None,
+) -> dict:
+    return _shine_ai_signed_headers(
+        "POST",
+        SHINE_AI_PATH,
+        body,
+        now=now,
+        nonce=nonce,
+    )
+
+
+def _trace_keyset_pins() -> tuple[str, ...]:
+    raw = os.getenv("SHINE_AI_TRACE_ACCEPTED_KEYSET_SHA256", "").strip()
+    values = tuple(
+        dict.fromkeys(
+            part.strip().lower()
+            for part in raw.split(",")
+            if part.strip()
+        )
+    )
+    if (
+        not 1 <= len(values) <= 4
+        or any(
+            len(value) != 64
+            or any(ch not in "0123456789abcdef" for ch in value)
+            for value in values
+        )
+    ):
+        return ()
+    return values
+
+
+def _shine_ai_verification_keyset(
+    *,
+    timeout_seconds: float = 4.0,
+    get_impl=None,
+) -> tuple[dict | None, str | None]:
+    pins = _trace_keyset_pins()
+    if not pins:
+        return None, "trace-keyset-pin-unavailable"
+    pin_identity = ",".join(pins)
+    now = time.monotonic()
+    cached = _TRACE_KEYSET_CACHE.get("keyset")
+    if (
+        isinstance(cached, dict)
+        and _TRACE_KEYSET_CACHE.get("pin") == pin_identity
+        and float(_TRACE_KEYSET_CACHE.get("expires_at") or 0.0) > now
+    ):
+        return cached, None
+
+    base = os.getenv("SHINE_AI_BASE_URL", "").rstrip("/")
+    if not base.startswith("https://"):
+        return None, "shine-ai-runtime-url-unavailable"
+    get = get_impl or httpx.get
+    try:
+        headers = _shine_ai_signed_headers(
+            "GET",
+            SHINE_AI_CAPABILITIES_PATH,
+            b"",
+        )
+        response = get(
+            base + SHINE_AI_CAPABILITIES_PATH,
+            headers=headers,
+            timeout=timeout_seconds,
+            follow_redirects=False,
+        )
+        data = _response_json(response)
+    except Exception:
+        return None, "trace-keyset-discovery-unavailable"
+    if int(response.status_code) >= 400:
+        return None, "trace-keyset-discovery-rejected"
+
+    signing = (
+        data.get("decision_trace_signing")
+        if isinstance(data.get("decision_trace_signing"), dict)
+        else {}
+    )
+    keyset = {
+        "active_key_id": signing.get("active_key_id"),
+        "verification_keys": signing.get("verification_keys"),
+        "keyset_sha256": signing.get("keyset_sha256"),
+    }
+    digest = digest_verification_keyset(keyset)
+    if (
+        signing.get("enabled") is not True
+        or digest is None
+        or digest not in set(pins)
+    ):
+        return None, "trace-keyset-trust-mismatch"
+
+    _TRACE_KEYSET_CACHE.update({
+        "expires_at": now + TRACE_KEYSET_CACHE_SECONDS,
+        "pin": pin_identity,
+        "keyset": keyset,
+    })
+    return keyset, None
 
 
 def _shine_ai_advisory(
@@ -233,6 +357,7 @@ def _shine_ai_advisory(
     defence: dict,
     timeout_seconds: float = 6.0,
     post_impl=None,
+    capabilities_get_impl=None,
 ) -> dict:
     base = os.getenv("SHINE_AI_BASE_URL", "").rstrip("/")
     if not base.startswith("https://"):
@@ -289,6 +414,9 @@ def _shine_ai_advisory(
     body = json.dumps(
         payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     ).encode("utf-8")
+    trusted_keyset, trust_error = _shine_ai_verification_keyset(
+        get_impl=capabilities_get_impl,
+    )
     headers = _shine_ai_headers(body)
     post = post_impl or httpx.post
     try:
@@ -308,19 +436,37 @@ def _shine_ai_advisory(
             "reason_code": str(data.get("detail") or data.get("error") or "shine-ai-runtime-rejected"),
         }
 
+    response_version = (
+        response.headers.get("X-Shine-AI-Version")
+        if hasattr(response, "headers")
+        else None
+    )
+    response_release = (
+        response.headers.get("X-Shine-AI-Release")
+        if hasattr(response, "headers")
+        else None
+    )
     decision_verification = verify_decision_trace(
         data,
-        header_version=(
-            response.headers.get("X-Shine-AI-Version")
-            if hasattr(response, "headers")
-            else None
-        ),
-        header_release=(
-            response.headers.get("X-Shine-AI-Release")
-            if hasattr(response, "headers")
-            else None
-        ),
+        header_version=response_version,
+        header_release=response_release,
         require_response_identity=True,
+    )
+    decision_authenticity = (
+        verify_decision_trace_authenticity(
+            data,
+            trusted_keyset=trusted_keyset,
+            accepted_keyset_sha256=list(_trace_keyset_pins()),
+            header_version=response_version,
+            header_release=response_release,
+        )
+        if trusted_keyset is not None
+        else {
+            "version": "shine-ai/decision-trace-authenticity-v1",
+            "status": "unavailable",
+            "authenticated": False,
+            "reason_code": trust_error or "trace-keyset-unavailable",
+        }
     )
     return {
         "status": str(data.get("status") or "ok"),
@@ -347,6 +493,7 @@ def _shine_ai_advisory(
             else {}
         ),
         "decision_trace_verification": decision_verification,
+        "decision_trace_authenticity": decision_authenticity,
         "recovery": (
             _project(
                 data.get("recovery"),
@@ -493,6 +640,14 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                     "service_version", "service_release",
                     "lineage_sha256", "recomputed_lineage_sha256",
                     "mismatch_count",
+                ),
+            ),
+            "decision_trace_authenticity": _project(
+                item.get("decision_trace_authenticity", {}),
+                (
+                    "version", "status", "authenticated", "reason_code",
+                    "key_id", "public_key_sha256", "keyset_sha256",
+                    "service_version", "service_release", "lineage_sha256",
                 ),
             ),
         }
@@ -663,6 +818,12 @@ def build_runtime_recovery(
         else {}
     )
     verification_status = str(verification.get("status") or "")
+    authenticity = (
+        shine_ai.get("decision_trace_authenticity")
+        if isinstance(shine_ai.get("decision_trace_authenticity"), dict)
+        else {}
+    )
+    authenticity_status = str(authenticity.get("status") or "")
 
     if str(source.get("status") or "") == "degraded" or component_degraded:
         if mode == "none":
@@ -674,6 +835,11 @@ def build_runtime_recovery(
         mode = "degraded"
         stage = "attestation"
         reasons.append("attestation-degraded")
+
+    if authenticity_status in {"invalid", "unavailable"}:
+        mode = "degraded"
+        stage = "authenticity"
+        reasons.append("authenticity-degraded")
 
     execution_status = str(execution_item.get("status") or "")
     timed_out = execution_item.get("observation_timed_out") is True
@@ -921,6 +1087,22 @@ def preflight_shine_request(
     ):
         runtime["warnings"].append(
             f"shine-ai-trace:{ai_verification.get('status')}"
+        )
+
+    ai_authenticity = (
+        (runtime["components"].get("shine_ai") or {}).get(
+            "decision_trace_authenticity",
+            {},
+        )
+        if isinstance(runtime["components"].get("shine_ai"), dict)
+        else {}
+    )
+    if (
+        isinstance(ai_authenticity, dict)
+        and ai_authenticity.get("status") in {"invalid", "unavailable"}
+    ):
+        runtime["warnings"].append(
+            f"shine-ai-authenticity:{ai_authenticity.get('status')}"
         )
 
     runtime["status"] = "ready" if not runtime["warnings"] else "degraded"
