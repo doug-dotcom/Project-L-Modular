@@ -594,6 +594,7 @@
 
         const API_URL = "/chat/start";
         const PENDING_REQUEST_KEY = "project-l-pending-request";
+        const CONVERSATION_KEY = "project-l-conversation-id-v1";
         let lastAssistantText = "";
         const RECOVERY_TOKEN_KEY = "project-l-recovery-token";
         function recoveryHeaders() {
@@ -662,6 +663,20 @@
             );
         }
 
+        function currentConversationId() {
+            const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+            let value = "";
+            try { value = localStorage.getItem(CONVERSATION_KEY) || ""; } catch (_) {}
+            if (UUID.test(value)) return value;
+
+            value = newChatRequestId();
+            if (!UUID.test(value)) throw new Error("Conversation identity could not be created");
+            localStorage.setItem(CONVERSATION_KEY, value);
+            return value;
+        }
+
+        window.currentConversationId = currentConversationId;
+
         function appendChatMessage(chat, className, text, id = "", rememberReply = true) {
             const element = document.createElement("div");
             element.className = `msg ${className}`;
@@ -675,10 +690,13 @@
         }
 
         function rememberPendingRequest(requestId, message, kind = "chat") {
+            const conversationId = currentConversationId();
             const tasks = savedTasks(true).filter(task => task.requestId !== requestId);
-            tasks.push({requestId, message, kind, pending: true});
+            tasks.push({requestId, message, kind, conversationId, pending: true});
             localStorage.setItem("project-l-saved-tasks", JSON.stringify(tasks.slice(-100)));
-            localStorage.setItem(PENDING_REQUEST_KEY, JSON.stringify({requestId, message, kind}));
+            localStorage.setItem(PENDING_REQUEST_KEY, JSON.stringify({
+                requestId, message, kind, conversationId
+            }));
             window.dispatchEvent?.(new Event('l-task-started'));
         }
 
@@ -696,6 +714,8 @@
                 return false;
             }
         }
+
+        window.clearPendingRequest = clearPendingRequest;
 
         async function sha256HexText(value) {
             if (!window.crypto?.subtle) {
@@ -873,7 +893,8 @@
 
                         body: JSON.stringify({
                             message: message,
-                            request_id: requestId
+                            request_id: requestId,
+                            conversation_id: currentConversationId()
                         })
                     }
                 );
