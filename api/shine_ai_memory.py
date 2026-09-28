@@ -39,6 +39,15 @@ _db_client = None
 _db_transport = None
 
 
+def _safe_rpc_error(exc: Exception) -> str:
+    """Return bounded operational error metadata without request data or credentials."""
+    error_type = type(exc).__name__
+    code = str(getattr(exc, "code", "") or "")[:80]
+    message = str(getattr(exc, "message", "") or str(exc) or "")[:240]
+    message = re.sub(r"(?i)(bearer|apikey|authorization|token|secret)\s*[:=]\s*\S+", r"\1=[redacted]", message)
+    return f"type={error_type} code={code or '-'} message={message or '-'}"
+
+
 class MemoryRetrieveRequest(BaseModel):
     app: str = Field(min_length=1, max_length=100)
     user_id: str = Field(min_length=1, max_length=200)
@@ -194,6 +203,7 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
             },
         ).execute()
     except Exception as exc:
+        print("SHINE_AI_MEMORY_RPC_ERROR " + _safe_rpc_error(exc), flush=True)
         raise HTTPException(
             status_code=503,
             detail="Project L owner-scoped retrieval is temporarily unavailable.",
