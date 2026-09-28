@@ -47,7 +47,7 @@ from services.shine_trust_storage import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v7"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v8"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -290,6 +290,49 @@ def _witness_quorum_required() -> bool:
         "SHINE_TRACE_WITNESS_QUORUM_REQUIRED",
         "",
     ).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _foundation_chain_receipt_valid(
+    value: Any,
+    *,
+    expected_sequence: int | None = None,
+    require_history_status: bool = False,
+) -> bool:
+    if not isinstance(value, dict):
+        return False
+    if (
+        value.get("status") != "verified"
+        or value.get("witness_id") != "foundation-project-l"
+        or value.get("chain_version") != 1
+    ):
+        return False
+    if require_history_status and value.get("history_status") != "verified":
+        return False
+
+    sequence = value.get("sequence")
+    previous_chain_tag = value.get("previous_chain_tag")
+    chain_tag = value.get("chain_tag")
+    if (
+        not isinstance(sequence, int)
+        or isinstance(sequence, bool)
+        or sequence < 1
+        or (
+            expected_sequence is not None
+            and sequence != expected_sequence
+        )
+        or not isinstance(previous_chain_tag, str)
+        or len(previous_chain_tag) != 64
+        or any(ch not in "0123456789abcdef" for ch in previous_chain_tag)
+        or not isinstance(chain_tag, str)
+        or len(chain_tag) != 64
+        or any(ch not in "0123456789abcdef" for ch in chain_tag)
+        or (
+            sequence == 1
+            and previous_chain_tag != "0" * 64
+        )
+    ):
+        return False
+    return True
 
 
 def _trace_keyset_pins() -> tuple[str, ...]:
@@ -862,6 +905,16 @@ def _shine_ai_verification_keyset(
                     "status": "invalid",
                     "reason_code": "trust-witness-quorum-unverified",
                 }
+            chain = quorum.get("foundation_chain")
+            if not _foundation_chain_receipt_valid(
+                chain,
+                expected_sequence=quorum.get("sequence"),
+            ):
+                return None, "trust-witness-foundation-chain-unverified", {
+                    "status": "invalid",
+                    "reason_code":
+                        "trust-witness-foundation-chain-unverified",
+                }
         elif _foundation_witness_required():
             witness = cached_trust.get("external_witness")
             if (
@@ -871,6 +924,15 @@ def _shine_ai_verification_keyset(
                 return None, "foundation-witness-unverified", {
                     "status": "invalid",
                     "reason_code": "foundation-witness-unverified",
+                }
+            if not _foundation_chain_receipt_valid(
+                witness,
+                expected_sequence=witness.get("sequence"),
+                require_history_status=True,
+            ):
+                return None, "foundation-witness-chain-unverified", {
+                    "status": "invalid",
+                    "reason_code": "foundation-witness-chain-unverified",
                 }
         return cached, None, cached_trust
 
@@ -1330,29 +1392,52 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                         "head_sha256", "generation",
                         "keyset_sha256", "state_sha256",
                         "auth_key_id", "mode",
-                        "independent_retention",
+                        "independent_retention", "history_status",
+                        "chain_version", "previous_chain_tag",
+                        "chain_tag",
                     ),
                 ),
-                "witness_quorum": _project(
-                    (
-                        item.get("decision_trace_trust", {}).get(
-                            "witness_quorum",
-                            {},
-                        )
-                        if isinstance(
-                            item.get("decision_trace_trust"),
-                            dict,
-                        )
-                        else {}
+                "witness_quorum": {
+                    **_project(
+                        (
+                            item.get("decision_trace_trust", {}).get(
+                                "witness_quorum",
+                                {},
+                            )
+                            if isinstance(
+                                item.get("decision_trace_trust"),
+                                dict,
+                            )
+                            else {}
+                        ),
+                        (
+                            "status", "policy_generation", "policy_sha256",
+                            "minimum_witnesses", "verified_witness_count",
+                            "witness_ids", "sequence", "head_sha256",
+                            "generation", "keyset_sha256", "state_sha256",
+                            "independence",
+                        ),
                     ),
-                    (
-                        "status", "policy_generation", "policy_sha256",
-                        "minimum_witnesses", "verified_witness_count",
-                        "witness_ids", "sequence", "head_sha256",
-                        "generation", "keyset_sha256", "state_sha256",
-                        "independence",
+                    "foundation_chain": _project(
+                        (
+                            item.get("decision_trace_trust", {}).get(
+                                "witness_quorum",
+                                {},
+                            ).get("foundation_chain", {})
+                            if isinstance(
+                                item.get("decision_trace_trust", {}).get(
+                                    "witness_quorum",
+                                ),
+                                dict,
+                            )
+                            else {}
+                        ),
+                        (
+                            "status", "witness_id", "chain_version",
+                            "sequence", "previous_chain_tag", "chain_tag",
+                        ),
                     ),
-                ),
+                },
             },
         }
 
