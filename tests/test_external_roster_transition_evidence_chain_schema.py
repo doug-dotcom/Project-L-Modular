@@ -13,6 +13,7 @@ def test_evidence_chain_starts_at_generation_two_zero_anchor():
     s=source()
     assert "v_expected_generation integer := 2" in s
     assert "repeat('0',64)" in s
+    assert "external-roster-evidence-chain-backfill-generation-gap" in s
 
 def test_evidence_chain_binds_exact_evidence_and_policy_continuity():
     s=source()
