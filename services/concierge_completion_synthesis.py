@@ -34,13 +34,13 @@ def _bounded_result_packet(packet: dict) -> dict:
     rows = []
     raw_results = packet.get("results")
     if isinstance(raw_results, list):
-        for raw in raw_results[:4]:
+        for index, raw in enumerate(raw_results[:20]):
             if not isinstance(raw, dict):
                 continue
             result = raw.get("result")
             preview = ""
-            if isinstance(result, dict):
-                preview = _json(result)[:2200]
+            if isinstance(result, dict) and index < 4:
+                preview = _json(result)[:1800]
             rows.append({
                 "capability_id": str(
                     raw.get("capabilityId")
@@ -54,7 +54,10 @@ def _bounded_result_packet(packet: dict) -> dict:
                 )[:160],
                 "reused": raw.get("reused") is True,
                 "result_preview": preview,
-                "result_truncated": bool(preview),
+                "result_truncated": isinstance(result, dict),
+                "result_omitted_for_budget": (
+                    isinstance(result, dict) and not preview
+                ),
             })
 
     return {
