@@ -93,6 +93,7 @@ class FakeDb:
                 "final_result_sha256": None,
                 "final_answer": None,
                 "final_answer_sha256": None,
+                "final_answer_generated_at": None,
             }],
             "companion_concierge_completion_outbox": [],
         }
@@ -143,17 +144,22 @@ class FakeDb:
                 "resultPacket": getattr(self, "synthesis_packet", None),
                 "finalAnswer": row.get("final_answer"),
                 "finalAnswerSha256": row.get("final_answer_sha256"),
+                "finalAnswerGeneratedAt": row.get("final_answer_generated_at"),
+                "temporalReceipt": getattr(self, "temporal_receipt", None),
             })
-        if name == "companion_store_delayed_synthesis_answer_v1":
+        if name == "companion_store_delayed_synthesis_answer_v2":
             row = self.tables["companion_foundation_pending_jobs"][0]
             row["final_answer"] = (params or {})["p_answer"]
             row["final_answer_sha256"] = (params or {})["p_answer_sha256"]
+            row["final_answer_generated_at"] = (params or {})["p_generated_at"]
+            self.temporal_receipt = (params or {}).get("p_temporal_receipt")
             row["synthesis_status"] = "ready"
             return Rpc({
                 "stored": True,
                 "replayed": False,
                 "answerSha256": row["final_answer_sha256"],
                 "synthesisStatus": "ready",
+                "generatedAt": row["final_answer_generated_at"],
             })
         raise AssertionError(name)
 
