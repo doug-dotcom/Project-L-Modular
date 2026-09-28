@@ -28,9 +28,16 @@ class FakeResult:
 
 
 class FakePolicyDB:
-    def __init__(self, state=None, *, inconsistent_reason=None):
+    def __init__(
+        self,
+        state=None,
+        *,
+        inconsistent_reason=None,
+        storage=None,
+    ):
         self.state = state
         self.inconsistent_reason = inconsistent_reason
+        self.storage = storage
         self.rpc_calls = []
 
     def rpc(self, name, params):
@@ -39,7 +46,10 @@ class FakePolicyDB:
 
         class Call:
             def execute(self):
-                if name == "shine_ai_witness_quorum_policy_snapshot_v1":
+                if name in {
+                    "shine_ai_witness_quorum_policy_snapshot_v1",
+                    "shine_ai_witness_quorum_policy_snapshot_v2",
+                }:
                     if db.inconsistent_reason:
                         return FakeResult({
                             "status": "inconsistent",
@@ -47,10 +57,21 @@ class FakePolicyDB:
                         })
                     if db.state is None:
                         return FakeResult({"status": "unbootstrapped"})
-                    return FakeResult({
+                    payload = {
                         "status": "trusted",
                         "trust_state": dict(db.state),
-                    })
+                    }
+                    if name.endswith("_v2"):
+                        if db.storage is None:
+                            payload.update({
+                                "status": "unsealed",
+                                "reason_code":
+                                    "witness-quorum-policy-storage-authentication-missing",
+                            })
+                        else:
+                            payload.update(dict(db.storage))
+                    return FakeResult(payload)
+
                 if name == "shine_ai_witness_quorum_policy_bootstrap_v1":
                     db.state = {
                         "trustStateVersion": 1,
@@ -69,6 +90,88 @@ class FakePolicyDB:
                         "status": "trusted",
                         "trust_state": dict(db.state),
                     })
+
+                if name == "shine_ai_witness_quorum_policy_bootstrap_v2":
+                    if db.state is None:
+                        db.state = {
+                            "trustStateVersion": 1,
+                            "trustStateType":
+                                "decision_trace_trust_state_witness_quorum_policy",
+                            "generation": 1,
+                            "minimumWitnesses": 2,
+                            "acceptedWitnessIds": [
+                                "foundation-project-l",
+                                "redis-project-l",
+                            ],
+                            "previousPolicySha256": None,
+                            "policySha256": POLICY_SHA,
+                        }
+                    db.storage = {
+                        "state_sha256": params["p_state_sha256"],
+                        "storage_auth_key_id":
+                            params["p_storage_auth_key_id"],
+                        "storage_auth_tag": params["p_storage_auth_tag"],
+                    }
+                    return FakeResult({
+                        "status": "trusted",
+                        "trust_state": dict(db.state),
+                    })
+
+                if name == "shine_ai_witness_quorum_policy_seal_v2":
+                    assert db.state is not None
+                    assert (
+                        db.state["generation"]
+                        == params["p_expected_generation"]
+                    )
+                    assert (
+                        db.state["policySha256"]
+                        == params["p_expected_policy_sha256"]
+                    )
+                    db.storage = {
+                        "state_sha256": params["p_state_sha256"],
+                        "storage_auth_key_id":
+                            params["p_storage_auth_key_id"],
+                        "storage_auth_tag": params["p_storage_auth_tag"],
+                    }
+                    return FakeResult({
+                        "status": "sealed",
+                        "generation": db.state["generation"],
+                        "policy_sha256": db.state["policySha256"],
+                    })
+
+                if name == "shine_ai_witness_quorum_policy_rotate_storage_v2":
+                    assert db.state is not None
+                    assert db.storage is not None
+                    assert (
+                        db.state["generation"]
+                        == params["p_expected_generation"]
+                    )
+                    assert (
+                        db.state["policySha256"]
+                        == params["p_expected_policy_sha256"]
+                    )
+                    assert (
+                        db.storage["state_sha256"]
+                        == params["p_expected_state_sha256"]
+                    )
+                    current_key = db.storage["storage_auth_key_id"]
+                    target_key = params["p_target_auth_key_id"]
+                    if current_key != target_key:
+                        assert (
+                            current_key
+                            == params["p_source_envelope_auth_key_id"]
+                        )
+                    db.storage["storage_auth_key_id"] = target_key
+                    db.storage["storage_auth_tag"] = params[
+                        "p_storage_auth_tag"
+                    ]
+                    return FakeResult({
+                        "status": "rotated",
+                        "generation": db.state["generation"],
+                        "policy_sha256": db.state["policySha256"],
+                        "storage_auth_key_id": target_key,
+                    })
+
                 raise AssertionError(name)
 
         return Call()
@@ -82,6 +185,32 @@ class FakeRedis:
         return dict(self.rows.get(key, {}))
 
     def eval(self, _script, _numkeys, key, *args):
+        if len(args) == 4:
+            generation, policy_sha, state_sha, checkpoint_json = args
+            generation = int(generation)
+            current = self.rows.get(key)
+            if current is None:
+                if generation != 1:
+                    return ["bootstrap-generation-invalid"]
+                self.rows[key] = {
+                    "generation": str(generation),
+                    "policy_sha256": policy_sha,
+                    "state_sha256": state_sha,
+                    "checkpoint_json": checkpoint_json,
+                }
+                return ["created"]
+            current_generation = int(current["generation"])
+            if generation < current_generation:
+                return ["rollback"]
+            if generation > current_generation:
+                return ["generation-transition-unimplemented"]
+            if current["policy_sha256"] != policy_sha:
+                return ["equivocation"]
+            if current["state_sha256"] != state_sha:
+                return ["state-mismatch"]
+            current["checkpoint_json"] = checkpoint_json
+            return ["refreshed"]
+
         (
             sequence,
             head_sha,
@@ -143,6 +272,17 @@ def quorum_env(monkeypatch):
     monkeypatch.setenv(
         "SHINE_TRACE_REDIS_WITNESS_ACTIVE_KEY_ID",
         "redis-witness-a",
+    )
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_POLICY_STORAGE_KEYRING_JSON",
+        json.dumps({
+            "policy-a": "P" * 48,
+            "policy-b": "Q" * 48,
+        }),
+    )
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_POLICY_STORAGE_ACTIVE_KEY_ID",
+        "policy-a",
     )
     monkeypatch.setenv(
         "SHINE_TRACE_WITNESS_QUORUM_POLICY_JSON",
@@ -211,8 +351,12 @@ def test_policy_is_exact_fixed_two_of_two():
 
 def test_persisted_policy_bootstraps_from_certified_deployment_pin():
     db = FakePolicyDB()
+    redis = FakeRedis()
 
-    value = quorum.load_persisted_quorum_policy(db)
+    value = quorum.load_persisted_quorum_policy(
+        db,
+        redis_client=redis,
+    )
 
     assert value["generation"] == 1
     assert value["minimumWitnesses"] == 2
@@ -224,10 +368,16 @@ def test_persisted_policy_bootstraps_from_certified_deployment_pin():
     assert value["policy_trust_persisted"] is True
     assert value["policy_trust_source"] == "project-l-supabase"
     assert value["policy_trust_generation"] == 1
+    assert value["policy_storage_authenticated"] is True
+    assert value["policy_storage_auth_key_id"] == "policy-a"
+    assert value["policy_storage_checkpoint_independent"] is True
+    assert value["policy_storage_checkpoint_retention"] == "railway-redis-volume"
     assert db.state["policySha256"] == POLICY_SHA
+    assert db.storage is not None
     assert [name for name, _params in db.rpc_calls] == [
-        "shine_ai_witness_quorum_policy_snapshot_v1",
-        "shine_ai_witness_quorum_policy_bootstrap_v1",
+        "shine_ai_witness_quorum_policy_snapshot_v2",
+        "shine_ai_witness_quorum_policy_bootstrap_v2",
+        "shine_ai_witness_quorum_policy_snapshot_v2",
     ]
 
 
@@ -269,7 +419,10 @@ def test_persisted_policy_rejects_same_generation_deployment_fork(
         quorum.WitnessQuorumError,
         match="policy-digest-mismatch",
     ):
-        quorum.load_persisted_quorum_policy(db)
+        quorum.load_persisted_quorum_policy(
+            db,
+            redis_client=FakeRedis(),
+        )
 
 
 def test_persisted_policy_refuses_uncertified_future_state():
@@ -291,7 +444,10 @@ def test_persisted_policy_refuses_uncertified_future_state():
         quorum.WitnessQuorumError,
         match="policy",
     ):
-        quorum.load_persisted_quorum_policy(db)
+        quorum.load_persisted_quorum_policy(
+            db,
+            redis_client=FakeRedis(),
+        )
 
 
 def test_persisted_policy_storage_inconsistency_fails_closed():
@@ -303,7 +459,10 @@ def test_persisted_policy_storage_inconsistency_fails_closed():
         quorum.WitnessQuorumError,
         match="high-water-mismatch",
     ):
-        quorum.load_persisted_quorum_policy(db)
+        quorum.load_persisted_quorum_policy(
+            db,
+            redis_client=FakeRedis(),
+        )
 
 
 @pytest.mark.parametrize(
@@ -433,6 +592,7 @@ def test_quorum_requires_two_distinct_matching_witnesses(monkeypatch):
     result = quorum.ensure_trust_witness_quorum(
         FakePolicyDB(),
         {"state": "unused"},
+        redis_client=FakeRedis(),
     )
 
     assert result["status"] == "verified"
@@ -446,6 +606,9 @@ def test_quorum_requires_two_distinct_matching_witnesses(monkeypatch):
     assert result["policy_trust_persisted"] is True
     assert result["policy_trust_source"] == "project-l-supabase"
     assert result["policy_trust_generation"] == 1
+    assert result["policy_storage_authenticated"] is True
+    assert result["policy_storage_auth_key_id"] == "policy-a"
+    assert result["policy_storage_checkpoint_independent"] is True
     assert result["independence"] == [
         "foundation-supabase",
         "railway-redis-volume",
@@ -483,6 +646,7 @@ def test_quorum_rejects_head_disagreement(monkeypatch):
         quorum.ensure_trust_witness_quorum(
             FakePolicyDB(),
             {"state": "unused"},
+            redis_client=FakeRedis(),
         )
 
 
@@ -507,6 +671,7 @@ def test_quorum_rejects_duplicate_or_unapproved_witness(monkeypatch):
         quorum.ensure_trust_witness_quorum(
             FakePolicyDB(),
             {"state": "unused"},
+            redis_client=FakeRedis(),
         )
 
 
@@ -533,6 +698,7 @@ def test_quorum_fails_when_foundation_witness_is_unavailable(monkeypatch):
         quorum.ensure_trust_witness_quorum(
             FakePolicyDB(),
             {"state": "unused"},
+            redis_client=FakeRedis(),
         )
 
 
@@ -572,6 +738,7 @@ def test_quorum_rejects_unverified_foundation_chain(
         quorum.ensure_trust_witness_quorum(
             FakePolicyDB(),
             {"state": "unused"},
+            redis_client=FakeRedis(),
         )
 
 
@@ -606,4 +773,37 @@ def test_quorum_fails_closed_when_chain_checkpoint_rejects(monkeypatch):
         quorum.ensure_trust_witness_quorum(
             FakePolicyDB(),
             {"state": "unused"},
+            redis_client=FakeRedis(),
         )
+
+
+
+def test_persisted_policy_storage_rotates_without_changing_policy(monkeypatch):
+    db = FakePolicyDB()
+    redis = FakeRedis()
+
+    first = quorum.load_persisted_quorum_policy(
+        db,
+        redis_client=redis,
+    )
+    original_state = dict(db.state)
+    original_state_sha = first["policy_storage_state_sha256"]
+
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_POLICY_STORAGE_ACTIVE_KEY_ID",
+        "policy-b",
+    )
+    second = quorum.load_persisted_quorum_policy(
+        db,
+        redis_client=redis,
+    )
+
+    assert second["policy_storage_auth_key_id"] == "policy-b"
+    assert second["policy_storage_state_sha256"] == original_state_sha
+    assert second["generation"] == first["generation"] == 1
+    assert second["minimumWitnesses"] == first["minimumWitnesses"] == 2
+    assert second["acceptedWitnessIds"] == first["acceptedWitnessIds"]
+    assert second["policySha256"] == first["policySha256"] == POLICY_SHA
+    assert db.state == original_state
+    assert db.storage["storage_auth_key_id"] == "policy-b"
+    assert second["policy_storage_rotation"]["target_auth_key_id"] == "policy-b"

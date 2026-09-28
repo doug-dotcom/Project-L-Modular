@@ -21,6 +21,17 @@ def trust_storage_env(monkeypatch):
         "SHINE_AI_TRUST_STATE_STORAGE_ACTIVE_KEY_ID",
         "storage-a",
     )
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_POLICY_STORAGE_KEYRING_JSON",
+        json.dumps({
+            "policy-a": "P" * 48,
+            "policy-b": "Q" * 48,
+        }),
+    )
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_POLICY_STORAGE_ACTIVE_KEY_ID",
+        "policy-a",
+    )
 
 
 def test_shine_ai_signature_matches_keyring_contract(monkeypatch):
@@ -499,7 +510,7 @@ def test_runtime_trace_binds_recovery_control_plane_without_private_content():
     changed["recovery"]["reason_codes"] = ["PRIVATE-REASON-TEXT-NOT-HASHED"]
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v9"
+    assert first["version"] == "shine/runtime-trace-v10"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-REASON-TEXT-NOT-HASHED" not in json.dumps(second)
 
@@ -523,6 +534,32 @@ class FakeTrustRedis:
         return dict(self.rows.get(key, {}))
 
     def eval(self, _script, _numkeys, key, *args):
+        if len(args) == 4:
+            generation, policy_sha, state_sha, checkpoint_json = args
+            generation = int(generation)
+            current = self.rows.get(key)
+            if current is None:
+                if generation != 1:
+                    return ["bootstrap-generation-invalid"]
+                self.rows[key] = {
+                    "generation": str(generation),
+                    "policy_sha256": policy_sha,
+                    "state_sha256": state_sha,
+                    "checkpoint_json": checkpoint_json,
+                }
+                return ["created"]
+            current_generation = int(current["generation"])
+            if generation < current_generation:
+                return ["rollback"]
+            if generation > current_generation:
+                return ["generation-transition-unimplemented"]
+            if current["policy_sha256"] != policy_sha:
+                return ["equivocation"]
+            if current["state_sha256"] != state_sha:
+                return ["state-mismatch"]
+            current["checkpoint_json"] = checkpoint_json
+            return ["refreshed"]
+
         (
             expected_generation,
             expected_state_sha,
@@ -600,6 +637,7 @@ class FakeTrustDB:
         sealed=True,
         policy_state=None,
         policy_inconsistent_reason=None,
+        policy_storage=None,
     ):
         self.state = state
         self.inconsistent_reason = inconsistent_reason
@@ -607,6 +645,7 @@ class FakeTrustDB:
         self.sealed = sealed
         self.policy_state = policy_state
         self.policy_inconsistent_reason = policy_inconsistent_reason
+        self.policy_storage = policy_storage
         if self.state is not None and sealed:
             self._seal_current()
 
@@ -663,7 +702,10 @@ class FakeTrustDB:
 
         class Call:
             def execute(self):
-                if name == "shine_ai_witness_quorum_policy_snapshot_v1":
+                if name in {
+                    "shine_ai_witness_quorum_policy_snapshot_v1",
+                    "shine_ai_witness_quorum_policy_snapshot_v2",
+                }:
                     if db.policy_inconsistent_reason:
                         return FakeTrustResult({
                             "status": "inconsistent",
@@ -671,10 +713,21 @@ class FakeTrustDB:
                         })
                     if db.policy_state is None:
                         return FakeTrustResult({"status": "unbootstrapped"})
-                    return FakeTrustResult({
+                    payload = {
                         "status": "trusted",
                         "trust_state": dict(db.policy_state),
-                    })
+                    }
+                    if name.endswith("_v2"):
+                        if db.policy_storage is None:
+                            payload.update({
+                                "status": "unsealed",
+                                "reason_code":
+                                    "witness-quorum-policy-storage-authentication-missing",
+                            })
+                        else:
+                            payload.update(dict(db.policy_storage))
+                    return FakeTrustResult(payload)
+
                 if name == "shine_ai_witness_quorum_policy_bootstrap_v1":
                     db.policy_state = {
                         "trustStateVersion": 1,
@@ -695,6 +748,66 @@ class FakeTrustDB:
                         "status": "trusted",
                         "trust_state": dict(db.policy_state),
                     })
+
+                if name == "shine_ai_witness_quorum_policy_bootstrap_v2":
+                    if db.policy_state is None:
+                        db.policy_state = {
+                            "trustStateVersion": 1,
+                            "trustStateType":
+                                "decision_trace_trust_state_witness_quorum_policy",
+                            "generation": 1,
+                            "minimumWitnesses": 2,
+                            "acceptedWitnessIds": [
+                                "foundation-project-l",
+                                "redis-project-l",
+                            ],
+                            "previousPolicySha256": None,
+                            "policySha256":
+                                "26b6d1a3b4183cfa596f8c9c06c18e73"
+                                "aa0eda6a80a6362649130e9357bf220e",
+                        }
+                    db.policy_storage = {
+                        "state_sha256": params["p_state_sha256"],
+                        "storage_auth_key_id":
+                            params["p_storage_auth_key_id"],
+                        "storage_auth_tag": params["p_storage_auth_tag"],
+                    }
+                    return FakeTrustResult({
+                        "status": "trusted",
+                        "trust_state": dict(db.policy_state),
+                    })
+
+                if name == "shine_ai_witness_quorum_policy_seal_v2":
+                    assert db.policy_state is not None
+                    db.policy_storage = {
+                        "state_sha256": params["p_state_sha256"],
+                        "storage_auth_key_id":
+                            params["p_storage_auth_key_id"],
+                        "storage_auth_tag": params["p_storage_auth_tag"],
+                    }
+                    return FakeTrustResult({
+                        "status": "sealed",
+                        "generation": db.policy_state["generation"],
+                        "policy_sha256": db.policy_state["policySha256"],
+                    })
+
+                if name == "shine_ai_witness_quorum_policy_rotate_storage_v2":
+                    assert db.policy_state is not None
+                    assert db.policy_storage is not None
+                    db.policy_storage["storage_auth_key_id"] = params[
+                        "p_target_auth_key_id"
+                    ]
+                    db.policy_storage["storage_auth_tag"] = params[
+                        "p_storage_auth_tag"
+                    ]
+                    return FakeTrustResult({
+                        "status": "rotated",
+                        "generation": db.policy_state["generation"],
+                        "policy_sha256": db.policy_state["policySha256"],
+                        "storage_auth_key_id":
+                            db.policy_storage["storage_auth_key_id"],
+                    })
+
                 if name == "shine_ai_trace_trust_snapshot_v2":
                     return db._snapshot(2)
                 if name == "shine_ai_trace_trust_snapshot_v3":
@@ -970,7 +1083,7 @@ def test_runtime_trace_binds_authenticity_without_signature_bytes():
     changed["components"]["shine_ai"]["decision_trace_authenticity"]["authenticated"] = False
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v9"
+    assert first["version"] == "shine/runtime-trace-v10"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(first)
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(second)
@@ -1128,7 +1241,7 @@ def test_runtime_trace_binds_trust_generation_without_certificate_signature():
     changed["components"]["shine_ai"]["decision_trace_trust"]["generation"] = 3
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v9"
+    assert first["version"] == "shine/runtime-trace-v10"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-CERTIFICATE-SIGNATURE" not in json.dumps(first)
 
@@ -1463,7 +1576,7 @@ def test_runtime_trace_binds_storage_proof_without_hmac_tag_or_redis_url():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v9"
+    assert first["version"] == "shine/runtime-trace-v10"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-HMAC-TAG" not in rendered
     assert "PRIVATE-REDIS-URL" not in rendered
@@ -1576,7 +1689,7 @@ def test_runtime_trace_binds_external_witness_without_foundation_auth_tag():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v9"
+    assert first["version"] == "shine/runtime-trace-v10"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-FOUNDATION-HMAC" not in rendered
     assert "PRIVATE-CHECKPOINT-HMAC" not in rendered
@@ -1698,6 +1811,12 @@ def test_cached_quorum_without_foundation_chain_fails_closed(
                 "policy_sha256":
                     "26b6d1a3b4183cfa596f8c9c06c18e73"
                     "aa0eda6a80a6362649130e9357bf220e",
+                "policy_storage_authenticated": True,
+                "policy_storage_auth_key_id": "policy-a",
+                "policy_storage_state_sha256":
+                    "5a444bfc1b3816def3ad06530303f497"
+                    "c3579ca1b3c1afb19da6e2bc167f633b",
+                "policy_storage_checkpoint_independent": True,
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
@@ -1839,6 +1958,12 @@ def test_cached_quorum_without_chain_checkpoint_fails_closed(
                 "policy_sha256":
                     "26b6d1a3b4183cfa596f8c9c06c18e73"
                     "aa0eda6a80a6362649130e9357bf220e",
+                "policy_storage_authenticated": True,
+                "policy_storage_auth_key_id": "policy-a",
+                "policy_storage_state_sha256":
+                    "5a444bfc1b3816def3ad06530303f497"
+                    "c3579ca1b3c1afb19da6e2bc167f633b",
+                "policy_storage_checkpoint_independent": True,
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
@@ -1944,6 +2069,12 @@ def test_cached_quorum_detects_checkpoint_ahead_rollback(
                 "policy_sha256":
                     "26b6d1a3b4183cfa596f8c9c06c18e73"
                     "aa0eda6a80a6362649130e9357bf220e",
+                "policy_storage_authenticated": True,
+                "policy_storage_auth_key_id": "policy-a",
+                "policy_storage_state_sha256":
+                    "5a444bfc1b3816def3ad06530303f497"
+                    "c3579ca1b3c1afb19da6e2bc167f633b",
+                "policy_storage_checkpoint_independent": True,
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
@@ -2196,7 +2327,7 @@ def test_runtime_trace_binds_quorum_without_witness_hmac_tags():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v9"
+    assert first["version"] == "shine/runtime-trace-v10"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-FOUNDATION-HMAC" not in rendered
     assert "PRIVATE-REDIS-HMAC" not in rendered
@@ -2319,5 +2450,99 @@ def test_runtime_trace_binds_persisted_quorum_policy_proof():
         {"status": "not_required"},
     )
 
-    assert first["version"] == "shine/runtime-trace-v9"
+    assert first["version"] == "shine/runtime-trace-v10"
     assert first["lineage_sha256"] != second["lineage_sha256"]
+
+
+
+def test_runtime_trace_binds_quorum_policy_storage_without_hmac_tag():
+    packet = runtime_for_human_status()
+    packet["components"]["shine_ai"]["decision_trace_trust"] = {
+        "status": "trusted",
+        "witness_quorum": {
+            "status": "verified",
+            "policy_generation": 1,
+            "policy_sha256":
+                "26b6d1a3b4183cfa596f8c9c06c18e73"
+                "aa0eda6a80a6362649130e9357bf220e",
+            "policy_trust_persisted": True,
+            "policy_trust_source": "project-l-supabase",
+            "policy_trust_generation": 1,
+            "policy_storage_authenticated": True,
+            "policy_storage_auth_key_id": "policy-store-2026-09-a",
+            "policy_storage_state_sha256": "a" * 64,
+            "policy_storage_checkpoint_independent": True,
+            "policy_storage_checkpoint_retention":
+                "railway-redis-volume",
+            "policy_storage_rotation": {
+                "status": "rotated",
+                "source_envelope_auth_key_id":
+                    "policy-store-2026-09-a",
+                "source_checkpoint_auth_key_id":
+                    "policy-store-2026-09-a",
+                "target_auth_key_id": "policy-store-2026-09-b",
+                "generation": 1,
+                "policy_sha256":
+                    "26b6d1a3b4183cfa596f8c9c06c18e73"
+                    "aa0eda6a80a6362649130e9357bf220e",
+                "state_sha256": "a" * 64,
+                "checkpoint_mode": "refreshed",
+            },
+            "minimum_witnesses": 2,
+            "verified_witness_count": 2,
+            "witness_ids": [
+                "foundation-project-l",
+                "redis-project-l",
+            ],
+            "sequence": 1,
+            "head_sha256": "b" * 64,
+            "generation": 1,
+            "keyset_sha256": "c" * 64,
+            "state_sha256": "d" * 64,
+            "independence": [
+                "foundation-supabase",
+                "railway-redis-volume",
+            ],
+            "foundation_chain": {
+                "status": "verified",
+                "witness_id": "foundation-project-l",
+                "chain_version": 1,
+                "sequence": 1,
+                "previous_chain_tag": "0" * 64,
+                "chain_tag": "e" * 64,
+            },
+            "foundation_chain_checkpoint": {
+                "status": "verified",
+                "checkpoint_version": 1,
+                "witness_id": "foundation-project-l",
+                "chain_version": 1,
+                "sequence": 1,
+                "previous_chain_tag": "0" * 64,
+                "chain_tag": "e" * 64,
+                "storage": "project-l-supabase-vault-hmac",
+                "ledger_rows": 1,
+                "mode": "existing",
+            },
+            "policy_storage_auth_tag": "PRIVATE-POLICY-HMAC",
+            "policy_storage_keyring": "PRIVATE-POLICY-KEYRING",
+        },
+    }
+
+    first = runtime.build_runtime_trace(
+        packet,
+        {"status": "not_required"},
+    )
+    changed = json.loads(json.dumps(packet))
+    changed["components"]["shine_ai"]["decision_trace_trust"][
+        "witness_quorum"
+    ]["policy_storage_auth_key_id"] = "policy-store-2026-09-b"
+    second = runtime.build_runtime_trace(
+        changed,
+        {"status": "not_required"},
+    )
+
+    rendered = json.dumps(first)
+    assert first["version"] == "shine/runtime-trace-v10"
+    assert first["lineage_sha256"] != second["lineage_sha256"]
+    assert "PRIVATE-POLICY-HMAC" not in rendered
+    assert "PRIVATE-POLICY-KEYRING" not in rendered
