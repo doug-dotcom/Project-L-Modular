@@ -5,6 +5,7 @@ from services.foundation_companion_service import (
     _supersede_previous_concierge_jobs,
     cancel_foundation_concierge_request_as_user,
     invoke_foundation_orchestration,
+    set_pending_concierge_job_status,
 )
 from services import concierge_execution_service as execution_service
 
@@ -350,3 +351,22 @@ def test_invalid_retirement_receipt_fails_closed():
     bad = retirement()
     bad["receipt"]["executionStarted"] = True
     assert _safe_foundation_retirement(bad, REQUEST) is None
+
+
+
+def test_late_local_state_write_cannot_overwrite_retired():
+    db = FakeDb([{
+        "job_id": REQUEST,
+        "user_id": USER,
+        "status": "retired",
+    }])
+
+    changed = set_pending_concierge_job_status(
+        db,
+        user_id=USER,
+        job_id=REQUEST,
+        status="failed",
+    )
+
+    assert changed is False
+    assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "retired"
