@@ -281,3 +281,84 @@ def test_runtime_trace_ignores_private_text_but_changes_on_control_plane_drift()
     changed_control = json.loads(json.dumps(base))
     changed_control["components"]["concierge"]["mode"] = "explore"
     assert runtime.build_runtime_trace(changed_control)["lineage_sha256"] != first["lineage_sha256"]
+
+
+
+def runtime_for_human_status(verification_status="verified"):
+    return {
+        "version": runtime.RUNTIME_VERSION,
+        "request_id": "4ad046b3-06a5-4e62-a3ef-17a4f83dcdde",
+        "status": "ready",
+        "warnings": [],
+        "components": {
+            "l": {"status": "active", "authority": "voice+synthesis+durable-task"},
+            "foundation": {"status": "healthy", "specialists": []},
+            "concierge": {
+                "status": "planned",
+                "mode": "ask",
+                "dispatch_allowed": False,
+                "execution_owner": "l-core",
+                "selected_routes": [],
+            },
+            "defence": {"status": "completed", "reviews": []},
+            "shine_ai": {
+                "status": "ok",
+                "decision_trace_verification": {
+                    "version": "shine-ai/decision-trace-verification-v1",
+                    "status": verification_status,
+                    "verified": verification_status == "verified",
+                    "lineage_sha256": "a" * 64,
+                },
+            },
+        },
+    }
+
+
+def test_human_status_hides_backend_detail_on_clean_completion():
+    status = runtime.build_human_status(
+        runtime_for_human_status(),
+        {"status": "not_required", "tasks": [], "results": []},
+        final=True,
+    )
+
+    assert status["state"] == "complete"
+    assert status["can_continue"] is True
+    assert status["needs_user_action"] is False
+    assert status["issue_count"] == 0
+    assert "components" not in status
+
+
+def test_human_status_reports_degraded_without_exposing_component_names():
+    packet = runtime_for_human_status("invalid")
+    status = runtime.build_human_status(
+        packet,
+        {"status": "not_required", "tasks": [], "results": []},
+        final=True,
+    )
+
+    assert status["state"] == "degraded"
+    assert status["can_continue"] is True
+    assert status["needs_user_action"] is False
+    assert status["issue_count"] == 1
+    assert "shine_ai" not in json.dumps(status)
+
+
+def test_human_status_marks_real_user_action_required():
+    status = runtime.build_human_status(
+        runtime_for_human_status(),
+        {
+            "status": "pending",
+            "tasks": [{
+                "id": "task-1",
+                "specialist_key": "calendar",
+                "status": "consent_required",
+                "action_type": "write",
+            }],
+            "results": [],
+        },
+        final=True,
+    )
+
+    assert status["state"] == "action-required"
+    assert status["can_continue"] is False
+    assert status["needs_user_action"] is True
