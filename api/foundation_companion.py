@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from services.foundation_companion_service import (
+    claim_delayed_completion,
     ensure_foundation_delegation,
     foundation_account_owner,
     foundation_connection_status,
@@ -14,6 +15,10 @@ from services.foundation_companion_service import (
     list_delayed_completion_history,
     safe_connection_result,
 )
+
+
+class CompletionClaim(BaseModel):
+    conversation_id: str | None = None
 
 
 class CompletionAck(BaseModel):
@@ -80,18 +85,28 @@ def routes(db) -> APIRouter:
             ) from exc
 
     @router.post("/completions/claim")
-    def claim_completion(request: Request) -> dict:
+    def claim_completion(
+        payload: CompletionClaim,
+        request: Request,
+    ) -> dict:
+        conversation_id = None
+        if payload.conversation_id is not None:
+            try:
+                conversation_id = str(UUID(payload.conversation_id))
+            except ValueError as exc:
+                raise HTTPException(
+                    400, "A valid conversation ID is required."
+                ) from exc
         try:
-            result = db.rpc(
-                "companion_claim_completion_event_v2",
-                {"p_user_id": owner_id(request)},
-            ).execute()
-            data = getattr(result, "data", None)
-            if not isinstance(data, dict):
-                raise RuntimeError("completion-claim-invalid")
-            return data
+            return claim_delayed_completion(
+                db,
+                owner_id(request),
+                source_conversation_id=conversation_id,
+            )
         except HTTPException:
             raise
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from exc
         except Exception as exc:
             raise HTTPException(
                 503, "Concierge completion status is temporarily unavailable."
