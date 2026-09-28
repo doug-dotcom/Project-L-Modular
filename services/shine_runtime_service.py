@@ -41,9 +41,14 @@ from services.shine_trust_storage import (
     verify_authenticated_envelope,
     verify_state_against_checkpoint,
 )
+from services.shine_witness_quorum_policy import (
+    WitnessQuorumPolicyError,
+    evaluate_witness_quorum,
+    load_or_bootstrap_policy_trust,
+)
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v6"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v7"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -279,6 +284,38 @@ def _foundation_witness_required() -> bool:
         "SHINE_FOUNDATION_TRUST_WITNESS_REQUIRED",
         "",
     ).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _bind_required_witness_quorum(
+    db,
+    trusted_keyset: dict,
+    trust: dict,
+    *,
+    redis_client=None,
+) -> tuple[dict | None, str | None]:
+    if not _foundation_witness_required():
+        return dict(trust), None
+
+    try:
+        external_witness = ensure_foundation_trust_witness(
+            db,
+            trusted_keyset,
+            redis_client=redis_client,
+        )
+        policy_trust = load_or_bootstrap_policy_trust(db)
+        quorum = evaluate_witness_quorum(
+            policy_trust,
+            foundation_witness=external_witness,
+            local_witness=external_witness.get("local_witness"),
+        )
+    except (FoundationWitnessError, WitnessQuorumPolicyError) as exc:
+        return None, str(exc) or "witness-quorum-unverified"
+
+    return {
+        **dict(trust),
+        "external_witness": external_witness,
+        "witness_quorum": quorum,
+    }, None
 
 
 def _trace_keyset_pins() -> tuple[str, ...]:
@@ -839,17 +876,19 @@ def _shine_ai_verification_keyset(
                 "status": "invalid",
                 "reason_code": str(exc),
             }
-        if _foundation_witness_required():
-            witness = cached_trust.get("external_witness")
-            if (
-                not isinstance(witness, dict)
-                or witness.get("status") != "verified"
-            ):
-                return None, "foundation-witness-unverified", {
-                    "status": "invalid",
-                    "reason_code": "foundation-witness-unverified",
-                }
-        return cached, None, cached_trust
+        rebound_trust, witness_error = _bind_required_witness_quorum(
+            db,
+            cached,
+            cached_trust,
+            redis_client=redis_client,
+        )
+        if rebound_trust is None:
+            return None, witness_error or "witness-quorum-unverified", {
+                "status": "invalid",
+                "reason_code": witness_error or "witness-quorum-unverified",
+            }
+        _TRACE_KEYSET_CACHE["trust"] = rebound_trust
+        return cached, None, rebound_trust
 
     base = os.getenv("SHINE_AI_BASE_URL", "").rstrip("/")
     if not base.startswith("https://"):
@@ -914,25 +953,20 @@ def _shine_ai_verification_keyset(
         return None, error or "trace-keyset-trust-mismatch", trust
 
     trust = dict(trust)
-    if _foundation_witness_required():
-        try:
-            external_witness = ensure_foundation_trust_witness(
-                db,
-                trusted,
-                redis_client=redis_client,
-            )
-        except FoundationWitnessError as exc:
-            reason = str(exc) or "foundation-witness-unavailable"
-            return None, reason, {
-                **trust,
-                "status": "invalid",
-                "reason_code": reason,
-                "external_witness": {
-                    "status": "invalid",
-                    "reason_code": reason,
-                },
-            }
-        trust["external_witness"] = external_witness
+    rebound_trust, witness_error = _bind_required_witness_quorum(
+        db,
+        trusted,
+        trust,
+        redis_client=redis_client,
+    )
+    if rebound_trust is None:
+        reason = witness_error or "witness-quorum-unverified"
+        return None, reason, {
+            **trust,
+            "status": "invalid",
+            "reason_code": reason,
+        }
+    trust = rebound_trust
 
     _TRACE_KEYSET_CACHE.update({
         "expires_at": now + TRACE_KEYSET_CACHE_SECONDS,
@@ -1271,10 +1305,56 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                         "storage_authenticated", "checkpoint_independent",
                     ),
                 ),
-                "external_witness": _project(
+                "external_witness": {
+                    **_project(
+                        (
+                            item.get("decision_trace_trust", {}).get(
+                                "external_witness",
+                                {},
+                            )
+                            if isinstance(
+                                item.get("decision_trace_trust"),
+                                dict,
+                            )
+                            else {}
+                        ),
+                        (
+                            "status", "witness_id", "sequence",
+                            "head_sha256", "generation",
+                            "keyset_sha256", "state_sha256",
+                            "auth_key_id", "mode",
+                            "independent_retention",
+                        ),
+                    ),
+                    "local_witness": _project(
+                        (
+                            item.get("decision_trace_trust", {})
+                            .get("external_witness", {})
+                            .get("local_witness", {})
+                            if isinstance(
+                                item.get("decision_trace_trust"),
+                                dict,
+                            )
+                            and isinstance(
+                                item.get("decision_trace_trust", {})
+                                .get("external_witness"),
+                                dict,
+                            )
+                            else {}
+                        ),
+                        (
+                            "status", "witness_id", "sequence",
+                            "head_sha256", "generation",
+                            "keyset_sha256", "state_sha256",
+                            "auth_key_id", "mode",
+                            "independent_retention",
+                        ),
+                    ),
+                },
+                "witness_quorum": _project(
                     (
                         item.get("decision_trace_trust", {}).get(
-                            "external_witness",
+                            "witness_quorum",
                             {},
                         )
                         if isinstance(
@@ -1284,11 +1364,9 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                         else {}
                     ),
                     (
-                        "status", "witness_id", "sequence",
-                        "head_sha256", "generation",
-                        "keyset_sha256", "state_sha256",
-                        "auth_key_id", "mode",
-                        "independent_retention",
+                        "status", "policy_generation", "policy_sha256",
+                        "minimum_witnesses", "accepted_witness_ids",
+                        "verified_witness_ids", "verified_count",
                     ),
                 ),
             },
