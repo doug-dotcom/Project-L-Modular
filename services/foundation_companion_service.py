@@ -899,6 +899,8 @@ def invoke_foundation_orchestration(
     foundation_url: str | None = None,
     timeout_seconds: float = 180.0,
     post_impl=None,
+    source_conversation_id: str | None = None,
+    source_message_id: str | None = None,
 ) -> dict:
     """Execute the ready subset of one validated Concierge plan through Foundation.
 
@@ -1022,6 +1024,34 @@ def invoke_foundation_orchestration(
             "executed_capabilities": [],
             "completed_capabilities": [],
             "unavailable_capabilities": [],
+            "skipped_capabilities": skipped,
+            "results": [],
+            "execution_performed": False,
+            "synthesis_ready": False,
+            "synthesis_must_disclose_partial": bool(skipped),
+        }
+
+    try:
+        _store_pending_concierge_job(
+            db,
+            user_id=_uuid(user_id),
+            job_id=request_id,
+            link_request_id=authority["link_request_id"],
+            capability_ids=capability_ids,
+            inputs=inputs,
+            source_conversation_id=source_conversation_id,
+            source_message_id=source_message_id,
+        )
+    except Exception:
+        return {
+            "status": "unavailable",
+            "reason_code": "concierge-retry-context-persist-failed",
+            "foundation_status": "planned",
+            "request_id": request_id,
+            "selected_capabilities": normalised["selected_capabilities"],
+            "executed_capabilities": [],
+            "completed_capabilities": [],
+            "unavailable_capabilities": capability_ids,
             "skipped_capabilities": skipped,
             "results": [],
             "execution_performed": False,
