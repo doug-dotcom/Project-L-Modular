@@ -33,6 +33,10 @@ from services.roster_transition_evidence_mirror import (
     RosterTransitionEvidenceMirrorError,
     ensure_evidence_mirror,
 )
+from services.roster_transition_evidence_chain_witness import (
+    RosterEvidenceChainWitnessError,
+    ensure_chain_witness,
+)
 
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 KEY_ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
@@ -1291,10 +1295,20 @@ def _verify_transition_evidence_retention(
             or chain.get("chainVersion") != 1
             or chain.get("latestGeneration") != 1
             or chain.get("rows") != 0
+            or chain.get("latestPreviousChainTag") is not None
+            or chain.get("latestEvidenceSha256") is not None
+            or chain.get("latestChainTag") is not None
         ):
             raise ExternalWitnessRosterError(
                 "external-witness-roster-transition-evidence-chain-genesis-mismatch"
             )
+        try:
+            chain_witness = ensure_chain_witness(
+                chain,
+                redis_client=redis_client,
+            )
+        except RosterEvidenceChainWitnessError as exc:
+            raise ExternalWitnessRosterError(str(exc)) from exc
         return {
             "status": "not-applicable",
             "generation": 1,
@@ -1305,6 +1319,16 @@ def _verify_transition_evidence_retention(
             "chain_rows": 0,
             "chain_generation": 1,
             "chain_tag": None,
+            "chain_witness_status": chain_witness["status"],
+            "chain_witness_generation":
+                chain_witness["generation"],
+            "chain_witness_rows": chain_witness["rows"],
+            "chain_witness_tag": chain_witness["chain_tag"],
+            "chain_witness_evidence_sha256":
+                chain_witness["evidence_sha256"],
+            "chain_witness_auth_key_id":
+                chain_witness["auth_key_id"],
+            "chain_witness_storage": chain_witness["storage"],
         }
 
     evidence = _transition_evidence(db, generation)
@@ -1324,6 +1348,13 @@ def _verify_transition_evidence_retention(
         or chain.get("rows") != generation - 1
         or chain.get("latestEvidenceSha256")
             != evidence.get("evidenceSha256")
+        or not isinstance(
+            chain.get("latestPreviousChainTag"),
+            str,
+        )
+        or SHA256_RE.fullmatch(
+            chain["latestPreviousChainTag"]
+        ) is None
         or not isinstance(chain.get("latestChainTag"), str)
         or SHA256_RE.fullmatch(chain["latestChainTag"]) is None
     ):
@@ -1332,11 +1363,18 @@ def _verify_transition_evidence_retention(
         )
 
     try:
+        chain_witness = ensure_chain_witness(
+            chain,
+            redis_client=redis_client,
+        )
         mirror = ensure_evidence_mirror(
             evidence,
             redis_client=redis_client,
         )
-    except RosterTransitionEvidenceMirrorError as exc:
+    except (
+        RosterEvidenceChainWitnessError,
+        RosterTransitionEvidenceMirrorError,
+    ) as exc:
         raise ExternalWitnessRosterError(str(exc)) from exc
 
     return {
@@ -1349,6 +1387,16 @@ def _verify_transition_evidence_retention(
         "chain_rows": chain["rows"],
         "chain_generation": chain["latestGeneration"],
         "chain_tag": chain["latestChainTag"],
+        "chain_witness_status": chain_witness["status"],
+        "chain_witness_generation":
+            chain_witness["generation"],
+        "chain_witness_rows": chain_witness["rows"],
+        "chain_witness_tag": chain_witness["chain_tag"],
+        "chain_witness_evidence_sha256":
+            chain_witness["evidence_sha256"],
+        "chain_witness_auth_key_id":
+            chain_witness["auth_key_id"],
+        "chain_witness_storage": chain_witness["storage"],
     }
 
 
@@ -1901,6 +1949,20 @@ def load_persisted_external_witness_roster(
             evidence_retention["chain_generation"],
         "roster_transition_evidence_chain_tag":
             evidence_retention["chain_tag"],
+        "roster_transition_evidence_chain_witness_status":
+            evidence_retention["chain_witness_status"],
+        "roster_transition_evidence_chain_witness_generation":
+            evidence_retention["chain_witness_generation"],
+        "roster_transition_evidence_chain_witness_rows":
+            evidence_retention["chain_witness_rows"],
+        "roster_transition_evidence_chain_witness_tag":
+            evidence_retention["chain_witness_tag"],
+        "roster_transition_evidence_chain_witness_evidence_sha256":
+            evidence_retention["chain_witness_evidence_sha256"],
+        "roster_transition_evidence_chain_witness_auth_key_id":
+            evidence_retention["chain_witness_auth_key_id"],
+        "roster_transition_evidence_chain_witness_storage":
+            evidence_retention["chain_witness_storage"],
         "roster_head_verified": True,
         "roster_head_sequence": head["sequence"],
         "roster_head_checkpoint_sha256": head["checkpointSha256"],
