@@ -406,6 +406,39 @@
         return lines.join('\n');
     }
 
+    function retirementReceiptText(job) {
+        const integrity = String(job?.retirement_receipt_integrity || '');
+        const receipt = job?.retirement_receipt;
+        if (integrity === 'mismatch') {
+            return 'Retirement history exists, but its receipt failed integrity verification. I have not reconstructed what happened.';
+        }
+        if (!receipt || receipt.integrity !== 'verified') return '';
+
+        const retired = new Date(receipt.retired_at);
+        const when = Number.isFinite(retired.getTime())
+            ? retired.toLocaleString('en-AU', {dateStyle: 'medium', timeStyle: 'short'})
+            : String(receipt.retired_at || 'unknown time');
+        const age = Number(receipt.minimum_age_seconds || 0);
+        const hours = age > 0 ? Math.round(age / 3600 * 10) / 10 : null;
+        const capabilities = Array.isArray(receipt.requested_capabilities)
+            ? receipt.requested_capabilities : [];
+
+        const lines = [
+            'Retirement receipt — this Concierge plan expired unused'
+            + (hours ? ' after at least ' + hours + ' hour' + (hours === 1 ? '' : 's') : '')
+            + '.',
+            'Execution never started. No specialist checkpoint was written and no retry was queued.',
+        ];
+        if (capabilities.length) {
+            lines.push('Planned capabilities: ' + capabilities.join(', ') + '.');
+        }
+        lines.push('Retired: ' + when + '.');
+        if (SHA256.test(String(receipt.receipt_sha256 || ''))) {
+            lines.push('Verified receipt SHA-256: ' + receipt.receipt_sha256 + '.');
+        }
+        return lines.join('\n');
+    }
+
     async function taskCentre(limit = 50) {
         const bounded = Number.isSafeInteger(limit)
             ? Math.max(1, Math.min(100, limit))
@@ -449,6 +482,26 @@
                 return [];
             }
 
+            const retirement = item.retirement_receipt;
+            const retirementIntegrity = item.retirement_receipt_integrity == null
+                ? null
+                : String(item.retirement_receipt_integrity);
+            if (
+                retirement != null
+                && (
+                    typeof retirement !== 'object'
+                    || Array.isArray(retirement)
+                    || retirement.integrity !== 'verified'
+                    || !SHA256.test(String(retirement.receipt_sha256 || ''))
+                    || String(retirement.request_id || '') !== requestId
+                    || retirement.execution_started !== false
+                    || Number(retirement.specialist_checkpoint_count || 0) !== 0
+                    || Number(retirement.retry_count || 0) !== 0
+                )
+            ) {
+                return [];
+            }
+
             const projected = {
                 requestId,
                 status,
@@ -465,8 +518,11 @@
                     : null,
                 cancellationReceiptIntegrity: receiptIntegrity,
                 cancellationReceipt: receipt || null,
+                retirementReceiptIntegrity: retirementIntegrity,
+                retirementReceipt: retirement || null,
             };
             projected.cancellationText = cancellationReceiptText(item);
+            projected.retirementText = retirementReceiptText(item);
             return [projected];
         });
     }
