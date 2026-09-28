@@ -205,6 +205,20 @@ def test_work_fingerprint_is_exact_not_fuzzy():
         _concierge_work_fingerprint(CONVERSATION, ids, fiji)
     )
 
+    multi_inputs = {
+        "travel.plan_trip": {"destination": "Vanuatu"},
+        "dive.destination_brief": {"destination": "Vanuatu"},
+    }
+    assert _concierge_work_fingerprint(
+        CONVERSATION,
+        ["travel.plan_trip", "dive.destination_brief"],
+        multi_inputs,
+    ) == _concierge_work_fingerprint(
+        CONVERSATION,
+        ["dive.destination_brief", "travel.plan_trip"],
+        multi_inputs,
+    )
+
 
 def test_new_identical_request_supersedes_old_before_execution():
     db = FakeDb([old_job()])
