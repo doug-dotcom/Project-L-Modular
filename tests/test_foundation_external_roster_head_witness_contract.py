@@ -119,12 +119,20 @@ def test_layer211_rotation_preserves_exact_roster_head_truth():
         "update foundation.project_l_roster_head_witness_state",
         1,
     )[1].split("if not found", 1)[0]
-    assert "auth_key_id=p_target_auth_key_id" in update_block
-    assert "auth_tag=v_target_tag" in update_block
-    assert "head_sha256=" not in update_block
-    assert "generation=" not in update_block
-    assert "policy_sha256=" not in update_block
-    assert "state_sha256=" not in update_block
+    set_clause = update_block.split("where", 1)[0]
+    assert "auth_key_id=p_target_auth_key_id" in set_clause
+    assert "auth_tag=v_target_tag" in set_clause
+    assert "head_sha256=" not in set_clause
+    assert "generation=" not in set_clause
+    assert "policy_sha256=" not in set_clause
+    assert "state_sha256=" not in set_clause
+
+    # The CAS WHERE clause must bind the unchanged roster truth.
+    where_clause = update_block.split("where", 1)[1]
+    assert "head_sha256=v_current.head_sha256" in where_clause
+    assert "generation=v_current.generation" in where_clause
+    assert "policy_sha256=v_current.policy_sha256" in where_clause
+    assert "state_sha256=v_current.state_sha256" in where_clause
 
 
 def test_layer211_rotation_rpc_is_gateway_only():
