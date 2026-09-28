@@ -976,11 +976,12 @@ def load_persisted_quorum_policy(
     db,
     *,
     redis_client=None,
+    foundation_post_impl=None,
 ) -> dict[str, Any]:
-    """Load authenticated monotonic quorum-policy trust."""
+    """Load authenticated policy trust and accept only previous-quorum N -> N+1."""
     try:
         result = db.rpc(
-            "shine_ai_witness_quorum_policy_snapshot_v2",
+            "shine_ai_witness_quorum_policy_snapshot_v3",
             {},
         ).execute()
     except Exception as exc:
@@ -996,14 +997,14 @@ def load_persisted_quorum_policy(
         state = _policy_storage_state_from_policy(policy)
         try:
             envelope = create_policy_storage_envelope(state)
-            checkpoint = persist_policy_storage_checkpoint(
+            persist_policy_storage_checkpoint(
                 state,
                 redis_client=redis_client,
             )
         except QuorumPolicyStorageError as exc:
             raise WitnessQuorumError(str(exc)) from exc
         try:
-            result = db.rpc(
+            db.rpc(
                 "shine_ai_witness_quorum_policy_bootstrap_v2",
                 {
                     "p_state_sha256": envelope["stateSha256"],
@@ -1011,33 +1012,20 @@ def load_persisted_quorum_policy(
                     "p_storage_auth_tag": envelope["authTag"],
                 },
             ).execute()
+            result = db.rpc(
+                "shine_ai_witness_quorum_policy_snapshot_v3",
+                {},
+            ).execute()
         except Exception as exc:
             raise WitnessQuorumError(
                 "trust-witness-quorum-policy-bootstrap-failed"
             ) from exc
         payload = result.data if isinstance(result.data, dict) else {}
         status = str(payload.get("status") or "")
-        if status not in {"trusted", "already_trusted"}:
-            raise WitnessQuorumError(
-                "trust-witness-quorum-policy-bootstrap-unverified"
-            )
-        try:
-            result = db.rpc(
-                "shine_ai_witness_quorum_policy_snapshot_v2",
-                {},
-            ).execute()
-        except Exception as exc:
-            raise WitnessQuorumError(
-                "trust-witness-quorum-policy-snapshot-unavailable"
-            ) from exc
-        payload = result.data if isinstance(result.data, dict) else {}
-        status = str(payload.get("status") or "")
-        _ = checkpoint
 
     if status == "unsealed":
         raw_state = payload.get("trust_state")
         state = _project_policy_trust_state(raw_state)
-        policy = _policy_from_trust_state(state)
         if (
             state["generation"] != 1
             or state["minimumWitnesses"] != 2
@@ -1058,7 +1046,7 @@ def load_persisted_quorum_policy(
         except QuorumPolicyStorageError as exc:
             raise WitnessQuorumError(str(exc)) from exc
         try:
-            result = db.rpc(
+            db.rpc(
                 "shine_ai_witness_quorum_policy_seal_v2",
                 {
                     "p_expected_generation": state["generation"],
@@ -1068,28 +1056,18 @@ def load_persisted_quorum_policy(
                     "p_storage_auth_tag": envelope["authTag"],
                 },
             ).execute()
-        except Exception as exc:
-            raise WitnessQuorumError(
-                "trust-witness-quorum-policy-seal-failed"
-            ) from exc
-        sealed = result.data if isinstance(result.data, dict) else {}
-        if sealed.get("status") not in {"sealed", "already_sealed"}:
-            raise WitnessQuorumError(
-                "trust-witness-quorum-policy-seal-unverified"
-            )
-        try:
             result = db.rpc(
-                "shine_ai_witness_quorum_policy_snapshot_v2",
+                "shine_ai_witness_quorum_policy_snapshot_v3",
                 {},
             ).execute()
         except Exception as exc:
             raise WitnessQuorumError(
-                "trust-witness-quorum-policy-snapshot-unavailable"
+                "trust-witness-quorum-policy-seal-failed"
             ) from exc
         payload = result.data if isinstance(result.data, dict) else {}
         status = str(payload.get("status") or "")
 
-    if status not in {"trusted", "already_trusted"}:
+    if status != "trusted":
         raise WitnessQuorumError(
             str(
                 payload.get("reason_code")
@@ -1099,20 +1077,17 @@ def load_persisted_quorum_policy(
 
     state = _project_policy_trust_state(payload.get("trust_state"))
     policy = _policy_from_trust_state(state)
-
-    # Layer 200 rotates only local storage authentication. Membership policy
-    # remains the certified generation-1 2-of-2 contract.
-    if (
-        state["generation"] != 1
-        or state["minimumWitnesses"] != 2
-        or state["acceptedWitnessIds"]
-        != sorted([FOUNDATION_WITNESS_ID, REDIS_WITNESS_ID])
-        or state["previousPolicySha256"] is not None
-        or state["policySha256"] != CERTIFIED_GENESIS_POLICY_SHA256
-    ):
-        raise WitnessQuorumError(
-            "trust-witness-quorum-policy-persisted-state-uncertified"
-        )
+    storage = _verify_or_rotate_policy_storage(
+        db,
+        payload,
+        state,
+        redis_client=redis_client,
+    )
+    acceptance = (
+        payload.get("acceptance")
+        if isinstance(payload.get("acceptance"), dict)
+        else {}
+    )
 
     candidate = _deployment_quorum_policy_candidate()
     if candidate is not None:
@@ -1130,22 +1105,97 @@ def load_persisted_quorum_policy(
                 "trust-witness-quorum-policy-generation-skip"
             )
         else:
-            raise WitnessQuorumError(
-                "trust-witness-quorum-policy-transition-unimplemented"
+            authorization = _authorize_policy_transition(
+                db,
+                policy,
+                candidate,
+                redis_client=redis_client,
+                foundation_post_impl=foundation_post_impl,
             )
+            next_state = _policy_storage_state_from_policy(candidate)
+            try:
+                envelope = create_policy_storage_envelope(next_state)
+                checkpoint = persist_policy_storage_checkpoint(
+                    next_state,
+                    redis_client=redis_client,
+                )
+            except QuorumPolicyStorageError as exc:
+                raise WitnessQuorumError(str(exc)) from exc
 
-    storage = _verify_or_rotate_policy_storage(
-        db,
-        payload,
-        state,
-        redis_client=redis_client,
-    )
+            try:
+                advanced = db.rpc(
+                    "shine_ai_witness_quorum_policy_advance_v3",
+                    {
+                        "p_expected_generation": policy["generation"],
+                        "p_expected_policy_sha256": policy["policySha256"],
+                        "p_next_generation": candidate["generation"],
+                        "p_next_minimum_witnesses":
+                            candidate["minimumWitnesses"],
+                        "p_next_accepted_witness_ids":
+                            candidate["acceptedWitnessIds"],
+                        "p_next_previous_policy_sha256":
+                            candidate["previousPolicySha256"],
+                        "p_next_policy_sha256": candidate["policySha256"],
+                        "p_authorizing_witness_ids":
+                            authorization["authorizing_witness_ids"],
+                        "p_authorization_sha256":
+                            authorization["authorization_sha256"],
+                        "p_state_sha256": envelope["stateSha256"],
+                        "p_storage_auth_key_id": envelope["authKeyId"],
+                        "p_storage_auth_tag": envelope["authTag"],
+                    },
+                ).execute()
+            except Exception as exc:
+                raise WitnessQuorumError(
+                    "trust-witness-quorum-policy-transition-commit-failed"
+                ) from exc
+
+            payload = (
+                advanced.data
+                if isinstance(advanced.data, dict)
+                else {}
+            )
+            if payload.get("status") != "trusted":
+                raise WitnessQuorumError(
+                    "trust-witness-quorum-policy-transition-unverified"
+                )
+            state = _project_policy_trust_state(
+                payload.get("trust_state")
+            )
+            policy = _policy_from_trust_state(state)
+            if policy != candidate:
+                raise WitnessQuorumError(
+                    "trust-witness-quorum-policy-transition-mismatch"
+                )
+            if checkpoint.get("mode") not in {"advanced", "refreshed"}:
+                raise WitnessQuorumError(
+                    "trust-witness-quorum-policy-checkpoint-transition-unverified"
+                )
+            storage = _verify_or_rotate_policy_storage(
+                db,
+                payload,
+                state,
+                redis_client=redis_client,
+            )
+            acceptance = (
+                payload.get("acceptance")
+                if isinstance(payload.get("acceptance"), dict)
+                else {}
+            )
 
     return {
         **policy,
         "policy_trust_persisted": True,
         "policy_trust_source": "project-l-supabase",
         "policy_trust_generation": state["generation"],
+        "policy_trust_acceptance_mode":
+            str(acceptance.get("mode") or "unknown"),
+        "policy_trust_authorization_count":
+            int(acceptance.get("authorizationCount") or 0),
+        "policy_trust_authorizing_witness_ids":
+            list(acceptance.get("authorizingWitnessIds") or []),
+        "policy_trust_authorization_sha256":
+            acceptance.get("authorizationSha256"),
         "policy_storage_authenticated": storage["authenticated"],
         "policy_storage_auth_key_id": storage["auth_key_id"],
         "policy_storage_state_sha256": storage["state_sha256"],
