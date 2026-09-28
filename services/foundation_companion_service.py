@@ -937,28 +937,163 @@ def store_delayed_synthesis_answer(
     request_id: str,
     packet_sha256: str,
     answer: str,
+    temporal_receipt: dict | None = None,
+    generated_at: str | None = None,
 ) -> dict:
     clean = str(answer or "").strip()
     if not clean or len(clean) > 50000:
         raise ValueError("delayed synthesis answer invalid")
+    if temporal_receipt is not None and not isinstance(temporal_receipt, dict):
+        raise ValueError("delayed synthesis temporal receipt invalid")
+    generated = str(generated_at or _utc_now())
+    try:
+        datetime.fromisoformat(generated.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError("delayed synthesis generation time invalid") from exc
+
     answer_sha = sha256(clean.encode("utf-8")).hexdigest()
     result = _rpc_data(
         db,
-        "companion_store_delayed_synthesis_answer_v1",
+        "companion_store_delayed_synthesis_answer_v2",
         {
             "p_user_id": _uuid(user_id),
             "p_request_id": _uuid(request_id),
             "p_packet_sha256": str(packet_sha256 or ""),
             "p_answer": clean,
             "p_answer_sha256": answer_sha,
+            "p_temporal_receipt": temporal_receipt,
+            "p_generated_at": generated,
         },
     )
     if not isinstance(result, dict) or result.get("stored") is not True:
         raise RuntimeError("delayed-synthesis-answer-store-failed")
     return {
         "answer_sha256": answer_sha,
+        "generated_at": str(result.get("generatedAt") or generated),
         "synthesis_status": str(result.get("synthesisStatus") or "ready"),
         "replayed": result.get("replayed") is True,
+    }
+
+
+def _completion_receipt(
+    *,
+    request_id: str,
+    source_conversation_id: str,
+    source_message_id: str,
+    generated_at: str,
+    answer_sha256: str,
+    packet_sha256: str,
+) -> dict:
+    body = {
+        "version": "1.0",
+        "status": "sealed",
+        "request_id": _uuid(request_id),
+        "source_conversation_id": str(source_conversation_id or "")[:180],
+        "source_message_id": str(source_message_id or "")[:180],
+        "answer_generated_at": str(generated_at or ""),
+        "final_answer_sha256": str(answer_sha256 or ""),
+        "result_packet_sha256": str(packet_sha256 or ""),
+    }
+    body["receipt_sha256"] = sha256(
+        json.dumps(
+            body,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    return body
+
+
+def _delayed_answer_freshness(db, temporal_receipt) -> dict:
+    checked_at = _utc_now()
+    if not isinstance(temporal_receipt, dict):
+        return {
+            "status": "not_tracked",
+            "checked_at": checked_at,
+            "tracking": "none",
+        }
+    from core.cognition.temporal_memory import snapshot_freshness
+    result = snapshot_freshness(db, temporal_receipt)
+    if not isinstance(result, dict):
+        result = {"status": "unavailable"}
+    return {
+        **result,
+        "checked_at": checked_at,
+        "tracking": (
+            "temporal_dependencies"
+            if temporal_receipt.get("status") == "checked"
+            else "unavailable"
+        ),
+    }
+
+
+def claim_delayed_completion(
+    db,
+    user_id: str,
+    *,
+    source_conversation_id: str | None = None,
+) -> dict:
+    owner_id = _uuid(user_id)
+    conversation_id = (
+        str(source_conversation_id).strip()
+        if source_conversation_id is not None
+        else None
+    )
+    if conversation_id is not None and not 1 <= len(conversation_id) <= 180:
+        raise ValueError("source conversation id invalid")
+
+    data = _rpc_data(
+        db,
+        "companion_claim_completion_event_v3",
+        {
+            "p_user_id": owner_id,
+            "p_source_conversation_id": conversation_id,
+        },
+    )
+    if not isinstance(data, dict):
+        raise RuntimeError("completion-claim-invalid")
+    if data.get("available") is not True:
+        return data
+
+    if conversation_id is not None and str(data.get("sourceConversationId") or "") != conversation_id:
+        raise RuntimeError("completion-conversation-binding-mismatch")
+
+    if data.get("eventType") != "retry-completed":
+        return data
+
+    answer = str(data.get("finalAnswer") or "").strip()
+    answer_sha = str(data.get("finalAnswerSha256") or "")
+    packet_sha = str(data.get("resultPacketSha256") or "")
+    generated_at = str(data.get("finalAnswerGeneratedAt") or "")
+    if (
+        not answer
+        or len(answer) > 50000
+        or sha256(answer.encode("utf-8")).hexdigest() != answer_sha
+        or len(packet_sha) != 64
+        or any(ch not in "0123456789abcdef" for ch in packet_sha)
+        or not generated_at
+    ):
+        raise RuntimeError("completion-answer-integrity-mismatch")
+
+    state = delayed_synthesis_state(
+        db,
+        user_id=owner_id,
+        request_id=str(data.get("requestId") or ""),
+    )
+    freshness = _delayed_answer_freshness(db, state.get("temporalReceipt"))
+    receipt = _completion_receipt(
+        request_id=str(data.get("requestId") or ""),
+        source_conversation_id=str(data.get("sourceConversationId") or ""),
+        source_message_id=str(data.get("sourceMessageId") or ""),
+        generated_at=generated_at,
+        answer_sha256=answer_sha,
+        packet_sha256=packet_sha,
+    )
+    return {
+        **data,
+        "completionReceipt": receipt,
+        "freshness": freshness,
     }
 
 
@@ -968,44 +1103,41 @@ def list_delayed_completion_history(
     *,
     limit: int = 100,
 ) -> dict:
-    """Return only integrity-verified delayed L answers for owner recovery."""
+    """Return integrity-verified point-in-time delayed L answers for recovery."""
     owner_id = _uuid(user_id)
     if not isinstance(limit, int) or isinstance(limit, bool) or limit < 1 or limit > 100:
         raise ValueError("delayed completion history limit invalid")
 
-    result = (
-        db.table("companion_foundation_pending_jobs")
-        .select(
-            "job_id,source_conversation_id,source_message_id,request_text,"
-            "status,completed_at,updated_at,final_result_sha256,"
-            "final_answer,final_answer_sha256,synthesis_status"
-        )
-        .eq("user_id", owner_id)
-        .eq("status", "completed")
-        .eq("synthesis_status", "ready")
-        .order("updated_at", desc=True)
-        .limit(limit)
-        .execute()
+    payload = _rpc_data(
+        db,
+        "companion_delayed_completion_history_v1",
+        {"p_user_id": owner_id, "p_limit": limit},
     )
-    rows = getattr(result, "data", None)
-    if not isinstance(rows, list):
+    if (
+        not isinstance(payload, dict)
+        or payload.get("status") != "ok"
+        or not isinstance(payload.get("items"), list)
+    ):
         raise RuntimeError("delayed-completion-history-unavailable")
 
     items = []
     rejected = 0
-    for row in rows:
+    for row in payload["items"]:
         if not isinstance(row, dict):
             rejected += 1
             continue
         try:
-            request_id = _uuid(row.get("job_id"))
+            request_id = _uuid(row.get("requestId"))
         except Exception:
             rejected += 1
             continue
-        answer = row.get("final_answer")
-        declared_answer_sha = str(row.get("final_answer_sha256") or "")
-        packet_sha = str(row.get("final_result_sha256") or "")
-        request_text = str(row.get("request_text") or "").strip()
+        answer = row.get("finalAnswer")
+        declared_answer_sha = str(row.get("finalAnswerSha256") or "")
+        packet_sha = str(row.get("packetSha256") or "")
+        generated_at = str(row.get("finalAnswerGeneratedAt") or "")
+        request_text = str(row.get("requestText") or "").strip()
+        source_conversation_id = str(row.get("sourceConversationId") or "")[:180]
+        source_message_id = str(row.get("sourceMessageId") or "")[:180]
         if (
             not isinstance(answer, str)
             or not answer.strip()
@@ -1015,34 +1147,43 @@ def list_delayed_completion_history(
             or any(ch not in "0123456789abcdef" for ch in declared_answer_sha)
             or len(packet_sha) != 64
             or any(ch not in "0123456789abcdef" for ch in packet_sha)
+            or not generated_at
         ):
             rejected += 1
             continue
         clean_answer = answer.strip()
-        actual_answer_sha = sha256(clean_answer.encode("utf-8")).hexdigest()
-        if actual_answer_sha != declared_answer_sha:
+        if sha256(clean_answer.encode("utf-8")).hexdigest() != declared_answer_sha:
             rejected += 1
             continue
+
+        receipt = _completion_receipt(
+            request_id=request_id,
+            source_conversation_id=source_conversation_id,
+            source_message_id=source_message_id,
+            generated_at=generated_at,
+            answer_sha256=declared_answer_sha,
+            packet_sha256=packet_sha,
+        )
+        freshness = _delayed_answer_freshness(db, row.get("temporalReceipt"))
         items.append({
             "request_id": request_id,
-            "source_conversation_id": (
-                str(row.get("source_conversation_id") or "")[:180]
-            ),
-            "source_message_id": (
-                str(row.get("source_message_id") or "")[:180]
-            ),
+            "source_conversation_id": source_conversation_id,
+            "source_message_id": source_message_id,
             "request_text": request_text,
             "final_answer": clean_answer,
             "final_answer_sha256": declared_answer_sha,
             "result_packet_sha256": packet_sha,
-            "completed_at": row.get("completed_at"),
-            "updated_at": row.get("updated_at"),
+            "answer_generated_at": generated_at,
+            "completed_at": row.get("completedAt"),
+            "updated_at": row.get("updatedAt"),
+            "completion_receipt": receipt,
+            "freshness": freshness,
             "integrity": "verified",
         })
 
     return {
         "status": "ok",
-        "version": "1.0",
+        "version": "2.0",
         "items": items,
         "returned_count": len(items),
         "rejected_count": rejected,
