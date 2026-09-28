@@ -1330,6 +1330,221 @@ def _delayed_answer_freshness(db, temporal_receipt) -> dict:
     }
 
 
+def foundation_concierge_jobs_as_user(
+    db,
+    user_id: str,
+    *,
+    authorization: str,
+    limit: int = 50,
+    foundation_url: str | None = None,
+    timeout_seconds: float = 12.0,
+    get_impl=None,
+) -> dict:
+    """Read Foundation task-centre history with cancellation receipts.
+
+    Foundation deliberately excludes conversation text, specialist inputs and
+    specialist outputs. Project L additionally projects only workflow metadata
+    and accepts a cancellation receipt only when Foundation verified its stored
+    SHA-256 at read time.
+    """
+    _uuid(user_id)
+    if not isinstance(limit, int) or isinstance(limit, bool) or limit < 1 or limit > 100:
+        raise ValueError("Concierge job history limit invalid")
+    auth = str(authorization or "")
+    if not auth.startswith("Bearer ") or len(auth) < 40:
+        raise ValueError("valid user authorization required")
+
+    get = get_impl or httpx.get
+    try:
+        response = get(
+            _foundation_url(foundation_url)
+            + "/v1/concierge/jobs?limit="
+            + str(limit),
+            headers={"Authorization": auth},
+            timeout=timeout_seconds,
+            follow_redirects=False,
+        )
+        body = _response_json(response)
+    except (httpx.HTTPError, RuntimeError) as exc:
+        raise RuntimeError("concierge-task-centre-unavailable") from exc
+
+    if response.status_code != 200 or body.get("status") != "ok":
+        return {
+            "status": str(body.get("status") or "unavailable"),
+            "reason_code": str(body.get("reasonCode") or "concierge-task-centre-unavailable"),
+            "items": [],
+        }
+
+    privacy = body.get("privacy")
+    if not isinstance(privacy, dict) or any(
+        privacy.get(key) is not False
+        for key in (
+            "conversationTextIncluded",
+            "specialistInputIncluded",
+            "specialistOutputIncluded",
+        )
+    ):
+        raise RuntimeError("concierge-task-centre-privacy-contract-invalid")
+
+    raw_items = body.get("items")
+    if not isinstance(raw_items, list) or len(raw_items) > limit:
+        raise RuntimeError("concierge-task-centre-response-invalid")
+
+    def safe_capabilities(value):
+        if not isinstance(value, list) or len(value) > 20:
+            return []
+        return [str(item)[:128] for item in value if str(item or "")][:20]
+
+    items = []
+    rejected_receipts = 0
+    for raw in raw_items:
+        if not isinstance(raw, dict):
+            continue
+        try:
+            request_id = _uuid(raw.get("requestId"))
+        except Exception:
+            continue
+        status = str(raw.get("status") or "")[:40]
+        if status not in {
+            "planned", "ready", "running", "partial", "retry-scheduled",
+            "retry-running", "completed", "failed", "blocked", "cancelled",
+        }:
+            continue
+
+        receipt = raw.get("cancellationReceipt")
+        receipt_integrity = str(raw.get("cancellationReceiptIntegrity") or "")
+        safe_receipt = None
+        if receipt is not None:
+            valid = (
+                isinstance(receipt, dict)
+                and receipt_integrity == "verified"
+                and receipt.get("integrity") == "verified"
+                and receipt.get("cancellationReceipt")
+                    == "shine-foundation/concierge-cancellation-receipt-v1"
+                and receipt.get("schemaVersion") == "1.0.0"
+                and str(receipt.get("requestId") or "") == request_id
+                and isinstance(receipt.get("progress"), dict)
+                and isinstance(receipt.get("steps"), list)
+                and len(receipt.get("steps")) <= 20
+                and isinstance(receipt.get("completedCapabilities"), list)
+                and isinstance(receipt.get("pendingCapabilities"), list)
+                and len(receipt.get("completedCapabilities")) <= 20
+                and len(receipt.get("pendingCapabilities")) <= 20
+                and len(str(receipt.get("receiptSha256") or "")) == 64
+                and all(
+                    ch in "0123456789abcdef"
+                    for ch in str(receipt.get("receiptSha256") or "")
+                )
+            )
+            if valid:
+                progress = receipt["progress"]
+                total = progress.get("totalSteps")
+                completed = progress.get("completedBeforeCancellation")
+                pending = progress.get("pendingAtCancellation")
+                valid = (
+                    isinstance(total, int) and not isinstance(total, bool)
+                    and isinstance(completed, int) and not isinstance(completed, bool)
+                    and isinstance(pending, int) and not isinstance(pending, bool)
+                    and total >= 0 and completed >= 0 and pending >= 0
+                    and completed + pending == total
+                )
+            if valid:
+                safe_receipt = {
+                    "version": "1.0",
+                    "request_id": request_id,
+                    "reason_code": str(receipt.get("reasonCode") or "")[:160],
+                    "cancelled_at": receipt.get("cancelledAt"),
+                    "superseded_by_request_id": (
+                        str(receipt.get("supersededByRequestId"))
+                        if receipt.get("supersededByRequestId") is not None
+                        else None
+                    ),
+                    "progress": {
+                        "total_steps": total,
+                        "completed_before_cancellation": completed,
+                        "pending_at_cancellation": pending,
+                    },
+                    "completed_capabilities": safe_capabilities(
+                        receipt.get("completedCapabilities")
+                    ),
+                    "pending_capabilities": safe_capabilities(
+                        receipt.get("pendingCapabilities")
+                    ),
+                    "steps": [
+                        {
+                            "step_id": str(step.get("stepId") or "")[:64],
+                            "capability_id": str(step.get("capabilityId") or "")[:128],
+                            "app_id": str(step.get("appId") or "")[:128],
+                            "completed_before_cancellation": (
+                                step.get("completedBeforeCancellation") is True
+                            ),
+                            "completed_at": step.get("completedAt"),
+                        }
+                        for step in receipt.get("steps")
+                        if isinstance(step, dict)
+                    ][:20],
+                    "receipt_sha256": str(receipt.get("receiptSha256")),
+                    "integrity": "verified",
+                }
+            else:
+                rejected_receipts += 1
+
+        progress = raw.get("progress") if isinstance(raw.get("progress"), dict) else {}
+        items.append({
+            "request_id": request_id,
+            "client_id": str(raw.get("clientId") or "")[:128],
+            "client_name": str(raw.get("clientName") or "")[:160],
+            "purpose": str(raw.get("purpose") or "")[:160],
+            "requested_at": raw.get("requestedAt"),
+            "status": status,
+            "requested_capabilities": safe_capabilities(
+                raw.get("requestedCapabilities")
+            ),
+            "progress": {
+                "total_steps": int(progress.get("totalSteps") or 0),
+                "historically_completed_steps": int(
+                    progress.get("historicallyCompletedSteps") or 0
+                ),
+            },
+            "waiting_on": str(raw.get("waitingOn") or "")[:40],
+            "attention_required": raw.get("attentionRequired") is True,
+            "attention_reason": str(raw.get("attentionReason") or "")[:160],
+            "next_action": (
+                str(raw.get("nextAction"))[:80]
+                if raw.get("nextAction") is not None
+                else None
+            ),
+            "can_cancel": raw.get("canCancel") is True,
+            "superseded_by_request_id": (
+                str(raw.get("supersededByRequestId"))
+                if raw.get("supersededByRequestId") is not None
+                else None
+            ),
+            "cancellation_receipt_integrity": (
+                receipt_integrity or None
+            ),
+            "cancellation_receipt": safe_receipt,
+        })
+
+    return {
+        "status": "ok",
+        "version": "1.0",
+        "privacy": {
+            "conversation_text_included": False,
+            "specialist_input_included": False,
+            "specialist_output_included": False,
+        },
+        "receipt_contract": {
+            "version": "shine-foundation/concierge-cancellation-receipt-v1",
+            "read_time_verification": True,
+        },
+        "summary": body.get("summary") if isinstance(body.get("summary"), dict) else {},
+        "items": items,
+        "returned_count": len(items),
+        "rejected_receipt_count": rejected_receipts,
+    }
+
+
 def list_pending_concierge_jobs(
     db,
     user_id: str,
