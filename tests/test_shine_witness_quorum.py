@@ -137,6 +137,10 @@ def foundation_receipt():
         "auth_key_id": "foundation-witness-v1",
         "mode": "existing-witness",
         "independent_retention": "foundation-supabase",
+        "history_status": "verified",
+        "chain_version": 1,
+        "previous_chain_tag": "6" * 64,
+        "chain_tag": "7" * 64,
     }
 
 
@@ -275,6 +279,14 @@ def test_quorum_requires_two_distinct_matching_witnesses(monkeypatch):
         "foundation-supabase",
         "railway-redis-volume",
     ]
+    assert result["foundation_chain"] == {
+        "status": "verified",
+        "witness_id": "foundation-project-l",
+        "chain_version": 1,
+        "sequence": HEAD["sequence"],
+        "previous_chain_tag": "6" * 64,
+        "chain_tag": "7" * 64,
+    }
     assert "authTag" not in json.dumps(result)
 
 
@@ -345,6 +357,45 @@ def test_quorum_fails_when_foundation_witness_is_unavailable(monkeypatch):
     with pytest.raises(
         quorum.WitnessQuorumError,
         match="foundation-witness-unavailable",
+    ):
+        quorum.ensure_trust_witness_quorum(
+            object(),
+            {"state": "unused"},
+        )
+
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("history_status", "unavailable"),
+        ("chain_version", 2),
+        ("previous_chain_tag", "bad"),
+        ("chain_tag", "bad"),
+    ],
+)
+def test_quorum_rejects_unverified_foundation_chain(
+    monkeypatch,
+    field,
+    value,
+):
+    foundation = foundation_receipt()
+    foundation[field] = value
+
+    monkeypatch.setattr(
+        quorum,
+        "ensure_redis_trust_witness",
+        lambda *_args, **_kwargs: redis_receipt(),
+    )
+    monkeypatch.setattr(
+        quorum,
+        "ensure_foundation_trust_witness",
+        lambda *_args, **_kwargs: foundation,
+    )
+
+    with pytest.raises(
+        quorum.WitnessQuorumError,
+        match="trust-witness-foundation-chain-invalid",
     ):
         quorum.ensure_trust_witness_quorum(
             object(),
