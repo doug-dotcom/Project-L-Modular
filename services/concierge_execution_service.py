@@ -73,6 +73,7 @@ def execute_concierge_route(
     post_impl=None,
     source_conversation_id: str | None = None,
     source_message_id: str | None = None,
+    request_text: str | None = None,
 ) -> dict:
     """Execute a single- or multi-specialist route only through Foundation."""
     plan = _plan_from_route(route)
@@ -94,6 +95,7 @@ def execute_concierge_route(
         post_impl=post_impl,
         source_conversation_id=source_conversation_id,
         source_message_id=source_message_id,
+        request_text=request_text,
     )
 
     local_state = "unchanged"
