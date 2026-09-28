@@ -22,6 +22,7 @@ SIGNATURE_B64_RE = re.compile(r"^[A-Za-z0-9+/]{86}==$")
 VERIFICATION_VERSION = "shine-ai/decision-trace-verification-v1"
 AUTHENTICITY_VERSION = "shine-ai/decision-trace-authenticity-v1"
 CONTINUITY_VERSION = "shine-ai/decision-trace-keyset-continuity-v1"
+PERSISTED_TRUST_VERSION = "shine-ai/persisted-trace-trust-v1"
 SIGNATURE_DOMAIN = "shine-ai:decision-trace:v1"
 TRANSITION_DOMAIN = "shine-ai:decision-trace-keyset-transition:v1"
 
@@ -526,6 +527,71 @@ def verify_decision_trace_authenticity(
     }
 
 
+def validate_persisted_trust_state(state: Any) -> dict[str, Any]:
+    """Revalidate the durable client trust anchor before it can authorise anything."""
+    if not isinstance(state, dict):
+        return {
+            "version": PERSISTED_TRUST_VERSION,
+            "status": "invalid",
+            "valid": False,
+            "reason_code": "persisted-trust-state-missing",
+        }
+
+    generation = state.get("generation")
+    keyset_sha256 = state.get("keyset_sha256")
+    trusted_keyset = state.get("trusted_keyset")
+    source = state.get("source")
+    if (
+        not isinstance(generation, int)
+        or generation < 1
+        or not isinstance(keyset_sha256, str)
+        or SHA256_RE.fullmatch(keyset_sha256) is None
+        or not isinstance(trusted_keyset, dict)
+        or source not in {"genesis-pin", "signed-transition", "out-of-band-pin"}
+    ):
+        return {
+            "version": PERSISTED_TRUST_VERSION,
+            "status": "invalid",
+            "valid": False,
+            "reason_code": "persisted-trust-state-shape-invalid",
+        }
+
+    if (
+        trusted_keyset.get("generation") != generation
+        or trusted_keyset.get("keyset_sha256") != keyset_sha256
+    ):
+        return {
+            "version": PERSISTED_TRUST_VERSION,
+            "status": "invalid",
+            "valid": False,
+            "reason_code": "persisted-trust-state-binding-mismatch",
+            "generation": generation,
+            "keyset_sha256": keyset_sha256,
+        }
+
+    recomputed = digest_verification_keyset(trusted_keyset)
+    if recomputed is None or recomputed != keyset_sha256:
+        return {
+            "version": PERSISTED_TRUST_VERSION,
+            "status": "invalid",
+            "valid": False,
+            "reason_code": "persisted-trust-state-fingerprint-invalid",
+            "generation": generation,
+            "keyset_sha256": keyset_sha256,
+        }
+
+    return {
+        "version": PERSISTED_TRUST_VERSION,
+        "status": "valid",
+        "valid": True,
+        "generation": generation,
+        "keyset_sha256": keyset_sha256,
+        "source": source,
+        "active_key_id": trusted_keyset.get("active_key_id"),
+        "trusted_key_count": len(trusted_keyset.get("verification_keys") or {}),
+    }
+
+
 def verify_keyset_transition(
     previous_keyset: Any,
     next_keyset: Any,
@@ -694,10 +760,12 @@ def verify_keyset_transition(
 __all__ = [
     "AUTHENTICITY_VERSION",
     "CONTINUITY_VERSION",
+    "PERSISTED_TRUST_VERSION",
     "VERIFICATION_VERSION",
     "digest_verification_keyset",
     "recompute_decision_trace",
     "verify_decision_trace",
     "verify_decision_trace_authenticity",
+    "validate_persisted_trust_state",
     "verify_keyset_transition",
 ]
