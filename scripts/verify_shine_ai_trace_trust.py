@@ -92,6 +92,31 @@ def main() -> None:
             "foundation-chain-unverified"
         )
 
+    chain_checkpoint = (
+        quorum.get("foundation_chain_checkpoint")
+        if isinstance(
+            quorum.get("foundation_chain_checkpoint"),
+            dict,
+        )
+        else {}
+    )
+    if (
+        chain_checkpoint.get("status") != "verified"
+        or chain_checkpoint.get("checkpoint_version") != 1
+        or chain_checkpoint.get("witness_id") != "foundation-project-l"
+        or chain_checkpoint.get("chain_version") != 1
+        or chain_checkpoint.get("sequence") != chain.get("sequence")
+        or chain_checkpoint.get("chain_tag") != chain.get("chain_tag")
+        or chain_checkpoint.get("previous_chain_tag")
+            != chain.get("previous_chain_tag")
+        or chain_checkpoint.get("storage")
+            != "project-l-supabase-vault-hmac"
+    ):
+        raise SystemExit(
+            "Project L Shine-AI trace trust smoke: FAIL "
+            "foundation-chain-checkpoint-unverified"
+        )
+
     storage = sealed.get("storage") if isinstance(sealed.get("storage"), dict) else {}
     print(
         "Project L Shine-AI trace trust smoke: PASS "
@@ -103,7 +128,8 @@ def main() -> None:
         f"quorum={quorum.get('verified_witness_count')}/"
         f"{quorum.get('minimum_witnesses')} "
         f"policy=persisted-g{quorum.get('policy_trust_generation')} "
-        f"foundation_chain=verified"
+        f"foundation_chain=verified "
+        f"chain_checkpoint=verified"
     )
 
 

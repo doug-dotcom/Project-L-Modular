@@ -411,6 +411,24 @@ def test_quorum_requires_two_distinct_matching_witnesses(monkeypatch):
         "ensure_foundation_trust_witness",
         lambda *_args, **_kwargs: foundation_receipt(),
     )
+    checkpoint_receipt = {
+        "status": "verified",
+        "checkpoint_version": 1,
+        "witness_id": "foundation-project-l",
+        "chain_version": 1,
+        "sequence": HEAD["sequence"],
+        "previous_chain_tag": "6" * 64,
+        "chain_tag": "7" * 64,
+        "auth_key_id": "project-l-foundation-chain-checkpoint-v1",
+        "storage": "project-l-supabase-vault-hmac",
+        "ledger_rows": HEAD["sequence"],
+        "mode": "existing",
+    }
+    monkeypatch.setattr(
+        quorum,
+        "ensure_foundation_chain_checkpoint",
+        lambda *_args, **_kwargs: checkpoint_receipt,
+    )
 
     result = quorum.ensure_trust_witness_quorum(
         FakePolicyDB(),
@@ -440,6 +458,7 @@ def test_quorum_requires_two_distinct_matching_witnesses(monkeypatch):
         "previous_chain_tag": "6" * 64,
         "chain_tag": "7" * 64,
     }
+    assert result["foundation_chain_checkpoint"] == checkpoint_receipt
     assert "authTag" not in json.dumps(result)
 
 
@@ -549,6 +568,40 @@ def test_quorum_rejects_unverified_foundation_chain(
     with pytest.raises(
         quorum.WitnessQuorumError,
         match="trust-witness-foundation-chain-invalid",
+    ):
+        quorum.ensure_trust_witness_quorum(
+            FakePolicyDB(),
+            {"state": "unused"},
+        )
+
+
+
+def test_quorum_fails_closed_when_chain_checkpoint_rejects(monkeypatch):
+    monkeypatch.setattr(
+        quorum,
+        "ensure_redis_trust_witness",
+        lambda *_args, **_kwargs: redis_receipt(),
+    )
+    monkeypatch.setattr(
+        quorum,
+        "ensure_foundation_trust_witness",
+        lambda *_args, **_kwargs: foundation_receipt(),
+    )
+
+    def fail(*_args, **_kwargs):
+        raise quorum.FoundationChainCheckpointError(
+            "foundation-chain-checkpoint-ahead"
+        )
+
+    monkeypatch.setattr(
+        quorum,
+        "ensure_foundation_chain_checkpoint",
+        fail,
+    )
+
+    with pytest.raises(
+        quorum.WitnessQuorumError,
+        match="foundation-chain-checkpoint-ahead",
     ):
         quorum.ensure_trust_witness_quorum(
             FakePolicyDB(),

@@ -19,6 +19,10 @@ from typing import Any
 
 from redis.exceptions import RedisError
 
+from services.foundation_chain_checkpoint import (
+    FoundationChainCheckpointError,
+    ensure_foundation_chain_checkpoint,
+)
 from services.foundation_trust_witness import (
     FoundationWitnessError,
     ensure_foundation_trust_witness,
@@ -733,6 +737,14 @@ def ensure_trust_witness_quorum(
             "trust-witness-foundation-chain-sequence-mismatch"
         )
 
+    try:
+        foundation_chain_checkpoint = ensure_foundation_chain_checkpoint(
+            db,
+            foundation_chain,
+        )
+    except FoundationChainCheckpointError as exc:
+        raise WitnessQuorumError(str(exc)) from exc
+
     return {
         "status": "verified",
         "policy_generation": policy["generation"],
@@ -753,6 +765,7 @@ def ensure_trust_witness_quorum(
             for item in sorted(by_id)
         ],
         "foundation_chain": foundation_chain,
+        "foundation_chain_checkpoint": foundation_chain_checkpoint,
     }
 
 
