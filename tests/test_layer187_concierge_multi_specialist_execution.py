@@ -31,6 +31,7 @@ class Query:
         self.mode = mode
         self.payload = payload
         self.filters = {}
+        self.not_filters = {}
 
     def select(self, *args):
         return self
@@ -44,6 +45,10 @@ class Query:
         return self
 
     def order(self, *args, **kwargs):
+        return self
+
+    def neq(self, key, value):
+        self.not_filters[key] = value
         return self
 
     def limit(self, value):
@@ -73,7 +78,10 @@ class Query:
         if self.mode == "update":
             changed = []
             for row in rows:
-                if all(str(row.get(k)) == str(v) for k, v in self.filters.items()):
+                if (
+                    all(str(row.get(k)) == str(v) for k, v in self.filters.items())
+                    and all(str(row.get(k)) != str(v) for k, v in self.not_filters.items())
+                ):
                     row.update(self.payload)
                     changed.append(row.copy())
             return Result(changed)
