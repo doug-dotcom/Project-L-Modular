@@ -2,16 +2,17 @@ import os
 import re
 import secrets
 from typing import Literal
+from uuid import UUID
 
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, Field
-
-from agents.rhee.rhee_v3 import build_context_packet as build_rhee_packet
+from supabase import create_client
 
 router = APIRouter(prefix="/internal/shine-ai", tags=["internal-shine-ai"])
 
-# Project L is currently a single-owner corpus. Every consumer gets an explicit,
-# narrow scope allow-list; adding an app never inherits another app's scopes.
+# Every consumer gets an explicit narrow scope allow-list. Episodic remains in
+# the Dive request contract for compatibility, but it is not returned until
+# legacy episodic rows have explicit owner bindings.
 _APP_SCOPE_POLICY: dict[str, frozenset[str]] = {
     "shine-dive": frozenset({"episodic", "sport", "general"}),
     "daash": frozenset({"sport"}),
@@ -22,8 +23,16 @@ _BROAD_RECALL_RE = re.compile(
     r"entire memory|whole memory|complete history|full history|list all|find the rest)\b",
     re.IGNORECASE,
 )
+_TOKEN_RE = re.compile(r"[a-z0-9]+", re.IGNORECASE)
+_STOP_TERMS = {
+    "about", "and", "are", "can", "completed", "could", "did", "does", "for",
+    "from", "have", "how", "into", "know", "more", "please", "that", "the",
+    "their", "them", "this", "was", "were", "what", "when", "where", "which",
+    "who", "why", "with", "would", "you", "your",
+}
 
 Priority = Literal["high", "normal", "low"]
+_db_client = None
 
 
 class MemoryRetrieveRequest(BaseModel):
@@ -64,36 +73,23 @@ def _configured_owner(service_token: str) -> str:
             status_code=503,
             detail="Project L's Shine-AI memory bridge is misconfigured.",
         )
-
     if not service_token or not secrets.compare_digest(service_token, expected_token):
         raise HTTPException(status_code=401, detail="Invalid service credentials.")
-
-    return owner_id
-
-
-def _scope_for_source(source: str) -> str | None:
-    table = str(source or "").split(":", 1)[0].strip().lower()
-
-    if table == "episodic_memories":
-        return "episodic"
-    if table == "identity_anchors":
-        return "identity"
-    if table.startswith("memory_"):
-        return table.removeprefix("memory_")
-    return None
-
-
-def _priority_for_role(role: str) -> Priority:
-    role = str(role or "").strip().lower()
-    if role == "user":
-        return "high"
-    if role in {"assistant", "model"}:
-        return "low"
-    return "normal"
+    try:
+        return str(UUID(owner_id))
+    except (TypeError, ValueError, AttributeError) as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Project L's memory owner binding is invalid.",
+        ) from exc
 
 
 def _validate_access(request: MemoryRetrieveRequest, owner_id: str) -> frozenset[str]:
-    if request.user_id != owner_id:
+    try:
+        request_owner = str(UUID(request.user_id))
+    except (TypeError, ValueError, AttributeError):
+        raise HTTPException(status_code=403, detail="Memory owner mismatch.") from None
+    if request_owner != owner_id:
         raise HTTPException(status_code=403, detail="Memory owner mismatch.")
 
     allowed_scopes = _APP_SCOPE_POLICY.get(request.app)
@@ -113,8 +109,135 @@ def _validate_access(request: MemoryRetrieveRequest, owner_id: str) -> frozenset
             status_code=422,
             detail="The service memory bridge only supports bounded targeted recall.",
         )
-
     return frozenset(requested)
+
+
+def _database():
+    global _db_client
+    if _db_client is not None:
+        return _db_client
+    url = os.getenv("SUPABASE_URL", "").strip()
+    key = (
+        os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+        or os.getenv("SUPABASE_KEY", "").strip()
+    )
+    if not url or not key:
+        raise HTTPException(
+            status_code=503,
+            detail="Project L owner-scoped retrieval is not configured.",
+        )
+    _db_client = create_client(url, key)
+    return _db_client
+
+
+def _query_terms(query: str) -> list[str]:
+    terms: list[str] = []
+    seen: set[str] = set()
+    for token in _TOKEN_RE.findall(query.lower()):
+        if len(token) < 2 or token in _STOP_TERMS or token in seen:
+            continue
+        seen.add(token)
+        terms.append(token)
+        if len(terms) >= 24:
+            break
+    return terms
+
+
+def _owner_context(owner_id: str, query: str, limit: int) -> dict:
+    terms = _query_terms(query)
+    if not terms:
+        return {
+            "status": "ok",
+            "matches": [],
+            "returnedCount": 0,
+            "scope": {"ownerBound": True},
+        }
+    try:
+        result = _database().rpc(
+            "project_l_memory_context_service_v1",
+            {
+                "p_user": owner_id,
+                "p_terms": terms,
+                "p_limit": min(max(int(limit), 1), 6),
+                "p_char_budget": min(12000, max(2400, int(limit) * 1800)),
+            },
+        ).execute()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Project L owner-scoped retrieval is temporarily unavailable.",
+        ) from exc
+
+    data = result.data
+    if isinstance(data, list) and len(data) == 1 and isinstance(data[0], dict):
+        data = data[0]
+    if not isinstance(data, dict):
+        raise HTTPException(
+            status_code=503,
+            detail="Project L owner-scoped retrieval returned an invalid payload.",
+        )
+    if data.get("status") == "no_scope":
+        raise HTTPException(
+            status_code=503,
+            detail="Project L owner-scoped retrieval has no active permission scope.",
+        )
+    return data
+
+
+def _priority(item: dict) -> Priority:
+    authority = item.get("authority") if isinstance(item.get("authority"), dict) else {}
+    authority_class = str(authority.get("class") or "")
+    if authority_class in {"user_confirmed_correction", "direct_user_promoted_memory"}:
+        return "high"
+    if authority_class == "assistant_derived_promoted_memory":
+        return "low"
+    return "normal"
+
+
+def _records(
+    context: dict,
+    requested_scopes: frozenset[str],
+    limit: int,
+) -> list[MemoryRecordResponse]:
+    rows = context.get("matches")
+    if not isinstance(rows, list):
+        raise HTTPException(
+            status_code=503,
+            detail="Project L owner-scoped retrieval returned invalid records.",
+        )
+
+    records: list[MemoryRecordResponse] = []
+    for item in rows:
+        if not isinstance(item, dict):
+            continue
+        domain = str(item.get("domain") or "").strip().lower()
+        if domain not in requested_scopes:
+            continue
+
+        text = str(item.get("content") or "").strip()
+        provenance = (
+            item.get("provenance")
+            if isinstance(item.get("provenance"), dict)
+            else {}
+        )
+        source_table = str(provenance.get("sourceTable") or "").strip()
+        source_id = str(provenance.get("sourceId") or item.get("id") or "").strip()
+        source_role = str(provenance.get("sourceRole") or "unknown").strip().lower()
+        if not text or not source_table or not source_id:
+            continue
+
+        record_id = f"{source_table}:{source_id}"[:80]
+        records.append(
+            MemoryRecordResponse(
+                id=record_id,
+                text=text[:1800],
+                tags=[domain, source_role or "unknown", "owner-scoped-v2"],
+                priority=_priority(item),
+            )
+        )
+        if len(records) >= limit:
+            break
+    return records
 
 
 @router.post("/memory/retrieve", response_model=MemoryRetrieveResponse)
@@ -124,74 +247,38 @@ def retrieve_memory(
 ) -> MemoryRetrieveResponse:
     owner_id = _configured_owner(x_shine_service_token)
     requested_scopes = _validate_access(request, owner_id)
+    context = _owner_context(owner_id, request.query, request.limit)
+    records = _records(context, requested_scopes, request.limit)
 
-    try:
-        packet = build_rhee_packet(request.query)
-    except Exception as exc:
-        raise HTTPException(
-            status_code=503,
-            detail="Project L retrieval is temporarily unavailable.",
-        ) from exc
-
-    if not isinstance(packet, dict):
-        raise HTTPException(status_code=503, detail="Project L returned an invalid retrieval packet.")
-
-    evidence = packet.get("evidence") or []
-    if not isinstance(evidence, list):
-        raise HTTPException(status_code=503, detail="Project L returned invalid evidence.")
-
-    records: list[MemoryRecordResponse] = []
-    seen_sources: set[str] = set()
-    seen_text: set[str] = set()
-
-    for item in evidence:
-        if not isinstance(item, dict):
-            continue
-
-        source = str(item.get("source") or "").strip()
-        scope = _scope_for_source(source)
-        if not source or scope not in requested_scopes:
-            continue
-
-        text = str(item.get("quote_source") or "").strip()
-        if not text:
-            continue
-
-        text = text[:1_800]
-        fingerprint = " ".join(text.lower().split())
-        if source in seen_sources or fingerprint in seen_text:
-            continue
-
-        seen_sources.add(source)
-        seen_text.add(fingerprint)
-
-        role = str(item.get("role") or "").strip().lower()
-        records.append(
-            MemoryRecordResponse(
-                id=source[:80],
-                text=text,
-                tags=[scope, role or "unknown", "rhee"],
-                priority=_priority_for_role(role),
-            )
-        )
-        if len(records) >= request.limit:
-            break
-
-    recall_plan = packet.get("recall_plan")
-    recall_status = recall_plan.get("status") if isinstance(recall_plan, dict) else None
+    unavailable_scopes = sorted(
+        scope for scope in requested_scopes
+        if scope == "episodic"
+    )
+    scope_receipt = context.get("scope") if isinstance(context.get("scope"), dict) else {}
+    compression = (
+        context.get("compression")
+        if isinstance(context.get("compression"), dict)
+        else {}
+    )
 
     return MemoryRetrieveResponse(
         source="project-l",
-        engine=str(packet.get("engine") or "rhee"),
-        version=str(packet.get("version") or "unknown"),
-        recall_active=bool(packet.get("recall_active")),
+        engine="project-l-memory-context-v2",
+        version="2.0",
+        recall_active=bool(records),
         records=records,
         receipt={
-            "status": recall_status or "unknown",
+            "status": str(context.get("status") or "unknown"),
             "requested_scopes": sorted(requested_scopes),
-            "evidence_considered": len(evidence),
+            "unavailable_scopes": unavailable_scopes,
             "records_returned": len(records),
+            "owner_bound": scope_receipt.get("ownerBound") is True,
+            "permission_scoped": True,
+            "quarantine_excluded": scope_receipt.get("quarantineExcluded") is True,
+            "corrections_preferred": scope_receipt.get("correctionsPreferred") is True,
+            "compression": compression,
             "bounded": True,
             "read_only": True,
+            "legacy_global_search_used": False,
         },
     )
