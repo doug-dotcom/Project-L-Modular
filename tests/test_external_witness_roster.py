@@ -77,6 +77,25 @@ class FakeDB:
                             "authorizingWitnessIds": None,
                         }],
                     })
+                if (
+                    name
+                    == "shine_ai_external_roster_transition_evidence_chain_verify_v1"
+                ):
+                    generation = (
+                        db.state["trust_state"]["generation"]
+                        if db.state is not None
+                        else 1
+                    )
+                    if generation == 1:
+                        return FakeResult({
+                            "status": "empty",
+                            "chainVersion": 1,
+                            "latestGeneration": 1,
+                            "rows": 0,
+                        })
+                    raise AssertionError(
+                        "transition evidence chain fixture only models genesis"
+                    )
                 if name == "shine_ai_external_witness_roster_snapshot_v1":
                     if db.state is None:
                         return FakeResult({"status": "unbootstrapped"})
