@@ -466,6 +466,23 @@
         return '';
     }
 
+    function planUrgencyText(job) {
+        const urgency = job?.planUrgency;
+        if (!urgency || urgency.auto_starts_execution !== false) return '';
+
+        if (urgency.state === 'expiring-soon') {
+            const seconds = Number(urgency.seconds_remaining);
+            if (!Number.isSafeInteger(seconds) || seconds <= 0 || seconds > 900) return '';
+            return 'Priority notice · this untouched plan is inside its final 15 minutes. '
+                + 'If you still want this work, use the question again to create a fresh request.';
+        }
+        if (urgency.state === 'expiry-due') {
+            return 'Priority notice · this plan has reached its deadline. '
+                + 'Use the question again to create a fresh request; Foundation will not start the expired plan.';
+        }
+        return '';
+    }
+
     async function taskCentre(limit = 50) {
         const bounded = Number.isSafeInteger(limit)
             ? Math.max(1, Math.min(100, limit))
@@ -529,6 +546,14 @@
                 return [];
             }
 
+            const attentionOrder = Number(item.attention_order);
+            const projectedUrgency = (
+                item.plan_urgency
+                && typeof item.plan_urgency === 'object'
+                && !Array.isArray(item.plan_urgency)
+                && item.plan_urgency.auto_starts_execution === false
+            ) ? item.plan_urgency : null;
+
             const projected = {
                 requestId,
                 status,
@@ -539,6 +564,13 @@
                 waitingOn: String(item.waiting_on || ''),
                 attentionRequired: item.attention_required === true,
                 attentionReason: String(item.attention_reason || ''),
+                attentionOrder: Number.isSafeInteger(attentionOrder)
+                    && attentionOrder >= 0 && attentionOrder <= 999
+                    ? attentionOrder
+                    : 999,
+                nextAction: item.next_action == null
+                    ? null
+                    : String(item.next_action),
                 canCancel: item.can_cancel === true,
                 supersededByRequestId: item.superseded_by_request_id
                     ? String(item.superseded_by_request_id)
@@ -548,10 +580,12 @@
                 retirementReceiptIntegrity: retirementIntegrity,
                 retirementReceipt: retirement || null,
                 planTtl: item.plan_ttl || null,
+                planUrgency: projectedUrgency,
             };
             projected.cancellationText = cancellationReceiptText(item);
             projected.retirementText = retirementReceiptText(item);
             projected.planTtlText = planTtlText(item);
+            projected.planUrgencyText = planUrgencyText(projected);
             return [projected];
         });
     }
