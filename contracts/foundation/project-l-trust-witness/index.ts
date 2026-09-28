@@ -151,6 +151,34 @@ Deno.serve(async (request: Request) => {
         return json(result, status);
       }
 
+      if (operation === 'external-roster-head-rotate') {
+        const witnessId = String(
+          body.witnessId || 'foundation-project-l-roster-head'
+        ).trim();
+        const targetAuthKeyId = String(body.targetAuthKeyId || '').trim();
+        const rows = await runAsGateway((tx) =>
+          tx`select foundation.project_l_roster_head_witness_rotate_v2(
+            ${token},
+            ${witnessId},
+            ${targetAuthKeyId}
+          ) as result`
+        );
+        const result = rows?.[0]?.result;
+        if (!result || typeof result !== 'object') {
+          return json(
+            { status: 'unavailable', reasonCode: 'witness-result-invalid' },
+            503,
+          );
+        }
+        const status =
+          result.status === 'denied' ? 401 :
+          result.status === 'invalid' ? 400 :
+          result.status === 'rejected' ? 409 :
+          result.status === 'unavailable' ? 503 :
+          200;
+        return json(result, status);
+      }
+
       if (operation === 'external-roster-transition-authorize') {
         const previousPolicy = body.previousPolicy;
         const nextPolicy = body.nextPolicy;
