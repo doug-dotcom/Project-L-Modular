@@ -314,17 +314,14 @@ def test_chain_rejects_truncated_or_skipped_history():
     state3 = next_state(state2)
 
     cp1 = chain.create_checkpoint(state1)
-    cp3 = {
-        **chain.create_checkpoint(
-            state2,
-            previous_checkpoint=cp1,
-        )
-    }
-    cp3["sequence"] = 3
-    cp3["generation"] = 3
-    cp3["previousPolicySha256"] = state2["policySha256"]
-    cp3["policySha256"] = state3["policySha256"]
-    cp3["stateSha256"] = chain.digest_state(state3)
+    cp2 = chain.create_checkpoint(
+        state2,
+        previous_checkpoint=cp1,
+    )
+    cp3 = chain.create_checkpoint(
+        state3,
+        previous_checkpoint=cp2,
+    )
 
     with pytest.raises(
         chain.ExternalWitnessRosterChainError,
