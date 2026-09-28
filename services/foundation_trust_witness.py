@@ -154,6 +154,136 @@ def _record_witness(
     return data
 
 
+def _policy_transition_authorization_projection(
+    value: Any,
+    *,
+    previous_policy: dict,
+    next_policy: dict,
+) -> dict:
+    if not isinstance(value, dict) or value.get("status") != "authorized":
+        raise FoundationWitnessError(
+            str(
+                value.get("reasonCode")
+                if isinstance(value, dict)
+                else "foundation-policy-transition-response-invalid"
+            )
+            or "foundation-policy-transition-response-invalid"
+        )
+
+    result = {
+        "authorizationVersion": value.get("authorizationVersion"),
+        "authorizationType": value.get("authorizationType"),
+        "authAlgorithm": value.get("authAlgorithm"),
+        "witnessId": value.get("witnessId"),
+        "authKeyId": value.get("authKeyId"),
+        "fromGeneration": value.get("fromGeneration"),
+        "toGeneration": value.get("toGeneration"),
+        "fromPolicySha256": value.get("fromPolicySha256"),
+        "toPolicySha256": value.get("toPolicySha256"),
+        "authTag": value.get("authTag"),
+    }
+    if (
+        result["authorizationVersion"] != 1
+        or result["authorizationType"]
+        != "decision_trace_trust_state_witness_quorum_policy_transition"
+        or result["authAlgorithm"] != "HMAC-SHA-256"
+        or result["witnessId"] != WITNESS_ID
+        or not isinstance(result["authKeyId"], str)
+        or not result["authKeyId"]
+        or result["fromGeneration"] != previous_policy.get("generation")
+        or result["toGeneration"] != next_policy.get("generation")
+        or result["fromPolicySha256"] != previous_policy.get("policySha256")
+        or result["toPolicySha256"] != next_policy.get("policySha256")
+        or not isinstance(result["authTag"], str)
+        or SHA256_RE.fullmatch(result["authTag"]) is None
+    ):
+        raise FoundationWitnessError(
+            "foundation-policy-transition-response-invalid"
+        )
+    return result
+
+
+def ensure_foundation_policy_transition_authorization(
+    db,
+    previous_policy: dict,
+    next_policy: dict,
+    *,
+    witness_url: str | None = None,
+    timeout_seconds: float = 4.0,
+    post_impl=None,
+) -> dict:
+    """Return one Foundation-verified previous-quorum transition approval."""
+    token = _client_token(db)
+    post = post_impl or httpx.post
+    base = _witness_url(witness_url)
+
+    def call(payload: dict) -> dict:
+        try:
+            response = post(
+                base,
+                headers={
+                    "X-Shine-Client-Token": token,
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+                timeout=timeout_seconds,
+                follow_redirects=False,
+            )
+            data = _response_json(response)
+        except FoundationWitnessError:
+            raise
+        except Exception as exc:
+            raise FoundationWitnessError(
+                "foundation-policy-transition-unavailable"
+            ) from exc
+        if int(response.status_code) >= 400:
+            raise FoundationWitnessError(
+                str(
+                    data.get("reasonCode")
+                    or "foundation-policy-transition-rejected"
+                )
+            )
+        return data
+
+    authorization_raw = call({
+        "operation": "policy-transition-authorize",
+        "previousPolicy": previous_policy,
+        "nextPolicy": next_policy,
+    })
+    authorization = _policy_transition_authorization_projection(
+        authorization_raw,
+        previous_policy=previous_policy,
+        next_policy=next_policy,
+    )
+
+    verification = call({
+        "operation": "policy-transition-verify",
+        "previousPolicy": previous_policy,
+        "nextPolicy": next_policy,
+        "authorization": authorization,
+    })
+    if (
+        verification.get("status") != "verified"
+        or verification.get("witnessId") != WITNESS_ID
+        or verification.get("fromGeneration")
+        != previous_policy.get("generation")
+        or verification.get("toGeneration")
+        != next_policy.get("generation")
+        or verification.get("fromPolicySha256")
+        != previous_policy.get("policySha256")
+        or verification.get("toPolicySha256")
+        != next_policy.get("policySha256")
+    ):
+        raise FoundationWitnessError(
+            "foundation-policy-transition-verification-failed"
+        )
+
+    return {
+        **authorization,
+        "verification_status": "foundation-verified",
+    }
+
+
 def _witness_projection(value: Any) -> dict:
     if not isinstance(value, dict):
         raise FoundationWitnessError("foundation-witness-response-invalid")
@@ -318,5 +448,6 @@ __all__ = [
     "DEFAULT_FOUNDATION_WITNESS_URL",
     "FoundationWitnessError",
     "WITNESS_ID",
+    "ensure_foundation_policy_transition_authorization",
     "ensure_foundation_trust_witness",
 ]
