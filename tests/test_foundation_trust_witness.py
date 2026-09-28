@@ -107,7 +107,13 @@ def test_empty_foundation_witness_records_local_genesis(monkeypatch):
     assert result["mode"] == "created"
     assert result["sequence"] == 1
     assert result["independent_retention"] == "foundation-supabase"
+    assert result["local_witness"]["status"] == "verified"
+    assert result["local_witness"]["witness_id"] == "project-l-redis"
+    assert result["local_witness"]["sequence"] == 1
+    assert result["local_witness"]["head_sha256"] == local_head["headSha256"]
+    assert result["local_witness"]["independent_retention"] == "railway-redis-volume"
     assert "authTag" not in result
+    assert "authTag" not in result["local_witness"]
     assert len(post_calls) == 1
 
 
