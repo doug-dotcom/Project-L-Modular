@@ -1465,6 +1465,26 @@ def ensure_trust_witness_quorum(
             roster["roster_transition_evidence_chain_generation"],
         "external_roster_transition_evidence_chain_tag":
             roster["roster_transition_evidence_chain_tag"],
+        "external_roster_transition_evidence_chain_witness_status":
+            roster["roster_transition_evidence_chain_witness_status"],
+        "external_roster_transition_evidence_chain_witness_mode":
+            roster["roster_transition_evidence_chain_witness_mode"],
+        "external_roster_transition_evidence_chain_witness_generation":
+            roster["roster_transition_evidence_chain_witness_generation"],
+        "external_roster_transition_evidence_chain_witness_rows":
+            roster["roster_transition_evidence_chain_witness_rows"],
+        "external_roster_transition_evidence_chain_witness_tag":
+            roster["roster_transition_evidence_chain_witness_tag"],
+        "external_roster_transition_evidence_chain_witness_evidence_sha256":
+            roster[
+                "roster_transition_evidence_chain_witness_evidence_sha256"
+            ],
+        "external_roster_transition_evidence_chain_witness_auth_key_id":
+            roster[
+                "roster_transition_evidence_chain_witness_auth_key_id"
+            ],
+        "external_roster_transition_evidence_chain_witness_storage":
+            roster["roster_transition_evidence_chain_witness_storage"],
         "external_roster_head_verified":
             roster["roster_head_verified"],
         "external_roster_head_sequence":
