@@ -1552,6 +1552,18 @@ def foundation_concierge_jobs_as_user(
         and ttl_contract.get("urgencyAutoStartsWork") is False
     )
 
+    deadline_contract = body.get("deadlinePostureContract")
+    deadline_contract_valid = (
+        isinstance(deadline_contract, dict)
+        and deadline_contract.get("version")
+            == "shine-foundation/concierge-deadline-posture-v1"
+        and deadline_contract.get("startSoonThresholdSeconds") == 600
+        and deadline_contract.get("automaticExecutionTriggered") is False
+        and deadline_contract.get("automaticRetryTriggered") is False
+        and deadline_contract.get("readMutatesState") is False
+        and deadline_contract.get("source") == "foundation-server"
+    )
+
     def safe_capabilities(value):
         if not isinstance(value, list) or len(value) > 20:
             return []
@@ -1843,6 +1855,34 @@ def foundation_concierge_jobs_as_user(
                     "auto_starts_execution": False,
                 }
 
+        safe_deadline_posture = None
+        raw_deadline = raw.get("deadlinePosture")
+        if deadline_contract_valid and isinstance(raw_deadline, dict):
+            deadline_state = str(raw_deadline.get("state") or "")
+            expected = {
+                "normal": (False, "none"),
+                "start-soon": (True, "start-or-retire"),
+                "expiry-due": (True, "retire-before-execution"),
+                "started-exempt": (False, "continue-running"),
+                "terminal": (False, "none"),
+            }
+            if deadline_state in expected:
+                expected_attention, expected_action = expected[deadline_state]
+                if (
+                    raw_deadline.get("attentionRequired") is expected_attention
+                    and str(raw_deadline.get("action") or "") == expected_action
+                    and raw_deadline.get("automaticExecutionTriggered") is False
+                ):
+                    safe_deadline_posture = {
+                        "version": "1.0",
+                        "state": deadline_state,
+                        "attention_required": expected_attention,
+                        "reason_code": str(raw_deadline.get("reasonCode") or "")[:160],
+                        "action": expected_action,
+                        "automatic_execution_triggered": False,
+                        "server_authoritative": True,
+                    }
+
         progress = raw.get("progress") if isinstance(raw.get("progress"), dict) else {}
         attention_order = raw.get("attentionOrder")
         if (
@@ -1895,6 +1935,7 @@ def foundation_concierge_jobs_as_user(
             "local_retirement_reconciliation": local_retirement_reconciliation,
             "plan_ttl": safe_plan_ttl,
             "plan_urgency": safe_plan_urgency,
+            "deadline_posture": safe_deadline_posture,
         })
 
     return {
@@ -1920,6 +1961,15 @@ def foundation_concierge_jobs_as_user(
             "urgency_changes_execution": False if urgency_contract_valid else None,
             "urgency_auto_starts_work": False if urgency_contract_valid else None,
             "valid": ttl_contract_valid,
+        },
+        "deadline_posture_contract": {
+            "version": "shine-foundation/concierge-deadline-posture-v1",
+            "start_soon_threshold_seconds": 600,
+            "server_authoritative": True,
+            "automatic_execution_triggered": False,
+            "automatic_retry_triggered": False,
+            "read_mutates_state": False,
+            "valid": deadline_contract_valid,
         },
         "summary": body.get("summary") if isinstance(body.get("summary"), dict) else {},
         "items": items,
