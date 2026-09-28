@@ -885,3 +885,235 @@ def test_persisted_policy_storage_rotates_without_changing_policy(monkeypatch):
     assert db.state == original_state
     assert db.storage["storage_auth_key_id"] == "policy-b"
     assert second["policy_storage_rotation"]["target_auth_key_id"] == "policy-b"
+
+
+
+def policy_v2():
+    material = {
+        "policyVersion": 1,
+        "policyType":
+            "decision_trace_trust_state_witness_quorum_policy",
+        "generation": 2,
+        "minimumWitnesses": 2,
+        "acceptedWitnessIds": [
+            "backup-project-l",
+            "foundation-project-l",
+            "redis-project-l",
+        ],
+        "previousPolicySha256": POLICY_SHA,
+    }
+    return {
+        **material,
+        "policySha256": quorum._sha256_text(
+            quorum._canonical_json(material)
+        ),
+    }
+
+
+def foundation_policy_authorization(previous, next_policy):
+    return {
+        "authorizationVersion": 1,
+        "authorizationType":
+            "decision_trace_trust_state_witness_quorum_policy_transition",
+        "authAlgorithm": "HMAC-SHA-256",
+        "witnessId": "foundation-project-l",
+        "authKeyId": "foundation-witness-v1",
+        "fromGeneration": previous["generation"],
+        "toGeneration": next_policy["generation"],
+        "fromPolicySha256": previous["policySha256"],
+        "toPolicySha256": next_policy["policySha256"],
+        "authTag": "f" * 64,
+        "verification_status": "foundation-verified",
+    }
+
+
+def seed_redis_witness(redis):
+    witness = quorum.create_redis_witness(HEAD)
+    redis.rows[quorum.REDIS_WITNESS_KEY] = {
+        "sequence": str(witness["sequence"]),
+        "head_sha256": witness["headSha256"],
+        "generation": str(witness["generation"]),
+        "keyset_sha256": witness["keyset_sha256"],
+        "state_sha256": witness["stateSha256"],
+        "witness_json": json.dumps(
+            witness,
+            separators=(",", ":"),
+        ),
+    }
+
+
+def sealed_genesis_db_and_redis():
+    redis = FakeRedis()
+    db = FakePolicyDB()
+    quorum.load_persisted_quorum_policy(
+        db,
+        redis_client=redis,
+    )
+    seed_redis_witness(redis)
+    return db, redis
+
+
+def test_redis_policy_transition_authorization_matches_layer149_contract():
+    db, redis = sealed_genesis_db_and_redis()
+    _ = db
+    previous = quorum.load_quorum_policy()
+    next_policy = policy_v2()
+
+    authorization = quorum.create_redis_policy_transition_authorization(
+        previous,
+        next_policy,
+        redis_client=redis,
+    )
+    verified = quorum.verify_redis_policy_transition_authorization(
+        authorization,
+        previous,
+        next_policy,
+    )
+
+    assert verified["witnessId"] == "redis-project-l"
+    assert verified["fromGeneration"] == 1
+    assert verified["toGeneration"] == 2
+    assert verified["fromPolicySha256"] == POLICY_SHA
+    assert verified["toPolicySha256"] == next_policy["policySha256"]
+
+
+def test_redis_policy_transition_authorization_detects_tampering():
+    _db, redis = sealed_genesis_db_and_redis()
+    previous = quorum.load_quorum_policy()
+    next_policy = policy_v2()
+    authorization = quorum.create_redis_policy_transition_authorization(
+        previous,
+        next_policy,
+        redis_client=redis,
+    )
+    authorization["authTag"] = "0" * 64
+
+    with pytest.raises(
+        quorum.WitnessQuorumError,
+        match="authorization-auth-failed",
+    ):
+        quorum.verify_redis_policy_transition_authorization(
+            authorization,
+            previous,
+            next_policy,
+        )
+
+
+def test_policy_advances_only_after_previous_quorum_and_checkpoint(
+    monkeypatch,
+):
+    db, redis = sealed_genesis_db_and_redis()
+    next_policy = policy_v2()
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_POLICY_JSON",
+        json.dumps(next_policy),
+    )
+    monkeypatch.setattr(
+        quorum,
+        "ensure_foundation_policy_transition_authorization",
+        lambda _db, prev, nxt, **_kwargs:
+            foundation_policy_authorization(prev, nxt),
+    )
+
+    value = quorum.load_persisted_quorum_policy(
+        db,
+        redis_client=redis,
+    )
+
+    assert value["generation"] == 2
+    assert value["policySha256"] == next_policy["policySha256"]
+    assert value["previousPolicySha256"] == POLICY_SHA
+    assert value["acceptedWitnessIds"] == [
+        "backup-project-l",
+        "foundation-project-l",
+        "redis-project-l",
+    ]
+    assert value["policy_trust_acceptance_mode"] == (
+        "previous-quorum-transition"
+    )
+    assert value["policy_trust_authorization_count"] == 2
+    assert value["policy_trust_authorizing_witness_ids"] == [
+        "foundation-project-l",
+        "redis-project-l",
+    ]
+    assert len(value["policy_trust_authorization_sha256"]) == 64
+    policy_checkpoint = redis.rows[
+        quorum.REDIS_POLICY_CHECKPOINT_KEY
+    ]
+    assert int(policy_checkpoint["generation"]) == 2
+    assert policy_checkpoint["policy_sha256"] == next_policy["policySha256"]
+    assert any(
+        name == "shine_ai_witness_quorum_policy_advance_v3"
+        for name, _params in db.rpc_calls
+    )
+
+
+def test_policy_transition_fails_if_foundation_old_member_does_not_approve(
+    monkeypatch,
+):
+    db, redis = sealed_genesis_db_and_redis()
+    next_policy = policy_v2()
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_POLICY_JSON",
+        json.dumps(next_policy),
+    )
+
+    def fail(*_args, **_kwargs):
+        raise quorum.FoundationWitnessError(
+            "foundation-policy-transition-verification-failed"
+        )
+
+    monkeypatch.setattr(
+        quorum,
+        "ensure_foundation_policy_transition_authorization",
+        fail,
+    )
+
+    with pytest.raises(
+        quorum.WitnessQuorumError,
+        match="foundation-policy-transition-verification-failed",
+    ):
+        quorum.load_persisted_quorum_policy(
+            db,
+            redis_client=redis,
+        )
+
+    # No policy checkpoint advance or DB policy mutation occurs.
+    assert db.state["generation"] == 1
+    policy_checkpoint = redis.rows[
+        quorum.REDIS_POLICY_CHECKPOINT_KEY
+    ]
+    assert int(policy_checkpoint["generation"]) == 1
+
+
+def test_future_persisted_policy_loads_from_authenticated_storage_without_repin(
+    monkeypatch,
+):
+    db, redis = sealed_genesis_db_and_redis()
+    next_policy = policy_v2()
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_POLICY_JSON",
+        json.dumps(next_policy),
+    )
+    monkeypatch.setattr(
+        quorum,
+        "ensure_foundation_policy_transition_authorization",
+        lambda _db, prev, nxt, **_kwargs:
+            foundation_policy_authorization(prev, nxt),
+    )
+    quorum.load_persisted_quorum_policy(
+        db,
+        redis_client=redis,
+    )
+
+    # Same persisted generation is now authoritative; it does not need the
+    # generation-1 genesis pin to be reaccepted.
+    value = quorum.load_persisted_quorum_policy(
+        db,
+        redis_client=redis,
+    )
+
+    assert value["generation"] == 2
+    assert value["policy_trust_generation"] == 2
+    assert value["policy_storage_authenticated"] is True
+    assert value["policy_storage_checkpoint_independent"] is True
