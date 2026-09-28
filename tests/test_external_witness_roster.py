@@ -545,3 +545,92 @@ def test_rotation_target_without_overlap_secret_fails(monkeypatch):
             db,
             redis_client=redis,
         )
+
+
+
+def test_layer207_redis_checkpoint_advances_with_predecessor(monkeypatch):
+    _set_storage_keys(monkeypatch)
+    redis = FakeRedis()
+    previous = {
+        "policyVersion": 1,
+        "policyType": roster.ROSTER_POLICY_TYPE,
+        "generation": 1,
+        "minimumWitnesses": 2,
+        "acceptedWitnessIds": [
+            "foundation-project-l",
+            "redis-project-l",
+        ],
+        "previousPolicySha256": None,
+        "policySha256": roster.CERTIFIED_GENESIS_ROSTER_SHA256,
+    }
+    first = roster.policy_to_trust_state(previous)
+    roster.persist_checkpoint(first, redis_client=redis)
+
+    material = {
+        "policyVersion": 1,
+        "policyType": roster.ROSTER_POLICY_TYPE,
+        "generation": 2,
+        "minimumWitnesses": 2,
+        "acceptedWitnessIds": [
+            "foundation-project-l",
+            "redis-project-l",
+        ],
+        "previousPolicySha256": previous["policySha256"],
+    }
+    next_policy = {
+        **material,
+        "policySha256": roster._sha256_text(
+            roster._canonical_json(material)
+        ),
+    }
+    result = roster.persist_checkpoint(
+        roster.policy_to_trust_state(next_policy),
+        redis_client=redis,
+    )
+
+    assert result["mode"] == "advanced"
+    assert result["generation"] == 2
+    assert result["policy_sha256"] == next_policy["policySha256"]
+
+
+def test_layer207_redis_transition_authorization_is_separate_domain(
+    monkeypatch,
+):
+    _set_storage_keys(monkeypatch)
+    monkeypatch.setenv(
+        "SHINE_TRACE_EXTERNAL_ROSTER_TRANSITION_REDIS_KEYRING_JSON",
+        json.dumps({"roster-transition-a": "T" * 48}),
+    )
+    monkeypatch.setenv(
+        "SHINE_TRACE_EXTERNAL_ROSTER_TRANSITION_REDIS_ACTIVE_KEY_ID",
+        "roster-transition-a",
+    )
+    previous = roster.load_genesis_policy()
+    material = {
+        "policyVersion": 1,
+        "policyType": roster.ROSTER_POLICY_TYPE,
+        "generation": 2,
+        "minimumWitnesses": 2,
+        "acceptedWitnessIds": [
+            "foundation-project-l",
+            "redis-project-l",
+        ],
+        "previousPolicySha256": previous["policySha256"],
+    }
+    next_policy = {
+        **material,
+        "policySha256": roster._sha256_text(
+            roster._canonical_json(material)
+        ),
+    }
+
+    auth = roster._redis_transition_authorization(
+        previous,
+        next_policy,
+    )
+
+    assert auth["witnessId"] == "redis-project-l"
+    assert auth["fromGeneration"] == 1
+    assert auth["toGeneration"] == 2
+    assert auth["authKeyId"] == "roster-transition-a"
+    assert len(auth["authTag"]) == 64
