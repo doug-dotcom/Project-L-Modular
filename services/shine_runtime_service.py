@@ -655,7 +655,9 @@ def _shine_ai_advisory(
         verify_decision_trace_authenticity(
             data,
             trusted_keyset=trusted_keyset,
-            accepted_keyset_sha256=list(_trace_keyset_pins()),
+            accepted_keyset_sha256=[
+                str(trusted_keyset.get("keyset_sha256") or "")
+            ],
             header_version=response_version,
             header_release=response_release,
         )
