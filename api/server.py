@@ -414,6 +414,9 @@ async def account_boundary(request: Request, call_next):
         except HTTPException as exc:
             return JSONResponse({'detail': exc.detail}, status_code=exc.status_code, headers={'Cache-Control': 'no-store'})
     response = await call_next(request)
+    if path == '/health':
+        for name, value in runtime_provenance_headers().items():
+            response.headers[name] = value
     response.headers['Cache-Control'] = 'no-store'
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['Referrer-Policy'] = 'no-referrer'
@@ -990,8 +993,8 @@ def health():
     }
     if security_gate.get("production_enforced") and not security_gate.get("ready"):
         payload["status"] = "blocked"
-        return JSONResponse(payload, status_code=503, headers=runtime_provenance_headers())
-    return JSONResponse(payload, headers=runtime_provenance_headers())
+        return JSONResponse(payload, status_code=503)
+    return payload
 
 
 @app.get("/cognition/status")
