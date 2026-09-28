@@ -76,7 +76,10 @@ class FakeDb:
 
     def rpc(self, name, params=None):
         params = params or {}
-        if name == "companion_cancel_local_concierge_job_v2":
+        if name in {
+            "companion_begin_local_concierge_cancel_v1",
+            "companion_finish_local_concierge_cancel_v1",
+        }:
             for row in self.tables["companion_foundation_pending_jobs"]:
                 if (
                     row["job_id"] == params["p_request_id"]
@@ -84,9 +87,27 @@ class FakeDb:
                 ):
                     if row["status"] in {"completed", "failed"}:
                         return Rpc({"status": row["status"], "requestId": row["job_id"]})
+
+                    if name == "companion_begin_local_concierge_cancel_v1":
+                        if row["status"] == "cancelled":
+                            return Rpc({
+                                "status": "already-cancelled",
+                                "requestId": row["job_id"],
+                            })
+                        row["status"] = "cancelling"
+                        row["cancellation_reason"] = params["p_reason_code"]
+                        row["superseded_by_request_id"] = params["p_superseded_by_request_id"]
+                        return Rpc({
+                            "status": "cancelling",
+                            "requestId": row["job_id"],
+                            "reasonCode": params["p_reason_code"],
+                            "supersededByRequestId": params["p_superseded_by_request_id"],
+                        })
+
+                    assert row["status"] == "cancelling"
+                    assert row["cancellation_reason"] == params["p_reason_code"]
+                    assert row.get("superseded_by_request_id") == params["p_superseded_by_request_id"]
                     row["status"] = "cancelled"
-                    row["cancellation_reason"] = params["p_reason_code"]
-                    row["superseded_by_request_id"] = params["p_superseded_by_request_id"]
                     return Rpc({
                         "status": "cancelled",
                         "requestId": row["job_id"],
@@ -154,6 +175,7 @@ def test_exact_pending_work_is_superseded_in_foundation_then_locally():
 
     def post(url, *, json, **kwargs):
         calls.append((url, json))
+        assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "cancelling"
         assert url.endswith("/v1/concierge/supersede")
         assert json["requestId"] == OLD
         assert json["supersededByRequestId"] == NEW
@@ -205,7 +227,7 @@ def test_legacy_conversation_label_never_auto_supersedes():
         post_impl=forbidden,
     )
     assert superseded == []
-    assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "ready"
+    assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "cancelling"
 
 
 def test_user_cancel_requires_remote_confirmation_before_local_cancel():
@@ -214,6 +236,7 @@ def test_user_cancel_requires_remote_confirmation_before_local_cancel():
 
     def post(url, *, headers, json, **kwargs):
         calls.append((url, headers, json))
+        assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "cancelling"
         assert url.endswith("/v1/concierge/cancel")
         assert headers["Authorization"].startswith("Bearer ")
         assert json["requestId"] == OLD
@@ -269,7 +292,9 @@ def test_ui_exposes_pending_jobs_and_cancel_only_for_delayed_work():
     assert "Cancel delayed work" in index
     assert "window.lConciergeCompletions?.cancel?.(task.requestId)" in index
     assert "The saved answer above has not been rewritten." in index
-    assert 'concierge-completions.js?v=192' in index
+    assert "Retry cancellation" in index
+    assert "Cancellation is pending confirmation" in index
+    assert 'concierge-completions.js?v=193' in index
 
     assert '@router.get("/completions/pending")' in api
     assert '@router.post("/completions/{request_id}/cancel")' in api
@@ -306,3 +331,46 @@ def test_remote_already_cancelled_for_other_reason_is_not_relabelled_as_supersed
         raise AssertionError("non-supersession cancellation reason must fail closed")
 
     assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "ready"
+
+
+
+def test_user_cancel_network_uncertainty_leaves_safe_cancelling_hold():
+    db = FakeDb([pending_row()])
+
+    def post(*args, **kwargs):
+        assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "cancelling"
+        raise RuntimeError("ack lost")
+
+    result = cancel_foundation_concierge_request_as_user(
+        db,
+        USER,
+        request_id=OLD,
+        authorization="Bearer " + "x" * 100,
+        foundation_url="https://foundation.example",
+        post_impl=post,
+    )
+
+    assert result["status"] == "cancelling"
+    assert result["reason_code"] == "cancellation-acknowledgement-unavailable"
+    assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "cancelling"
+
+
+def test_begin_cancel_is_idempotent_before_remote_reconciliation():
+    db = FakeDb([pending_row()])
+
+    first = db.rpc("companion_begin_local_concierge_cancel_v1", {
+        "p_user_id": USER,
+        "p_request_id": OLD,
+        "p_reason_code": "user-cancelled",
+        "p_superseded_by_request_id": None,
+    }).execute().data
+    second = db.rpc("companion_begin_local_concierge_cancel_v1", {
+        "p_user_id": USER,
+        "p_request_id": OLD,
+        "p_reason_code": "user-cancelled",
+        "p_superseded_by_request_id": None,
+    }).execute().data
+
+    assert first["status"] == "cancelling"
+    assert second["status"] == "cancelling"
+    assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "cancelling"
