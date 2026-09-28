@@ -154,11 +154,43 @@ def _storage_keyring() -> tuple[str, dict[str, str]]:
                 "external-witness-roster-storage-keyring-invalid"
             )
         keyring[key_id] = raw_secret
+    target_id = os.getenv(
+        "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_STORAGE_ROTATION_TARGET_KEY_ID",
+        "",
+    ).strip()
+    target_secret = os.getenv(
+        "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_STORAGE_ROTATION_TARGET_SECRET",
+        "",
+    ).strip()
+    if target_id or target_secret:
+        if (
+            KEY_ID_RE.fullmatch(target_id) is None
+            or len(target_secret) < 32
+            or len(target_secret) > 8192
+        ):
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-storage-rotation-target-invalid"
+            )
+        existing = keyring.get(target_id)
+        if existing is not None and existing != target_secret:
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-storage-rotation-target-conflict"
+            )
+        keyring[target_id] = target_secret
+
     if active not in keyring:
         raise ExternalWitnessRosterError(
             "external-witness-roster-storage-active-key-unavailable"
         )
     return active, keyring
+
+
+def _rotation_target_key_id() -> str | None:
+    value = os.getenv(
+        "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_STORAGE_ROTATION_TARGET_KEY_ID",
+        "",
+    ).strip()
+    return value or None
 
 
 def _storage_secret(key_id: str) -> str:
@@ -654,6 +686,152 @@ def _snapshot(db) -> dict[str, Any]:
     return result.data if isinstance(result.data, dict) else {}
 
 
+def rotate_storage_authentication(
+    db,
+    *,
+    target_key_id: str | None = None,
+    redis_client=None,
+) -> dict[str, Any]:
+    """Re-authenticate roster storage without changing trusted roster state."""
+    target = target_key_id or _rotation_target_key_id()
+    if not target or KEY_ID_RE.fullmatch(target) is None:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-rotation-target-unavailable"
+        )
+    _active, keyring = _storage_keyring()
+    if target not in keyring:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-rotation-target-unavailable"
+        )
+
+    payload = _snapshot(db)
+    if str(payload.get("status") or "") != "trusted":
+        raise ExternalWitnessRosterError(
+            str(
+                payload.get("reason_code")
+                or "external-witness-roster-storage-invalid"
+            )
+        )
+    state = project_trust_state(payload.get("trust_state"))
+    envelope = {
+        "envelopeVersion": 1,
+        "envelopeType": ENVELOPE_TYPE,
+        "authAlgorithm": "HMAC-SHA-256",
+        "authKeyId": payload.get("storage_auth_key_id"),
+        "stateSha256": payload.get("state_sha256"),
+        "authTag": payload.get("storage_auth_tag"),
+        "state": state,
+    }
+    checkpoint = read_checkpoint(redis_client=redis_client)
+    if checkpoint is None:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-checkpoint-missing"
+        )
+    verified = verify_pair(envelope, checkpoint)
+    if verified != state:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-state-mismatch"
+        )
+
+    source_envelope_key = str(envelope.get("authKeyId") or "")
+    source_checkpoint_key = str(checkpoint.get("authKeyId") or "")
+    if source_envelope_key == target and source_checkpoint_key == target:
+        return {
+            "status": "verified",
+            "mode": "already-rotated",
+            "generation": state["generation"],
+            "policy_sha256": state["policySha256"],
+            "state_sha256": digest_trust_state(state),
+            "source_envelope_key_id": source_envelope_key,
+            "source_checkpoint_key_id": source_checkpoint_key,
+            "target_key_id": target,
+            "state_preserved": True,
+        }
+
+    target_envelope = create_envelope(
+        state,
+        auth_key_id=target,
+    )
+    checkpoint_receipt = persist_checkpoint(
+        state,
+        auth_key_id=target,
+        redis_client=redis_client,
+    )
+    if (
+        target_envelope["stateSha256"] != envelope["stateSha256"]
+        or checkpoint_receipt["state_sha256"] != envelope["stateSha256"]
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-rotation-state-mismatch"
+        )
+
+    if source_envelope_key != target:
+        try:
+            result = db.rpc(
+                "shine_ai_external_witness_roster_rotate_storage_v1",
+                {
+                    "p_expected_generation": state["generation"],
+                    "p_expected_policy_sha256": state["policySha256"],
+                    "p_expected_state_sha256": envelope["stateSha256"],
+                    "p_expected_storage_auth_key_id": source_envelope_key,
+                    "p_target_storage_auth_key_id": target,
+                    "p_target_storage_auth_tag": target_envelope["authTag"],
+                },
+            ).execute()
+        except Exception as exc:
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-storage-rotation-db-failed"
+            ) from exc
+        rotated = result.data if isinstance(result.data, dict) else {}
+        if rotated.get("status") not in {
+            "rotated",
+            "already_rotated",
+        }:
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-storage-rotation-db-unverified"
+            )
+
+    after = _snapshot(db)
+    after_state = project_trust_state(after.get("trust_state"))
+    after_envelope = {
+        "envelopeVersion": 1,
+        "envelopeType": ENVELOPE_TYPE,
+        "authAlgorithm": "HMAC-SHA-256",
+        "authKeyId": after.get("storage_auth_key_id"),
+        "stateSha256": after.get("state_sha256"),
+        "authTag": after.get("storage_auth_tag"),
+        "state": after_state,
+    }
+    after_checkpoint = read_checkpoint(redis_client=redis_client)
+    if after_checkpoint is None:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-checkpoint-missing"
+        )
+    if (
+        verify_pair(after_envelope, after_checkpoint) != state
+        or after_state != state
+        or after_envelope.get("authKeyId") != target
+        or after_checkpoint.get("authKeyId") != target
+        or after_envelope.get("stateSha256") != envelope.get("stateSha256")
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-rotation-verification-failed"
+        )
+
+    return {
+        "status": "verified",
+        "mode": "rotated",
+        "generation": state["generation"],
+        "policy_sha256": state["policySha256"],
+        "state_sha256": envelope["stateSha256"],
+        "source_envelope_key_id": source_envelope_key,
+        "source_checkpoint_key_id": source_checkpoint_key,
+        "target_key_id": target,
+        "checkpoint_mode": checkpoint_receipt.get("mode"),
+        "state_preserved": True,
+    }
+
+
 def load_persisted_external_witness_roster(
     db,
     *,
@@ -754,14 +932,33 @@ def load_persisted_external_witness_roster(
                 "external-witness-roster-transition-not-certified"
             )
 
-    active, _keyring = _storage_keyring()
-    if envelope["authKeyId"] != active:
-        # Rotation is intentionally fail-closed in Layer 205. It keeps the
-        # current overlap key usable while a later layer can certify the
-        # exact dual-store rotation workflow.
-        raise ExternalWitnessRosterError(
-            "external-witness-roster-storage-key-rotation-required"
+    target = _rotation_target_key_id()
+    rotation_receipt = None
+    if target and (
+        envelope.get("authKeyId") != target
+        or checkpoint.get("authKeyId") != target
+    ):
+        rotation_receipt = rotate_storage_authentication(
+            db,
+            target_key_id=target,
+            redis_client=redis_client,
         )
+        payload = _snapshot(db)
+        state = project_trust_state(payload.get("trust_state"))
+        envelope = {
+            "envelopeVersion": 1,
+            "envelopeType": ENVELOPE_TYPE,
+            "authAlgorithm": "HMAC-SHA-256",
+            "authKeyId": payload.get("storage_auth_key_id"),
+            "stateSha256": payload.get("state_sha256"),
+            "authTag": payload.get("storage_auth_tag"),
+            "state": state,
+        }
+        checkpoint = read_checkpoint(redis_client=redis_client)
+        if checkpoint is None or verify_pair(envelope, checkpoint) != state:
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-storage-rotation-verification-failed"
+            )
 
     return {
         **policy,
@@ -772,6 +969,12 @@ def load_persisted_external_witness_roster(
         "roster_storage_state_sha256": envelope["stateSha256"],
         "roster_storage_checkpoint_independent": True,
         "roster_storage_checkpoint_retention": "railway-redis-volume",
+        "roster_storage_rotation_supported": True,
+        "roster_storage_rotation_mode": (
+            rotation_receipt.get("mode")
+            if isinstance(rotation_receipt, dict)
+            else "not-needed"
+        ),
     }
 
 
@@ -794,6 +997,7 @@ __all__ = [
     "project_policy",
     "project_trust_state",
     "read_checkpoint",
+    "rotate_storage_authentication",
     "serialize_trust_state",
     "verify_checkpoint",
     "verify_envelope",
