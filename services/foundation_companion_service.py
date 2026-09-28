@@ -472,6 +472,7 @@ def _concierge_authority(db, user_id: str, *, foundation_url=None, timeout_secon
         }
     return {
         "status": "active",
+        "link_request_id": _uuid(authority.get("request_id")),
         "client_token": _single_secret(
             _rpc_data(db, "concierge_foundation_client_token_v1"),
             "foundation-client",
@@ -798,6 +799,95 @@ def _safe_foundation_execution_results(
             row["result"] = result
         safe_results.append(row)
     return safe_results
+
+
+def _pending_job_rows(result) -> list[dict]:
+    data = getattr(result, "data", None)
+    return data if isinstance(data, list) else []
+
+
+def _store_pending_concierge_job(
+    db,
+    *,
+    user_id: str,
+    job_id: str,
+    link_request_id: str,
+    capability_ids: list[str],
+    inputs: dict,
+    source_conversation_id: str | None = None,
+    source_message_id: str | None = None,
+) -> None:
+    existing = (
+        db.table("companion_foundation_pending_jobs")
+        .select(
+            "job_id,user_id,link_request_id,purpose,capability_ids,inputs,"
+            "source_conversation_id,source_message_id,status"
+        )
+        .eq("job_id", job_id)
+        .limit(2)
+        .execute()
+    )
+    rows = _pending_job_rows(existing)
+    if rows:
+        if len(rows) != 1 or not isinstance(rows[0], dict):
+            raise RuntimeError("concierge-local-job-ambiguous")
+        row = rows[0]
+        exact = (
+            str(row.get("user_id") or "") == user_id
+            and str(row.get("link_request_id") or "") == link_request_id
+            and str(row.get("purpose") or "") == "concierge.cross-project-read"
+            and list(row.get("capability_ids") or []) == capability_ids
+            and dict(row.get("inputs") or {}) == inputs
+            and str(row.get("source_conversation_id") or "") == str(source_conversation_id or "")
+            and str(row.get("source_message_id") or "") == str(source_message_id or "")
+        )
+        if not exact:
+            raise RuntimeError("concierge-local-replay-conflict")
+        return
+
+    db.table("companion_foundation_pending_jobs").insert({
+        "job_id": job_id,
+        "user_id": user_id,
+        "link_request_id": link_request_id,
+        "purpose": "concierge.cross-project-read",
+        "capability_ids": capability_ids,
+        "inputs": inputs,
+        "source_conversation_id": (
+            str(source_conversation_id)[:180]
+            if source_conversation_id is not None
+            else None
+        ),
+        "source_message_id": (
+            str(source_message_id)[:180]
+            if source_message_id is not None
+            else None
+        ),
+        "status": "ready",
+    }).execute()
+
+
+def set_pending_concierge_job_status(
+    db,
+    *,
+    user_id: str,
+    job_id: str,
+    status: str,
+) -> None:
+    if status not in {"ready", "completed", "failed", "cancelled"}:
+        raise ValueError("invalid pending concierge job status")
+    now = _utc_now()
+    values = {
+        "status": status,
+        "updated_at": now,
+        "completed_at": now if status in {"completed", "failed", "cancelled"} else None,
+    }
+    (
+        db.table("companion_foundation_pending_jobs")
+        .update(values)
+        .eq("job_id", job_id)
+        .eq("user_id", user_id)
+        .execute()
+    )
 
 
 def invoke_foundation_orchestration(
