@@ -362,3 +362,116 @@ def test_human_status_marks_real_user_action_required():
     assert status["state"] == "action-required"
     assert status["can_continue"] is False
     assert status["needs_user_action"] is True
+
+
+def test_pending_specialist_is_degraded_not_complete_and_never_replayed():
+    packet = runtime_for_human_status()
+    execution = {
+        "status": "pending",
+        "observation_poll_count": 9,
+        "observation_timed_out": True,
+        "tasks": [{
+            "id": "task-1",
+            "specialist_key": "travel",
+            "status": "running",
+            "action_type": "read",
+        }],
+        "results": [],
+    }
+
+    recovery = runtime.build_runtime_recovery(packet, execution, final=True)
+    status = runtime.build_human_status(packet, execution, final=True)
+
+    assert recovery["mode"] == "partial"
+    assert recovery["stage"] == "specialist-execution"
+    assert recovery["observation_poll_count"] == 9
+    assert recovery["observation_timed_out"] is True
+    assert recovery["automatic_retry_count"] == 0
+    assert recovery["write_replay_allowed"] is False
+    assert recovery["paid_model_retry_allowed"] is False
+    assert recovery["read_only_observation_allowed"] is True
+    assert status["state"] == "degraded"
+    assert status["recovery"]["state"] == "partial"
+    assert status["recovery"]["write_replay_allowed"] is False
+    assert status["recovery"]["paid_model_retry_allowed"] is False
+
+
+def test_shine_ai_memory_degradation_becomes_one_safe_recovery_state():
+    packet = runtime_for_human_status()
+    packet["components"]["shine_ai"]["recovery"] = {
+        "version": 1,
+        "mode": "degraded",
+        "failure_stage": "memory",
+        "action": "context-only-model",
+        "automatic_retry_count": 0,
+    }
+
+    recovery = runtime.build_runtime_recovery(packet, {"status": "not_required"}, final=True)
+    status = runtime.build_human_status(packet, {"status": "not_required"}, final=True)
+
+    assert recovery["mode"] == "degraded"
+    assert recovery["stage"] == "memory"
+    assert recovery["can_continue"] is True
+    assert recovery["next_step"] == "continue"
+    assert status["state"] == "degraded"
+    assert status["can_continue"] is True
+    assert "shine_ai" not in json.dumps(status)
+
+
+def test_invalid_attestation_is_classified_as_recovery_degradation():
+    packet = runtime_for_human_status("invalid")
+
+    recovery = runtime.build_runtime_recovery(packet, {"status": "not_required"}, final=True)
+    status = runtime.build_human_status(packet, {"status": "not_required"}, final=True)
+
+    assert recovery["mode"] == "degraded"
+    assert recovery["stage"] == "attestation"
+    assert "attestation-degraded" in recovery["reason_codes"]
+    assert status["state"] == "degraded"
+    assert status["recovery"]["state"] == "degraded"
+
+
+def test_user_action_recovery_never_authorises_write_replay():
+    packet = runtime_for_human_status()
+    execution = {
+        "status": "pending",
+        "tasks": [{
+            "id": "task-1",
+            "specialist_key": "calendar",
+            "status": "consent_required",
+            "action_type": "write",
+        }],
+        "results": [],
+    }
+
+    recovery = runtime.build_runtime_recovery(packet, execution, final=True)
+    status = runtime.build_human_status(packet, execution, final=True)
+
+    assert recovery["mode"] == "user-action"
+    assert recovery["needs_user_action"] is True
+    assert recovery["can_continue"] is False
+    assert recovery["next_step"] == "user-action"
+    assert recovery["write_replay_allowed"] is False
+    assert recovery["paid_model_retry_allowed"] is False
+    assert status["state"] == "action-required"
+    assert status["recovery"]["write_replay_allowed"] is False
+
+
+def test_runtime_trace_binds_recovery_control_plane_without_private_content():
+    base = runtime_for_human_status()
+    base["recovery"] = runtime.build_runtime_recovery(
+        base,
+        {"status": "not_required"},
+        final=True,
+    )
+    first = runtime.build_runtime_trace(base, {"status": "not_required"})
+
+    changed = json.loads(json.dumps(base))
+    changed["recovery"]["mode"] = "degraded"
+    changed["recovery"]["stage"] = "memory"
+    changed["recovery"]["reason_codes"] = ["PRIVATE-REASON-TEXT-NOT-HASHED"]
+    second = runtime.build_runtime_trace(changed, {"status": "not_required"})
+
+    assert first["version"] == "shine/runtime-trace-v2"
+    assert first["lineage_sha256"] != second["lineage_sha256"]
+    assert "PRIVATE-REASON-TEXT-NOT-HASHED" not in json.dumps(second)
