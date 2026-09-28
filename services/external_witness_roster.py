@@ -23,6 +23,7 @@ from redis.exceptions import RedisError
 from services.foundation_roster_head_witness import (
     FoundationRosterHeadWitnessError,
     ensure_foundation_roster_head_witness,
+    rotate_foundation_roster_head_witness,
 )
 from services.foundation_trust_witness import (
     FoundationWitnessError,
@@ -241,6 +242,18 @@ def _rotation_target_key_id() -> str | None:
         "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_STORAGE_ROTATION_TARGET_KEY_ID",
         "",
     ).strip()
+    return value or None
+
+
+def _roster_head_witness_rotation_target_key_id() -> str | None:
+    value = os.getenv(
+        "SHINE_TRACE_EXTERNAL_ROSTER_HEAD_WITNESS_ROTATION_TARGET_KEY_ID",
+        "",
+    ).strip()
+    if value and KEY_ID_RE.fullmatch(value) is None:
+        raise ExternalWitnessRosterError(
+            "external-roster-head-witness-rotation-target-invalid"
+        )
     return value or None
 
 
@@ -1809,6 +1822,55 @@ def load_persisted_external_witness_roster(
     except FoundationRosterHeadWitnessError as exc:
         raise ExternalWitnessRosterError(str(exc)) from exc
 
+    witness_rotation_target = _roster_head_witness_rotation_target_key_id()
+    witness_rotation = None
+    if (
+        witness_rotation_target
+        and foundation_head_witness["auth_key_id"]
+            != witness_rotation_target
+    ):
+        try:
+            witness_rotation = rotate_foundation_roster_head_witness(
+                db,
+                witness_rotation_target,
+            )
+        except FoundationRosterHeadWitnessError as exc:
+            raise ExternalWitnessRosterError(str(exc)) from exc
+        foundation_head_witness = witness_rotation["witness"]
+
+    safe_witness_rotation = (
+        {
+            "status": witness_rotation.get("status"),
+            "mode": witness_rotation.get("mode"),
+            "source_auth_key_id":
+                witness_rotation.get("source_auth_key_id"),
+            "target_auth_key_id":
+                witness_rotation.get("target_auth_key_id"),
+            "sequence": witness_rotation.get("sequence"),
+            "head_sha256": witness_rotation.get("head_sha256"),
+            "generation": witness_rotation.get("generation"),
+            "policy_sha256": witness_rotation.get("policy_sha256"),
+            "state_sha256": witness_rotation.get("state_sha256"),
+            "state_preserved":
+                witness_rotation.get("state_preserved") is True,
+        }
+        if isinstance(witness_rotation, dict)
+        else {
+            "status": "verified",
+            "mode": "not-needed",
+            "source_auth_key_id":
+                foundation_head_witness["auth_key_id"],
+            "target_auth_key_id":
+                foundation_head_witness["auth_key_id"],
+            "sequence": foundation_head_witness["sequence"],
+            "head_sha256": foundation_head_witness["head_sha256"],
+            "generation": foundation_head_witness["generation"],
+            "policy_sha256": foundation_head_witness["policy_sha256"],
+            "state_sha256": foundation_head_witness["state_sha256"],
+            "state_preserved": True,
+        }
+    )
+
     return {
         **policy,
         "roster_trust_persisted": True,
@@ -1856,6 +1918,10 @@ def load_persisted_external_witness_roster(
             foundation_head_witness["replayed"],
         "roster_head_witness_independent_retention":
             foundation_head_witness["independent_retention"],
+        "roster_head_witness_rotation_supported": True,
+        "roster_head_witness_rotation_mode":
+            safe_witness_rotation["mode"],
+        "roster_head_witness_rotation": safe_witness_rotation,
     }
 
 
