@@ -21,6 +21,7 @@ import httpx
 
 from services.external_witness_roster import (
     ExternalWitnessRosterError,
+    build_monotonic_roster_head,
     load_persisted_external_witness_roster,
 )
 from services.foundation_chain_checkpoint import (
@@ -37,6 +38,7 @@ from services.foundation_companion_service import (
 )
 from services.foundation_trust_witness import (
     FoundationWitnessError,
+    ensure_foundation_roster_head_witness,
     ensure_foundation_trust_witness,
 )
 from services.shine_witness_quorum import (
@@ -60,7 +62,7 @@ from services.shine_trust_storage import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v13"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v14"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -989,7 +991,21 @@ def _shine_ai_verification_keyset(
                     db,
                     redis_client=redis_client,
                 )
-            except (WitnessQuorumError, ExternalWitnessRosterError) as exc:
+                live_roster_head = build_monotonic_roster_head(
+                    db,
+                    expected_roster=persisted_roster,
+                )
+                live_roster_head_witness = (
+                    ensure_foundation_roster_head_witness(
+                        db,
+                        live_roster_head,
+                    )
+                )
+            except (
+                WitnessQuorumError,
+                ExternalWitnessRosterError,
+                FoundationWitnessError,
+            ) as exc:
                 reason = str(exc) or "trust-witness-membership-unverified"
                 return None, reason, {
                     "status": "invalid",
@@ -1035,6 +1051,30 @@ def _shine_ai_verification_keyset(
                 or quorum.get(
                     "external_roster_storage_checkpoint_independent"
                 ) is not True
+                or int(
+                    quorum.get("external_roster_head_sequence") or 0
+                ) != int(live_roster_head.get("sequence") or 0)
+                or quorum.get("external_roster_head_sha256")
+                    != live_roster_head.get("headSha256")
+                or quorum.get(
+                    "external_roster_head_checkpoint_sha256"
+                ) != live_roster_head.get("checkpointSha256")
+                or quorum.get(
+                    "external_roster_head_witness_status"
+                ) != "verified"
+                or quorum.get("external_roster_head_witness_id")
+                    != live_roster_head_witness.get("witness_id")
+                or live_roster_head_witness.get("status") != "verified"
+                or live_roster_head_witness.get("sequence")
+                    != live_roster_head.get("sequence")
+                or live_roster_head_witness.get("head_sha256")
+                    != live_roster_head.get("headSha256")
+                or live_roster_head_witness.get("generation")
+                    != live_roster_head.get("generation")
+                or live_roster_head_witness.get("policy_sha256")
+                    != live_roster_head.get("policySha256")
+                or live_roster_head_witness.get("state_sha256")
+                    != live_roster_head.get("stateSha256")
             ):
                 return None, "trust-witness-quorum-policy-cache-mismatch", {
                     "status": "invalid",
@@ -1823,6 +1863,13 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                             "external_roster_storage_state_sha256",
                             "external_roster_storage_checkpoint_independent",
                             "external_roster_storage_checkpoint_retention",
+                            "external_roster_head_sequence",
+                            "external_roster_head_sha256",
+                            "external_roster_head_checkpoint_sha256",
+                            "external_roster_head_witness_status",
+                            "external_roster_head_witness_id",
+                            "external_roster_head_witness_mode",
+                            "external_roster_head_witness_independent_retention",
                             "minimum_witnesses", "verified_witness_count",
                             "witness_ids", "sequence", "head_sha256",
                             "generation", "keyset_sha256", "state_sha256",
