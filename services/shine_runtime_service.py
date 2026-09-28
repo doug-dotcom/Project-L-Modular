@@ -30,6 +30,7 @@ from services.foundation_trust_witness import (
 from services.shine_witness_quorum import (
     WitnessQuorumError,
     ensure_trust_witness_quorum,
+    load_persisted_quorum_policy,
 )
 from services.shine_ai_trace_verifier import (
     digest_verification_keyset,
@@ -861,6 +862,28 @@ def _shine_ai_verification_keyset(
                 return None, "trust-witness-quorum-unverified", {
                     "status": "invalid",
                     "reason_code": "trust-witness-quorum-unverified",
+                }
+            try:
+                persisted_policy = load_persisted_quorum_policy(db)
+            except WitnessQuorumError as exc:
+                reason = str(exc) or "trust-witness-quorum-policy-unverified"
+                return None, reason, {
+                    "status": "invalid",
+                    "reason_code": reason,
+                }
+            if (
+                quorum.get("policy_sha256")
+                != persisted_policy.get("policySha256")
+                or int(quorum.get("policy_generation") or 0)
+                != int(persisted_policy.get("generation") or 0)
+                or int(quorum.get("minimum_witnesses") or 0)
+                != int(persisted_policy.get("minimumWitnesses") or 0)
+                or quorum.get("witness_ids")
+                != persisted_policy.get("acceptedWitnessIds")
+            ):
+                return None, "trust-witness-quorum-policy-cache-mismatch", {
+                    "status": "invalid",
+                    "reason_code": "trust-witness-quorum-policy-cache-mismatch",
                 }
         elif _foundation_witness_required():
             witness = cached_trust.get("external_witness")
