@@ -1921,6 +1921,24 @@ def test_cached_quorum_without_foundation_chain_fails_closed(
                     "5a444bfc1b3816def3ad06530303f497"
                     "c3579ca1b3c1afb19da6e2bc167f633b",
                 "policy_storage_checkpoint_independent": True,
+                "external_roster_generation": 1,
+                "external_roster_policy_sha256":
+                    "a5c456d49e47f1be3f2a7b7ed017328"
+                    "844484ba05c4e6ef3212412c6361156c4",
+                "external_roster_minimum_witnesses": 2,
+                "external_roster_witness_ids": [
+                    "foundation-project-l",
+                    "redis-project-l",
+                ],
+                "external_roster_trust_persisted": True,
+                "external_roster_trust_source":
+                    "project-l-supabase",
+                "external_roster_storage_authenticated": True,
+                "external_roster_storage_auth_key_id": "roster-a",
+                "external_roster_storage_state_sha256": "f" * 64,
+                "external_roster_storage_checkpoint_independent": True,
+                "external_roster_storage_checkpoint_retention":
+                    "railway-redis-volume",
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
@@ -2068,6 +2086,24 @@ def test_cached_quorum_without_chain_checkpoint_fails_closed(
                     "5a444bfc1b3816def3ad06530303f497"
                     "c3579ca1b3c1afb19da6e2bc167f633b",
                 "policy_storage_checkpoint_independent": True,
+                "external_roster_generation": 1,
+                "external_roster_policy_sha256":
+                    "a5c456d49e47f1be3f2a7b7ed017328"
+                    "844484ba05c4e6ef3212412c6361156c4",
+                "external_roster_minimum_witnesses": 2,
+                "external_roster_witness_ids": [
+                    "foundation-project-l",
+                    "redis-project-l",
+                ],
+                "external_roster_trust_persisted": True,
+                "external_roster_trust_source":
+                    "project-l-supabase",
+                "external_roster_storage_authenticated": True,
+                "external_roster_storage_auth_key_id": "roster-a",
+                "external_roster_storage_state_sha256": "f" * 64,
+                "external_roster_storage_checkpoint_independent": True,
+                "external_roster_storage_checkpoint_retention":
+                    "railway-redis-volume",
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
@@ -2179,6 +2215,24 @@ def test_cached_quorum_detects_checkpoint_ahead_rollback(
                     "5a444bfc1b3816def3ad06530303f497"
                     "c3579ca1b3c1afb19da6e2bc167f633b",
                 "policy_storage_checkpoint_independent": True,
+                "external_roster_generation": 1,
+                "external_roster_policy_sha256":
+                    "a5c456d49e47f1be3f2a7b7ed017328"
+                    "844484ba05c4e6ef3212412c6361156c4",
+                "external_roster_minimum_witnesses": 2,
+                "external_roster_witness_ids": [
+                    "foundation-project-l",
+                    "redis-project-l",
+                ],
+                "external_roster_trust_persisted": True,
+                "external_roster_trust_source":
+                    "project-l-supabase",
+                "external_roster_storage_authenticated": True,
+                "external_roster_storage_auth_key_id": "roster-a",
+                "external_roster_storage_state_sha256": "f" * 64,
+                "external_roster_storage_checkpoint_independent": True,
+                "external_roster_storage_checkpoint_retention":
+                    "railway-redis-volume",
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
@@ -2312,6 +2366,24 @@ def test_cached_quorum_without_redis_chain_checkpoint_fails_closed(
                     "5a444bfc1b3816def3ad06530303f497"
                     "c3579ca1b3c1afb19da6e2bc167f633b",
                 "policy_storage_checkpoint_independent": True,
+                "external_roster_generation": 1,
+                "external_roster_policy_sha256":
+                    "a5c456d49e47f1be3f2a7b7ed017328"
+                    "844484ba05c4e6ef3212412c6361156c4",
+                "external_roster_minimum_witnesses": 2,
+                "external_roster_witness_ids": [
+                    "foundation-project-l",
+                    "redis-project-l",
+                ],
+                "external_roster_trust_persisted": True,
+                "external_roster_trust_source":
+                    "project-l-supabase",
+                "external_roster_storage_authenticated": True,
+                "external_roster_storage_auth_key_id": "roster-a",
+                "external_roster_storage_state_sha256": "f" * 64,
+                "external_roster_storage_checkpoint_independent": True,
+                "external_roster_storage_checkpoint_retention":
+                    "railway-redis-volume",
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
@@ -2465,6 +2537,24 @@ def test_cached_quorum_detects_redis_checkpoint_ahead_rollback(
                     "5a444bfc1b3816def3ad06530303f497"
                     "c3579ca1b3c1afb19da6e2bc167f633b",
                 "policy_storage_checkpoint_independent": True,
+                "external_roster_generation": 1,
+                "external_roster_policy_sha256":
+                    "a5c456d49e47f1be3f2a7b7ed017328"
+                    "844484ba05c4e6ef3212412c6361156c4",
+                "external_roster_minimum_witnesses": 2,
+                "external_roster_witness_ids": [
+                    "foundation-project-l",
+                    "redis-project-l",
+                ],
+                "external_roster_trust_persisted": True,
+                "external_roster_trust_source":
+                    "project-l-supabase",
+                "external_roster_storage_authenticated": True,
+                "external_roster_storage_auth_key_id": "roster-a",
+                "external_roster_storage_state_sha256": "f" * 64,
+                "external_roster_storage_checkpoint_independent": True,
+                "external_roster_storage_checkpoint_retention":
+                    "railway-redis-volume",
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
