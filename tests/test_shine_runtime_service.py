@@ -659,7 +659,7 @@ class FakeTrustDB:
 
         class Call:
             def execute(self):
-                if name == "shine_ai_trace_trust_snapshot_v3":
+                if name == "shine_ai_trace_trust_snapshot_v2":
                     return db._snapshot(2)
                 if name == "shine_ai_trace_trust_snapshot_v3":
                     return db._snapshot(3)
