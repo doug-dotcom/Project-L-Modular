@@ -481,7 +481,7 @@ def test_runtime_trace_binds_recovery_control_plane_without_private_content():
     changed["recovery"]["reason_codes"] = ["PRIVATE-REASON-TEXT-NOT-HASHED"]
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v3"
+    assert first["version"] == "shine/runtime-trace-v4"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-REASON-TEXT-NOT-HASHED" not in json.dumps(second)
 
@@ -714,7 +714,7 @@ def test_runtime_trace_binds_authenticity_without_signature_bytes():
     changed["components"]["shine_ai"]["decision_trace_authenticity"]["authenticated"] = False
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v3"
+    assert first["version"] == "shine/runtime-trace-v4"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(first)
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(second)
@@ -752,7 +752,10 @@ def test_signed_transition_advances_durable_trust_once(monkeypatch):
     }
     # Use a distinct valid digest in this orchestration test; cryptographic
     # transition correctness is independently tested in the verifier suite.
-    next_keyset["keyset_sha256"] = runtime.digest_verification_keyset(next_keyset)
+    next_keyset["keyset_sha256"] = runtime._canonical_sha256({
+        "version": 1,
+        "keys": next_keyset["verification_keys"],
+    })
     monkeypatch.setattr(
         runtime,
         "verify_keyset_transition",
