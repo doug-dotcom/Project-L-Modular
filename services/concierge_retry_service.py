@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import threading
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -245,7 +246,13 @@ def _local_inputs_for_claim(job: dict, claim: dict) -> dict | None:
             return None
         selected[capability_id] = value
     try:
-        size = len(str(selected).encode("utf-8"))
+        size = len(
+            json.dumps(
+                selected,
+                ensure_ascii=False,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        )
     except Exception:
         return None
     if size > MAX_LOCAL_INPUT_BYTES:
@@ -420,21 +427,32 @@ def run_concierge_retry_once(
         }
 
     if status == "partial":
-        # Foundation execution already queued the next retry for the still-transient
-        # capability subset. Close this claimed job to avoid duplicating that queue.
+        next_retry_scheduled = isinstance(resume.get("retry"), dict)
+        # A normal partial resume queues its own next subset. If that queue write
+        # failed, requeue the claimed job instead of silently losing unfinished work.
         finish = _finish_remote_retry(
             db,
             claim,
-            outcome="completed",
-            reason_code="concierge-resume-partial-requeued",
+            outcome="completed" if next_retry_scheduled else "retry",
+            reason_code=(
+                "concierge-resume-partial-requeued"
+                if next_retry_scheduled
+                else "concierge-resume-partial-retry-queue-missing"
+            ),
             foundation_url=foundation_url,
             post_impl=post_impl,
         )
         return {
             "status": "partial",
-            "reason_code": "concierge-resume-partial-requeued",
+            "reason_code": (
+                "concierge-resume-partial-requeued"
+                if next_retry_scheduled
+                else "concierge-resume-partial-retry-queue-missing"
+            ),
             "finish_status": finish.get("status"),
-            "next_retry_scheduled": isinstance(resume.get("retry"), dict),
+            "next_retry_scheduled": next_retry_scheduled or (
+                finish.get("status") == "ok"
+            ),
             "reused_count": sum(
                 1 for row in resume.get("results") or []
                 if isinstance(row, dict) and row.get("reused") is True
