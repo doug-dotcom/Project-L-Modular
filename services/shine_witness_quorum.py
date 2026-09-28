@@ -1447,6 +1447,14 @@ def ensure_trust_witness_quorum(
             roster["roster_storage_checkpoint_retention"],
         "external_roster_storage_rotation":
             roster["roster_storage_rotation"],
+        "external_roster_transition_evidence_status":
+            roster["roster_transition_evidence_status"],
+        "external_roster_transition_evidence_generation":
+            roster["roster_transition_evidence_generation"],
+        "external_roster_transition_evidence_sha256":
+            roster["roster_transition_evidence_sha256"],
+        "external_roster_transition_evidence_retention":
+            roster["roster_transition_evidence_retention"],
         "external_roster_head_verified":
             roster["roster_head_verified"],
         "external_roster_head_sequence":
