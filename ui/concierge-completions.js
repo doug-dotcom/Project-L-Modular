@@ -185,6 +185,10 @@
         if (eventType === 'retry-completed') {
             const answer = await verifiedAnswer(event);
             render(eventId, eventType, answer);
+            const sourceMessageId = String(event.sourceMessageId || event.requestId || '');
+            if (UUID.test(sourceMessageId) && typeof window.clearPendingRequest === 'function') {
+                try { window.clearPendingRequest(sourceMessageId); } catch (_) {}
+            }
         } else if (eventType === 'retry-abandoned') {
             render(
                 eventId,
