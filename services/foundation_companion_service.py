@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+from hashlib import sha256
 from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID
@@ -816,12 +817,13 @@ def _store_pending_concierge_job(
     inputs: dict,
     source_conversation_id: str | None = None,
     source_message_id: str | None = None,
+    request_text: str | None = None,
 ) -> None:
     existing = (
         db.table("companion_foundation_pending_jobs")
         .select(
             "job_id,user_id,link_request_id,purpose,capability_ids,inputs,"
-            "source_conversation_id,source_message_id,status"
+            "source_conversation_id,source_message_id,request_text,status"
         )
         .eq("job_id", job_id)
         .limit(2)
@@ -840,6 +842,7 @@ def _store_pending_concierge_job(
             and dict(row.get("inputs") or {}) == inputs
             and str(row.get("source_conversation_id") or "") == str(source_conversation_id or "")
             and str(row.get("source_message_id") or "") == str(source_message_id or "")
+            and str(row.get("request_text") or "") == str(request_text or "")
         )
         if not exact:
             raise RuntimeError("concierge-local-replay-conflict")
@@ -862,8 +865,112 @@ def _store_pending_concierge_job(
             if source_message_id is not None
             else None
         ),
+        "request_text": (
+            str(request_text)[:100000]
+            if request_text is not None
+            else None
+        ),
         "status": "ready",
     }).execute()
+
+
+def _canonical_json_sha256(value: dict) -> str:
+    return sha256(
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def store_delayed_synthesis_packet(
+    db,
+    *,
+    user_id: str,
+    request_id: str,
+    result_packet: dict,
+) -> dict:
+    if not isinstance(result_packet, dict):
+        raise ValueError("delayed synthesis packet must be an object")
+    encoded = json.dumps(
+        result_packet,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    if len(encoded) > 128 * 1024:
+        raise ValueError("delayed synthesis packet too large")
+    digest = sha256(encoded).hexdigest()
+    result = _rpc_data(
+        db,
+        "companion_store_delayed_synthesis_packet_v1",
+        {
+            "p_user_id": _uuid(user_id),
+            "p_request_id": _uuid(request_id),
+            "p_packet": result_packet,
+            "p_packet_sha256": digest,
+        },
+    )
+    if not isinstance(result, dict) or result.get("stored") is not True:
+        raise RuntimeError("delayed-synthesis-packet-store-failed")
+    return {
+        "packet_sha256": digest,
+        "synthesis_status": str(result.get("synthesisStatus") or "pending"),
+        "replayed": result.get("replayed") is True,
+    }
+
+
+def delayed_synthesis_state(
+    db,
+    *,
+    user_id: str,
+    request_id: str,
+) -> dict:
+    result = _rpc_data(
+        db,
+        "companion_delayed_synthesis_state_v1",
+        {
+            "p_user_id": _uuid(user_id),
+            "p_request_id": _uuid(request_id),
+        },
+    )
+    if not isinstance(result, dict):
+        raise RuntimeError("delayed-synthesis-state-unavailable")
+    return result
+
+
+def store_delayed_synthesis_answer(
+    db,
+    *,
+    user_id: str,
+    request_id: str,
+    packet_sha256: str,
+    answer: str,
+) -> dict:
+    clean = str(answer or "").strip()
+    if not clean or len(clean) > 50000:
+        raise ValueError("delayed synthesis answer invalid")
+    answer_sha = sha256(clean.encode("utf-8")).hexdigest()
+    result = _rpc_data(
+        db,
+        "companion_store_delayed_synthesis_answer_v1",
+        {
+            "p_user_id": _uuid(user_id),
+            "p_request_id": _uuid(request_id),
+            "p_packet_sha256": str(packet_sha256 or ""),
+            "p_answer": clean,
+            "p_answer_sha256": answer_sha,
+        },
+    )
+    if not isinstance(result, dict) or result.get("stored") is not True:
+        raise RuntimeError("delayed-synthesis-answer-store-failed")
+    return {
+        "answer_sha256": answer_sha,
+        "synthesis_status": str(result.get("synthesisStatus") or "ready"),
+        "replayed": result.get("replayed") is True,
+    }
 
 
 def set_pending_concierge_job_status(
@@ -901,6 +1008,7 @@ def invoke_foundation_orchestration(
     post_impl=None,
     source_conversation_id: str | None = None,
     source_message_id: str | None = None,
+    request_text: str | None = None,
 ) -> dict:
     """Execute the ready subset of one validated Concierge plan through Foundation.
 
@@ -1041,6 +1149,7 @@ def invoke_foundation_orchestration(
             inputs=inputs,
             source_conversation_id=source_conversation_id,
             source_message_id=source_message_id,
+            request_text=request_text,
         )
     except Exception:
         return {
