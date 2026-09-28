@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from services.foundation_companion_service import (
+    cancel_foundation_concierge_request_as_user,
     claim_delayed_completion,
     ensure_foundation_delegation,
     foundation_account_owner,
@@ -110,6 +111,31 @@ def routes(db) -> APIRouter:
         except Exception as exc:
             raise HTTPException(
                 503, "Concierge completion status is temporarily unavailable."
+            ) from exc
+
+    @router.post("/completions/{request_id}/cancel")
+    def cancel_completion(
+        request_id: str,
+        request: Request,
+    ) -> dict:
+        try:
+            request_uuid = str(UUID(request_id))
+        except ValueError as exc:
+            raise HTTPException(400, "A valid Concierge request ID is required.") from exc
+        try:
+            return cancel_foundation_concierge_request_as_user(
+                db,
+                owner_id(request),
+                request_id=request_uuid,
+                authorization=request.headers.get("authorization", ""),
+            )
+        except HTTPException:
+            raise
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from exc
+        except Exception as exc:
+            raise HTTPException(
+                503, "Concierge cancellation is temporarily unavailable."
             ) from exc
 
     @router.post("/completions/{event_id}/ack")
