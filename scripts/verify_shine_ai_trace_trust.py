@@ -70,6 +70,18 @@ def main() -> None:
         or quorum.get("policy_storage_checkpoint_independent") is not True
         or not quorum.get("policy_storage_auth_key_id")
         or not quorum.get("policy_storage_state_sha256")
+        or int(quorum.get("external_roster_generation") or 0) != 1
+        or quorum.get("external_roster_policy_sha256")
+            != "a5c456d49e47f1be3f2a7b7ed017328844484ba05c4e6ef3212412c6361156c4"
+        or int(quorum.get("external_roster_minimum_witnesses") or 0) != 2
+        or quorum.get("external_roster_witness_ids")
+            != ["foundation-project-l", "redis-project-l"]
+        or quorum.get("external_roster_trust_persisted") is not True
+        or quorum.get("external_roster_storage_authenticated") is not True
+        or quorum.get("external_roster_storage_checkpoint_independent")
+            is not True
+        or not quorum.get("external_roster_storage_auth_key_id")
+        or not quorum.get("external_roster_storage_state_sha256")
     ):
         raise SystemExit(
             "Project L Shine-AI trace trust smoke: FAIL "
@@ -178,6 +190,9 @@ def main() -> None:
         f"policy=persisted-g{quorum.get('policy_trust_generation')} "
         f"policy_storage={quorum.get('policy_storage_auth_key_id')} "
         f"policy_checkpoint={quorum.get('policy_storage_checkpoint_retention')} "
+        f"roster=persisted-g{quorum.get('external_roster_generation')} "
+        f"roster_storage={quorum.get('external_roster_storage_auth_key_id')} "
+        f"roster_checkpoint={quorum.get('external_roster_storage_checkpoint_retention')} "
         f"foundation_chain=verified "
         f"chain_checkpoint=verified "
         f"chain_checkpoint_redundancy=2/2"
