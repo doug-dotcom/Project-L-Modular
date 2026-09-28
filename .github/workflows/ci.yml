@@ -75,6 +75,11 @@ jobs:
           python -c
           "import fastapi, openai, supabase, tiktoken, tavily, uvicorn, yaml"
 
+      - name: Verify delayed Concierge completion UI
+        run: >-
+          node --check ui/concierge-completions.js
+          && node tests/test_layer189_concierge_completion_ui.js
+
       - name: Certify Shine Defence sensitive-memory boundary
         run: python scripts/certify_shine_defence.py
 
