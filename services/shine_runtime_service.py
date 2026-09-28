@@ -989,10 +989,14 @@ def load_runtime_execution(
     except Exception:
         return {"status": "unavailable", "results": [], "tasks": []}
 
-    deadline = time.monotonic() + max(0.0, min(float(wait_seconds), 12.0))
+    started = time.monotonic()
+    deadline = started + max(0.0, min(float(wait_seconds), 12.0))
     tasks = []
     results = []
+    active = False
+    observation_poll_count = 0
     while True:
+        observation_poll_count += 1
         try:
             task_rows = (
                 db.table("concierge_tasks")
@@ -1013,7 +1017,15 @@ def load_runtime_execution(
             tasks = task_rows.data if isinstance(task_rows.data, list) else []
             results = result_rows.data if isinstance(result_rows.data, list) else []
         except Exception:
-            return {"status": "unavailable", "request_id": request_id, "results": [], "tasks": []}
+            return {
+                "status": "unavailable",
+                "request_id": request_id,
+                "results": [],
+                "tasks": [],
+                "observation_poll_count": observation_poll_count,
+                "observation_timed_out": False,
+                "observation_ms": round((time.monotonic() - started) * 1000),
+            }
 
         if results:
             break
@@ -1043,11 +1055,19 @@ def load_runtime_execution(
         if isinstance(row, dict)
     ]
     status = "completed" if clean_results else "pending" if clean_tasks else "empty"
+    observation_timed_out = bool(
+        active
+        and not clean_results
+        and time.monotonic() >= deadline
+    )
     return {
         "status": status,
         "request_id": request_id,
         "results": clean_results,
         "tasks": clean_tasks,
+        "observation_poll_count": observation_poll_count,
+        "observation_timed_out": observation_timed_out,
+        "observation_ms": round((time.monotonic() - started) * 1000),
     }
 
 
