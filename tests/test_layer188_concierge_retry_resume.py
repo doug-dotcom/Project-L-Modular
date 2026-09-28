@@ -295,3 +295,56 @@ def test_terminal_resume_failure_marks_local_failed_and_emits_abandoned_event():
     assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "failed"
     outbox = db.tables["companion_concierge_completion_outbox"]
     assert outbox[0]["event_type"] == "retry-abandoned"
+
+
+
+def test_partial_without_new_foundation_retry_requeues_old_claim():
+    finishes = []
+
+    def post(url, *, json, **kwargs):
+        if url.endswith("/retry/claim"):
+            return Response(200, claim_payload())
+        if url.endswith("/concierge/resume"):
+            return Response(200, {
+                "status": "partial",
+                "reasonCode": "concierge-execution-partial",
+                "results": [],
+                "synthesisReady": True,
+                "synthesisMustDisclosePartial": True,
+            })
+        if url.endswith("/retry/finish"):
+            finishes.append(json["outcome"])
+            return Response(200, {
+                "status": "ok",
+                "reasonCode": "retry-finished",
+                "retry": {"status": "requeued"},
+            })
+        raise AssertionError(url)
+
+    db = FakeDb()
+    result = run_concierge_retry_once(db, post_impl=post)
+    assert result["status"] == "partial"
+    assert finishes == ["retry"]
+    assert result["next_retry_scheduled"] is True
+    assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "ready"
+
+
+def test_server_lifecycle_starts_and_stops_retry_runner():
+    from pathlib import Path
+
+    source = Path("api/server.py").read_text(encoding="utf-8")
+    assert "ConciergeRetryRunner" in source
+    assert "concierge_retry_runner.start()" in source
+    assert "concierge_retry_runner.stop()" in source
+    assert "source_conversation_id=conversation_scope" in source
+    assert "source_message_id=request_id" in source
+
+
+def test_foundation_api_exposes_leased_completion_claim_and_ack():
+    from pathlib import Path
+
+    source = Path("api/foundation_companion.py").read_text(encoding="utf-8")
+    assert '@router.post("/completions/claim")' in source
+    assert '@router.post("/completions/{event_id}/ack")' in source
+    assert "companion_claim_completion_event_v2" in source
+    assert "companion_ack_completion_event_v2" in source
