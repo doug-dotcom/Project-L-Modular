@@ -375,6 +375,53 @@ def _completion_packet(claim: dict, resume: dict) -> dict:
     }
 
 
+def _cancellation_result(
+    db,
+    claim: dict,
+    *,
+    foundation_url: str | None = None,
+    post_impl=None,
+) -> dict | None:
+    job = _load_local_job(
+        db,
+        claim["owner_shine_id"],
+        claim["request_id"],
+    )
+    if job is None:
+        return None
+    state = str(job.get("status") or "")
+    reason = str(
+        job.get("cancellation_reason") or "concierge-request-cancelled"
+    )[:160]
+    superseded_by = str(job.get("superseded_by_request_id") or "") or None
+
+    if state == "cancelling":
+        return {
+            "status": "cancelling",
+            "reason_code": reason,
+            "finish_status": "claim-held-for-cancellation",
+            "superseded_by_request_id": superseded_by,
+        }
+
+    if state == "cancelled":
+        finish = _finish_remote_retry(
+            db,
+            claim,
+            outcome="abandoned",
+            reason_code=reason,
+            foundation_url=foundation_url,
+            post_impl=post_impl,
+        )
+        return {
+            "status": "cancelled",
+            "reason_code": reason,
+            "finish_status": finish.get("status"),
+            "superseded_by_request_id": superseded_by,
+        }
+
+    return None
+
+
 def run_concierge_retry_once(
     db,
     *,
@@ -390,28 +437,27 @@ def run_concierge_retry_once(
     if claim.get("status") != "claimed":
         return claim
 
+    cancellation = _cancellation_result(
+        db,
+        claim,
+        foundation_url=foundation_url,
+        post_impl=post_impl,
+    )
+    if cancellation is not None:
+        return cancellation
+
     job = _load_local_job(db, claim["owner_shine_id"], claim["request_id"])
-    if job is not None and str(job.get("status") or "") == "cancelled":
-        reason = str(job.get("cancellation_reason") or "concierge-request-cancelled")[:160]
-        finish = _finish_remote_retry(
+    inputs = _local_inputs_for_claim(job, claim) if job else None
+    if job is None or inputs is None:
+        cancellation = _cancellation_result(
             db,
             claim,
-            outcome="abandoned",
-            reason_code=reason,
             foundation_url=foundation_url,
             post_impl=post_impl,
         )
-        return {
-            "status": "cancelled",
-            "reason_code": reason,
-            "finish_status": finish.get("status"),
-            "superseded_by_request_id": (
-                str(job.get("superseded_by_request_id") or "") or None
-            ),
-        }
+        if cancellation is not None:
+            return cancellation
 
-    inputs = _local_inputs_for_claim(job, claim) if job else None
-    if job is None or inputs is None:
         finish = _finish_remote_retry(
             db,
             claim,
@@ -422,12 +468,22 @@ def run_concierge_retry_once(
         )
         if job:
             try:
-                set_pending_concierge_job_status(
+                transitioned = set_pending_concierge_job_status(
                     db,
                     user_id=claim["owner_shine_id"],
                     job_id=claim["request_id"],
                     status="failed",
                 )
+                if not transitioned:
+                    cancellation = _cancellation_result(
+                        db,
+                        claim,
+                        foundation_url=foundation_url,
+                        post_impl=post_impl,
+                    )
+                    if cancellation is not None:
+                        return cancellation
+                    raise RuntimeError("concierge-local-state-transition-rejected")
                 _emit_completion_event(
                     db,
                     job=job,
@@ -451,6 +507,15 @@ def run_concierge_retry_once(
         post_impl=post_impl,
     )
     status = resume.get("status")
+
+    cancellation = _cancellation_result(
+        db,
+        claim,
+        foundation_url=foundation_url,
+        post_impl=post_impl,
+    )
+    if cancellation is not None:
+        return cancellation
 
     if status == "completed":
         # Foundation checkpoints are now terminal specialist truth. Freeze that
@@ -527,15 +592,38 @@ def run_concierge_retry_once(
                 generated_at=str(generated.get("generated_at") or ""),
             )
 
+        cancellation = _cancellation_result(
+            db,
+            claim,
+            foundation_url=foundation_url,
+            post_impl=post_impl,
+        )
+        if cancellation is not None:
+            return cancellation
+
         # Only an answer-bound completion becomes surfaceable. This is written
         # before retry-finish; a lost finish acknowledgement can therefore replay
         # checkpoints and the already-hashed answer without another model call.
-        set_pending_concierge_job_status(
+        transitioned = set_pending_concierge_job_status(
             db,
             user_id=claim["owner_shine_id"],
             job_id=claim["request_id"],
             status="completed",
         )
+        if not transitioned:
+            cancellation = _cancellation_result(
+                db,
+                claim,
+                foundation_url=foundation_url,
+                post_impl=post_impl,
+            )
+            if cancellation is not None:
+                return cancellation
+            return {
+                "status": "unavailable",
+                "reason_code": "concierge-local-state-transition-rejected",
+                "finish_status": "claim-held-for-recovery",
+            }
         _emit_completion_event(
             db,
             job=job,
@@ -618,12 +706,26 @@ def run_concierge_retry_once(
             ),
         }
 
-    set_pending_concierge_job_status(
+    transitioned = set_pending_concierge_job_status(
         db,
         user_id=claim["owner_shine_id"],
         job_id=claim["request_id"],
         status="failed",
     )
+    if not transitioned:
+        cancellation = _cancellation_result(
+            db,
+            claim,
+            foundation_url=foundation_url,
+            post_impl=post_impl,
+        )
+        if cancellation is not None:
+            return cancellation
+        return {
+            "status": "unavailable",
+            "reason_code": "concierge-local-state-transition-rejected",
+            "finish_status": "claim-held-for-recovery",
+        }
     _emit_completion_event(
         db,
         job=job,
