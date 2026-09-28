@@ -213,4 +213,4 @@ def test_saved_answers_orders_attention_before_newest_and_never_auto_executes():
     assert "right.job.attentionOrder" in index
     assert "taskCentreJob.attentionReason" in index
     assert "taskCentreJob.planUrgencyText" in index
-    assert 'concierge-completions.js?v=197' in index
+    assert 'src="/ui/concierge-completions.js?v=' in index
