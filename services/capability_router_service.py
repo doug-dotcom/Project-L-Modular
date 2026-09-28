@@ -55,13 +55,23 @@ def foundation_specialist_interest(message: str) -> bool:
     )
 
 
-def _foundation_candidate(text: str) -> str | None:
-    matches = [
+def _foundation_matches(text: str) -> list[str]:
+    return [
         capability
         for capability, hints in FOUNDATION_SPECIALIST_HINTS.items()
         if any(hint in text for hint in hints)
     ]
+
+
+def _foundation_candidate(text: str) -> str | None:
+    matches = _foundation_matches(text)
     return matches[0] if len(matches) == 1 else None
+
+
+def needs_concierge_planning(message: str) -> bool:
+    """Use Shine AI only when deterministic specialist routing is ambiguous."""
+    text = _normalise(message)
+    return len(_foundation_matches(text)) > 1
 
 
 def _foundation_route_packet(fleet: dict | None, capability_id: str) -> dict:
@@ -119,7 +129,12 @@ def _run(capability: str, handler, message: str) -> dict:
         }
 
 
-def route_capability(message: str, write_guard=None, foundation_fleet=None) -> dict:
+def route_capability(
+    message: str,
+    write_guard=None,
+    foundation_fleet=None,
+    concierge_plan=None,
+) -> dict:
     text = _normalise(message)
 
     from services.google_workspace_service import (
@@ -207,6 +222,19 @@ def route_capability(message: str, write_guard=None, foundation_fleet=None) -> d
             "status": route_status,
             "foundation_specialist": specialist,
         }
+
+    if isinstance(concierge_plan, dict):
+        plan_status = str(concierge_plan.get("status") or "unavailable")
+        selected = concierge_plan.get("selected_capabilities")
+        selected = selected if isinstance(selected, list) else []
+        if selected or plan_status not in {"not_required", ""}:
+            return {
+                "handled": False,
+                "capability": "foundation_orchestration",
+                "reply": "",
+                "status": plan_status,
+                "foundation_orchestration": concierge_plan,
+            }
 
     from services.external_research_service import research, should_handle
     if should_handle(message) and not _personal_reflection(text):
