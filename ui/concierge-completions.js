@@ -352,7 +352,7 @@
             '/foundation/completions/' + encodeURIComponent(id) + '/cancel',
             {method: 'POST'},
         );
-        if (!['cancelled', 'already-cancelled', 'cancelling'].includes(String(result.status || ''))) {
+        if (!['cancelled', 'already-cancelled', 'cancelling', 'retired'].includes(String(result.status || ''))) {
             throw new Error('pending-concierge-cancellation-failed');
         }
         return result;
