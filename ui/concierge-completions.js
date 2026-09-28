@@ -439,6 +439,33 @@
         return lines.join('\n');
     }
 
+    function planTtlText(job) {
+        const ttl = job?.plan_ttl;
+        if (!ttl || ttl.server_authoritative !== true) return '';
+
+        if (ttl.state === 'counting-down') {
+            const seconds = Number(ttl.seconds_remaining);
+            if (!Number.isSafeInteger(seconds) || seconds <= 0 || seconds > 3600) return '';
+            const minutes = Math.ceil(seconds / 60);
+            const expiry = new Date(ttl.expires_at);
+            const when = Number.isFinite(expiry.getTime())
+                ? expiry.toLocaleTimeString('en-AU', {hour: 'numeric', minute: '2-digit'})
+                : null;
+            const remaining = seconds < 90
+                ? 'about a minute'
+                : minutes + ' min';
+            return 'Waiting to execute · expires in ' + remaining
+                + (when ? ' (' + when + ')' : '') + '.';
+        }
+        if (ttl.state === 'expiry-due') {
+            return 'Expiry due · Foundation will retire this unused plan before execution.';
+        }
+        if (ttl.state === 'started-exempt') {
+            return 'Execution started · the one-hour plan deadline no longer applies.';
+        }
+        return '';
+    }
+
     async function taskCentre(limit = 50) {
         const bounded = Number.isSafeInteger(limit)
             ? Math.max(1, Math.min(100, limit))
@@ -520,9 +547,11 @@
                 cancellationReceipt: receipt || null,
                 retirementReceiptIntegrity: retirementIntegrity,
                 retirementReceipt: retirement || null,
+                planTtl: item.plan_ttl || null,
             };
             projected.cancellationText = cancellationReceiptText(item);
             projected.retirementText = retirementReceiptText(item);
+            projected.planTtlText = planTtlText(item);
             return [projected];
         });
     }
