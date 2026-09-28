@@ -126,3 +126,50 @@ def test_foundation_witness_readback_cross_checks_append_only_event():
     assert "v_event.auth_tag is distinct from v_state.auth_tag" in current
     assert "v_event.client_id is distinct from v_state.client_id" in current
     assert "witness-history-integrity-failed" in current
+
+
+def _record_function_source() -> str:
+    sql = sql_source()
+    return sql.split(
+        "create or replace function foundation."
+        "project_l_trace_witness_record_v1"
+    )[1].split(
+        "revoke all on function foundation."
+        "project_l_trace_witness_current_v1"
+    )[0]
+
+
+def test_witness_write_path_authenticates_current_row_before_decision():
+    record = _record_function_source()
+
+    auth_guard = record.index("witness-current-auth-integrity-failed")
+    rollback = record.index("witness-sequence-rollback")
+    replay = record.index("'replayed',true")
+    advance = record.index("insert into foundation.project_l_trace_witness_events")
+
+    assert "v_current_expected_tag := encode(" in record
+    assert "extensions.hmac(v_current_auth_input,v_secret,'sha256')" in record
+    assert "v_current_expected_tag<>v_current.auth_tag" in record
+    assert -1 < auth_guard < rollback
+    assert auth_guard < replay
+    assert auth_guard < advance
+
+
+def test_witness_write_path_cross_checks_current_append_only_event():
+    record = _record_function_source()
+
+    history_guard = record.index("witness-current-history-integrity-failed")
+    rollback = record.index("witness-sequence-rollback")
+
+    assert "from foundation.project_l_trace_witness_events e" in record
+    assert "e.sequence=v_current.sequence" in record
+    assert "v_current.client_id<>'shine.companion'" in record
+    assert (
+        "v_current_event.auth_tag is distinct from v_current.auth_tag"
+        in record
+    )
+    assert (
+        "v_current_event.client_id is distinct from v_current.client_id"
+        in record
+    )
+    assert -1 < history_guard < rollback
