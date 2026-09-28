@@ -1323,7 +1323,7 @@ def test_layer204_generation_one_snapshot_falls_back_to_v2(monkeypatch):
                     "status": "trusted",
                     "trust_state": {
                         "trustStateVersion": 1,
-                        "trustStateType": QUORUM_POLICY_TYPE,
+                        "trustStateType": quorum.QUORUM_POLICY_TYPE,
                         "generation": 1,
                         "minimumWitnesses": 2,
                         "acceptedWitnessIds": [
@@ -1332,7 +1332,7 @@ def test_layer204_generation_one_snapshot_falls_back_to_v2(monkeypatch):
                         ],
                         "previousPolicySha256": None,
                         "policySha256":
-                            CERTIFIED_GENESIS_POLICY_SHA256,
+                            quorum.CERTIFIED_GENESIS_POLICY_SHA256,
                     },
                     "storage": {
                         "authenticated": True,
