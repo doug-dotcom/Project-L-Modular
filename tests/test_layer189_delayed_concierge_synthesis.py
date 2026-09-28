@@ -156,3 +156,34 @@ def test_large_specialist_packet_is_bounded_for_generation():
     assert result["result_context_truncated"] is True
     system = adapter.requests[0]["messages"][0]["content"]
     assert len(system) < 30000
+
+
+
+def test_layer189_migrations_keep_raw_packet_private_and_surface_only_final_answer():
+    from pathlib import Path
+
+    private_migration = Path(
+        "supabase/migrations/"
+        "20260928020437_project_l_layer189_private_concierge_evidence.sql"
+    ).read_text(encoding="utf-8")
+    claim_migration = Path(
+        "supabase/migrations/"
+        "20260928020810_project_l_layer189_completion_event_gate_fix.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "private.companion_concierge_synthesis_evidence" in private_migration
+    assert "result_packet jsonb not null" in private_migration
+    assert "drop column if exists final_result_packet" in private_migration
+    assert "finalAnswer" in claim_migration
+    assert "finalAnswerSha256" in claim_migration
+    assert "resultPacketSha256" in claim_migration
+    assert "'resultPacket'" not in claim_migration
+
+
+def test_server_injects_active_l_model_into_delayed_retry_synthesis():
+    from pathlib import Path
+
+    source = Path("api/server.py").read_text(encoding="utf-8")
+    assert "synthesise_delayed_concierge_completion" in source
+    assert "model_adapter=resolve_model_adapter()" in source
+    assert "request_text=user_message" in source
