@@ -3,6 +3,7 @@ import json
 import pytest
 
 from services import foundation_chain_redis_checkpoint as chain_redis
+from services import shine_quorum_policy_storage as policy_storage
 from services import shine_witness_quorum as quorum
 
 
@@ -35,10 +36,17 @@ class FakePolicyDB:
         *,
         inconsistent_reason=None,
         storage=None,
+        acceptance=None,
     ):
         self.state = state
         self.inconsistent_reason = inconsistent_reason
         self.storage = storage
+        self.acceptance = acceptance or {
+            "mode": "genesis-pin",
+            "authorizingWitnessIds": [],
+            "authorizationCount": 0,
+            "authorizationSha256": None,
+        }
         self.rpc_calls = []
 
     def rpc(self, name, params):
@@ -49,7 +57,8 @@ class FakePolicyDB:
             def execute(self):
                 if name in {
                     "shine_ai_witness_quorum_policy_snapshot_v1",
-                    "shine_ai_witness_quorum_policy_snapshot_v2",
+                    "shine_ai_witness_quorum_policy_snapshot_v3",
+                    "shine_ai_witness_quorum_policy_snapshot_v3",
                 }:
                     if db.inconsistent_reason:
                         return FakeResult({
@@ -62,7 +71,10 @@ class FakePolicyDB:
                         "status": "trusted",
                         "trust_state": dict(db.state),
                     }
-                    if name.endswith("_v2"):
+                    if name.endswith("_v3"):
+                        payload["acceptance"] = dict(db.acceptance)
+                        payload["ledger_rows"] = db.state["generation"]
+                    if name.endswith(("_v2", "_v3")):
                         if db.storage is None:
                             payload.update({
                                 "status": "unsealed",
@@ -173,6 +185,52 @@ class FakePolicyDB:
                         "storage_auth_key_id": target_key,
                     })
 
+                if name == "shine_ai_witness_quorum_policy_advance_v3":
+                    assert db.state is not None
+                    assert (
+                        db.state["generation"]
+                        == params["p_expected_generation"]
+                    )
+                    assert (
+                        db.state["policySha256"]
+                        == params["p_expected_policy_sha256"]
+                    )
+                    db.state = {
+                        "trustStateVersion": 1,
+                        "trustStateType":
+                            "decision_trace_trust_state_witness_quorum_policy",
+                        "generation": params["p_next_generation"],
+                        "minimumWitnesses":
+                            params["p_next_minimum_witnesses"],
+                        "acceptedWitnessIds":
+                            list(params["p_next_accepted_witness_ids"]),
+                        "previousPolicySha256":
+                            params["p_next_previous_policy_sha256"],
+                        "policySha256": params["p_next_policy_sha256"],
+                    }
+                    db.storage = {
+                        "state_sha256": params["p_state_sha256"],
+                        "storage_auth_key_id":
+                            params["p_storage_auth_key_id"],
+                        "storage_auth_tag": params["p_storage_auth_tag"],
+                    }
+                    db.acceptance = {
+                        "mode": "previous-quorum-transition",
+                        "authorizingWitnessIds":
+                            list(params["p_authorizing_witness_ids"]),
+                        "authorizationCount":
+                            len(params["p_authorizing_witness_ids"]),
+                        "authorizationSha256":
+                            params["p_authorization_sha256"],
+                    }
+                    return FakeResult({
+                        "status": "trusted",
+                        "trust_state": dict(db.state),
+                        "acceptance": dict(db.acceptance),
+                        **db.storage,
+                        "ledger_rows": db.state["generation"],
+                    })
+
                 raise AssertionError(name)
 
         return Call()
@@ -222,13 +280,21 @@ class FakeRedis:
             }
             return ["advanced"]
 
-        if len(args) == 4:
-            generation, policy_sha, state_sha, checkpoint_json = args
+        if len(args) == 5:
+            (
+                generation,
+                policy_sha,
+                state_sha,
+                previous_policy_sha,
+                checkpoint_json,
+            ) = args
             generation = int(generation)
             current = self.rows.get(key)
             if current is None:
                 if generation != 1:
                     return ["bootstrap-generation-invalid"]
+                if previous_policy_sha:
+                    return ["bootstrap-predecessor-invalid"]
                 self.rows[key] = {
                     "generation": str(generation),
                     "policy_sha256": policy_sha,
@@ -239,14 +305,26 @@ class FakeRedis:
             current_generation = int(current["generation"])
             if generation < current_generation:
                 return ["rollback"]
-            if generation > current_generation:
-                return ["generation-transition-unimplemented"]
-            if current["policy_sha256"] != policy_sha:
-                return ["equivocation"]
-            if current["state_sha256"] != state_sha:
-                return ["state-mismatch"]
-            current["checkpoint_json"] = checkpoint_json
-            return ["refreshed"]
+            if generation > current_generation + 1:
+                return ["generation-skip"]
+            if generation == current_generation:
+                if current["policy_sha256"] != policy_sha:
+                    return ["equivocation"]
+                if current["state_sha256"] != state_sha:
+                    return ["state-mismatch"]
+                current["checkpoint_json"] = checkpoint_json
+                return ["refreshed"]
+            if previous_policy_sha != current["policy_sha256"]:
+                return ["predecessor-policy-mismatch"]
+            if policy_sha == current["policy_sha256"]:
+                return ["generation-without-policy-change"]
+            self.rows[key] = {
+                "generation": str(generation),
+                "policy_sha256": policy_sha,
+                "state_sha256": state_sha,
+                "checkpoint_json": checkpoint_json,
+            }
+            return ["advanced"]
 
         (
             sequence,
@@ -423,9 +501,9 @@ def test_persisted_policy_bootstraps_from_certified_deployment_pin():
     assert db.state["policySha256"] == POLICY_SHA
     assert db.storage is not None
     assert [name for name, _params in db.rpc_calls] == [
-        "shine_ai_witness_quorum_policy_snapshot_v2",
+        "shine_ai_witness_quorum_policy_snapshot_v3",
         "shine_ai_witness_quorum_policy_bootstrap_v2",
-        "shine_ai_witness_quorum_policy_snapshot_v2",
+        "shine_ai_witness_quorum_policy_snapshot_v3",
     ]
 
 
