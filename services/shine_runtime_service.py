@@ -60,7 +60,7 @@ from services.shine_trust_storage import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v12"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v13"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -1859,6 +1859,39 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                             "policy_sha256",
                             "state_sha256",
                             "checkpoint_mode",
+                        ),
+                    ),
+                    "external_roster_storage_rotation": _project(
+                        (
+                            item.get("decision_trace_trust", {}).get(
+                                "witness_quorum",
+                                {},
+                            ).get(
+                                "external_roster_storage_rotation",
+                                {},
+                            )
+                            if (
+                                isinstance(
+                                    item.get("decision_trace_trust"),
+                                    dict,
+                                )
+                                and isinstance(
+                                    item.get(
+                                        "decision_trace_trust",
+                                        {},
+                                    ).get("witness_quorum"),
+                                    dict,
+                                )
+                            )
+                            else {}
+                        ),
+                        (
+                            "status", "mode", "generation",
+                            "policy_sha256", "state_sha256",
+                            "source_envelope_auth_key_id",
+                            "source_checkpoint_auth_key_id",
+                            "target_auth_key_id",
+                            "checkpoint_mode", "state_preserved",
                         ),
                     ),
                     "foundation_chain": _project(
