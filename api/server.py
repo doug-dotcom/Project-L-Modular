@@ -139,6 +139,7 @@ from services.foundation_companion_service import (
     foundation_fleet_status,
 )
 from services.shine_runtime_service import (
+    build_runtime_trace,
     concierge_route_packet,
     dispatch_runtime_concierge,
     load_runtime_execution,
@@ -610,6 +611,7 @@ def start_chat(
             "status": shine_runtime.get("status"),
             "components": component_status,
             "concierge_dispatch": concierge_dispatch,
+            "trace": shine_runtime.get("trace"),
         },
     }
 
@@ -1393,6 +1395,8 @@ def chat(req: ChatRequest):
             )
             runtime_route = concierge_route_packet(runtime_execution)
 
+    runtime_trace = build_runtime_trace(shine_runtime, runtime_execution)
+
     foundation_fleet = None
     runtime_foundation = (
         (shine_runtime or {}).get("components", {}).get("foundation", {})
@@ -1496,6 +1500,7 @@ def chat(req: ChatRequest):
         "shine_runtime": {
             "preflight": shine_runtime or {"status": "legacy"},
             "concierge_execution": runtime_execution,
+            "trace": runtime_trace,
         },
         "portability": portability_manifest(),
     }
@@ -1535,6 +1540,7 @@ def chat(req: ChatRequest):
         cognitive_packet["shine_runtime"] = {
             "preflight": shine_runtime or {"status": "legacy"},
             "concierge_execution": runtime_execution,
+            "trace": runtime_trace,
         }
         log(
             "COGNITIVE CONTEXT BUDGET: "
@@ -2270,6 +2276,7 @@ RESPONSE RULES:
             "status": (shine_runtime or {}).get("status", "legacy"),
             "components": component_status,
             "concierge_execution": runtime_execution.get("status"),
+            "trace": runtime_trace,
         },
         "rhee": {
             "context_size": len(rhee_context),

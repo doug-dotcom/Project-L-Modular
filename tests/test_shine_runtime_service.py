@@ -125,3 +125,159 @@ def test_preflight_keeps_component_failures_fail_soft(monkeypatch):
     assert receipt["components"]["defence"]["status"] == "unavailable"
     assert receipt["components"]["shine_ai"]["status"] == "unavailable"
     assert calls == ["concierge-intake", "defence-companion"]
+
+
+
+def test_runtime_trace_is_content_free_and_carries_shine_ai_attestation():
+    digest = "a" * 64
+    runtime_packet = {
+        "version": runtime.RUNTIME_VERSION,
+        "request_id": "4ad046b3-06a5-4e62-a3ef-17a4f83dcdde",
+        "status": "ready",
+        "warnings": [],
+        "components": {
+            "l": {
+                "status": "active",
+                "authority": "voice+synthesis+durable-task",
+                "runtime": {
+                    "provider": "railway",
+                    "commit": "commit-1",
+                    "branch": "main",
+                    "deployment": "deploy-1",
+                    "service": "Project-L-Modular",
+                    "environment": "production",
+                },
+            },
+            "foundation": {
+                "status": "healthy",
+                "specialist_count": 1,
+                "executable_count": 1,
+                "blocked_count": 0,
+                "specialists": [{
+                    "app_id": "shine-travel",
+                    "capability_id": "trip_planning",
+                    "executable": True,
+                    "runtime_available": True,
+                }],
+            },
+            "concierge": {
+                "status": "planned",
+                "request_id": "c5cce6c2-d07a-46bb-84c6-07b1bd8ec892",
+                "resolver_version": "v1",
+                "mode": "explore",
+                "dispatch_allowed": True,
+                "execution_owner": "concierge-read",
+                "selected_routes": [{
+                    "specialistKey": "travel",
+                    "capability": "trip_planning",
+                    "role": "source",
+                }],
+                "foundation_routes": ["trip_planning"],
+            },
+            "defence": {
+                "status": "completed",
+                "summary": "PRIVATE DEFENCE SUMMARY",
+                "reviews": [{
+                    "appId": "project-l",
+                    "reviewCommitSha": "abc123",
+                    "profileVersion": "1",
+                    "status": "reviewed",
+                    "limitation": "PRIVATE DEFENCE LIMITATION",
+                }],
+                "boundaries": {"snapshotOnly": True},
+            },
+            "shine_ai": {
+                "status": "ok",
+                "answer": "PRIVATE ADVISORY TEXT MUST NOT ENTER TRACE",
+                "route": "model",
+                "provider": "openai",
+                "model": "example-model",
+                "model_tier": "fast",
+                "reason": "PRIVATE ROUTING REASON",
+                "request_id": "ai-request-1",
+                "decision_trace": {
+                    "version": 1,
+                    "algorithm": "sha256",
+                    "scope": "control-plane",
+                    "service_version": "1.37.0",
+                    "service_release": "layer-137",
+                    "planning_sha256": digest,
+                    "recovery_sha256": digest,
+                    "execution_sha256": digest,
+                    "grounding_sha256": digest,
+                    "verification_sha256": digest,
+                    "delivery_sha256": digest,
+                    "lineage_sha256": digest,
+                },
+            },
+        },
+    }
+    execution = {
+        "status": "completed",
+        "request_id": "c5cce6c2-d07a-46bb-84c6-07b1bd8ec892",
+        "tasks": [{
+            "id": "task-1",
+            "specialist_key": "travel",
+            "status": "completed",
+            "action_type": "read",
+            "result_summary": "PRIVATE TASK SUMMARY",
+        }],
+        "results": [{
+            "specialist": "travel",
+            "result_type": "trip_plan",
+            "summary": "PRIVATE SPECIALIST RESULT",
+            "payload": {"secret": "PRIVATE PAYLOAD"},
+            "authoritative": True,
+        }],
+    }
+
+    trace = runtime.build_runtime_trace(runtime_packet, execution)
+    rendered = json.dumps(trace, sort_keys=True)
+
+    assert trace["version"] == runtime.RUNTIME_TRACE_VERSION
+    assert trace["content_exposed"] is False
+    assert trace["components"]["shine_ai"]["decision_lineage_sha256"] == digest
+    assert trace["component_status"]["l"] == "active"
+    assert "PRIVATE ADVISORY" not in rendered
+    assert "PRIVATE TASK SUMMARY" not in rendered
+    assert "PRIVATE SPECIALIST RESULT" not in rendered
+    assert "PRIVATE PAYLOAD" not in rendered
+    assert "PRIVATE DEFENCE SUMMARY" not in rendered
+    assert "PRIVATE DEFENCE LIMITATION" not in rendered
+    assert "PRIVATE ROUTING REASON" not in rendered
+
+
+def test_runtime_trace_ignores_private_text_but_changes_on_control_plane_drift():
+    base = {
+        "version": runtime.RUNTIME_VERSION,
+        "request_id": "4ad046b3-06a5-4e62-a3ef-17a4f83dcdde",
+        "status": "ready",
+        "warnings": [],
+        "components": {
+            "l": {"status": "active", "authority": "voice+synthesis+durable-task"},
+            "foundation": {"status": "healthy", "specialists": []},
+            "concierge": {
+                "status": "planned",
+                "mode": "ask",
+                "dispatch_allowed": False,
+                "execution_owner": "l-core",
+                "selected_routes": [],
+            },
+            "defence": {"status": "completed", "summary": "one", "reviews": []},
+            "shine_ai": {
+                "status": "ok",
+                "answer": "first private answer",
+                "route": "model",
+                "model_tier": "fast",
+            },
+        },
+    }
+    first = runtime.build_runtime_trace(base)
+
+    changed_text = json.loads(json.dumps(base))
+    changed_text["components"]["shine_ai"]["answer"] = "second private answer"
+    assert runtime.build_runtime_trace(changed_text)["lineage_sha256"] == first["lineage_sha256"]
+
+    changed_control = json.loads(json.dumps(base))
+    changed_control["components"]["concierge"]["mode"] = "explore"
+    assert runtime.build_runtime_trace(changed_control)["lineage_sha256"] != first["lineage_sha256"]
