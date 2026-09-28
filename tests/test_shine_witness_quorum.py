@@ -449,6 +449,22 @@ def quorum_env(monkeypatch):
             "roster_storage_checkpoint_independent": True,
             "roster_storage_checkpoint_retention":
                 "railway-redis-volume",
+            "roster_head_verified": True,
+            "roster_head_sequence": 1,
+            "roster_head_checkpoint_sha256": "8" * 64,
+            "roster_head_sha256": "9" * 64,
+            "roster_head_generation": 1,
+            "roster_head_policy_sha256":
+                "a5c456d49e47f1be3f2a7b7ed017328844484ba05c4e6ef3212412c6361156c4",
+            "roster_head_state_sha256": "1" * 64,
+            "roster_head_witness_verified": True,
+            "roster_head_witness_id":
+                "foundation-project-l-roster-head",
+            "roster_head_witness_auth_key_id":
+                "foundation-roster-head-witness-v1",
+            "roster_head_witness_replayed": True,
+            "roster_head_witness_independent_retention":
+                "foundation-supabase-vault-hmac",
             "roster_storage_rotation": {
                 "status": "verified",
                 "mode": "not-needed",
@@ -1426,6 +1442,22 @@ def test_quorum_rejects_external_roster_policy_mismatch(monkeypatch):
             "roster_storage_checkpoint_independent": True,
             "roster_storage_checkpoint_retention":
                 "railway-redis-volume",
+            "roster_head_verified": True,
+            "roster_head_sequence": 1,
+            "roster_head_checkpoint_sha256": "8" * 64,
+            "roster_head_sha256": "9" * 64,
+            "roster_head_generation": 1,
+            "roster_head_policy_sha256":
+                "a5c456d49e47f1be3f2a7b7ed017328844484ba05c4e6ef3212412c6361156c4",
+            "roster_head_state_sha256": "1" * 64,
+            "roster_head_witness_verified": True,
+            "roster_head_witness_id":
+                "foundation-project-l-roster-head",
+            "roster_head_witness_auth_key_id":
+                "foundation-roster-head-witness-v1",
+            "roster_head_witness_replayed": True,
+            "roster_head_witness_independent_retention":
+                "foundation-supabase-vault-hmac",
         },
     )
 
