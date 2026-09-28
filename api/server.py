@@ -647,9 +647,15 @@ def start_chat(
             final=False,
         )
         start_runtime["recovery"] = start_recovery
+    start_execution = (
+        {"status": "unavailable"}
+        if dispatch_status == "unavailable"
+        else None
+    )
+    start_trace = build_runtime_trace(start_runtime, start_execution)
     start_human_status = build_human_status(
         start_runtime,
-        {"status": "unavailable"} if dispatch_status == "unavailable" else None,
+        start_execution,
         final=False,
     )
     return {
@@ -662,7 +668,7 @@ def start_chat(
             "components": component_status,
             "concierge_dispatch": concierge_dispatch,
             "recovery": start_recovery,
-            "trace": shine_runtime.get("trace"),
+            "trace": start_trace,
             "human_status": start_human_status,
         },
     }
