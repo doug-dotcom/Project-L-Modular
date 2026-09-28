@@ -131,7 +131,12 @@ from core.cognition.portability import (
     run_portability_certification,
 )
 from governance.cognitive_guardrails import guardrail_prompt
-from services.capability_router_service import route_capability, foundation_specialist_interest
+from services.capability_router_service import (
+    route_capability,
+    foundation_specialist_interest,
+    needs_concierge_planning,
+)
+from services.concierge_planner_service import plan_concierge_specialists
 from services.foundation_companion_service import (
     ensure_foundation_delegation,
     foundation_account_owner,
@@ -1299,7 +1304,7 @@ def chat(req: ChatRequest):
         rhee_context = "Rhee context unavailable."
 
     # =================================================
-    # DETERMINISTIC CAPABILITY ROUTER
+    # GOVERNED CAPABILITY ROUTER / CONCIERGE PLANNER
     # =================================================
 
     checkpoint("connected_actions")
@@ -1329,11 +1334,30 @@ def chat(req: ChatRequest):
                     "blocked_count": 0,
                     "specialists": [],
                 }
+
+    concierge_plan = None
+    if (
+        foundation_fleet is not None
+        and needs_concierge_planning(user_message)
+    ):
+        concierge_plan = plan_concierge_specialists(
+            user_message,
+            foundation_fleet,
+            model_adapter=active_model_adapter,
+            l_context=rhee_context,
+        )
+        log(
+            "CONCIERGE PLAN: "
+            f"status={concierge_plan.get('status')} | "
+            f"selected={concierge_plan.get('selected_capabilities', [])}"
+        )
+
     try:
         route = route_capability(
             user_message,
             write_guard=checkpoint,
             foundation_fleet=foundation_fleet,
+            concierge_plan=concierge_plan,
         )
         log(f"CAPABILITY ROUTE: {route.get('capability')}")
     except DurableTaskBindingError:
