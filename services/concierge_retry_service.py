@@ -15,8 +15,11 @@ from services.foundation_companion_service import (
     _response_json,
     _rpc_data,
     _single_secret,
+    delayed_synthesis_state,
     ensure_foundation_delegation,
     set_pending_concierge_job_status,
+    store_delayed_synthesis_answer,
+    store_delayed_synthesis_packet,
 )
 
 
@@ -138,7 +141,7 @@ def _load_local_job(db, owner_id: str, request_id: str) -> dict | None:
         db.table("companion_foundation_pending_jobs")
         .select(
             "job_id,user_id,link_request_id,purpose,capability_ids,inputs,"
-            "source_conversation_id,source_message_id,status"
+            "source_conversation_id,source_message_id,request_text,status"
         )
         .eq("job_id", request_id)
         .eq("user_id", owner_id)
@@ -354,11 +357,29 @@ def _resume_has_distinct_queued_retry(resume: dict, claim: dict) -> bool:
     return bool(retry_job_id and retry_job_id != claim["retry_job_id"])
 
 
+def _completion_packet(claim: dict, resume: dict) -> dict:
+    return {
+        "version": "shine-concierge-delayed-result/v1",
+        "request_id": claim["request_id"],
+        "status": str(resume.get("status") or "completed"),
+        "reason_code": str(
+            resume.get("reason_code") or "concierge-resume-completed"
+        ),
+        "capability_ids": list(claim.get("capability_ids") or [])[:20],
+        "results": list(resume.get("results") or [])[:20],
+        "synthesis_ready": resume.get("synthesis_ready") is True,
+        "synthesis_must_disclose_partial": (
+            resume.get("synthesis_must_disclose_partial") is True
+        ),
+    }
+
+
 def run_concierge_retry_once(
     db,
     *,
     foundation_url: str | None = None,
     post_impl=None,
+    synthesise=None,
 ) -> dict:
     claim = claim_foundation_retry(
         db,
@@ -412,9 +433,77 @@ def run_concierge_retry_once(
     status = resume.get("status")
 
     if status == "completed":
-        # Specialist completion is already Foundation checkpoint truth. Persist
-        # that user-facing truth before releasing the retry lease; if the finish
-        # acknowledgement is lost, a reclaimed job can safely replay checkpoints.
+        # Foundation checkpoints are now terminal specialist truth. Freeze that
+        # exact packet privately before L generates any delayed user-facing prose.
+        completion_packet = _completion_packet(claim, resume)
+        packet_store = store_delayed_synthesis_packet(
+            db,
+            user_id=claim["owner_shine_id"],
+            request_id=claim["request_id"],
+            result_packet=completion_packet,
+        )
+        synthesis_state = delayed_synthesis_state(
+            db,
+            user_id=claim["owner_shine_id"],
+            request_id=claim["request_id"],
+        )
+
+        answer_ready = (
+            synthesis_state.get("synthesisStatus") == "ready"
+            and isinstance(synthesis_state.get("finalAnswer"), str)
+            and bool(synthesis_state.get("finalAnswer").strip())
+        )
+        synthesis_replayed = answer_ready
+
+        if not answer_ready:
+            request_text = str(
+                synthesis_state.get("requestText")
+                or job.get("request_text")
+                or ""
+            ).strip()
+            if not request_text or not callable(synthesise):
+                return {
+                    "status": "synthesis-retry",
+                    "reason_code": "delayed-synthesis-not-ready",
+                    "packet_sha256": packet_store["packet_sha256"],
+                    "finish_status": "claim-held-for-recovery",
+                }
+
+            try:
+                generated = synthesise(request_text, completion_packet)
+            except Exception:
+                generated = {
+                    "status": "unavailable",
+                    "reason_code": "delayed-synthesis-generation-failed",
+                }
+            if (
+                not isinstance(generated, dict)
+                or generated.get("status") != "ready"
+                or not isinstance(generated.get("reply"), str)
+                or not generated["reply"].strip()
+            ):
+                return {
+                    "status": "synthesis-retry",
+                    "reason_code": str(
+                        (generated or {}).get("reason_code")
+                        if isinstance(generated, dict)
+                        else "delayed-synthesis-generation-failed"
+                    ),
+                    "packet_sha256": packet_store["packet_sha256"],
+                    "finish_status": "claim-held-for-recovery",
+                }
+
+            store_delayed_synthesis_answer(
+                db,
+                user_id=claim["owner_shine_id"],
+                request_id=claim["request_id"],
+                packet_sha256=packet_store["packet_sha256"],
+                answer=generated["reply"],
+            )
+
+        # Only an answer-bound completion becomes surfaceable. This is written
+        # before retry-finish; a lost finish acknowledgement can therefore replay
+        # checkpoints and the already-hashed answer without another model call.
         set_pending_concierge_job_status(
             db,
             user_id=claim["owner_shine_id"],
@@ -439,6 +528,8 @@ def run_concierge_retry_once(
             "status": "completed",
             "reason_code": "concierge-resume-completed",
             "finish_status": finish.get("status"),
+            "packet_sha256": packet_store["packet_sha256"],
+            "synthesis_replayed": synthesis_replayed,
             "reused_count": sum(
                 1 for row in resume.get("results") or []
                 if isinstance(row, dict) and row.get("reused") is True
@@ -542,11 +633,13 @@ class ConciergeRetryRunner:
         poll_seconds: float = DEFAULT_RETRY_POLL_SECONDS,
         foundation_url: str | None = None,
         logger=None,
+        synthesise=None,
     ):
         self.db = db
         self.poll_seconds = max(5.0, float(poll_seconds))
         self.foundation_url = foundation_url
         self.logger = logger
+        self.synthesise = synthesise
         self.stop_event = threading.Event()
         self.thread = None
 
@@ -581,6 +674,7 @@ class ConciergeRetryRunner:
                 result = run_concierge_retry_once(
                     self.db,
                     foundation_url=self.foundation_url,
+                    synthesise=self.synthesise,
                 )
                 status = str(result.get("status") or "unknown")
                 if status not in {"idle", "unavailable"}:
