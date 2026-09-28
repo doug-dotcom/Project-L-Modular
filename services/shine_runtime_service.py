@@ -27,6 +27,10 @@ from services.foundation_trust_witness import (
     FoundationWitnessError,
     ensure_foundation_trust_witness,
 )
+from services.shine_witness_quorum import (
+    WitnessQuorumError,
+    ensure_trust_witness_quorum,
+)
 from services.shine_ai_trace_verifier import (
     digest_verification_keyset,
     verify_decision_trace,
@@ -43,7 +47,7 @@ from services.shine_trust_storage import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v6"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v7"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -277,6 +281,13 @@ def _shine_ai_headers(
 def _foundation_witness_required() -> bool:
     return os.getenv(
         "SHINE_FOUNDATION_TRUST_WITNESS_REQUIRED",
+        "",
+    ).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _witness_quorum_required() -> bool:
+    return os.getenv(
+        "SHINE_TRACE_WITNESS_QUORUM_REQUIRED",
         "",
     ).strip().lower() in {"1", "true", "yes", "on"}
 
@@ -839,7 +850,19 @@ def _shine_ai_verification_keyset(
                 "status": "invalid",
                 "reason_code": str(exc),
             }
-        if _foundation_witness_required():
+        if _witness_quorum_required():
+            quorum = cached_trust.get("witness_quorum")
+            if (
+                not isinstance(quorum, dict)
+                or quorum.get("status") != "verified"
+                or int(quorum.get("verified_witness_count") or 0)
+                    < int(quorum.get("minimum_witnesses") or 2)
+            ):
+                return None, "trust-witness-quorum-unverified", {
+                    "status": "invalid",
+                    "reason_code": "trust-witness-quorum-unverified",
+                }
+        elif _foundation_witness_required():
             witness = cached_trust.get("external_witness")
             if (
                 not isinstance(witness, dict)
@@ -914,7 +937,26 @@ def _shine_ai_verification_keyset(
         return None, error or "trace-keyset-trust-mismatch", trust
 
     trust = dict(trust)
-    if _foundation_witness_required():
+    if _witness_quorum_required():
+        try:
+            quorum = ensure_trust_witness_quorum(
+                db,
+                trusted,
+                redis_client=redis_client,
+            )
+        except WitnessQuorumError as exc:
+            reason = str(exc) or "trust-witness-quorum-unavailable"
+            return None, reason, {
+                **trust,
+                "status": "invalid",
+                "reason_code": reason,
+                "witness_quorum": {
+                    "status": "invalid",
+                    "reason_code": reason,
+                },
+            }
+        trust["witness_quorum"] = quorum
+    elif _foundation_witness_required():
         try:
             external_witness = ensure_foundation_trust_witness(
                 db,
@@ -1289,6 +1331,26 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                         "keyset_sha256", "state_sha256",
                         "auth_key_id", "mode",
                         "independent_retention",
+                    ),
+                ),
+                "witness_quorum": _project(
+                    (
+                        item.get("decision_trace_trust", {}).get(
+                            "witness_quorum",
+                            {},
+                        )
+                        if isinstance(
+                            item.get("decision_trace_trust"),
+                            dict,
+                        )
+                        else {}
+                    ),
+                    (
+                        "status", "policy_generation", "policy_sha256",
+                        "minimum_witnesses", "verified_witness_count",
+                        "witness_ids", "sequence", "head_sha256",
+                        "generation", "keyset_sha256", "state_sha256",
+                        "independence",
                     ),
                 ),
             },
