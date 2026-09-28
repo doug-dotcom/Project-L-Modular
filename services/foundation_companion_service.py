@@ -1339,19 +1339,26 @@ def list_pending_concierge_jobs(
     owner_id = _uuid(user_id)
     if not isinstance(limit, int) or isinstance(limit, bool) or limit < 1 or limit > 100:
         raise ValueError("pending Concierge job limit invalid")
-    result = (
-        db.table("companion_foundation_pending_jobs")
-        .select(
-            "job_id,source_conversation_id,source_message_id,request_text,"
-            "capability_ids,status,created_at,updated_at"
+    rows = []
+    for state in ("ready", "cancelling"):
+        result = (
+            db.table("companion_foundation_pending_jobs")
+            .select(
+                "job_id,source_conversation_id,source_message_id,request_text,"
+                "capability_ids,status,created_at,updated_at"
+            )
+            .eq("user_id", owner_id)
+            .eq("status", state)
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()
         )
-        .eq("user_id", owner_id)
-        .eq("status", "ready")
-        .order("created_at", desc=True)
-        .limit(limit)
-        .execute()
+        rows.extend(_pending_job_rows(result))
+    rows.sort(
+        key=lambda row: str((row or {}).get("created_at") or ""),
+        reverse=True,
     )
-    rows = _pending_job_rows(result)
+    rows = rows[:limit]
     items = []
     for row in rows:
         if not isinstance(row, dict):
@@ -1369,7 +1376,7 @@ def list_pending_concierge_jobs(
             "source_message_id": str(row.get("source_message_id") or "")[:180],
             "request_text": str(row.get("request_text") or "")[:100000],
             "capability_ids": [str(value)[:128] for value in capabilities[:20]],
-            "status": "ready",
+            "status": str(row.get("status") or ""),
             "created_at": row.get("created_at"),
             "updated_at": row.get("updated_at"),
         })
