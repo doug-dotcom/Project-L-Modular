@@ -223,14 +223,8 @@ def test_same_generation_active_key_observation_moves_checkpoint_forward():
     previous = overlap_state("trace-v1", generation=2)
     current = overlap_state("trace-v2", generation=2)
 
-    storage.prepare_rollback_checkpoint(
-        previous,
-        allow_genesis=True,
-        redis_client=redis,
-    )
-    # The helper deliberately requires generation 1 for no-predecessor
-    # creation, so seed this test through the same Redis representation.
-    redis.rows.clear()
+    # Seed generation 2 through the exact persisted Redis representation;
+    # no-predecessor creation is intentionally generation-1 only.
     previous_cp = storage.create_rollback_checkpoint(previous)
     redis.rows[storage.REDIS_CHECKPOINT_KEY] = {
         "generation": "2",
