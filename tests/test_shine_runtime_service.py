@@ -1811,6 +1811,12 @@ def test_cached_quorum_without_foundation_chain_fails_closed(
                 "policy_sha256":
                     "26b6d1a3b4183cfa596f8c9c06c18e73"
                     "aa0eda6a80a6362649130e9357bf220e",
+                "policy_storage_authenticated": True,
+                "policy_storage_auth_key_id": "policy-a",
+                "policy_storage_state_sha256":
+                    "5a444bfc1b3816def3ad06530303f497"
+                    "c3579ca1b3c1afb19da6e2bc167f633b",
+                "policy_storage_checkpoint_independent": True,
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
@@ -1952,6 +1958,12 @@ def test_cached_quorum_without_chain_checkpoint_fails_closed(
                 "policy_sha256":
                     "26b6d1a3b4183cfa596f8c9c06c18e73"
                     "aa0eda6a80a6362649130e9357bf220e",
+                "policy_storage_authenticated": True,
+                "policy_storage_auth_key_id": "policy-a",
+                "policy_storage_state_sha256":
+                    "5a444bfc1b3816def3ad06530303f497"
+                    "c3579ca1b3c1afb19da6e2bc167f633b",
+                "policy_storage_checkpoint_independent": True,
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
@@ -2057,6 +2069,12 @@ def test_cached_quorum_detects_checkpoint_ahead_rollback(
                 "policy_sha256":
                     "26b6d1a3b4183cfa596f8c9c06c18e73"
                     "aa0eda6a80a6362649130e9357bf220e",
+                "policy_storage_authenticated": True,
+                "policy_storage_auth_key_id": "policy-a",
+                "policy_storage_state_sha256":
+                    "5a444bfc1b3816def3ad06530303f497"
+                    "c3579ca1b3c1afb19da6e2bc167f633b",
+                "policy_storage_checkpoint_independent": True,
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
