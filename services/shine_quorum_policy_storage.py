@@ -43,11 +43,13 @@ local key = KEYS[1]
 local generation = tonumber(ARGV[1])
 local policy_sha = ARGV[2]
 local state_sha = ARGV[3]
-local checkpoint_json = ARGV[4]
+local previous_policy_sha = ARGV[4]
+local checkpoint_json = ARGV[5]
 
 local current_generation = redis.call('HGET', key, 'generation')
 if not current_generation then
   if generation ~= 1 then return {'bootstrap-generation-invalid'} end
+  if previous_policy_sha ~= '' then return {'bootstrap-predecessor-invalid'} end
   redis.call(
     'HSET', key,
     'generation', tostring(generation),
@@ -63,12 +65,30 @@ local current_policy_sha = redis.call('HGET', key, 'policy_sha256') or ''
 local current_state_sha = redis.call('HGET', key, 'state_sha256') or ''
 
 if generation < current_generation then return {'rollback'} end
-if generation > current_generation then return {'generation-transition-unimplemented'} end
-if policy_sha ~= current_policy_sha then return {'equivocation'} end
-if state_sha ~= current_state_sha then return {'state-mismatch'} end
+if generation > current_generation + 1 then return {'generation-skip'} end
 
-redis.call('HSET', key, 'checkpoint_json', checkpoint_json)
-return {'refreshed'}
+if generation == current_generation then
+  if policy_sha ~= current_policy_sha then return {'equivocation'} end
+  if state_sha ~= current_state_sha then return {'state-mismatch'} end
+  redis.call('HSET', key, 'checkpoint_json', checkpoint_json)
+  return {'refreshed'}
+end
+
+if previous_policy_sha ~= current_policy_sha then
+  return {'predecessor-policy-mismatch'}
+end
+if policy_sha == current_policy_sha then
+  return {'generation-without-policy-change'}
+end
+
+redis.call(
+  'HSET', key,
+  'generation', tostring(generation),
+  'policy_sha256', policy_sha,
+  'state_sha256', state_sha,
+  'checkpoint_json', checkpoint_json
+)
+return {'advanced'}
 """
 
 
@@ -557,6 +577,7 @@ def persist_checkpoint(
             str(projected["generation"]),
             projected["policySha256"],
             cp["stateSha256"],
+            projected["previousPolicySha256"] or "",
             _canonical_json(cp),
         )
     except RedisError as exc:
@@ -568,7 +589,7 @@ def persist_checkpoint(
         if isinstance(result, (list, tuple)) and result
         else str(result or "")
     )
-    if code not in {"created", "refreshed"}:
+    if code not in {"created", "refreshed", "advanced"}:
         raise QuorumPolicyStorageError(
             "trust-witness-quorum-policy-storage-checkpoint-cas-"
             + (code or "failed")
