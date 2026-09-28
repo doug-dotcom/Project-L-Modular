@@ -499,7 +499,7 @@ def test_runtime_trace_binds_recovery_control_plane_without_private_content():
     changed["recovery"]["reason_codes"] = ["PRIVATE-REASON-TEXT-NOT-HASHED"]
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v8"
+    assert first["version"] == "shine/runtime-trace-v9"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-REASON-TEXT-NOT-HASHED" not in json.dumps(second)
 
@@ -970,7 +970,7 @@ def test_runtime_trace_binds_authenticity_without_signature_bytes():
     changed["components"]["shine_ai"]["decision_trace_authenticity"]["authenticated"] = False
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v8"
+    assert first["version"] == "shine/runtime-trace-v9"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(first)
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(second)
@@ -1128,7 +1128,7 @@ def test_runtime_trace_binds_trust_generation_without_certificate_signature():
     changed["components"]["shine_ai"]["decision_trace_trust"]["generation"] = 3
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v8"
+    assert first["version"] == "shine/runtime-trace-v9"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-CERTIFICATE-SIGNATURE" not in json.dumps(first)
 
@@ -1463,7 +1463,7 @@ def test_runtime_trace_binds_storage_proof_without_hmac_tag_or_redis_url():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v8"
+    assert first["version"] == "shine/runtime-trace-v9"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-HMAC-TAG" not in rendered
     assert "PRIVATE-REDIS-URL" not in rendered
@@ -1559,7 +1559,7 @@ def test_runtime_trace_binds_external_witness_without_foundation_auth_tag():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v8"
+    assert first["version"] == "shine/runtime-trace-v9"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-FOUNDATION-HMAC" not in rendered
 
@@ -1782,7 +1782,7 @@ def test_runtime_trace_binds_quorum_without_witness_hmac_tags():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v8"
+    assert first["version"] == "shine/runtime-trace-v9"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-FOUNDATION-HMAC" not in rendered
     assert "PRIVATE-REDIS-HMAC" not in rendered
@@ -1903,5 +1903,79 @@ def test_runtime_trace_binds_persisted_quorum_policy_proof():
         {"status": "not_required"},
     )
 
-    assert first["version"] == "shine/runtime-trace-v8"
+    assert first["version"] == "shine/runtime-trace-v9"
     assert first["lineage_sha256"] != second["lineage_sha256"]
+
+
+
+def test_runtime_trace_binds_quorum_policy_storage_without_hmac_tag():
+    packet = runtime_for_human_status()
+    packet["components"]["shine_ai"]["decision_trace_trust"] = {
+        "status": "trusted",
+        "witness_quorum": {
+            "status": "verified",
+            "policy_generation": 1,
+            "policy_sha256":
+                "26b6d1a3b4183cfa596f8c9c06c18e73"
+                "aa0eda6a80a6362649130e9357bf220e",
+            "policy_trust_persisted": True,
+            "policy_trust_source": "project-l-supabase",
+            "policy_trust_generation": 1,
+            "policy_storage_authenticated": True,
+            "policy_storage_auth_key_id": "policy-store-2026-09-a",
+            "policy_storage_state_sha256": "a" * 64,
+            "policy_storage_checkpoint_independent": True,
+            "policy_storage_checkpoint_retention":
+                "railway-redis-volume",
+            "policy_storage_rotation": {
+                "status": "rotated",
+                "source_envelope_auth_key_id":
+                    "policy-store-2026-09-a",
+                "source_checkpoint_auth_key_id":
+                    "policy-store-2026-09-a",
+                "target_auth_key_id": "policy-store-2026-09-b",
+                "generation": 1,
+                "policy_sha256":
+                    "26b6d1a3b4183cfa596f8c9c06c18e73"
+                    "aa0eda6a80a6362649130e9357bf220e",
+                "state_sha256": "a" * 64,
+                "checkpoint_mode": "refreshed",
+            },
+            "minimum_witnesses": 2,
+            "verified_witness_count": 2,
+            "witness_ids": [
+                "foundation-project-l",
+                "redis-project-l",
+            ],
+            "sequence": 1,
+            "head_sha256": "b" * 64,
+            "generation": 1,
+            "keyset_sha256": "c" * 64,
+            "state_sha256": "d" * 64,
+            "independence": [
+                "foundation-supabase",
+                "railway-redis-volume",
+            ],
+            "policy_storage_auth_tag": "PRIVATE-POLICY-HMAC",
+            "policy_storage_keyring": "PRIVATE-POLICY-KEYRING",
+        },
+    }
+
+    first = runtime.build_runtime_trace(
+        packet,
+        {"status": "not_required"},
+    )
+    changed = json.loads(json.dumps(packet))
+    changed["components"]["shine_ai"]["decision_trace_trust"][
+        "witness_quorum"
+    ]["policy_storage_auth_key_id"] = "policy-store-2026-09-b"
+    second = runtime.build_runtime_trace(
+        changed,
+        {"status": "not_required"},
+    )
+
+    rendered = json.dumps(first)
+    assert first["version"] == "shine/runtime-trace-v9"
+    assert first["lineage_sha256"] != second["lineage_sha256"]
+    assert "PRIVATE-POLICY-HMAC" not in rendered
+    assert "PRIVATE-POLICY-KEYRING" not in rendered
