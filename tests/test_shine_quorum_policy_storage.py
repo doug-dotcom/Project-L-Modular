@@ -31,12 +31,20 @@ class FakeRedis:
         return dict(self.rows.get(key, {}))
 
     def eval(self, _script, _numkeys, key, *args):
-        generation, policy_sha, state_sha, checkpoint_json = args
+        (
+            generation,
+            policy_sha,
+            state_sha,
+            previous_policy_sha,
+            checkpoint_json,
+        ) = args
         generation = int(generation)
         current = self.rows.get(key)
         if current is None:
             if generation != 1:
                 return ["bootstrap-generation-invalid"]
+            if previous_policy_sha:
+                return ["bootstrap-predecessor-invalid"]
             self.rows[key] = {
                 "generation": str(generation),
                 "policy_sha256": policy_sha,
@@ -48,14 +56,27 @@ class FakeRedis:
         current_generation = int(current["generation"])
         if generation < current_generation:
             return ["rollback"]
-        if generation > current_generation:
-            return ["generation-transition-unimplemented"]
-        if current["policy_sha256"] != policy_sha:
-            return ["equivocation"]
-        if current["state_sha256"] != state_sha:
-            return ["state-mismatch"]
-        self.rows[key]["checkpoint_json"] = checkpoint_json
-        return ["refreshed"]
+        if generation > current_generation + 1:
+            return ["generation-skip"]
+        if generation == current_generation:
+            if current["policy_sha256"] != policy_sha:
+                return ["equivocation"]
+            if current["state_sha256"] != state_sha:
+                return ["state-mismatch"]
+            self.rows[key]["checkpoint_json"] = checkpoint_json
+            return ["refreshed"]
+
+        if previous_policy_sha != current["policy_sha256"]:
+            return ["predecessor-policy-mismatch"]
+        if policy_sha == current["policy_sha256"]:
+            return ["generation-without-policy-change"]
+        self.rows[key] = {
+            "generation": str(generation),
+            "policy_sha256": policy_sha,
+            "state_sha256": state_sha,
+            "checkpoint_json": checkpoint_json,
+        }
+        return ["advanced"]
 
 
 @pytest.fixture(autouse=True)
@@ -243,3 +264,124 @@ def test_policy_checkpoint_is_idempotent_and_contains_no_policy_secret():
     assert "acceptedWitnessIds" not in redis.rows[
         storage.REDIS_POLICY_CHECKPOINT_KEY
     ]
+
+
+
+def policy_state_v2():
+    material = {
+        "policyVersion": 1,
+        "policyType":
+            "decision_trace_trust_state_witness_quorum_policy",
+        "generation": 2,
+        "minimumWitnesses": 2,
+        "acceptedWitnessIds": [
+            "backup-project-l",
+            "foundation-project-l",
+            "redis-project-l",
+        ],
+        "previousPolicySha256": POLICY_SHA,
+    }
+    import hashlib
+    digest = hashlib.sha256(
+        json.dumps(
+            material,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    return {
+        "trustStateVersion": 1,
+        "trustStateType":
+            "decision_trace_trust_state_witness_quorum_policy",
+        "generation": 2,
+        "minimumWitnesses": 2,
+        "acceptedWitnessIds": material["acceptedWitnessIds"],
+        "previousPolicySha256": POLICY_SHA,
+        "policySha256": digest,
+    }
+
+
+def test_policy_checkpoint_advances_exactly_one_predecessor_bound_generation():
+    redis = FakeRedis()
+    first = policy_state()
+    second = policy_state_v2()
+
+    storage.persist_checkpoint(
+        first,
+        auth_key_id="policy-a",
+        redis_client=redis,
+    )
+    advanced = storage.persist_checkpoint(
+        second,
+        auth_key_id="policy-a",
+        redis_client=redis,
+    )
+
+    assert advanced["mode"] == "advanced"
+    stored = storage.read_checkpoint(redis_client=redis)
+    assert stored["generation"] == 2
+    assert stored["policySha256"] == second["policySha256"]
+
+
+def test_policy_checkpoint_rejects_wrong_predecessor_and_generation_skip():
+    redis = FakeRedis()
+    first = policy_state()
+    storage.persist_checkpoint(
+        first,
+        auth_key_id="policy-a",
+        redis_client=redis,
+    )
+
+    wrong = policy_state_v2()
+    wrong["previousPolicySha256"] = "f" * 64
+    material = {
+        "policyVersion": 1,
+        "policyType":
+            "decision_trace_trust_state_witness_quorum_policy",
+        "generation": 2,
+        "minimumWitnesses": wrong["minimumWitnesses"],
+        "acceptedWitnessIds": wrong["acceptedWitnessIds"],
+        "previousPolicySha256": wrong["previousPolicySha256"],
+    }
+    import hashlib
+    wrong["policySha256"] = hashlib.sha256(
+        json.dumps(
+            material,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+
+    with pytest.raises(
+        storage.QuorumPolicyStorageError,
+        match="predecessor-policy-mismatch",
+    ):
+        storage.persist_checkpoint(
+            wrong,
+            auth_key_id="policy-a",
+            redis_client=redis,
+        )
+
+    skipped = dict(policy_state_v2())
+    skipped["generation"] = 3
+    skipped["previousPolicySha256"] = POLICY_SHA
+    material["generation"] = 3
+    material["previousPolicySha256"] = POLICY_SHA
+    material["acceptedWitnessIds"] = skipped["acceptedWitnessIds"]
+    skipped["policySha256"] = hashlib.sha256(
+        json.dumps(
+            material,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+
+    with pytest.raises(
+        storage.QuorumPolicyStorageError,
+        match="generation-skip",
+    ):
+        storage.persist_checkpoint(
+            skipped,
+            auth_key_id="policy-a",
+            redis_client=redis,
+        )
