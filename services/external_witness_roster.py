@@ -55,6 +55,14 @@ CHECKPOINT_TYPE = (
 REDIS_ROSTER_CHECKPOINT_KEY = (
     "shine:project-l:trace-trust:external-witness-roster:checkpoint:v1"
 )
+ROSTER_TRANSITION_AUTHORIZATION_TYPE = (
+    "decision_trace_trust_state_external_witness_roster_transition"
+)
+ROSTER_TRANSITION_AUTH_DOMAIN = (
+    "shine-ai:external-witness-roster-transition-authorization:v1"
+)
+FOUNDATION_WITNESS_ID = "foundation-project-l"
+REDIS_WITNESS_ID = "redis-project-l"
 
 _CHECKPOINT_CAS = r"""
 local key = KEYS[1]
@@ -281,6 +289,84 @@ def project_policy(value: Any) -> dict[str, Any]:
             "external-witness-roster-policy-digest-mismatch"
         )
     return {**material, "policySha256": policy_sha}
+
+
+def _transition_material(
+    witness_id: str,
+    previous_policy: dict[str, Any],
+    next_policy: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "authorizationVersion": 1,
+        "authorizationType": ROSTER_TRANSITION_AUTHORIZATION_TYPE,
+        "witnessId": witness_id,
+        "fromGeneration": previous_policy["generation"],
+        "toGeneration": next_policy["generation"],
+        "fromPolicySha256": previous_policy["policySha256"],
+        "toPolicySha256": next_policy["policySha256"],
+    }
+
+
+def _redis_transition_authorization(
+    previous_policy: dict[str, Any],
+    next_policy: dict[str, Any],
+) -> dict[str, Any]:
+    previous = project_policy(previous_policy)
+    next_value = project_policy(next_policy)
+    if (
+        next_value["generation"] != previous["generation"] + 1
+        or next_value["previousPolicySha256"] != previous["policySha256"]
+        or REDIS_WITNESS_ID not in previous["acceptedWitnessIds"]
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-transition-invalid"
+        )
+
+    # The existing Redis witness keyring is intentionally not reused here.
+    # Roster transition authority is a separate trust domain.
+    raw = os.getenv(
+        "SHINE_TRACE_EXTERNAL_ROSTER_TRANSITION_REDIS_KEYRING_JSON",
+        "",
+    ).strip()
+    active = os.getenv(
+        "SHINE_TRACE_EXTERNAL_ROSTER_TRANSITION_REDIS_ACTIVE_KEY_ID",
+        "",
+    ).strip()
+    try:
+        keyring = json.loads(raw)
+    except Exception as exc:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-transition-keyring-invalid"
+        ) from exc
+    if (
+        not isinstance(keyring, dict)
+        or KEY_ID_RE.fullmatch(active) is None
+        or active not in keyring
+        or not isinstance(keyring[active], str)
+        or len(keyring[active]) < 32
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-transition-keyring-unavailable"
+        )
+
+    base = _transition_material(
+        REDIS_WITNESS_ID,
+        previous,
+        next_value,
+    )
+    return {
+        **base,
+        "authAlgorithm": "HMAC-SHA-256",
+        "authKeyId": active,
+        "authTag": _hmac_sha256(
+            keyring[active],
+            ROSTER_TRANSITION_AUTH_DOMAIN
+            + "\n"
+            + active
+            + "\n"
+            + _canonical_json(base),
+        ),
+    }
 
 
 def _deployment_candidate() -> dict[str, Any] | None:
@@ -928,8 +1014,17 @@ def load_persisted_external_witness_roster(
                 "external-witness-roster-generation-skip"
             )
         else:
+            # Layer 207: candidate transitions must be authorised by the
+            # previous external roster. Redis produces one independent
+            # authorization here; Foundation is obtained by the caller-facing
+            # transition gateway before persistence.
+            redis_authorization = _redis_transition_authorization(
+                policy,
+                candidate,
+            )
             raise ExternalWitnessRosterError(
-                "external-witness-roster-transition-not-certified"
+                "external-witness-roster-transition-foundation-authorization-required:"
+                + _sha256_text(_canonical_json(redis_authorization))
             )
 
     target = _rotation_target_key_id()
