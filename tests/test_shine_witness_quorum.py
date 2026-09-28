@@ -469,6 +469,24 @@ def quorum_env(monkeypatch):
             "roster_head_witness_replayed": True,
             "roster_head_witness_independent_retention":
                 "foundation-supabase-vault-hmac",
+            "roster_head_witness_rotation_supported": True,
+            "roster_head_witness_rotation_mode": "not-needed",
+            "roster_head_witness_rotation": {
+                "status": "verified",
+                "mode": "not-needed",
+                "source_auth_key_id":
+                    "foundation-roster-head-witness-v1",
+                "target_auth_key_id":
+                    "foundation-roster-head-witness-v1",
+                "sequence": 1,
+                "head_sha256": "9" * 64,
+                "generation": 1,
+                "policy_sha256":
+                    "a5c456d49e47f1be3f2a7b7ed017328"
+                    "844484ba05c4e6ef3212412c6361156c4",
+                "state_sha256": "1" * 64,
+                "state_preserved": True,
+            },
             "roster_storage_rotation": {
                 "status": "verified",
                 "mode": "not-needed",
@@ -1466,6 +1484,24 @@ def test_quorum_rejects_external_roster_policy_mismatch(monkeypatch):
             "roster_head_witness_replayed": True,
             "roster_head_witness_independent_retention":
                 "foundation-supabase-vault-hmac",
+            "roster_head_witness_rotation_supported": True,
+            "roster_head_witness_rotation_mode": "not-needed",
+            "roster_head_witness_rotation": {
+                "status": "verified",
+                "mode": "not-needed",
+                "source_auth_key_id":
+                    "foundation-roster-head-witness-v1",
+                "target_auth_key_id":
+                    "foundation-roster-head-witness-v1",
+                "sequence": 1,
+                "head_sha256": "9" * 64,
+                "generation": 1,
+                "policy_sha256":
+                    "a5c456d49e47f1be3f2a7b7ed017328"
+                    "844484ba05c4e6ef3212412c6361156c4",
+                "state_sha256": "1" * 64,
+                "state_preserved": True,
+            },
         },
     )
 
