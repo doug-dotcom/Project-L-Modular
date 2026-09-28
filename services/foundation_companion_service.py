@@ -1566,7 +1566,11 @@ def set_pending_concierge_job_status(
         .eq("user_id", user_id)
     )
     if status != "cancelled":
-        query = query.neq("status", "cancelled")
+        query = (
+            query
+            .neq("status", "cancelled")
+            .neq("status", "cancelling")
+        )
     result = query.execute()
     rows = getattr(result, "data", None)
     if isinstance(rows, list):
