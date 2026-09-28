@@ -1256,6 +1256,7 @@ def ensure_trust_witness_quorum(
     policy = load_persisted_quorum_policy(
         db,
         redis_client=redis_client,
+        foundation_post_impl=foundation_post_impl,
     )
     try:
         redis_witness = ensure_redis_trust_witness(
@@ -1326,6 +1327,14 @@ def ensure_trust_witness_quorum(
         "policy_trust_persisted": policy["policy_trust_persisted"],
         "policy_trust_source": policy["policy_trust_source"],
         "policy_trust_generation": policy["policy_trust_generation"],
+        "policy_trust_acceptance_mode":
+            policy["policy_trust_acceptance_mode"],
+        "policy_trust_authorization_count":
+            policy["policy_trust_authorization_count"],
+        "policy_trust_authorizing_witness_ids":
+            policy["policy_trust_authorizing_witness_ids"],
+        "policy_trust_authorization_sha256":
+            policy["policy_trust_authorization_sha256"],
         "policy_storage_authenticated":
             policy["policy_storage_authenticated"],
         "policy_storage_auth_key_id":
@@ -1362,11 +1371,13 @@ __all__ = [
     "REDIS_WITNESS_ID",
     "REDIS_WITNESS_KEY",
     "WitnessQuorumError",
+    "create_redis_policy_transition_authorization",
     "create_redis_witness",
     "ensure_redis_trust_witness",
     "ensure_trust_witness_quorum",
     "load_persisted_quorum_policy",
     "load_quorum_policy",
     "read_redis_witness",
+    "verify_redis_policy_transition_authorization",
     "verify_witness",
 ]
