@@ -74,7 +74,10 @@ class MemoryRetrieveResponse(BaseModel):
 
 def _configured_owner(service_token: str) -> str:
     expected_token = os.getenv("SHINE_AI_MEMORY_TOKEN", "").strip()
-    owner_id = (\n        os.getenv("L_MEMORY_OWNER_ID", "").strip()\n        or os.getenv("PROJECT_L_OWNER_ID", "").strip()\n    )
+    owner_id = (
+        os.getenv("L_MEMORY_OWNER_ID", "").strip()
+        or os.getenv("PROJECT_L_OWNER_ID", "").strip()
+    )
 
     if not expected_token or not owner_id:
         raise HTTPException(
