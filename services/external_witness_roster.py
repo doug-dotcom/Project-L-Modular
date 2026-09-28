@@ -20,6 +20,10 @@ from typing import Any
 from redis import Redis
 from redis.exceptions import RedisError
 
+from services.foundation_roster_head_witness import (
+    FoundationRosterHeadWitnessError,
+    ensure_foundation_roster_head_witness,
+)
 from services.foundation_trust_witness import (
     FoundationWitnessError,
     ensure_foundation_roster_transition_authorization,
@@ -1646,6 +1650,25 @@ def load_persisted_external_witness_roster(
         }
     )
 
+    head_bundle = build_roster_monotonic_head(db)
+    head = head_bundle.get("head")
+    if (
+        not isinstance(head, dict)
+        or head.get("generation") != state["generation"]
+        or head.get("policySha256") != state["policySha256"]
+        or head.get("stateSha256") != envelope["stateSha256"]
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-head-state-mismatch"
+        )
+    try:
+        foundation_head_witness = ensure_foundation_roster_head_witness(
+            db,
+            head,
+        )
+    except FoundationRosterHeadWitnessError as exc:
+        raise ExternalWitnessRosterError(str(exc)) from exc
+
     return {
         **policy,
         "roster_trust_persisted": True,
@@ -1658,6 +1681,23 @@ def load_persisted_external_witness_roster(
         "roster_storage_rotation_supported": True,
         "roster_storage_rotation_mode": safe_rotation["mode"],
         "roster_storage_rotation": safe_rotation,
+        "roster_head_verified": True,
+        "roster_head_sequence": head["sequence"],
+        "roster_head_checkpoint_sha256": head["checkpointSha256"],
+        "roster_head_sha256": head["headSha256"],
+        "roster_head_generation": head["generation"],
+        "roster_head_policy_sha256": head["policySha256"],
+        "roster_head_state_sha256": head["stateSha256"],
+        "roster_head_witness_verified":
+            foundation_head_witness["status"] == "verified",
+        "roster_head_witness_id":
+            foundation_head_witness["witness_id"],
+        "roster_head_witness_auth_key_id":
+            foundation_head_witness["auth_key_id"],
+        "roster_head_witness_replayed":
+            foundation_head_witness["replayed"],
+        "roster_head_witness_independent_retention":
+            foundation_head_witness["independent_retention"],
     }
 
 
