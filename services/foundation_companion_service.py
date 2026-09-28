@@ -930,6 +930,92 @@ def _supersedable_pending_jobs(
     return projected
 
 
+def _safe_foundation_retirement(
+    value,
+    request_id: str,
+) -> dict | None:
+    if not isinstance(value, dict):
+        return None
+    status = str(value.get("status") or "")
+    if status not in {"retired", "already-retired"}:
+        return None
+
+    receipt = value.get("receipt")
+    if not isinstance(receipt, dict):
+        receipt = value.get("retirementReceipt")
+    receipt_sha = str(value.get("receiptSha256") or "")
+    if (
+        not isinstance(receipt, dict)
+        or receipt.get("retirementReceipt")
+            != "shine-foundation/concierge-retirement-receipt-v1"
+        or receipt.get("schemaVersion") != "1.0.0"
+        or str(receipt.get("requestId") or "") != _uuid(request_id)
+        or str(receipt.get("reasonCode") or "") != "unused-plan-expired"
+        or receipt.get("executionStarted") is not False
+        or receipt.get("specialistCheckpointCount") != 0
+        or receipt.get("retryCount") != 0
+        or not isinstance(receipt.get("minimumAgeSeconds"), int)
+        or isinstance(receipt.get("minimumAgeSeconds"), bool)
+        or receipt.get("minimumAgeSeconds") < 3600
+        or receipt.get("minimumAgeSeconds") > 86400
+        or not isinstance(receipt.get("stepCount"), int)
+        or isinstance(receipt.get("stepCount"), bool)
+        or receipt.get("stepCount") < 0
+        or receipt.get("stepCount") > 20
+        or not isinstance(receipt.get("requestedCapabilities"), list)
+        or len(receipt.get("requestedCapabilities")) > 20
+        or len(receipt_sha) != 64
+        or any(ch not in "0123456789abcdef" for ch in receipt_sha)
+        or not value.get("retiredAt")
+    ):
+        return None
+
+    return {
+        "version": "1.0",
+        "status": status,
+        "request_id": _uuid(request_id),
+        "reason_code": "unused-plan-expired",
+        "requested_at": receipt.get("requestedAt"),
+        "retired_at": value.get("retiredAt"),
+        "minimum_age_seconds": receipt.get("minimumAgeSeconds"),
+        "requested_capabilities": [
+            str(capability)[:128]
+            for capability in receipt.get("requestedCapabilities")[:20]
+        ],
+        "step_count": receipt.get("stepCount"),
+        "execution_started": False,
+        "specialist_checkpoint_count": 0,
+        "retry_count": 0,
+        "receipt_sha256": receipt_sha,
+        "integrity": "foundation-live",
+    }
+
+
+def mark_local_concierge_retired(
+    db,
+    *,
+    user_id: str,
+    request_id: str,
+    retirement: dict,
+) -> dict:
+    if not isinstance(retirement, dict):
+        raise ValueError("retirement receipt required")
+    result = _rpc_data(
+        db,
+        "companion_mark_local_concierge_retired_v1",
+        {
+            "p_user_id": _uuid(user_id),
+            "p_request_id": _uuid(request_id),
+            "p_reason_code": str(retirement.get("reason_code") or "")[:160],
+            "p_retired_at": retirement.get("retired_at"),
+            "p_receipt_sha256": str(retirement.get("receipt_sha256") or ""),
+        },
+    )
+    if not isinstance(result, dict):
+        raise RuntimeError("local-concierge-retirement-unavailable")
+    return result
+
+
 def _supersede_previous_concierge_jobs(
     db,
     *,
