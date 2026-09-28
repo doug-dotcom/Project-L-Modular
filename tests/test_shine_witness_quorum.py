@@ -28,10 +28,37 @@ class FakeResult:
 
 
 class FakePolicyDB:
-    def __init__(self, state=None, *, inconsistent_reason=None):
+    def __init__(
+        self,
+        state=None,
+        *,
+        inconsistent_reason=None,
+        acceptance=None,
+    ):
         self.state = state
         self.inconsistent_reason = inconsistent_reason
+        self.acceptance = acceptance or {
+            "mode": "genesis-pin",
+            "authorizingWitnessIds": [],
+            "authorizationCount": 0,
+            "authorizationSha256": None,
+        }
         self.rpc_calls = []
+
+    def _snapshot(self):
+        if self.inconsistent_reason:
+            return FakeResult({
+                "status": "inconsistent",
+                "reason_code": self.inconsistent_reason,
+            })
+        if self.state is None:
+            return FakeResult({"status": "unbootstrapped"})
+        return FakeResult({
+            "status": "trusted",
+            "trust_state": dict(self.state),
+            "acceptance": dict(self.acceptance),
+            "ledger_rows": self.state["generation"],
+        })
 
     def rpc(self, name, params):
         self.rpc_calls.append((name, params))
@@ -39,18 +66,12 @@ class FakePolicyDB:
 
         class Call:
             def execute(self):
-                if name == "shine_ai_witness_quorum_policy_snapshot_v1":
-                    if db.inconsistent_reason:
-                        return FakeResult({
-                            "status": "inconsistent",
-                            "reason_code": db.inconsistent_reason,
-                        })
-                    if db.state is None:
-                        return FakeResult({"status": "unbootstrapped"})
-                    return FakeResult({
-                        "status": "trusted",
-                        "trust_state": dict(db.state),
-                    })
+                if name in {
+                    "shine_ai_witness_quorum_policy_snapshot_v1",
+                    "shine_ai_witness_quorum_policy_snapshot_v2",
+                }:
+                    return db._snapshot()
+
                 if name == "shine_ai_witness_quorum_policy_bootstrap_v1":
                     db.state = {
                         "trustStateVersion": 1,
@@ -65,10 +86,51 @@ class FakePolicyDB:
                         "previousPolicySha256": None,
                         "policySha256": POLICY_SHA,
                     }
+                    db.acceptance = {
+                        "mode": "genesis-pin",
+                        "authorizingWitnessIds": [],
+                        "authorizationCount": 0,
+                        "authorizationSha256": None,
+                    }
                     return FakeResult({
                         "status": "trusted",
                         "trust_state": dict(db.state),
                     })
+
+                if name == "shine_ai_witness_quorum_policy_advance_v2":
+                    assert db.state is not None
+                    assert (
+                        params["p_expected_generation"]
+                        == db.state["generation"]
+                    )
+                    assert (
+                        params["p_expected_policy_sha256"]
+                        == db.state["policySha256"]
+                    )
+                    db.state = {
+                        "trustStateVersion": 1,
+                        "trustStateType":
+                            "decision_trace_trust_state_witness_quorum_policy",
+                        "generation": params["p_next_generation"],
+                        "minimumWitnesses":
+                            params["p_next_minimum_witnesses"],
+                        "acceptedWitnessIds":
+                            list(params["p_next_accepted_witness_ids"]),
+                        "previousPolicySha256":
+                            params["p_next_previous_policy_sha256"],
+                        "policySha256": params["p_next_policy_sha256"],
+                    }
+                    db.acceptance = {
+                        "mode": "previous-quorum-transition",
+                        "authorizingWitnessIds":
+                            list(params["p_authorizing_witness_ids"]),
+                        "authorizationCount":
+                            len(params["p_authorizing_witness_ids"]),
+                        "authorizationSha256":
+                            params["p_authorization_sha256"],
+                    }
+                    return db._snapshot()
+
                 raise AssertionError(name)
 
         return Call()
@@ -177,6 +239,45 @@ def redis_receipt():
     }
 
 
+def policy_v2():
+    material = {
+        "policyVersion": 1,
+        "policyType":
+            "decision_trace_trust_state_witness_quorum_policy",
+        "generation": 2,
+        "minimumWitnesses": 2,
+        "acceptedWitnessIds": [
+            "backup-project-l",
+            "foundation-project-l",
+            "redis-project-l",
+        ],
+        "previousPolicySha256": POLICY_SHA,
+    }
+    return {
+        **material,
+        "policySha256": quorum._sha256_text(
+            quorum._canonical_json(material)
+        ),
+    }
+
+
+def foundation_policy_authorization(previous, next_policy):
+    return {
+        "authorizationVersion": 1,
+        "authorizationType":
+            "decision_trace_trust_state_witness_quorum_policy_transition",
+        "authAlgorithm": "HMAC-SHA-256",
+        "witnessId": "foundation-project-l",
+        "authKeyId": "foundation-witness-v1",
+        "fromGeneration": previous["generation"],
+        "toGeneration": next_policy["generation"],
+        "fromPolicySha256": previous["policySha256"],
+        "toPolicySha256": next_policy["policySha256"],
+        "authTag": "f" * 64,
+        "verification_status": "foundation-verified",
+    }
+
+
 def foundation_receipt():
     return {
         "status": "verified",
@@ -226,8 +327,9 @@ def test_persisted_policy_bootstraps_from_certified_deployment_pin():
     assert value["policy_trust_generation"] == 1
     assert db.state["policySha256"] == POLICY_SHA
     assert [name for name, _params in db.rpc_calls] == [
-        "shine_ai_witness_quorum_policy_snapshot_v1",
+        "shine_ai_witness_quorum_policy_snapshot_v2",
         "shine_ai_witness_quorum_policy_bootstrap_v1",
+        "shine_ai_witness_quorum_policy_snapshot_v2",
     ]
 
 
@@ -607,3 +709,181 @@ def test_quorum_fails_closed_when_chain_checkpoint_rejects(monkeypatch):
             FakePolicyDB(),
             {"state": "unused"},
         )
+
+
+
+def test_redis_policy_transition_authorization_matches_layer149_contract():
+    redis = FakeRedis()
+    witness = quorum.create_redis_witness(
+        HEAD,
+        auth_key_id="redis-witness-a",
+    )
+    redis.rows[quorum.REDIS_WITNESS_KEY] = {
+        "sequence": str(witness["sequence"]),
+        "head_sha256": witness["headSha256"],
+        "generation": str(witness["generation"]),
+        "keyset_sha256": witness["keyset_sha256"],
+        "state_sha256": witness["stateSha256"],
+        "witness_json": json.dumps(
+            witness,
+            separators=(",", ":"),
+        ),
+    }
+    previous = quorum.load_quorum_policy()
+    next_policy = policy_v2()
+
+    authorization = quorum.create_redis_policy_transition_authorization(
+        previous,
+        next_policy,
+        redis_client=redis,
+    )
+    verified = quorum.verify_redis_policy_transition_authorization(
+        authorization,
+        previous,
+        next_policy,
+    )
+
+    assert verified["witnessId"] == "redis-project-l"
+    assert verified["fromGeneration"] == 1
+    assert verified["toGeneration"] == 2
+    assert verified["fromPolicySha256"] == POLICY_SHA
+    assert verified["toPolicySha256"] == next_policy["policySha256"]
+
+
+def test_redis_policy_transition_authorization_detects_tampering():
+    redis = FakeRedis()
+    witness = quorum.create_redis_witness(HEAD)
+    redis.rows[quorum.REDIS_WITNESS_KEY] = {
+        "sequence": str(witness["sequence"]),
+        "head_sha256": witness["headSha256"],
+        "generation": str(witness["generation"]),
+        "keyset_sha256": witness["keyset_sha256"],
+        "state_sha256": witness["stateSha256"],
+        "witness_json": json.dumps(
+            witness,
+            separators=(",", ":"),
+        ),
+    }
+    previous = quorum.load_quorum_policy()
+    next_policy = policy_v2()
+    authorization = quorum.create_redis_policy_transition_authorization(
+        previous,
+        next_policy,
+        redis_client=redis,
+    )
+    authorization["authTag"] = "0" * 64
+
+    with pytest.raises(
+        quorum.WitnessQuorumError,
+        match="authorization-auth-failed",
+    ):
+        quorum.verify_redis_policy_transition_authorization(
+            authorization,
+            previous,
+            next_policy,
+        )
+
+
+def test_persisted_policy_advances_only_after_previous_quorum_approval(
+    monkeypatch,
+):
+    previous = quorum.load_quorum_policy()
+    next_policy = policy_v2()
+    db = FakePolicyDB({
+        "trustStateVersion": 1,
+        "trustStateType":
+            "decision_trace_trust_state_witness_quorum_policy",
+        "generation": 1,
+        "minimumWitnesses": 2,
+        "acceptedWitnessIds": [
+            "foundation-project-l",
+            "redis-project-l",
+        ],
+        "previousPolicySha256": None,
+        "policySha256": POLICY_SHA,
+    })
+    redis = FakeRedis()
+    witness = quorum.create_redis_witness(HEAD)
+    redis.rows[quorum.REDIS_WITNESS_KEY] = {
+        "sequence": str(witness["sequence"]),
+        "head_sha256": witness["headSha256"],
+        "generation": str(witness["generation"]),
+        "keyset_sha256": witness["keyset_sha256"],
+        "state_sha256": witness["stateSha256"],
+        "witness_json": json.dumps(
+            witness,
+            separators=(",", ":"),
+        ),
+    }
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_POLICY_JSON",
+        json.dumps(next_policy),
+    )
+    monkeypatch.setattr(
+        quorum,
+        "ensure_foundation_policy_transition_authorization",
+        lambda _db, prev, nxt, **_kwargs:
+            foundation_policy_authorization(prev, nxt),
+    )
+
+    value = quorum.load_persisted_quorum_policy(
+        db,
+        redis_client=redis,
+    )
+
+    assert value["generation"] == 2
+    assert value["policySha256"] == next_policy["policySha256"]
+    assert value["previousPolicySha256"] == POLICY_SHA
+    assert value["acceptedWitnessIds"] == [
+        "backup-project-l",
+        "foundation-project-l",
+        "redis-project-l",
+    ]
+    assert value["policy_trust_acceptance_mode"] == (
+        "previous-quorum-transition"
+    )
+    assert value["policy_trust_authorization_count"] == 2
+    assert value["policy_trust_authorizing_witness_ids"] == [
+        "foundation-project-l",
+        "redis-project-l",
+    ]
+    assert len(value["policy_trust_authorization_sha256"]) == 64
+    assert any(
+        name == "shine_ai_witness_quorum_policy_advance_v2"
+        for name, _params in db.rpc_calls
+    )
+
+
+def test_future_persisted_policy_is_valid_without_genesis_repin(monkeypatch):
+    next_policy = policy_v2()
+    db = FakePolicyDB({
+        "trustStateVersion": 1,
+        "trustStateType":
+            "decision_trace_trust_state_witness_quorum_policy",
+        "generation": 2,
+        "minimumWitnesses": next_policy["minimumWitnesses"],
+        "acceptedWitnessIds": next_policy["acceptedWitnessIds"],
+        "previousPolicySha256": POLICY_SHA,
+        "policySha256": next_policy["policySha256"],
+    }, acceptance={
+        "mode": "previous-quorum-transition",
+        "authorizingWitnessIds": [
+            "foundation-project-l",
+            "redis-project-l",
+        ],
+        "authorizationCount": 2,
+        "authorizationSha256": "a" * 64,
+    })
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_POLICY_JSON",
+        json.dumps(next_policy),
+    )
+
+    value = quorum.load_persisted_quorum_policy(db)
+
+    assert value["generation"] == 2
+    assert value["policy_trust_generation"] == 2
+    assert value["policy_trust_acceptance_mode"] == (
+        "previous-quorum-transition"
+    )
+    assert value["policy_trust_authorization_count"] == 2
