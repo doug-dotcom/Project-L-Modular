@@ -35,6 +35,30 @@ if str(ROOT) not in sys.path:
 
 load_dotenv()
 
+def runtime_provenance_headers():
+    values = {
+        "owner": os.getenv("RAILWAY_GIT_REPO_OWNER"),
+        "repo": os.getenv("RAILWAY_GIT_REPO_NAME"),
+        "commit": os.getenv("RAILWAY_GIT_COMMIT_SHA"),
+        "branch": os.getenv("RAILWAY_GIT_BRANCH"),
+        "deployment": os.getenv("RAILWAY_DEPLOYMENT_ID"),
+        "service": os.getenv("RAILWAY_SERVICE_NAME"),
+        "environment": os.getenv("RAILWAY_ENVIRONMENT_NAME"),
+    }
+    if not all(values.values()):
+        return {}
+    return {
+        "X-Shine-Runtime-Provider": "railway",
+        "X-Shine-Runtime-Repository": f"{values['owner']}/{values['repo']}",
+        "X-Shine-Runtime-Commit": values["commit"],
+        "X-Shine-Runtime-Branch": values["branch"],
+        "X-Shine-Runtime-Deployment": values["deployment"],
+        "X-Shine-Runtime-Service": values["service"],
+        "X-Shine-Runtime-Environment": values["environment"],
+    }
+
+
+
 # =====================================================
 # SHOPS
 # =====================================================
@@ -958,8 +982,8 @@ def health():
     }
     if security_gate.get("production_enforced") and not security_gate.get("ready"):
         payload["status"] = "blocked"
-        return JSONResponse(payload, status_code=503)
-    return payload
+        return JSONResponse(payload, status_code=503, headers=runtime_provenance_headers())
+    return JSONResponse(payload, headers=runtime_provenance_headers())
 
 
 @app.get("/cognition/status")
