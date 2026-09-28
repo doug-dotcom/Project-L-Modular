@@ -48,7 +48,7 @@ class Query:
         return self
 
     def neq(self, key, value):
-        self.not_filters[key] = value
+        self.not_filters.setdefault(key, set()).add(str(value))
         return self
 
     def limit(self, value):
@@ -80,7 +80,7 @@ class Query:
             for row in rows:
                 if (
                     all(str(row.get(k)) == str(v) for k, v in self.filters.items())
-                    and all(str(row.get(k)) != str(v) for k, v in self.not_filters.items())
+                    and all(str(row.get(k)) not in values for k, values in self.not_filters.items())
                 ):
                     row.update(self.payload)
                     changed.append(row.copy())
