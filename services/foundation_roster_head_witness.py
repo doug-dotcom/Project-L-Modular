@@ -195,10 +195,164 @@ def current_foundation_roster_head_witness(
     return _safe_receipt(data, _validate_head(head))
 
 
+
+def rotate_foundation_roster_head_witness(
+    db,
+    target_auth_key_id: str,
+    *,
+    witness_url: str | None = None,
+    timeout_seconds: float = 4.0,
+    post_impl=None,
+) -> dict[str, Any]:
+    if (
+        not isinstance(target_auth_key_id, str)
+        or KEY_ID_RE.fullmatch(target_auth_key_id) is None
+    ):
+        raise FoundationRosterHeadWitnessError(
+            "foundation-roster-head-witness-rotation-target-invalid"
+        )
+
+    before = current_foundation_roster_head_witness(
+        db,
+        witness_url=witness_url,
+        timeout_seconds=timeout_seconds,
+        post_impl=post_impl,
+    )
+    if before is None:
+        raise FoundationRosterHeadWitnessError(
+            "foundation-roster-head-witness-rotation-source-missing"
+        )
+
+    if before["auth_key_id"] == target_auth_key_id:
+        return {
+            "status": "verified",
+            "mode": "already-rotated",
+            "source_auth_key_id": before["auth_key_id"],
+            "target_auth_key_id": target_auth_key_id,
+            "sequence": before["sequence"],
+            "head_sha256": before["head_sha256"],
+            "generation": before["generation"],
+            "policy_sha256": before["policy_sha256"],
+            "state_sha256": before["state_sha256"],
+            "state_preserved": True,
+            "witness": before,
+        }
+
+    token = _client_token(db)
+    post = post_impl or httpx.post
+    try:
+        response = post(
+            _witness_url(witness_url),
+            headers={
+                "X-Shine-Client-Token": token,
+                "Content-Type": "application/json",
+            },
+            json={
+                "operation": "external-roster-head-rotate",
+                "witnessId": WITNESS_ID,
+                "targetAuthKeyId": target_auth_key_id,
+            },
+            timeout=timeout_seconds,
+            follow_redirects=False,
+        )
+        data = _response_json(response)
+    except Exception as exc:
+        raise FoundationRosterHeadWitnessError(
+            "foundation-roster-head-witness-rotation-unavailable"
+        ) from exc
+
+    if int(response.status_code) >= 400:
+        raise FoundationRosterHeadWitnessError(
+            str(
+                data.get("reasonCode")
+                or "foundation-roster-head-witness-rotation-rejected"
+            )
+        )
+
+    receipt = data.get("receipt")
+    witness = data.get("witness")
+    if (
+        data.get("status") != "rotated"
+        or not isinstance(receipt, dict)
+        or not isinstance(witness, dict)
+        or receipt.get("version") != 1
+        or receipt.get("eventType")
+        != (
+            "decision_trace_trust_state_witness_quorum_policy_"
+            "monotonic_head_witness_key_rotation"
+        )
+        or receipt.get("witnessId") != WITNESS_ID
+        or receipt.get("sourceAuthKeyId") != before["auth_key_id"]
+        or receipt.get("targetAuthKeyId") != target_auth_key_id
+        or receipt.get("sequence") != before["sequence"]
+        or receipt.get("headSha256") != before["head_sha256"]
+        or receipt.get("generation") != before["generation"]
+        or receipt.get("policySha256") != before["policy_sha256"]
+        or receipt.get("stateSha256") != before["state_sha256"]
+    ):
+        raise FoundationRosterHeadWitnessError(
+            "foundation-roster-head-witness-rotation-response-invalid"
+        )
+
+    expected_head = {
+        "headVersion": 1,
+        "sequence": before["sequence"],
+        "headSha256": before["head_sha256"],
+        "generation": before["generation"],
+        "policySha256": before["policy_sha256"],
+        "stateSha256": before["state_sha256"],
+    }
+    rotated = _safe_receipt(witness, _validate_head(expected_head))
+    if rotated["auth_key_id"] != target_auth_key_id:
+        raise FoundationRosterHeadWitnessError(
+            "foundation-roster-head-witness-rotation-target-mismatch"
+        )
+
+    after = current_foundation_roster_head_witness(
+        db,
+        witness_url=witness_url,
+        timeout_seconds=timeout_seconds,
+        post_impl=post_impl,
+    )
+    if (
+        after is None
+        or after["auth_key_id"] != target_auth_key_id
+        or any(
+            after[key] != before[key]
+            for key in (
+                "witness_id",
+                "sequence",
+                "head_sha256",
+                "generation",
+                "policy_sha256",
+                "state_sha256",
+            )
+        )
+    ):
+        raise FoundationRosterHeadWitnessError(
+            "foundation-roster-head-witness-rotation-persistence-invalid"
+        )
+
+    return {
+        "status": "verified",
+        "mode": "rotated",
+        "source_auth_key_id": before["auth_key_id"],
+        "target_auth_key_id": target_auth_key_id,
+        "sequence": after["sequence"],
+        "head_sha256": after["head_sha256"],
+        "generation": after["generation"],
+        "policy_sha256": after["policy_sha256"],
+        "state_sha256": after["state_sha256"],
+        "state_preserved": True,
+        "witness": after,
+    }
+
+
 __all__ = [
     "FoundationRosterHeadWitnessError",
     "WITNESS_ID",
     "WITNESS_TYPE",
     "current_foundation_roster_head_witness",
     "ensure_foundation_roster_head_witness",
+    "rotate_foundation_roster_head_witness",
 ]
