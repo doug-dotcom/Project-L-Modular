@@ -141,6 +141,7 @@ from services.concierge_execution_service import (
     bind_concierge_execution,
     execute_concierge_route,
 )
+from services.concierge_retry_service import ConciergeRetryRunner
 from services.foundation_companion_service import (
     ensure_foundation_delegation,
     foundation_account_owner,
@@ -495,6 +496,11 @@ def execute_durable_request(request):
 
 
 task_runner = TaskRunner(task_store, execute_durable_request)
+concierge_retry_runner = (
+    ConciergeRetryRunner(supabase, logger=log)
+    if supabase is not None
+    else None
+)
 app.include_router(account_document_routes(supabase, task_store))
 app.include_router(shine_ai_memory_router)
 app.include_router(foundation_companion_routes(supabase))
@@ -514,6 +520,8 @@ app.include_router(shine_me_routes(
 @app.on_event("startup")
 def start_durable_tasks():
     task_runner.start()
+    if concierge_retry_runner is not None:
+        concierge_retry_runner.start()
     owner_id = foundation_account_owner(supabase) if supabase is not None else None
     if supabase is not None and owner_id:
         try:
@@ -528,6 +536,8 @@ def start_durable_tasks():
 @app.on_event("shutdown")
 def stop_durable_tasks():
     task_runner.stop()
+    if concierge_retry_runner is not None:
+        concierge_retry_runner.stop()
 
 
 @app.post("/chat/start")
@@ -1390,6 +1400,8 @@ def chat(req: ChatRequest):
                 foundation_owner_id,
                 request_id=request_id,
                 route=route,
+                source_conversation_id=conversation_scope,
+                source_message_id=request_id,
             )
             route = bind_concierge_execution(route, concierge_execution)
             log(
