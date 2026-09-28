@@ -6,6 +6,8 @@ from memory.retrieval.memory_retriever import retrieve_memory_context
 # =========================================================
 
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+import os
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.routes import (
@@ -25,6 +27,31 @@ from orchestration.runtime_bootstrap import (
 from core.legacy_compatibility import (
     compatibility_status,
 )
+
+
+def runtime_provenance_headers():
+    values = {
+        "owner": os.getenv("RAILWAY_GIT_REPO_OWNER"),
+        "repo": os.getenv("RAILWAY_GIT_REPO_NAME"),
+        "commit": os.getenv("RAILWAY_GIT_COMMIT_SHA"),
+        "branch": os.getenv("RAILWAY_GIT_BRANCH"),
+        "deployment": os.getenv("RAILWAY_DEPLOYMENT_ID"),
+        "service": os.getenv("RAILWAY_SERVICE_NAME"),
+        "environment": os.getenv("RAILWAY_ENVIRONMENT_NAME"),
+    }
+    if not all(values.values()):
+        return {}
+    return {
+        "X-Shine-Runtime-Provider": "railway",
+        "X-Shine-Runtime-Repository": f"{values['owner']}/{values['repo']}",
+        "X-Shine-Runtime-Commit": values["commit"],
+        "X-Shine-Runtime-Branch": values["branch"],
+        "X-Shine-Runtime-Deployment": values["deployment"],
+        "X-Shine-Runtime-Service": values["service"],
+        "X-Shine-Runtime-Environment": values["environment"],
+    }
+
+
 
 
 def create_app():
@@ -84,11 +111,14 @@ def create_app():
     @app.get("/health")
     def health():
 
-        return {
-            "status": "online",
-            "platform": "Shine L",
-            "phase": "server_minimized",
-        }
+        return JSONResponse(
+            {
+                "status": "online",
+                "platform": "Shine L",
+                "phase": "server_minimized",
+            },
+            headers=runtime_provenance_headers(),
+        )
 
 '" + $HealthEndpoint + @'
 
