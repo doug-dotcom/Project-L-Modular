@@ -101,6 +101,70 @@
         }));
     }
 
+    async function delayedHistory(limit = 100) {
+        const bounded = Number.isSafeInteger(limit)
+            ? Math.max(1, Math.min(100, limit))
+            : 100;
+        const data = await requestJson(
+            '/foundation/completions/history?limit=' + encodeURIComponent(String(bounded)),
+            {method: 'GET'},
+        );
+        if (
+            data.status !== 'ok'
+            || data.version !== '1.0'
+            || !Array.isArray(data.items)
+            || data.items.length > bounded
+        ) {
+            throw new Error('completion-history-invalid');
+        }
+
+        const verified = [];
+        for (const item of data.items) {
+            if (!item || typeof item !== 'object' || Array.isArray(item)) {
+                continue;
+            }
+            const requestId = String(item.request_id || '');
+            const answer = typeof item.final_answer === 'string'
+                ? item.final_answer.trim()
+                : '';
+            const answerSha = String(item.final_answer_sha256 || '');
+            const packetSha = String(item.result_packet_sha256 || '');
+            const requestText = typeof item.request_text === 'string'
+                ? item.request_text
+                : '';
+            if (
+                !UUID.test(requestId)
+                || item.integrity !== 'verified'
+                || !answer
+                || answer.length > 50000
+                || requestText.length > 100000
+                || !SHA256.test(answerSha)
+                || !SHA256.test(packetSha)
+            ) {
+                continue;
+            }
+            if (typeof window.sha256HexText !== 'function') {
+                throw new Error('completion-hash-verifier-unavailable');
+            }
+            const actual = await window.sha256HexText(answer);
+            if (actual !== answerSha) {
+                continue;
+            }
+            verified.push({
+                requestId,
+                sourceConversationId: String(item.source_conversation_id || ''),
+                sourceMessageId: String(item.source_message_id || ''),
+                requestText,
+                finalAnswer: answer,
+                finalAnswerSha256: answerSha,
+                resultPacketSha256: packetSha,
+                completedAt: item.completed_at || null,
+                updatedAt: item.updated_at || null,
+            });
+        }
+        return verified;
+    }
+
     async function consumeOne() {
         if (!accountReady() || document.visibilityState === 'hidden') return false;
 
@@ -171,5 +235,6 @@
 
     window.lConciergeCompletions = {
         refresh: () => poll(),
+        history: (limit = 100) => delayedHistory(limit),
     };
 })();
