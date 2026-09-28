@@ -2022,6 +2022,7 @@ def set_pending_concierge_job_status(
             query
             .neq("status", "cancelled")
             .neq("status", "cancelling")
+            .neq("status", "retired")
         )
     result = query.execute()
     rows = getattr(result, "data", None)
