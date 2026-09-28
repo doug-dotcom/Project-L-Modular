@@ -163,6 +163,7 @@ from services.foundation_companion_service import (
     foundation_fleet_status,
 )
 from services.shine_runtime_service import (
+    build_human_status,
     build_runtime_trace,
     concierge_route_packet,
     dispatch_runtime_concierge,
@@ -413,6 +414,9 @@ async def account_boundary(request: Request, call_next):
         except HTTPException as exc:
             return JSONResponse({'detail': exc.detail}, status_code=exc.status_code, headers={'Cache-Control': 'no-store'})
     response = await call_next(request)
+    if path == '/health':
+        for name, value in runtime_provenance_headers().items():
+            response.headers[name] = value
     response.headers['Cache-Control'] = 'no-store'
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['Referrer-Policy'] = 'no-referrer'
@@ -627,15 +631,22 @@ def start_chat(
         for name, value in (shine_runtime.get("components") or {}).items()
         if isinstance(value, dict)
     }
+    start_human_status = (
+        shine_runtime.get("human_status")
+        if isinstance(shine_runtime.get("human_status"), dict)
+        else build_human_status(shine_runtime, final=False)
+    )
     return {
         **result,
         "durable": True,
+        "shine_status": start_human_status,
         "shine_runtime": {
             "version": shine_runtime.get("version"),
             "status": shine_runtime.get("status"),
             "components": component_status,
             "concierge_dispatch": concierge_dispatch,
             "trace": shine_runtime.get("trace"),
+            "human_status": start_human_status,
         },
     }
 
@@ -982,8 +993,8 @@ def health():
     }
     if security_gate.get("production_enforced") and not security_gate.get("ready"):
         payload["status"] = "blocked"
-        return JSONResponse(payload, status_code=503, headers=runtime_provenance_headers())
-    return JSONResponse(payload, headers=runtime_provenance_headers())
+        return JSONResponse(payload, status_code=503)
+    return payload
 
 
 @app.get("/cognition/status")
@@ -1420,6 +1431,11 @@ def chat(req: ChatRequest):
             runtime_route = concierge_route_packet(runtime_execution)
 
     runtime_trace = build_runtime_trace(shine_runtime, runtime_execution)
+    human_status = build_human_status(
+        shine_runtime,
+        runtime_execution,
+        final=True,
+    )
 
     foundation_fleet = None
     runtime_foundation = (
@@ -1525,6 +1541,7 @@ def chat(req: ChatRequest):
             "preflight": shine_runtime or {"status": "legacy"},
             "concierge_execution": runtime_execution,
             "trace": runtime_trace,
+            "human_status": human_status,
         },
         "portability": portability_manifest(),
     }
@@ -1565,6 +1582,7 @@ def chat(req: ChatRequest):
             "preflight": shine_runtime or {"status": "legacy"},
             "concierge_execution": runtime_execution,
             "trace": runtime_trace,
+            "human_status": human_status,
         }
         log(
             "COGNITIVE CONTEXT BUDGET: "
@@ -2295,12 +2313,14 @@ RESPONSE RULES:
         "reply": reply,
         "server": "vx",
         "route": route,
+        "shine_status": human_status,
         "shine_runtime": {
             "version": (shine_runtime or {}).get("version"),
             "status": (shine_runtime or {}).get("status", "legacy"),
             "components": component_status,
             "concierge_execution": runtime_execution.get("status"),
             "trace": runtime_trace,
+            "human_status": human_status,
         },
         "rhee": {
             "context_size": len(rhee_context),

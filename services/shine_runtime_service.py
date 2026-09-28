@@ -23,9 +23,11 @@ from services.foundation_companion_service import (
     foundation_account_owner,
     foundation_fleet_status,
 )
+from services.shine_ai_trace_verifier import verify_decision_trace
 
 RUNTIME_VERSION = "shine/runtime-v1"
 RUNTIME_TRACE_VERSION = "shine/runtime-trace-v1"
+HUMAN_STATUS_VERSION = "shine/human-status-v1"
 SHINE_AI_PATH = "/v1/respond"
 MAX_RESPONSE_BYTES = 128 * 1024
 MAX_CONTEXT_TEXT = 10_000
@@ -304,6 +306,21 @@ def _shine_ai_advisory(
             "status": "unavailable",
             "reason_code": str(data.get("detail") or data.get("error") or "shine-ai-runtime-rejected"),
         }
+
+    decision_verification = verify_decision_trace(
+        data,
+        header_version=(
+            response.headers.get("X-Shine-AI-Version")
+            if hasattr(response, "headers")
+            else None
+        ),
+        header_release=(
+            response.headers.get("X-Shine-AI-Release")
+            if hasattr(response, "headers")
+            else None
+        ),
+        require_response_identity=True,
+    )
     return {
         "status": str(data.get("status") or "ok"),
         "answer": str(data.get("answer") or "")[:4000],
@@ -328,6 +345,7 @@ def _shine_ai_advisory(
             if isinstance(data.get("decision_trace"), dict)
             else {}
         ),
+        "decision_trace_verification": decision_verification,
     }
 
 
@@ -449,6 +467,15 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                 "request_id",
             )),
             "decision_trace": safe_trace,
+            "decision_trace_verification": _project(
+                item.get("decision_trace_verification", {}),
+                (
+                    "version", "status", "verified", "reason_code",
+                    "service_version", "service_release",
+                    "lineage_sha256", "recomputed_lineage_sha256",
+                    "mismatch_count",
+                ),
+            ),
         }
 
     return _project(item, ("status", "reason_code"))
@@ -534,6 +561,90 @@ def _l_runtime_provenance() -> dict:
         key: value
         for key, value in values.items()
         if isinstance(value, str) and value
+    }
+
+
+def _needs_user_action(execution: Any) -> bool:
+    item = execution if isinstance(execution, dict) else {}
+    markers = {
+        "awaiting_user",
+        "awaiting_user_action",
+        "needs_confirmation",
+        "confirmation_required",
+        "consent_required",
+        "connection_required",
+        "permission_required",
+        "user_action_required",
+    }
+    for row in item.get("tasks", []) if isinstance(item.get("tasks"), list) else []:
+        if not isinstance(row, dict):
+            continue
+        status = str(row.get("status") or "").strip().lower()
+        if status in markers:
+            return True
+    return False
+
+
+def build_human_status(
+    runtime: dict | None,
+    execution: dict | None = None,
+    *,
+    final: bool,
+) -> dict:
+    """Collapse backend detail into one stable human-facing Shine state."""
+    source = runtime if isinstance(runtime, dict) else {}
+    components = source.get("components") if isinstance(source.get("components"), dict) else {}
+    runtime_trace = build_runtime_trace(source, execution)
+
+    bad_component_statuses = {"unavailable", "failed", "blocked"}
+    degraded = str(source.get("status") or "") == "degraded"
+    issue_count = len(
+        [
+            name
+            for name, value in components.items()
+            if isinstance(value, dict)
+            and str(value.get("status") or "") in bad_component_statuses
+        ]
+    )
+    degraded = degraded or issue_count > 0
+
+    shine_ai = components.get("shine_ai") if isinstance(components.get("shine_ai"), dict) else {}
+    verification = (
+        shine_ai.get("decision_trace_verification")
+        if isinstance(shine_ai.get("decision_trace_verification"), dict)
+        else {}
+    )
+    verification_status = str(verification.get("status") or "")
+    if verification_status in {"invalid", "unavailable"}:
+        degraded = True
+        issue_count += 1
+
+    execution_status = str(
+        (execution or {}).get("status")
+        if isinstance(execution, dict)
+        else ""
+    )
+    if execution_status in {"unavailable", "failed"}:
+        degraded = True
+        issue_count += 1
+
+    needs_user_action = _needs_user_action(execution)
+    if needs_user_action:
+        state = "action-required"
+    elif not final:
+        state = "degraded" if degraded else "working"
+    else:
+        state = "degraded" if degraded else "complete"
+
+    return {
+        "version": HUMAN_STATUS_VERSION,
+        "state": state,
+        "final": bool(final),
+        "can_continue": not needs_user_action,
+        "needs_user_action": needs_user_action,
+        "details_available": True,
+        "issue_count": issue_count,
+        "trace_lineage_sha256": runtime_trace.get("lineage_sha256"),
     }
 
 
@@ -641,8 +752,28 @@ def preflight_shine_request(
         if status in {"unavailable", "failed", "blocked"}:
             runtime["warnings"].append(f"{name}:{status}")
 
+    ai_verification = (
+        (runtime["components"].get("shine_ai") or {}).get(
+            "decision_trace_verification",
+            {},
+        )
+        if isinstance(runtime["components"].get("shine_ai"), dict)
+        else {}
+    )
+    if (
+        isinstance(ai_verification, dict)
+        and ai_verification.get("status") in {"invalid", "unavailable"}
+    ):
+        runtime["warnings"].append(
+            f"shine-ai-trace:{ai_verification.get('status')}"
+        )
+
     runtime["status"] = "ready" if not runtime["warnings"] else "degraded"
     runtime["trace"] = build_runtime_trace(runtime)
+    runtime["human_status"] = build_human_status(
+        runtime,
+        final=False,
+    )
     return runtime
 
 
