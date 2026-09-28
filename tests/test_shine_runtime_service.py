@@ -3133,6 +3133,11 @@ def test_runtime_trace_binds_external_roster_without_hmac_or_keyring():
             "external_roster_storage_checkpoint_independent": True,
             "external_roster_storage_checkpoint_retention":
                 "railway-redis-volume",
+            "external_roster_transition_evidence_status": "verified",
+            "external_roster_transition_evidence_generation": 2,
+            "external_roster_transition_evidence_sha256": "e" * 64,
+            "external_roster_transition_evidence_retention":
+                "railway-redis-volume",
             "external_roster_storage_rotation": {
                 "status": "verified",
                 "mode": "rotated",
@@ -3173,6 +3178,16 @@ def test_runtime_trace_binds_external_roster_without_hmac_or_keyring():
     assert "PRIVATE-ROSTER-KEYRING" not in rendered
     assert "PRIVATE-ROTATION-HMAC" not in rendered
     assert "PRIVATE-ROTATION-SECRET" not in rendered
+
+    evidence_changed = json.loads(json.dumps(packet))
+    evidence_changed["components"]["shine_ai"]["decision_trace_trust"][
+        "witness_quorum"
+    ]["external_roster_transition_evidence_sha256"] = "f" * 64
+    evidence_trace = runtime.build_runtime_trace(
+        evidence_changed,
+        {"status": "not_required"},
+    )
+    assert first["lineage_sha256"] != evidence_trace["lineage_sha256"]
 
     rotated = json.loads(json.dumps(packet))
     rotated["components"]["shine_ai"]["decision_trace_trust"][
