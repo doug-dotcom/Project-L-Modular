@@ -24,6 +24,10 @@ from services.foundation_trust_witness import (
     FoundationWitnessError,
     ensure_foundation_roster_transition_authorization,
 )
+from services.roster_transition_evidence_anchor import (
+    RosterEvidenceAnchorError,
+    ensure_roster_evidence_anchor,
+)
 
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 KEY_ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
@@ -1142,6 +1146,26 @@ def load_persisted_external_witness_roster(
                         or "external-witness-roster-transition-evidence-unverified"
                     )
                 )
+            try:
+                evidence_snapshot = db.rpc(
+                    "shine_ai_external_roster_transition_evidence_v1",
+                    {"p_generation": candidate["generation"]},
+                ).execute()
+                evidence_payload = (
+                    evidence_snapshot.data
+                    if isinstance(evidence_snapshot.data, dict)
+                    else {}
+                )
+                ensure_roster_evidence_anchor(
+                    evidence_payload,
+                    redis_client=redis_client,
+                )
+            except RosterEvidenceAnchorError as exc:
+                raise ExternalWitnessRosterError(str(exc)) from exc
+            except Exception as exc:
+                raise ExternalWitnessRosterError(
+                    "external-witness-roster-transition-evidence-anchor-unavailable"
+                ) from exc
             payload = _snapshot(db)
             state = project_trust_state(payload.get("trust_state"))
             if state != next_state:
