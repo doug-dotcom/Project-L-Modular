@@ -20,6 +20,11 @@ from typing import Any
 from redis import Redis
 from redis.exceptions import RedisError
 
+from services.foundation_trust_witness import (
+    FoundationWitnessError,
+    ensure_foundation_roster_transition_authorization,
+)
+
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 KEY_ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 
@@ -1014,18 +1019,107 @@ def load_persisted_external_witness_roster(
                 "external-witness-roster-generation-skip"
             )
         else:
-            # Layer 207: candidate transitions must be authorised by the
-            # previous external roster. Redis produces one independent
-            # authorization here; Foundation is obtained by the caller-facing
-            # transition gateway before persistence.
             redis_authorization = _redis_transition_authorization(
                 policy,
                 candidate,
             )
-            raise ExternalWitnessRosterError(
-                "external-witness-roster-transition-foundation-authorization-required:"
-                + _sha256_text(_canonical_json(redis_authorization))
+            try:
+                foundation_authorization = (
+                    ensure_foundation_roster_transition_authorization(
+                        db,
+                        policy,
+                        candidate,
+                    )
+                )
+            except FoundationWitnessError as exc:
+                raise ExternalWitnessRosterError(str(exc)) from exc
+
+            authorizations = sorted(
+                [redis_authorization, foundation_authorization],
+                key=lambda row: row["witnessId"],
             )
+            witness_ids = [row["witnessId"] for row in authorizations]
+            if (
+                len(witness_ids) != len(set(witness_ids))
+                or any(
+                    witness_id not in policy["acceptedWitnessIds"]
+                    for witness_id in witness_ids
+                )
+                or len(witness_ids) < policy["minimumWitnesses"]
+            ):
+                raise ExternalWitnessRosterError(
+                    "external-witness-roster-transition-authorizations-insufficient"
+                )
+
+            next_state = policy_to_trust_state(candidate)
+            next_envelope = create_envelope(next_state)
+            # Redis checkpoint advances first; Supabase then commits the same
+            # state. If the DB write fails, the higher Redis high-water causes
+            # subsequent old-state reads to fail closed rather than roll back.
+            checkpoint_receipt = persist_checkpoint(
+                next_state,
+                redis_client=redis_client,
+            )
+            authorization_sha = _sha256_text(
+                _canonical_json(authorizations)
+            )
+            try:
+                result = db.rpc(
+                    "shine_ai_external_witness_roster_advance_v2",
+                    {
+                        "p_expected_generation": policy["generation"],
+                        "p_expected_policy_sha256": policy["policySha256"],
+                        "p_next_generation": candidate["generation"],
+                        "p_next_minimum_witnesses":
+                            candidate["minimumWitnesses"],
+                        "p_next_accepted_witness_ids":
+                            candidate["acceptedWitnessIds"],
+                        "p_next_previous_policy_sha256":
+                            candidate["previousPolicySha256"],
+                        "p_next_policy_sha256":
+                            candidate["policySha256"],
+                        "p_authorizing_witness_ids": witness_ids,
+                        "p_authorization_sha256": authorization_sha,
+                        "p_state_sha256": next_envelope["stateSha256"],
+                        "p_storage_auth_key_id":
+                            next_envelope["authKeyId"],
+                        "p_storage_auth_tag": next_envelope["authTag"],
+                    },
+                ).execute()
+            except Exception as exc:
+                raise ExternalWitnessRosterError(
+                    "external-witness-roster-transition-commit-failed"
+                ) from exc
+            advanced = result.data if isinstance(result.data, dict) else {}
+            if advanced.get("status") != "trusted":
+                raise ExternalWitnessRosterError(
+                    str(
+                        advanced.get("reason_code")
+                        or "external-witness-roster-transition-unverified"
+                    )
+                )
+            payload = _snapshot(db)
+            state = project_trust_state(payload.get("trust_state"))
+            if state != next_state:
+                raise ExternalWitnessRosterError(
+                    "external-witness-roster-transition-final-state-mismatch"
+                )
+            envelope = {
+                "envelopeVersion": 1,
+                "envelopeType": ENVELOPE_TYPE,
+                "authAlgorithm": "HMAC-SHA-256",
+                "authKeyId": payload.get("storage_auth_key_id"),
+                "stateSha256": payload.get("state_sha256"),
+                "authTag": payload.get("storage_auth_tag"),
+                "state": state,
+            }
+            checkpoint = read_checkpoint(redis_client=redis_client)
+            if checkpoint is None or verify_pair(envelope, checkpoint) != state:
+                raise ExternalWitnessRosterError(
+                    "external-witness-roster-transition-storage-unverified"
+                )
+            policy = candidate
+            _ = checkpoint_receipt
 
     target = _rotation_target_key_id()
     rotation_receipt = None
