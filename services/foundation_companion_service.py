@@ -649,3 +649,432 @@ def invoke_foundation_specialist(
             "reason_code": "concierge-result-missing",
         }
     return safe
+
+
+
+MAX_CONCIERGE_EXECUTION_STEPS = 4
+MAX_CONCIERGE_INPUT_BYTES = 12 * 1024
+
+
+def _valid_capability_id(value: str) -> bool:
+    return bool(
+        value
+        and len(value) <= 128
+        and all(ch in "abcdefghijklmnopqrstuvwxyz0123456789._-" for ch in value)
+    )
+
+
+def _normalise_concierge_execution_plan(orchestration_plan: dict) -> dict:
+    """Validate a planner packet and derive the exact Foundation execution subset."""
+    if not isinstance(orchestration_plan, dict):
+        raise ValueError("concierge plan must be an object")
+
+    selected = orchestration_plan.get("selected_capabilities")
+    steps = orchestration_plan.get("steps")
+    if (
+        not isinstance(selected, list)
+        or not isinstance(steps, list)
+        or len(selected) < 1
+        or len(selected) > MAX_CONCIERGE_EXECUTION_STEPS
+        or len(steps) != len(selected)
+    ):
+        raise ValueError("invalid concierge plan shape")
+
+    selected_ids = [str(value or "") for value in selected]
+    if (
+        len(set(selected_ids)) != len(selected_ids)
+        or any(not _valid_capability_id(value) for value in selected_ids)
+    ):
+        raise ValueError("invalid concierge capability selection")
+
+    by_capability = {}
+    for raw in steps:
+        if not isinstance(raw, dict):
+            raise ValueError("invalid concierge step")
+        capability_id = str(raw.get("capability_id") or "")
+        if capability_id in by_capability or capability_id not in selected_ids:
+            raise ValueError("concierge step capability mismatch")
+        by_capability[capability_id] = raw
+
+    if set(by_capability) != set(selected_ids):
+        raise ValueError("concierge step set mismatch")
+
+    executable = []
+    skipped = []
+    for capability_id in selected_ids:
+        step = by_capability[capability_id]
+        step_status = str(step.get("status") or "")
+        reason_code = str(step.get("reason_code") or "unknown")[:160]
+        app_name = str(step.get("app_name") or "")[:120]
+        display_name = str(step.get("display_name") or capability_id)[:160]
+        if step_status == "ready":
+            contract = step.get("input_contract")
+            if (
+                not isinstance(contract, dict)
+                or contract.get("status") != "ready"
+                or not isinstance(contract.get("input_data"), dict)
+            ):
+                raise ValueError("ready concierge step missing compiled input")
+            input_data = contract["input_data"]
+            try:
+                encoded = json.dumps(
+                    input_data,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+            except (TypeError, ValueError) as exc:
+                raise ValueError("concierge input must be JSON serialisable") from exc
+            if len(encoded) > MAX_CONCIERGE_INPUT_BYTES:
+                raise ValueError("concierge input too large")
+            executable.append({
+                "capability_id": capability_id,
+                "app_name": app_name,
+                "display_name": display_name,
+                "input_data": input_data,
+            })
+            continue
+
+        contract = step.get("input_contract")
+        missing_fields = (
+            list(contract.get("missing_fields") or [])[:8]
+            if isinstance(contract, dict)
+            else []
+        )
+        skipped.append({
+            "capability_id": capability_id,
+            "app_name": app_name,
+            "display_name": display_name,
+            "status": step_status or "blocked",
+            "reason_code": reason_code,
+            "missing_fields": [str(field)[:80] for field in missing_fields],
+        })
+
+    return {
+        "selected_capabilities": selected_ids,
+        "executable": executable,
+        "skipped": skipped,
+    }
+
+
+def _safe_foundation_execution_results(
+    execute_body: dict,
+    *,
+    requested_capabilities: list[str],
+    metadata_by_capability: dict[str, dict],
+) -> list[dict]:
+    raw_results = execute_body.get("results")
+    if not isinstance(raw_results, list) or len(raw_results) > MAX_CONCIERGE_EXECUTION_STEPS:
+        raise RuntimeError("concierge-results-invalid")
+
+    seen = set()
+    safe_results = []
+    for raw in raw_results:
+        if not isinstance(raw, dict):
+            raise RuntimeError("concierge-results-invalid")
+        capability_id = str(raw.get("capabilityId") or "")
+        if (
+            capability_id not in requested_capabilities
+            or capability_id in seen
+            or not _valid_capability_id(capability_id)
+        ):
+            raise RuntimeError("concierge-results-invalid")
+        seen.add(capability_id)
+        status = str(raw.get("status") or "failed")[:80]
+        reason_code = str(raw.get("reasonCode") or "unknown")[:160]
+        metadata = metadata_by_capability.get(capability_id, {})
+        row = {
+            "capability_id": capability_id,
+            "app_id": str(raw.get("appId") or "")[:128],
+            "app_name": str(metadata.get("app_name") or "")[:120],
+            "display_name": str(metadata.get("display_name") or capability_id)[:160],
+            "status": status,
+            "reason_code": reason_code,
+            "reused": raw.get("reused") is True,
+        }
+        result = raw.get("result")
+        if result is not None:
+            if not isinstance(result, dict):
+                raise RuntimeError("concierge-results-invalid")
+            row["result"] = result
+        safe_results.append(row)
+    return safe_results
+
+
+def invoke_foundation_orchestration(
+    db,
+    user_id: str,
+    *,
+    request_id: str,
+    orchestration_plan: dict,
+    foundation_url: str | None = None,
+    timeout_seconds: float = 180.0,
+    post_impl=None,
+) -> dict:
+    """Execute the ready subset of one validated Concierge plan through Foundation.
+
+    There is exactly one Foundation plan request and, when that succeeds, one
+    Foundation execute request. Project L never calls specialist endpoints.
+    Local blocked/missing-input steps are retained as skipped work and force a
+    partial disclosure if any other specialist completes.
+    """
+    request_id = _uuid(request_id)
+    if timeout_seconds < 1 or timeout_seconds > 180:
+        raise ValueError("timeout outside allowed range")
+    normalised = _normalise_concierge_execution_plan(orchestration_plan)
+    executable = normalised["executable"]
+    skipped = normalised["skipped"]
+
+    if not executable:
+        status = "needs_input" if any(
+            step["status"] == "needs_input" for step in skipped
+        ) else "blocked"
+        return {
+            "status": status,
+            "reason_code": (
+                "concierge-execution-needs-input"
+                if status == "needs_input"
+                else "concierge-execution-blocked"
+            ),
+            "foundation_status": "not_invoked",
+            "request_id": request_id,
+            "selected_capabilities": normalised["selected_capabilities"],
+            "executed_capabilities": [],
+            "completed_capabilities": [],
+            "unavailable_capabilities": [],
+            "skipped_capabilities": skipped,
+            "results": [],
+            "execution_performed": False,
+            "synthesis_ready": False,
+            "synthesis_must_disclose_partial": bool(skipped),
+        }
+
+    authority = _concierge_authority(
+        db,
+        user_id,
+        foundation_url=foundation_url,
+        timeout_seconds=min(timeout_seconds, 12.0),
+    )
+    if authority.get("status") != "active":
+        return {
+            "status": str(authority.get("status") or "unavailable"),
+            "reason_code": str(
+                authority.get("reason_code") or "foundation-authority-unavailable"
+            ),
+            "foundation_status": "not_invoked",
+            "request_id": request_id,
+            "selected_capabilities": normalised["selected_capabilities"],
+            "executed_capabilities": [],
+            "completed_capabilities": [],
+            "unavailable_capabilities": [],
+            "skipped_capabilities": skipped,
+            "results": [],
+            "execution_performed": False,
+            "synthesis_ready": False,
+            "synthesis_must_disclose_partial": bool(skipped),
+        }
+
+    capability_ids = [step["capability_id"] for step in executable]
+    inputs = {
+        step["capability_id"]: step["input_data"]
+        for step in executable
+    }
+    metadata_by_capability = {
+        step["capability_id"]: step
+        for step in executable
+    }
+
+    plan_envelope = {
+        "conciergePlan": "shine-concierge/plan-v1",
+        "schemaVersion": "1.0.0",
+        "requestId": request_id,
+        "clientId": "shine.companion",
+        "purpose": "concierge.cross-project-read",
+        "capabilityIds": capability_ids,
+        "requestedAt": _utc_now(),
+    }
+    try:
+        plan_response = _post_concierge(
+            path="/v1/concierge/plan",
+            envelope=plan_envelope,
+            client_token=authority["client_token"],
+            delegation_token=authority["delegation_token"],
+            foundation_url=foundation_url,
+            timeout_seconds=min(timeout_seconds, 20.0),
+            post_impl=post_impl,
+        )
+        plan_body = _response_json(plan_response)
+    except (httpx.HTTPError, RuntimeError):
+        return {
+            "status": "unavailable",
+            "reason_code": "concierge-plan-unavailable",
+            "foundation_status": "unavailable",
+            "request_id": request_id,
+            "selected_capabilities": normalised["selected_capabilities"],
+            "executed_capabilities": [],
+            "completed_capabilities": [],
+            "unavailable_capabilities": [],
+            "skipped_capabilities": skipped,
+            "results": [],
+            "execution_performed": False,
+            "synthesis_ready": False,
+            "synthesis_must_disclose_partial": bool(skipped),
+        }
+
+    if plan_response.status_code != 200 or plan_body.get("status") != "planned":
+        return {
+            "status": str(plan_body.get("status") or "unavailable"),
+            "reason_code": str(
+                plan_body.get("reasonCode") or "concierge-plan-rejected"
+            ),
+            "foundation_status": str(plan_body.get("status") or "unavailable"),
+            "request_id": request_id,
+            "selected_capabilities": normalised["selected_capabilities"],
+            "executed_capabilities": [],
+            "completed_capabilities": [],
+            "unavailable_capabilities": [],
+            "skipped_capabilities": skipped,
+            "results": [],
+            "execution_performed": False,
+            "synthesis_ready": False,
+            "synthesis_must_disclose_partial": bool(skipped),
+        }
+
+    execute_envelope = {
+        "conciergeExecute": "shine-concierge/execute-v1",
+        "schemaVersion": "1.0.0",
+        "requestId": request_id,
+        "clientId": "shine.companion",
+        "inputs": inputs,
+        "requestedAt": _utc_now(),
+    }
+    try:
+        execute_response = _post_concierge(
+            path="/v1/concierge/execute",
+            envelope=execute_envelope,
+            client_token=authority["client_token"],
+            delegation_token=authority["delegation_token"],
+            foundation_url=foundation_url,
+            timeout_seconds=timeout_seconds,
+            post_impl=post_impl,
+        )
+        execute_body = _response_json(execute_response)
+    except (httpx.HTTPError, RuntimeError):
+        return {
+            "status": "unavailable",
+            "reason_code": "concierge-execution-unavailable",
+            "foundation_status": "unavailable",
+            "request_id": request_id,
+            "selected_capabilities": normalised["selected_capabilities"],
+            "executed_capabilities": capability_ids,
+            "completed_capabilities": [],
+            "unavailable_capabilities": capability_ids,
+            "skipped_capabilities": skipped,
+            "results": [],
+            "execution_performed": True,
+            "synthesis_ready": False,
+            "synthesis_must_disclose_partial": bool(skipped),
+        }
+
+    foundation_status = str(execute_body.get("status") or "unavailable")
+    foundation_reason = str(
+        execute_body.get("reasonCode") or "concierge-execution-unavailable"
+    )
+    try:
+        safe_results = _safe_foundation_execution_results(
+            execute_body,
+            requested_capabilities=capability_ids,
+            metadata_by_capability=metadata_by_capability,
+        )
+    except RuntimeError:
+        return {
+            "status": "unavailable",
+            "reason_code": "concierge-results-invalid",
+            "foundation_status": foundation_status,
+            "request_id": request_id,
+            "selected_capabilities": normalised["selected_capabilities"],
+            "executed_capabilities": capability_ids,
+            "completed_capabilities": [],
+            "unavailable_capabilities": capability_ids,
+            "skipped_capabilities": skipped,
+            "results": [],
+            "execution_performed": True,
+            "synthesis_ready": False,
+            "synthesis_must_disclose_partial": bool(skipped),
+        }
+
+    completed = [
+        row["capability_id"]
+        for row in safe_results
+        if row["status"] == "completed" and isinstance(row.get("result"), dict)
+    ]
+    unavailable = [
+        row["capability_id"]
+        for row in safe_results
+        if row["capability_id"] not in completed
+    ]
+    missing_result_ids = [
+        capability_id
+        for capability_id in capability_ids
+        if capability_id not in {row["capability_id"] for row in safe_results}
+    ]
+    unavailable.extend(
+        capability_id
+        for capability_id in missing_result_ids
+        if capability_id not in unavailable
+    )
+
+    if foundation_status == "completed" and (
+        len(completed) != len(capability_ids) or unavailable
+    ):
+        return {
+            "status": "unavailable",
+            "reason_code": "concierge-results-incomplete",
+            "foundation_status": foundation_status,
+            "request_id": request_id,
+            "selected_capabilities": normalised["selected_capabilities"],
+            "executed_capabilities": capability_ids,
+            "completed_capabilities": completed,
+            "unavailable_capabilities": unavailable,
+            "skipped_capabilities": skipped,
+            "results": safe_results,
+            "execution_performed": True,
+            "synthesis_ready": bool(completed),
+            "synthesis_must_disclose_partial": True,
+        }
+
+    partial = bool(skipped or unavailable or foundation_status == "partial")
+    synthesis_ready = bool(completed) and foundation_status in {"completed", "partial"}
+    status = (
+        "partial"
+        if synthesis_ready and partial
+        else "completed"
+        if synthesis_ready
+        else foundation_status
+    )
+    reason_code = (
+        "concierge-execution-partial"
+        if status == "partial"
+        else foundation_reason
+    )
+
+    retry = execute_body.get("retry")
+    retry_scheduled = isinstance(retry, dict) and bool(retry)
+    return {
+        "status": status,
+        "reason_code": reason_code,
+        "foundation_status": foundation_status,
+        "foundation_reason_code": foundation_reason,
+        "request_id": request_id,
+        "selected_capabilities": normalised["selected_capabilities"],
+        "executed_capabilities": capability_ids,
+        "completed_capabilities": completed,
+        "unavailable_capabilities": unavailable,
+        "skipped_capabilities": skipped,
+        "results": safe_results,
+        "execution_performed": True,
+        "retry_scheduled": retry_scheduled,
+        "synthesis_ready": synthesis_ready,
+        "synthesis_must_disclose_partial": partial or bool(
+            execute_body.get("synthesisMustDisclosePartial")
+        ),
+    }
