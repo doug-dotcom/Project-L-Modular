@@ -960,6 +960,38 @@ def load_persisted_external_witness_roster(
                 "external-witness-roster-storage-rotation-verification-failed"
             )
 
+    safe_rotation = (
+        {
+            "status": rotation_receipt.get("status"),
+            "mode": rotation_receipt.get("mode"),
+            "generation": rotation_receipt.get("generation"),
+            "policy_sha256": rotation_receipt.get("policy_sha256"),
+            "state_sha256": rotation_receipt.get("state_sha256"),
+            "source_envelope_auth_key_id":
+                rotation_receipt.get("source_envelope_key_id"),
+            "source_checkpoint_auth_key_id":
+                rotation_receipt.get("source_checkpoint_key_id"),
+            "target_auth_key_id":
+                rotation_receipt.get("target_key_id"),
+            "checkpoint_mode": rotation_receipt.get("checkpoint_mode"),
+            "state_preserved":
+                rotation_receipt.get("state_preserved") is True,
+        }
+        if isinstance(rotation_receipt, dict)
+        else {
+            "status": "verified",
+            "mode": "not-needed",
+            "generation": state["generation"],
+            "policy_sha256": state["policySha256"],
+            "state_sha256": envelope["stateSha256"],
+            "source_envelope_auth_key_id": envelope["authKeyId"],
+            "source_checkpoint_auth_key_id": checkpoint["authKeyId"],
+            "target_auth_key_id": envelope["authKeyId"],
+            "checkpoint_mode": "existing-checkpoint",
+            "state_preserved": True,
+        }
+    )
+
     return {
         **policy,
         "roster_trust_persisted": True,
@@ -970,11 +1002,8 @@ def load_persisted_external_witness_roster(
         "roster_storage_checkpoint_independent": True,
         "roster_storage_checkpoint_retention": "railway-redis-volume",
         "roster_storage_rotation_supported": True,
-        "roster_storage_rotation_mode": (
-            rotation_receipt.get("mode")
-            if isinstance(rotation_receipt, dict)
-            else "not-needed"
-        ),
+        "roster_storage_rotation_mode": safe_rotation["mode"],
+        "roster_storage_rotation": safe_rotation,
     }
 
 
