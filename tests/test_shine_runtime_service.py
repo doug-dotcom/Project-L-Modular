@@ -3245,8 +3245,6 @@ def test_runtime_trace_binds_external_roster_without_hmac_or_keyring():
             "external_roster_transition_evidence_chain_tag": "c" * 64,
             "external_roster_transition_evidence_chain_witness_status":
                 "verified",
-            "external_roster_transition_evidence_chain_witness_mode":
-                "existing",
             "external_roster_transition_evidence_chain_witness_generation":
                 2,
             "external_roster_transition_evidence_chain_witness_rows": 1,
