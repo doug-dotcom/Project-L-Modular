@@ -1075,6 +1075,20 @@ def _supersede_previous_concierge_jobs(
             body = _response_json(response)
         except (httpx.HTTPError, RuntimeError) as exc:
             raise RuntimeError("concierge-supersession-unavailable") from exc
+        if response.status_code == 200 and body.get("status") == "retired":
+            retirement = _safe_foundation_retirement(body, old_request_id)
+            if retirement is None:
+                raise RuntimeError("concierge-retirement-receipt-invalid")
+            local = mark_local_concierge_retired(
+                db,
+                user_id=user_id,
+                request_id=old_request_id,
+                retirement=retirement,
+            )
+            if local.get("status") not in {"retired", "already-retired"}:
+                raise RuntimeError("local-concierge-retirement-failed")
+            continue
+
         if (
             response.status_code != 200
             or body.get("status") not in {"superseded", "already-superseded"}
