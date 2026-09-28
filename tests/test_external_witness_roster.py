@@ -54,6 +54,29 @@ class FakeDB:
 
         class Call:
             def execute(self):
+                if name == "shine_ai_external_witness_roster_history_v1":
+                    if db.state is None:
+                        return FakeResult({"status": "unbootstrapped"})
+                    state = dict(db.state["trust_state"])
+                    return FakeResult({
+                        "status": "trusted",
+                        "generation": state["generation"],
+                        "policySha256": state["policySha256"],
+                        "stateSha256": db.state["state_sha256"],
+                        "history": [{
+                            "generation": state["generation"],
+                            "minimumWitnesses": state["minimumWitnesses"],
+                            "acceptedWitnessIds":
+                                list(state["acceptedWitnessIds"]),
+                            "previousPolicySha256":
+                                state["previousPolicySha256"],
+                            "policySha256": state["policySha256"],
+                            "stateSha256": db.state["state_sha256"],
+                            "acceptanceMode": "genesis-pin",
+                            "authorizationSha256": None,
+                            "authorizingWitnessIds": None,
+                        }],
+                    })
                 if name == "shine_ai_external_witness_roster_snapshot_v1":
                     if db.state is None:
                         return FakeResult({"status": "unbootstrapped"})
@@ -191,6 +214,23 @@ def env(monkeypatch):
     monkeypatch.setenv(
         "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_STORAGE_ACTIVE_KEY_ID",
         "roster-a",
+    )
+    monkeypatch.setattr(
+        roster,
+        "ensure_foundation_roster_head_witness",
+        lambda _db, head: {
+            "status": "verified",
+            "witness_id": "foundation-project-l-roster-head",
+            "auth_key_id": "foundation-roster-head-witness-v1",
+            "sequence": head["sequence"],
+            "head_sha256": head["headSha256"],
+            "generation": head["generation"],
+            "policy_sha256": head["policySha256"],
+            "state_sha256": head["stateSha256"],
+            "replayed": True,
+            "independent_retention":
+                "foundation-supabase-vault-hmac",
+        },
     )
 
 

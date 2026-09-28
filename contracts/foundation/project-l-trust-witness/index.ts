@@ -79,6 +79,78 @@ Deno.serve(async (request: Request) => {
       const body = await readJson(request);
       const operation = String(body.operation || '').trim();
 
+      if (operation === 'external-roster-head-current') {
+        const witnessId = String(
+          body.witnessId || 'foundation-project-l-roster-head'
+        ).trim();
+        const rows = await runAsGateway((tx) =>
+          tx`select foundation.project_l_roster_head_witness_current_v1(
+            ${token},
+            ${witnessId}
+          ) as result`
+        );
+        const result = rows?.[0]?.result;
+        if (!result || typeof result !== 'object') {
+          return json(
+            { status: 'unavailable', reasonCode: 'witness-result-invalid' },
+            503,
+          );
+        }
+        const status =
+          result.status === 'denied' ? 401 :
+          result.status === 'invalid' ? 400 :
+          result.status === 'unavailable' ? 503 :
+          200;
+        return json(result, status);
+      }
+
+      if (operation === 'external-roster-head-record') {
+        const witnessId = String(
+          body.witnessId || 'foundation-project-l-roster-head'
+        ).trim();
+        const sequence = Number(body.sequence);
+        const headSha256 = String(body.headSha256 || '');
+        const generation = Number(body.generation);
+        const policySha256 = String(body.policySha256 || '');
+        const stateSha256 = String(body.stateSha256 || '');
+        if (
+          !Number.isInteger(sequence) ||
+          !Number.isInteger(generation) ||
+          sequence < 1 ||
+          generation < 1
+        ) {
+          return json(
+            { status: 'invalid', reasonCode: 'roster-head-witness-request-invalid' },
+            400,
+          );
+        }
+        const rows = await runAsGateway((tx) =>
+          tx`select foundation.project_l_roster_head_witness_record_v1(
+            ${token},
+            ${witnessId},
+            ${sequence},
+            ${headSha256},
+            ${generation},
+            ${policySha256},
+            ${stateSha256}
+          ) as result`
+        );
+        const result = rows?.[0]?.result;
+        if (!result || typeof result !== 'object') {
+          return json(
+            { status: 'unavailable', reasonCode: 'witness-result-invalid' },
+            503,
+          );
+        }
+        const status =
+          result.status === 'denied' ? 401 :
+          result.status === 'invalid' ? 400 :
+          result.status === 'rejected' ? 409 :
+          result.status === 'unavailable' ? 503 :
+          200;
+        return json(result, status);
+      }
+
       if (operation === 'external-roster-transition-authorize') {
         const previousPolicy = body.previousPolicy;
         const nextPolicy = body.nextPolicy;
