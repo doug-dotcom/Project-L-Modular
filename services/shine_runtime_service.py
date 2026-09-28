@@ -283,23 +283,53 @@ def _trace_keyset_pins() -> tuple[str, ...]:
     return values
 
 
-def _trace_trust_state(db) -> dict | None:
+def _trace_trust_state(db) -> tuple[dict | None, str | None]:
     try:
-        rows = (
-            db.table("shine_ai_trace_trust_state")
-            .select(
-                "generation,keyset_sha256,trusted_keyset,source,"
-                "authorization_key_id,authorization_public_key_sha256,"
-                "accepted_at,updated_at"
-            )
-            .eq("singleton", True)
-            .limit(1)
-            .execute()
-        )
+        result = db.rpc(
+            "shine_ai_trace_trust_snapshot_v2",
+            {},
+        ).execute()
     except Exception:
-        return None
-    data = rows.data if isinstance(rows.data, list) else []
-    return data[0] if data and isinstance(data[0], dict) else None
+        return None, "trace-trust-snapshot-unavailable"
+
+    payload = result.data if isinstance(result.data, dict) else {}
+    status = str(payload.get("status") or "")
+    if status == "unbootstrapped":
+        return None, None
+    if status != "trusted":
+        return None, str(
+            payload.get("reason_code")
+            or "trace-trust-storage-inconsistent"
+        )
+
+    trusted_keyset = (
+        payload.get("trusted_keyset")
+        if isinstance(payload.get("trusted_keyset"), dict)
+        else {}
+    )
+    try:
+        generation = int(payload.get("generation"))
+    except (TypeError, ValueError):
+        return None, "trace-trust-snapshot-invalid"
+    keyset_sha256 = str(payload.get("keyset_sha256") or "")
+    if (
+        generation < 1
+        or len(keyset_sha256) != 64
+        or any(ch not in "0123456789abcdef" for ch in keyset_sha256)
+    ):
+        return None, "trace-trust-snapshot-invalid"
+
+    return {
+        "generation": generation,
+        "keyset_sha256": keyset_sha256,
+        "trusted_keyset": trusted_keyset,
+        "source": payload.get("source"),
+        "authorization_key_id": payload.get("authorization_key_id"),
+        "authorization_public_key_sha256": payload.get(
+            "authorization_public_key_sha256"
+        ),
+        "ledger_rows": payload.get("ledger_rows"),
+    }, None
 
 
 def _accept_trace_keyset_candidate(
@@ -320,8 +350,20 @@ def _accept_trace_keyset_candidate(
             "reason_code": "trace-keyset-candidate-invalid",
         }
 
-    state = _trace_trust_state(db)
+    state, state_error = _trace_trust_state(db)
+    if state_error is not None:
+        return None, state_error, {
+            "status": "invalid",
+            "reason_code": state_error,
+        }
+
     if state is None:
+        if generation != 1:
+            return None, "trace-keyset-genesis-generation-invalid", {
+                "status": "invalid",
+                "reason_code": "trace-keyset-genesis-generation-invalid",
+                "candidate_generation": generation,
+            }
         if digest not in set(pins):
             return None, "trace-keyset-genesis-pin-mismatch", {
                 "status": "unavailable",
@@ -329,15 +371,13 @@ def _accept_trace_keyset_candidate(
                 "generation": generation,
                 "keyset_sha256": digest,
             }
-        source = "genesis-pin" if generation == 1 else "out-of-band-pin"
         try:
             result = db.rpc(
-                "shine_ai_trace_trust_bootstrap_v1",
+                "shine_ai_trace_trust_bootstrap_v2",
                 {
-                    "p_generation": generation,
+                    "p_generation": 1,
                     "p_keyset_sha256": digest,
                     "p_trusted_keyset": candidate,
-                    "p_source": source,
                 },
             ).execute()
         except Exception:
@@ -353,8 +393,8 @@ def _accept_trace_keyset_candidate(
             }
         return candidate, None, {
             "status": "trusted",
-            "acceptance_mode": source,
-            "generation": generation,
+            "acceptance_mode": "genesis-pin",
+            "generation": 1,
             "keyset_sha256": digest,
         }
 
@@ -380,12 +420,23 @@ def _accept_trace_keyset_candidate(
             "keyset_sha256": digest,
         }
 
-    if generation <= trusted_generation:
-        return None, "trace-keyset-stale-or-conflicting", {
+    if generation < trusted_generation:
+        return None, "trace-keyset-rollback-detected", {
             "status": "invalid",
-            "reason_code": "trace-keyset-stale-or-conflicting",
+            "reason_code": "trace-keyset-rollback-detected",
             "trusted_generation": trusted_generation,
             "candidate_generation": generation,
+            "trusted_keyset_sha256": trusted_digest,
+            "candidate_keyset_sha256": digest,
+        }
+    if generation == trusted_generation:
+        return None, "trace-keyset-equivocation-detected", {
+            "status": "invalid",
+            "reason_code": "trace-keyset-equivocation-detected",
+            "trusted_generation": trusted_generation,
+            "candidate_generation": generation,
+            "trusted_keyset_sha256": trusted_digest,
+            "candidate_keyset_sha256": digest,
         }
     if generation != trusted_generation + 1:
         return None, "trace-keyset-generation-skip", {
@@ -411,7 +462,7 @@ def _accept_trace_keyset_candidate(
 
     try:
         result = db.rpc(
-            "shine_ai_trace_trust_advance_v1",
+            "shine_ai_trace_trust_advance_v2",
             {
                 "p_expected_generation": trusted_generation,
                 "p_expected_keyset_sha256": trusted_digest,
