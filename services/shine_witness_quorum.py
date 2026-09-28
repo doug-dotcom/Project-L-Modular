@@ -1467,8 +1467,6 @@ def ensure_trust_witness_quorum(
             roster["roster_transition_evidence_chain_tag"],
         "external_roster_transition_evidence_chain_witness_status":
             roster["roster_transition_evidence_chain_witness_status"],
-        "external_roster_transition_evidence_chain_witness_mode":
-            roster["roster_transition_evidence_chain_witness_mode"],
         "external_roster_transition_evidence_chain_witness_generation":
             roster["roster_transition_evidence_chain_witness_generation"],
         "external_roster_transition_evidence_chain_witness_rows":
