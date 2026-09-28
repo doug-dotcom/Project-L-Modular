@@ -23,6 +23,22 @@ HEAD = {
     "authTag": "5" * 64,
 }
 
+ROSTER_HEAD = {
+    "headVersion": 1,
+    "headType":
+        "decision_trace_trust_state_witness_quorum_policy_"
+        "external_head_witness_quorum_monotonic_head",
+    "checkpointChainVersion": 1,
+    "sequence": 1,
+    "checkpointSha256": "a" * 64,
+    "generation": 1,
+    "policySha256":
+        "a5c456d49e47f1be3f2a7b7ed017328"
+        "844484ba05c4e6ef3212412c6361156c4",
+    "stateSha256": "1" * 64,
+    "headSha256": "b" * 64,
+}
+
 
 class FakeResult:
     def __init__(self, data):
@@ -425,7 +441,8 @@ def quorum_env(monkeypatch):
             "previousPolicySha256": None,
             "policySha256": POLICY_SHA,
         }),
-    )    monkeypatch.setattr(
+    )
+    monkeypatch.setattr(
         quorum,
         "load_persisted_external_witness_roster",
         lambda *_args, **_kwargs: {
@@ -464,7 +481,27 @@ def quorum_env(monkeypatch):
             },
         },
     )
-
+    monkeypatch.setattr(
+        quorum,
+        "build_monotonic_roster_head",
+        lambda *_args, **_kwargs: dict(ROSTER_HEAD),
+    )
+    monkeypatch.setattr(
+        quorum,
+        "ensure_foundation_roster_head_witness",
+        lambda *_args, **_kwargs: {
+            "status": "verified",
+            "witness_id": "foundation-project-l-roster-head",
+            "auth_key_id": "foundation-roster-head-witness-v1",
+            "sequence": ROSTER_HEAD["sequence"],
+            "head_sha256": ROSTER_HEAD["headSha256"],
+            "generation": ROSTER_HEAD["generation"],
+            "policy_sha256": ROSTER_HEAD["policySha256"],
+            "state_sha256": ROSTER_HEAD["stateSha256"],
+            "mode": "existing-witness",
+            "independent_retention": "foundation-supabase",
+        },
+    )
 
 
 def redis_receipt():
