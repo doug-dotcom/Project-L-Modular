@@ -143,7 +143,7 @@ def test_retirement_ui_explains_expiry_without_calling_it_failure_or_cancel():
     assert "Retired Concierge plan" in index
     assert "Saved answer · delayed plan expired unused" in index
     assert "Retirement receipt verification failed" in index
-    assert 'concierge-completions.js?v=194' in index
+    assert 'concierge-completions.js?v=195' in index
 
 
 def test_retired_history_never_exposes_cancel_control():
