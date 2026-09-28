@@ -78,6 +78,58 @@ class FakeDB:
                         "status": "trusted",
                         "trust_state": dict(state),
                     })
+                if name == "shine_ai_external_witness_roster_rotate_storage_v1":
+                    assert db.state is not None
+                    assert (
+                        db.state["trust_state"]["generation"]
+                        == params["p_expected_generation"]
+                    )
+                    assert (
+                        db.state["trust_state"]["policySha256"]
+                        == params["p_expected_policy_sha256"]
+                    )
+                    assert (
+                        db.state["state_sha256"]
+                        == params["p_expected_state_sha256"]
+                    )
+                    if (
+                        db.state["storage_auth_key_id"]
+                        == params["p_target_storage_auth_key_id"]
+                    ):
+                        if (
+                            db.state["storage_auth_tag"]
+                            != params["p_target_storage_auth_tag"]
+                        ):
+                            raise AssertionError("target tag mismatch")
+                        return FakeResult({
+                            "status": "already_rotated",
+                            "generation":
+                                params["p_expected_generation"],
+                            "policy_sha256":
+                                params["p_expected_policy_sha256"],
+                            "state_sha256":
+                                params["p_expected_state_sha256"],
+                            "storage_auth_key_id":
+                                params["p_target_storage_auth_key_id"],
+                        })
+                    assert (
+                        db.state["storage_auth_key_id"]
+                        == params["p_expected_storage_auth_key_id"]
+                    )
+                    db.state["storage_auth_key_id"] = (
+                        params["p_target_storage_auth_key_id"]
+                    )
+                    db.state["storage_auth_tag"] = (
+                        params["p_target_storage_auth_tag"]
+                    )
+                    return FakeResult({
+                        "status": "rotated",
+                        "generation": params["p_expected_generation"],
+                        "policy_sha256": params["p_expected_policy_sha256"],
+                        "state_sha256": params["p_expected_state_sha256"],
+                        "storage_auth_key_id":
+                            params["p_target_storage_auth_key_id"],
+                    })
                 raise AssertionError(name)
 
         return Call()
@@ -344,3 +396,152 @@ def test_storage_key_retirement_fails_old_envelope(monkeypatch):
         match="external-witness-roster-storage-key-retired",
     ):
         roster.verify_envelope(envelope)
+
+
+
+def enable_rotation_target(monkeypatch):
+    monkeypatch.setenv(
+        "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_STORAGE_ROTATION_TARGET_KEY_ID",
+        "roster-b-2026-09",
+    )
+    monkeypatch.setenv(
+        "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_STORAGE_ROTATION_TARGET_SECRET",
+        "U" * 48,
+    )
+
+
+def test_storage_key_rotation_preserves_exact_roster_state(monkeypatch):
+    db = FakeDB()
+    redis = FakeRedis()
+    before = roster.load_persisted_external_witness_roster(
+        db,
+        redis_client=redis,
+    )
+    original_state = dict(db.state["trust_state"])
+    original_state_sha = db.state["state_sha256"]
+    original_policy_sha = original_state["policySha256"]
+
+    enable_rotation_target(monkeypatch)
+    receipt = roster.rotate_storage_authentication(
+        db,
+        redis_client=redis,
+    )
+
+    assert receipt["status"] == "verified"
+    assert receipt["mode"] == "rotated"
+    assert receipt["state_preserved"] is True
+    assert receipt["generation"] == before["generation"]
+    assert receipt["policy_sha256"] == original_policy_sha
+    assert receipt["state_sha256"] == original_state_sha
+    assert receipt["target_key_id"] == "roster-b-2026-09"
+    assert db.state["trust_state"] == original_state
+    assert db.state["state_sha256"] == original_state_sha
+    assert db.state["storage_auth_key_id"] == "roster-b-2026-09"
+
+    checkpoint = roster.read_checkpoint(redis_client=redis)
+    assert checkpoint["authKeyId"] == "roster-b-2026-09"
+    assert checkpoint["stateSha256"] == original_state_sha
+
+
+def test_partial_redis_first_rotation_recovers_idempotently(monkeypatch):
+    db = FakeDB()
+    redis = FakeRedis()
+    roster.load_persisted_external_witness_roster(
+        db,
+        redis_client=redis,
+    )
+    original_state = dict(db.state["trust_state"])
+    original_state_sha = db.state["state_sha256"]
+
+    enable_rotation_target(monkeypatch)
+    checkpoint_receipt = roster.persist_checkpoint(
+        original_state,
+        auth_key_id="roster-b-2026-09",
+        redis_client=redis,
+    )
+    assert checkpoint_receipt["mode"] == "refreshed"
+    assert db.state["storage_auth_key_id"] == "roster-a"
+
+    receipt = roster.rotate_storage_authentication(
+        db,
+        redis_client=redis,
+    )
+
+    assert receipt["status"] == "verified"
+    assert receipt["state_preserved"] is True
+    assert db.state["storage_auth_key_id"] == "roster-b-2026-09"
+    assert db.state["state_sha256"] == original_state_sha
+    assert roster.read_checkpoint(
+        redis_client=redis
+    )["authKeyId"] == "roster-b-2026-09"
+
+
+def test_load_auto_rotates_when_target_is_staged(monkeypatch):
+    db = FakeDB()
+    redis = FakeRedis()
+    roster.load_persisted_external_witness_roster(
+        db,
+        redis_client=redis,
+    )
+
+    enable_rotation_target(monkeypatch)
+    loaded = roster.load_persisted_external_witness_roster(
+        db,
+        redis_client=redis,
+    )
+
+    assert loaded["roster_storage_rotation_supported"] is True
+    assert loaded["roster_storage_rotation_mode"] == "rotated"
+    assert loaded["roster_storage_auth_key_id"] == "roster-b-2026-09"
+
+
+def test_active_key_can_flip_after_verified_rotation(monkeypatch):
+    db = FakeDB()
+    redis = FakeRedis()
+    roster.load_persisted_external_witness_roster(
+        db,
+        redis_client=redis,
+    )
+    enable_rotation_target(monkeypatch)
+    roster.rotate_storage_authentication(
+        db,
+        redis_client=redis,
+    )
+
+    monkeypatch.setenv(
+        "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_STORAGE_ACTIVE_KEY_ID",
+        "roster-b-2026-09",
+    )
+    loaded = roster.load_persisted_external_witness_roster(
+        db,
+        redis_client=redis,
+    )
+
+    assert loaded["roster_storage_auth_key_id"] == "roster-b-2026-09"
+    assert loaded["roster_storage_rotation_mode"] == "not-needed"
+
+
+def test_rotation_target_without_overlap_secret_fails(monkeypatch):
+    db = FakeDB()
+    redis = FakeRedis()
+    roster.load_persisted_external_witness_roster(
+        db,
+        redis_client=redis,
+    )
+    monkeypatch.setenv(
+        "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_STORAGE_ROTATION_TARGET_KEY_ID",
+        "roster-b-2026-09",
+    )
+    monkeypatch.delenv(
+        "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_STORAGE_ROTATION_TARGET_SECRET",
+        raising=False,
+    )
+
+    with pytest.raises(
+        roster.ExternalWitnessRosterError,
+        match="external-witness-roster-storage-rotation-target-invalid",
+    ):
+        roster.rotate_storage_authentication(
+            db,
+            redis_client=redis,
+        )
