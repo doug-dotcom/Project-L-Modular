@@ -1240,8 +1240,148 @@ def load_persisted_external_witness_roster(
     }
 
 
+ROSTER_CHECKPOINT_CHAIN_TYPE = (
+    "decision_trace_trust_state_witness_quorum_policy_"
+    "external_head_witness_quorum_checkpoint_chain"
+)
+ROSTER_MONOTONIC_HEAD_TYPE = (
+    "decision_trace_trust_state_witness_quorum_policy_"
+    "external_head_witness_quorum_monotonic_head"
+)
+
+
+def build_monotonic_roster_head(
+    db,
+    *,
+    expected_roster: dict | None = None,
+) -> dict[str, Any]:
+    """Reconstruct the stable Layer 161 roster head from verified ledger history."""
+    try:
+        result = db.rpc(
+            "shine_ai_external_witness_roster_head_material_v1",
+            {},
+        ).execute()
+    except Exception as exc:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-head-material-unavailable"
+        ) from exc
+    payload = result.data if isinstance(result.data, dict) else {}
+    if payload.get("status") != "verified":
+        raise ExternalWitnessRosterError(
+            str(
+                payload.get("reason_code")
+                or "external-witness-roster-head-material-invalid"
+            )
+        )
+    rows = payload.get("rows")
+    if not isinstance(rows, list) or not rows:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-head-history-invalid"
+        )
+
+    previous_checkpoint_sha256: str | None = None
+    latest: dict[str, Any] | None = None
+    for index, row in enumerate(rows, start=1):
+        if not isinstance(row, dict):
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-head-history-invalid"
+            )
+        sequence = row.get("sequence")
+        generation = row.get("generation")
+        previous_policy_sha256 = row.get("previousPolicySha256")
+        policy_sha256 = row.get("policySha256")
+        state_sha256 = row.get("stateSha256")
+        if (
+            sequence != index
+            or generation != index
+            or not isinstance(policy_sha256, str)
+            or SHA256_RE.fullmatch(policy_sha256) is None
+            or not isinstance(state_sha256, str)
+            or SHA256_RE.fullmatch(state_sha256) is None
+            or (
+                index == 1
+                and previous_policy_sha256 is not None
+            )
+            or (
+                index > 1
+                and (
+                    not isinstance(previous_policy_sha256, str)
+                    or SHA256_RE.fullmatch(previous_policy_sha256) is None
+                )
+            )
+        ):
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-head-history-invalid"
+            )
+        if (
+            index > 1
+            and latest is not None
+            and previous_policy_sha256 != latest["policySha256"]
+        ):
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-head-policy-chain-mismatch"
+            )
+
+        checkpoint_material = {
+            "chainVersion": 1,
+            "chainType": ROSTER_CHECKPOINT_CHAIN_TYPE,
+            "sequence": sequence,
+            "previousCheckpointSha256": previous_checkpoint_sha256,
+            "trustStateVersion": 1,
+            "generation": generation,
+            "previousPolicySha256": previous_policy_sha256,
+            "policySha256": policy_sha256,
+            "stateSha256": state_sha256,
+        }
+        checkpoint_sha256 = _sha256_text(
+            _canonical_json(checkpoint_material)
+        )
+        latest = {
+            **row,
+            "checkpointSha256": checkpoint_sha256,
+        }
+        previous_checkpoint_sha256 = checkpoint_sha256
+
+    if latest is None:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-head-history-invalid"
+        )
+
+    if expected_roster is not None:
+        expected_generation = expected_roster.get("generation")
+        expected_policy_sha256 = expected_roster.get("policySha256")
+        expected_state_sha256 = expected_roster.get(
+            "roster_storage_state_sha256"
+        )
+        if (
+            latest["generation"] != expected_generation
+            or latest["policySha256"] != expected_policy_sha256
+            or latest["stateSha256"] != expected_state_sha256
+        ):
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-head-current-state-mismatch"
+            )
+
+    head_material = {
+        "headVersion": 1,
+        "headType": ROSTER_MONOTONIC_HEAD_TYPE,
+        "checkpointChainVersion": 1,
+        "sequence": latest["sequence"],
+        "checkpointSha256": latest["checkpointSha256"],
+        "generation": latest["generation"],
+        "policySha256": latest["policySha256"],
+        "stateSha256": latest["stateSha256"],
+    }
+    return {
+        **head_material,
+        "headSha256": _sha256_text(_canonical_json(head_material)),
+    }
+
+
 __all__ = [
     "CERTIFIED_GENESIS_ROSTER_SHA256",
+    "ROSTER_CHECKPOINT_CHAIN_TYPE",
+    "ROSTER_MONOTONIC_HEAD_TYPE",
     "CERTIFIED_GENESIS_WITNESS_IDS",
     "CHECKPOINT_AUTH_DOMAIN",
     "ENVELOPE_TYPE",
@@ -1249,6 +1389,7 @@ __all__ = [
     "REDIS_ROSTER_CHECKPOINT_KEY",
     "ROSTER_POLICY_TYPE",
     "STATE_AUTH_DOMAIN",
+    "build_monotonic_roster_head",
     "create_checkpoint",
     "create_envelope",
     "digest_trust_state",
