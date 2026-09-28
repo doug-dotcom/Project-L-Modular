@@ -116,7 +116,7 @@ def test_browser_history_reverifies_answer_hash_before_saved_answer_merge():
     assert "Delayed final answer" in index
     assert "savedText = delayed.displayAnswer || delayed.finalAnswer" in index
     assert "verifyCompletionReceipt" in completions
-    assert 'concierge-completions.js?v=191' in index
+    assert 'concierge-completions.js?v=192' in index
 
 
 def test_delayed_final_answer_precedence_does_not_mutate_server_task_history():
