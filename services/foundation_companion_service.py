@@ -979,6 +979,31 @@ def invoke_foundation_orchestration(
     foundation_reason = str(
         execute_body.get("reasonCode") or "concierge-execution-unavailable"
     )
+    if foundation_status not in {
+        "completed", "partial", "failed", "blocked", "denied", "invalid", "unavailable"
+    }:
+        foundation_status = "unavailable"
+        foundation_reason = "concierge-execution-status-invalid"
+
+    raw_results = execute_body.get("results")
+    if foundation_status not in {"completed", "partial"} and raw_results is None:
+        return {
+            "status": foundation_status,
+            "reason_code": foundation_reason,
+            "foundation_status": foundation_status,
+            "foundation_reason_code": foundation_reason,
+            "request_id": request_id,
+            "selected_capabilities": normalised["selected_capabilities"],
+            "executed_capabilities": capability_ids,
+            "completed_capabilities": [],
+            "unavailable_capabilities": capability_ids,
+            "skipped_capabilities": skipped,
+            "results": [],
+            "execution_performed": True,
+            "synthesis_ready": False,
+            "synthesis_must_disclose_partial": bool(skipped),
+        }
+
     try:
         safe_results = _safe_foundation_execution_results(
             execute_body,
