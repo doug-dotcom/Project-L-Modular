@@ -1424,11 +1424,18 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                                 "witness_quorum",
                                 {},
                             ).get("foundation_chain", {})
-                            if isinstance(
-                                item.get("decision_trace_trust", {}).get(
-                                    "witness_quorum",
-                                ),
-                                dict,
+                            if (
+                                isinstance(
+                                    item.get("decision_trace_trust"),
+                                    dict,
+                                )
+                                and isinstance(
+                                    item.get(
+                                        "decision_trace_trust",
+                                        {},
+                                    ).get("witness_quorum"),
+                                    dict,
+                                )
                             )
                             else {}
                         ),
