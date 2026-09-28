@@ -31,7 +31,7 @@ from services.shine_ai_trace_verifier import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v3"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v4"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -850,6 +850,19 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                     "service_version", "service_release", "lineage_sha256",
                 ),
             ),
+            "decision_trace_trust": _project(
+                item.get("decision_trace_trust", {}),
+                (
+                    "version", "status", "reason_code", "acceptance_mode",
+                    "generation", "trusted_generation",
+                    "candidate_generation", "from_generation",
+                    "to_generation", "keyset_sha256",
+                    "from_keyset_sha256", "to_keyset_sha256",
+                    "authorization_key_id",
+                    "authorization_public_key_sha256",
+                    "certificate_sha256",
+                ),
+            ),
         }
 
     return _project(item, ("status", "reason_code"))
@@ -1024,6 +1037,12 @@ def build_runtime_recovery(
         else {}
     )
     authenticity_status = str(authenticity.get("status") or "")
+    trust = (
+        shine_ai.get("decision_trace_trust")
+        if isinstance(shine_ai.get("decision_trace_trust"), dict)
+        else {}
+    )
+    trust_status = str(trust.get("status") or "")
 
     if str(source.get("status") or "") == "degraded" or component_degraded:
         if mode == "none":
@@ -1040,6 +1059,11 @@ def build_runtime_recovery(
         mode = "degraded"
         stage = "authenticity"
         reasons.append("authenticity-degraded")
+
+    if trust_status in {"invalid", "unavailable"}:
+        mode = "degraded"
+        stage = "trust-continuity"
+        reasons.append("trust-continuity-degraded")
 
     execution_status = str(execution_item.get("status") or "")
     timed_out = execution_item.get("observation_timed_out") is True
@@ -1304,6 +1328,22 @@ def preflight_shine_request(
     ):
         runtime["warnings"].append(
             f"shine-ai-authenticity:{ai_authenticity.get('status')}"
+        )
+
+    ai_trust = (
+        (runtime["components"].get("shine_ai") or {}).get(
+            "decision_trace_trust",
+            {},
+        )
+        if isinstance(runtime["components"].get("shine_ai"), dict)
+        else {}
+    )
+    if (
+        isinstance(ai_trust, dict)
+        and ai_trust.get("status") in {"invalid", "unavailable"}
+    ):
+        runtime["warnings"].append(
+            f"shine-ai-trust:{ai_trust.get('status')}"
         )
 
     runtime["status"] = "ready" if not runtime["warnings"] else "degraded"
