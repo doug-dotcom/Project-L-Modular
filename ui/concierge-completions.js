@@ -302,6 +302,61 @@
         return verified;
     }
 
+    async function pendingJobs(limit = 100) {
+        const bounded = Number.isSafeInteger(limit)
+            ? Math.max(1, Math.min(100, limit))
+            : 100;
+        const data = await requestJson(
+            '/foundation/completions/pending?limit=' + encodeURIComponent(String(bounded)),
+            {method: 'GET'},
+        );
+        if (
+            data.status !== 'ok'
+            || data.version !== '1.0'
+            || !Array.isArray(data.items)
+            || data.items.length > bounded
+        ) {
+            throw new Error('pending-concierge-jobs-invalid');
+        }
+        return data.items.flatMap(item => {
+            if (!item || typeof item !== 'object' || Array.isArray(item)) return [];
+            const requestId = String(item.request_id || '');
+            const sourceConversationId = String(item.source_conversation_id || '');
+            const requestText = typeof item.request_text === 'string' ? item.request_text : '';
+            const capabilities = Array.isArray(item.capability_ids)
+                ? item.capability_ids.map(value => String(value)).slice(0, 20)
+                : [];
+            if (
+                !UUID.test(requestId)
+                || item.status !== 'ready'
+                || requestText.length > 100000
+                || capabilities.length < 1
+            ) return [];
+            return [{
+                requestId,
+                sourceConversationId,
+                sourceMessageId: String(item.source_message_id || ''),
+                requestText,
+                capabilityIds: capabilities,
+                createdAt: item.created_at || null,
+                updatedAt: item.updated_at || null,
+            }];
+        });
+    }
+
+    async function cancelPending(requestId) {
+        const id = String(requestId || '');
+        if (!UUID.test(id)) throw new Error('pending-concierge-request-invalid');
+        const result = await requestJson(
+            '/foundation/completions/' + encodeURIComponent(id) + '/cancel',
+            {method: 'POST'},
+        );
+        if (!['cancelled', 'already-cancelled'].includes(String(result.status || ''))) {
+            throw new Error('pending-concierge-cancellation-failed');
+        }
+        return result;
+    }
+
     async function consumeOne() {
         if (!accountReady() || document.visibilityState === 'hidden') return false;
 
@@ -383,5 +438,7 @@
     window.lConciergeCompletions = {
         refresh: () => poll(),
         history: (limit = 100) => delayedHistory(limit),
+        pending: (limit = 100) => pendingJobs(limit),
+        cancel: requestId => cancelPending(requestId),
     };
 })();
