@@ -8,6 +8,9 @@ from services.foundation_companion_service import (
     claim_delayed_completion,
     list_delayed_completion_history,
 )
+from services.concierge_completion_synthesis import (
+    synthesise_delayed_concierge_completion,
+)
 
 
 USER = "11111111-1111-4111-8111-111111111111"
@@ -184,3 +187,76 @@ def test_saved_answers_marks_superseded_delayed_result_for_attention():
     assert "Delayed answer · facts changed" in source
     assert "delayed.displayAnswer || delayed.finalAnswer" in source
     assert "['superseded', 'unavailable'].includes(delayedFreshness)" in source
+
+
+
+class SynthesisAdapter:
+    available = True
+    provider = "fixture"
+    model_id = "fixture-model"
+
+    def generate(self, request):
+        return {
+            "status": "complete",
+            "content": "Final delayed answer",
+            "provider": self.provider,
+            "model_id": self.model_id,
+        }
+
+
+def test_delayed_synthesiser_emits_temporal_receipt_and_generation_time():
+    temporal = {
+        "status": "checked",
+        "user_id": USER,
+        "dependencies": [],
+        "terms": ["vanuatu"],
+    }
+
+    def cognitive_runner(
+        message,
+        rhee_packet,
+        capability_packet=None,
+        client=None,
+        model=None,
+        cognitive_plan=None,
+        model_adapter=None,
+    ):
+        return {
+            "version": "fixture",
+            "runtime": {"status": "ok"},
+            "controller": cognitive_plan,
+            "route": {},
+            "guardrails": {"passed": True, "issues": []},
+        }
+
+    result = synthesise_delayed_concierge_completion(
+        "Plan Vanuatu and include diving",
+        {
+            "status": "completed",
+            "reason_code": "done",
+            "results": [],
+            "synthesis_ready": True,
+        },
+        model_adapter=SynthesisAdapter(),
+        rhee_builder=lambda _message: {
+            "context": "Relevant context",
+            "recall_active": True,
+            "deep_recall": False,
+            "temporal_memory": temporal,
+        },
+        cognition_planner=lambda _message: {
+            "difficulty": "medium",
+            "needs": {
+                "memory": True,
+                "structured_reasoning": False,
+                "longitudinal_reasoning": False,
+                "specialist": True,
+                "action": False,
+            },
+        },
+        cognitive_runner=cognitive_runner,
+    )
+
+    assert result["status"] == "ready"
+    assert result["temporal_receipt"] == temporal
+    assert result["generated_at"].endswith("Z")
