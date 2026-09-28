@@ -6,6 +6,7 @@ import pytest
 
 from services import shine_runtime_service as runtime
 from services import shine_trust_storage as trust_storage
+from services import shine_witness_quorum_policy as quorum_policy
 
 
 @pytest.fixture(autouse=True)
@@ -598,11 +599,13 @@ class FakeTrustDB:
         *,
         inconsistent_reason=None,
         sealed=True,
+        policy_state=None,
     ):
         self.state = state
         self.inconsistent_reason = inconsistent_reason
         self.rpc_calls = []
         self.sealed = sealed
+        self.policy_state = policy_state
         if self.state is not None and sealed:
             self._seal_current()
 
@@ -659,6 +662,19 @@ class FakeTrustDB:
 
         class Call:
             def execute(self):
+                if name == "shine_ai_witness_quorum_policy_snapshot_v1":
+                    if db.policy_state is None:
+                        return FakeTrustResult({"status": "unbootstrapped"})
+                    return FakeTrustResult({
+                        "status": "trusted",
+                        "trust_state": db.policy_state,
+                    })
+                if name == "shine_ai_witness_quorum_policy_bootstrap_v1":
+                    db.policy_state = quorum_policy.genesis_policy_trust_state()
+                    return FakeTrustResult({
+                        "status": "trusted",
+                        "trust_state": db.policy_state,
+                    })
                 if name == "shine_ai_trace_trust_snapshot_v2":
                     return db._snapshot(2)
                 if name == "shine_ai_trace_trust_snapshot_v3":
