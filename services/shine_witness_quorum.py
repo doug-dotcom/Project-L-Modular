@@ -979,15 +979,20 @@ def load_persisted_quorum_policy(
     foundation_post_impl=None,
 ) -> dict[str, Any]:
     """Load authenticated policy trust and accept only previous-quorum N -> N+1."""
+    snapshot_rpc = "shine_ai_witness_quorum_policy_snapshot_v3"
     try:
-        result = db.rpc(
-            "shine_ai_witness_quorum_policy_snapshot_v3",
-            {},
-        ).execute()
-    except Exception as exc:
-        raise WitnessQuorumError(
-            "trust-witness-quorum-policy-snapshot-unavailable"
-        ) from exc
+        result = db.rpc(snapshot_rpc, {}).execute()
+    except Exception:
+        # Rolling-upgrade compatibility: generation-1 trust remains readable
+        # through the authenticated Layer 202 snapshot until the Layer 204
+        # migration is installed. Policy advancement itself still requires v3.
+        snapshot_rpc = "shine_ai_witness_quorum_policy_snapshot_v2"
+        try:
+            result = db.rpc(snapshot_rpc, {}).execute()
+        except Exception as exc:
+            raise WitnessQuorumError(
+                "trust-witness-quorum-policy-snapshot-unavailable"
+            ) from exc
 
     payload = result.data if isinstance(result.data, dict) else {}
     status = str(payload.get("status") or "")
@@ -1012,10 +1017,7 @@ def load_persisted_quorum_policy(
                     "p_storage_auth_tag": envelope["authTag"],
                 },
             ).execute()
-            result = db.rpc(
-                "shine_ai_witness_quorum_policy_snapshot_v3",
-                {},
-            ).execute()
+            result = db.rpc(snapshot_rpc, {}).execute()
         except Exception as exc:
             raise WitnessQuorumError(
                 "trust-witness-quorum-policy-bootstrap-failed"
@@ -1056,10 +1058,7 @@ def load_persisted_quorum_policy(
                     "p_storage_auth_tag": envelope["authTag"],
                 },
             ).execute()
-            result = db.rpc(
-                "shine_ai_witness_quorum_policy_snapshot_v3",
-                {},
-            ).execute()
+            result = db.rpc(snapshot_rpc, {}).execute()
         except Exception as exc:
             raise WitnessQuorumError(
                 "trust-witness-quorum-policy-seal-failed"
@@ -1105,6 +1104,10 @@ def load_persisted_quorum_policy(
                 "trust-witness-quorum-policy-generation-skip"
             )
         else:
+            if snapshot_rpc != "shine_ai_witness_quorum_policy_snapshot_v3":
+                raise WitnessQuorumError(
+                    "trust-witness-quorum-policy-transition-rpc-unavailable"
+                )
             authorization = _authorize_policy_transition(
                 db,
                 policy,
