@@ -80,6 +80,7 @@ class Query:
 
 class FakeDb:
     def __init__(self):
+        self.cancel_on_answer_store = False
         self.tables = {
             "companion_foundation_pending_jobs": [{
                 "job_id": REQUEST,
@@ -163,6 +164,10 @@ class FakeDb:
             row["final_answer_generated_at"] = (params or {})["p_generated_at"]
             self.temporal_receipt = (params or {}).get("p_temporal_receipt")
             row["synthesis_status"] = "ready"
+            if self.cancel_on_answer_store:
+                row["status"] = "cancelling"
+                row["cancellation_reason"] = "user-cancelled"
+                row["superseded_by_request_id"] = None
             return Rpc({
                 "stored": True,
                 "replayed": False,
@@ -634,4 +639,122 @@ def test_cancelled_job_abandons_claim_without_resuming_specialists():
     assert result["status"] == "cancelled"
     assert result["reason_code"] == "user-cancelled"
     assert outcomes == [("abandoned", "user-cancelled")]
+    assert db.tables["companion_concierge_completion_outbox"] == []
+
+
+
+def test_cancelling_job_holds_claim_without_resume_or_finish():
+    calls = []
+
+    def post(url, *, json, **kwargs):
+        calls.append(url)
+        if url.endswith("/retry/claim"):
+            return Response(200, claim_payload())
+        raise AssertionError("cancelling job must not resume or finish its claim")
+
+    db = FakeDb()
+    row = db.tables["companion_foundation_pending_jobs"][0]
+    row["status"] = "cancelling"
+    row["cancellation_reason"] = "user-cancelled"
+    row["superseded_by_request_id"] = None
+
+    result = run_concierge_retry_once(db, post_impl=post)
+
+    assert result["status"] == "cancelling"
+    assert result["reason_code"] == "user-cancelled"
+    assert result["finish_status"] == "claim-held-for-cancellation"
+    assert calls == ["https://sjpxqeyewahraxvidvcc.supabase.co/functions/v1/foundation-gateway/v1/concierge/retry/claim"]
+    assert db.tables["companion_concierge_completion_outbox"] == []
+
+
+def test_cancellation_after_resume_blocks_synthesis_and_publication():
+    finish_calls = []
+    synthesis_calls = []
+
+    def post(url, *, json, **kwargs):
+        if url.endswith("/retry/claim"):
+            return Response(200, claim_payload())
+        if url.endswith("/concierge/resume"):
+            row = db.tables["companion_foundation_pending_jobs"][0]
+            row["status"] = "cancelling"
+            row["cancellation_reason"] = "user-cancelled"
+            row["superseded_by_request_id"] = None
+            return Response(200, {
+                "status": "completed",
+                "reasonCode": "concierge-execution-completed",
+                "results": [{
+                    "capabilityId": "dive.destination_brief",
+                    "status": "completed",
+                    "reasonCode": "capability-completed",
+                    "result": {"summary": "Dive complete"},
+                }],
+                "synthesisReady": True,
+                "synthesisMustDisclosePartial": False,
+            })
+        if url.endswith("/retry/finish"):
+            finish_calls.append(json)
+            raise AssertionError("cancelling job must not finish as completed")
+        raise AssertionError(url)
+
+    db = FakeDb()
+
+    def synthesise(*args, **kwargs):
+        synthesis_calls.append(True)
+        raise AssertionError("cancelling job must not synthesise")
+
+    result = run_concierge_retry_once(
+        db,
+        post_impl=post,
+        synthesise=synthesise,
+    )
+
+    assert result["status"] == "cancelling"
+    assert synthesis_calls == []
+    assert finish_calls == []
+    assert db.tables["companion_concierge_completion_outbox"] == []
+
+
+def test_cancellation_after_answer_save_blocks_completed_transition_and_outbox():
+    finish_calls = []
+
+    def post(url, *, json, **kwargs):
+        if url.endswith("/retry/claim"):
+            return Response(200, claim_payload())
+        if url.endswith("/concierge/resume"):
+            return Response(200, {
+                "status": "completed",
+                "reasonCode": "concierge-execution-completed",
+                "results": [{
+                    "capabilityId": "dive.destination_brief",
+                    "status": "completed",
+                    "reasonCode": "capability-completed",
+                    "result": {"summary": "Dive complete"},
+                }],
+                "synthesisReady": True,
+                "synthesisMustDisclosePartial": False,
+            })
+        if url.endswith("/retry/finish"):
+            finish_calls.append(json)
+            raise AssertionError("cancelled publication must not finish retry as completed")
+        raise AssertionError(url)
+
+    db = FakeDb()
+    db.cancel_on_answer_store = True
+
+    result = run_concierge_retry_once(
+        db,
+        post_impl=post,
+        synthesise=lambda request, packet: {
+            "status": "ready",
+            "reply": "Final answer that must not surface",
+            "generated_at": "2026-09-28T04:30:00Z",
+            "temporal_receipt": None,
+        },
+    )
+
+    row = db.tables["companion_foundation_pending_jobs"][0]
+    assert result["status"] == "cancelling"
+    assert row["status"] == "cancelling"
+    assert row["final_answer"] == "Final answer that must not surface"
+    assert finish_calls == []
     assert db.tables["companion_concierge_completion_outbox"] == []
