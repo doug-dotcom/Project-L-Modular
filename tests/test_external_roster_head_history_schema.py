@@ -53,7 +53,7 @@ def test_layer209_snapshot_supports_multiple_roster_generations():
 
 
 def test_layer209_history_is_service_role_only():
-    sql = source()
+    sql = " ".join(source().split())
 
     assert (
         "revoke all on function "
