@@ -319,6 +319,7 @@ def _shine_ai_advisory(
             if hasattr(response, "headers")
             else None
         ),
+        require_response_identity=True,
     )
     return {
         "status": str(data.get("status") or "ok"),
