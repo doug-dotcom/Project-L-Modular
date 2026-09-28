@@ -35,6 +35,8 @@ def main() -> None:
         or not isinstance(keyset, dict)
         or not isinstance(trust, dict)
         or trust.get("status") != "trusted"
+        or trust.get("anti_rollback") is not True
+        or trust.get("persisted_state_valid") is not True
     ):
         raise SystemExit(
             "Project L Shine-AI trace trust smoke: FAIL "
@@ -44,7 +46,8 @@ def main() -> None:
         "Project L Shine-AI trace trust smoke: PASS "
         f"generation={keyset.get('generation')} "
         f"keys={len(keyset.get('verification_keys') or {})} "
-        f"mode={trust.get('acceptance_mode')}"
+        f"mode={trust.get('acceptance_mode')} "
+        "anti_rollback=on"
     )
 
 
