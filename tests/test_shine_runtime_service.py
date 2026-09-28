@@ -309,6 +309,15 @@ def runtime_for_human_status(verification_status="verified"):
                     "verified": verification_status == "verified",
                     "lineage_sha256": "a" * 64,
                 },
+                "decision_trace_authenticity": {
+                    "version": "shine-ai/decision-trace-authenticity-v1",
+                    "status": "authenticated",
+                    "authenticated": True,
+                    "key_id": "trace-v1",
+                    "public_key_sha256": "b" * 64,
+                    "keyset_sha256": "c" * 64,
+                    "lineage_sha256": "a" * 64,
+                },
             },
         },
     }
@@ -472,6 +481,141 @@ def test_runtime_trace_binds_recovery_control_plane_without_private_content():
     changed["recovery"]["reason_codes"] = ["PRIVATE-REASON-TEXT-NOT-HASHED"]
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v2"
+    assert first["version"] == "shine/runtime-trace-v3"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-REASON-TEXT-NOT-HASHED" not in json.dumps(second)
+
+
+
+TRACE_PUBLIC_KEY_B64 = "A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg="
+TRACE_PUBLIC_KEY_SHA256 = "56475aa75463474c0285df5dbf2bcab73da651358839e9b77481b2eab107708c"
+TRACE_SINGLE_KEYSET_SHA256 = "00d100d5873dd2fecc3049dc501b2f2f5dfc268710858b9cf68b0f5858666f4a"
+
+
+class FakeCapabilityResponse:
+    def __init__(self, payload):
+        self.status_code = 200
+        self._payload = payload
+        self.content = json.dumps(payload).encode("utf-8")
+        self.headers = {
+            "content-length": str(len(self.content)),
+            "X-Shine-AI-Version": "1.40.0",
+            "X-Shine-AI-Release": "1.40.0+test",
+        }
+
+    def json(self):
+        return self._payload
+
+
+def test_trace_keyset_discovery_requires_pin_and_caches_public_trust(monkeypatch):
+    monkeypatch.setenv("SHINE_AI_BASE_URL", "https://shine-ai.example")
+    monkeypatch.setenv("SHINE_AI_APP_ID", "shine-me")
+    monkeypatch.setenv("SHINE_AI_APP_KEY_ID", "runtime-1")
+    monkeypatch.setenv("SHINE_AI_APP_SECRET", "s" * 48)
+    monkeypatch.setenv(
+        "SHINE_AI_TRACE_ACCEPTED_KEYSET_SHA256",
+        TRACE_SINGLE_KEYSET_SHA256,
+    )
+    runtime._TRACE_KEYSET_CACHE.update({
+        "expires_at": 0.0,
+        "pin": "",
+        "keyset": None,
+    })
+    payload = {
+        "decision_trace_signing": {
+            "enabled": True,
+            "active_key_id": "trace-v1",
+            "verification_keys": {
+                "trace-v1": {
+                    "public_key_b64": TRACE_PUBLIC_KEY_B64,
+                    "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+                },
+            },
+            "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        },
+    }
+    calls = []
+
+    def fake_get(url, **kwargs):
+        calls.append((url, kwargs))
+        assert url == "https://shine-ai.example/v1/capabilities"
+        assert kwargs["headers"]["X-Shine-App"] == "shine-me"
+        assert "X-Shine-Signature" in kwargs["headers"]
+        return FakeCapabilityResponse(payload)
+
+    keyset, error = runtime._shine_ai_verification_keyset(get_impl=fake_get)
+    assert error is None
+    assert keyset["keyset_sha256"] == TRACE_SINGLE_KEYSET_SHA256
+    assert len(calls) == 1
+
+    cached, error = runtime._shine_ai_verification_keyset(
+        get_impl=lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("cached trust must not refetch")
+        )
+    )
+    assert error is None
+    assert cached == keyset
+    assert len(calls) == 1
+
+
+def test_trace_keyset_discovery_fails_closed_without_independent_pin(monkeypatch):
+    monkeypatch.delenv("SHINE_AI_TRACE_ACCEPTED_KEYSET_SHA256", raising=False)
+    runtime._TRACE_KEYSET_CACHE.update({
+        "expires_at": 0.0,
+        "pin": "",
+        "keyset": None,
+    })
+
+    keyset, error = runtime._shine_ai_verification_keyset(
+        get_impl=lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("unpinned trust must not contact service")
+        )
+    )
+
+    assert keyset is None
+    assert error == "trace-keyset-pin-unavailable"
+
+
+def test_invalid_signature_authenticity_becomes_recovery_degradation():
+    packet = runtime_for_human_status()
+    packet["components"]["shine_ai"]["decision_trace_authenticity"] = {
+        "version": "shine-ai/decision-trace-authenticity-v1",
+        "status": "invalid",
+        "authenticated": False,
+        "reason_code": "decision-trace-signature-verification-failed",
+    }
+
+    recovery = runtime.build_runtime_recovery(
+        packet,
+        {"status": "not_required"},
+        final=True,
+    )
+    status = runtime.build_human_status(
+        packet,
+        {"status": "not_required"},
+        final=True,
+    )
+
+    assert recovery["mode"] == "degraded"
+    assert recovery["stage"] == "authenticity"
+    assert "authenticity-degraded" in recovery["reason_codes"]
+    assert status["state"] == "degraded"
+    assert "shine_ai" not in json.dumps(status)
+
+
+def test_runtime_trace_binds_authenticity_without_signature_bytes():
+    packet = runtime_for_human_status()
+    packet["components"]["shine_ai"]["decision_trace_signature"] = {
+        "signature_b64": "PRIVATE-SIGNATURE-BYTES",
+    }
+    first = runtime.build_runtime_trace(packet, {"status": "not_required"})
+
+    changed = json.loads(json.dumps(packet))
+    changed["components"]["shine_ai"]["decision_trace_authenticity"]["status"] = "invalid"
+    changed["components"]["shine_ai"]["decision_trace_authenticity"]["authenticated"] = False
+    second = runtime.build_runtime_trace(changed, {"status": "not_required"})
+
+    assert first["version"] == "shine/runtime-trace-v3"
+    assert first["lineage_sha256"] != second["lineage_sha256"]
+    assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(first)
+    assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(second)
