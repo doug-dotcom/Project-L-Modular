@@ -23,6 +23,10 @@ from services.foundation_companion_service import (
     foundation_account_owner,
     foundation_fleet_status,
 )
+from services.foundation_trust_witness import (
+    FoundationWitnessError,
+    ensure_foundation_trust_witness,
+)
 from services.shine_ai_trace_verifier import (
     digest_verification_keyset,
     verify_decision_trace,
@@ -39,7 +43,7 @@ from services.shine_trust_storage import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v5"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v6"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -268,6 +272,13 @@ def _shine_ai_headers(
         now=now,
         nonce=nonce,
     )
+
+
+def _foundation_witness_required() -> bool:
+    return os.getenv(
+        "SHINE_FOUNDATION_TRUST_WITNESS_REQUIRED",
+        "",
+    ).strip().lower() in {"1", "true", "yes", "on"}
 
 
 def _trace_keyset_pins() -> tuple[str, ...]:
@@ -828,6 +839,16 @@ def _shine_ai_verification_keyset(
                 "status": "invalid",
                 "reason_code": str(exc),
             }
+        if _foundation_witness_required():
+            witness = cached_trust.get("external_witness")
+            if (
+                not isinstance(witness, dict)
+                or witness.get("status") != "verified"
+            ):
+                return None, "foundation-witness-unverified", {
+                    "status": "invalid",
+                    "reason_code": "foundation-witness-unverified",
+                }
         return cached, None, cached_trust
 
     base = os.getenv("SHINE_AI_BASE_URL", "").rstrip("/")
@@ -891,6 +912,27 @@ def _shine_ai_verification_keyset(
     )
     if trusted is None:
         return None, error or "trace-keyset-trust-mismatch", trust
+
+    trust = dict(trust)
+    if _foundation_witness_required():
+        try:
+            external_witness = ensure_foundation_trust_witness(
+                db,
+                trusted,
+                redis_client=redis_client,
+            )
+        except FoundationWitnessError as exc:
+            reason = str(exc) or "foundation-witness-unavailable"
+            return None, reason, {
+                **trust,
+                "status": "invalid",
+                "reason_code": reason,
+                "external_witness": {
+                    "status": "invalid",
+                    "reason_code": reason,
+                },
+            }
+        trust["external_witness"] = external_witness
 
     _TRACE_KEYSET_CACHE.update({
         "expires_at": now + TRACE_KEYSET_CACHE_SECONDS,
@@ -1213,21 +1255,43 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                     "service_version", "service_release", "lineage_sha256",
                 ),
             ),
-            "decision_trace_trust": _project(
-                item.get("decision_trace_trust", {}),
-                (
-                    "version", "status", "reason_code", "acceptance_mode",
-                    "generation", "trusted_generation",
-                    "candidate_generation", "from_generation",
-                    "to_generation", "keyset_sha256",
-                    "from_keyset_sha256", "to_keyset_sha256",
-                    "authorization_key_id",
-                    "authorization_public_key_sha256",
-                    "certificate_sha256", "state_sha256",
-                    "storage_auth_key_id", "checkpoint_mode",
-                    "storage_authenticated", "checkpoint_independent",
+            "decision_trace_trust": {
+                **_project(
+                    item.get("decision_trace_trust", {}),
+                    (
+                        "version", "status", "reason_code", "acceptance_mode",
+                        "generation", "trusted_generation",
+                        "candidate_generation", "from_generation",
+                        "to_generation", "keyset_sha256",
+                        "from_keyset_sha256", "to_keyset_sha256",
+                        "authorization_key_id",
+                        "authorization_public_key_sha256",
+                        "certificate_sha256", "state_sha256",
+                        "storage_auth_key_id", "checkpoint_mode",
+                        "storage_authenticated", "checkpoint_independent",
+                    ),
                 ),
-            ),
+                "external_witness": _project(
+                    (
+                        item.get("decision_trace_trust", {}).get(
+                            "external_witness",
+                            {},
+                        )
+                        if isinstance(
+                            item.get("decision_trace_trust"),
+                            dict,
+                        )
+                        else {}
+                    ),
+                    (
+                        "status", "witness_id", "sequence",
+                        "head_sha256", "generation",
+                        "keyset_sha256", "state_sha256",
+                        "auth_key_id", "mode",
+                        "independent_retention",
+                    ),
+                ),
+            },
         }
 
     return _project(item, ("status", "reason_code"))
