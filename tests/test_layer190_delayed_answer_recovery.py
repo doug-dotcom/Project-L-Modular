@@ -14,43 +14,26 @@ class Result:
         self.data = data
 
 
-class Query:
-    def __init__(self, rows):
-        self.rows = rows
-        self.filters = {}
-        self.limit_value = None
-
-    def select(self, *_args):
-        return self
-
-    def eq(self, key, value):
-        self.filters[key] = value
-        return self
-
-    def order(self, *_args, **_kwargs):
-        return self
-
-    def limit(self, value):
-        self.limit_value = value
-        return self
+class Rpc:
+    def __init__(self, data):
+        self.data = data
 
     def execute(self):
-        rows = [
-            dict(row) for row in self.rows
-            if all(str(row.get(key)) == str(value) for key, value in self.filters.items())
-        ]
-        if self.limit_value is not None:
-            rows = rows[: self.limit_value]
-        return Result(rows)
+        return Result(self.data)
 
 
 class FakeDb:
     def __init__(self, rows):
         self.rows = rows
 
-    def table(self, name):
-        assert name == "companion_foundation_pending_jobs"
-        return Query(self.rows)
+    def rpc(self, name, params=None):
+        if name == "companion_delayed_completion_history_v1":
+            return Rpc({
+                "status": "ok",
+                "version": "1.0",
+                "items": list(self.rows)[: int((params or {})["p_limit"])],
+            })
+        raise AssertionError(name)
 
 
 def test_delayed_completion_history_returns_only_hash_verified_answers():
@@ -60,44 +43,44 @@ def test_delayed_completion_history_returns_only_hash_verified_answers():
 
     db = FakeDb([
         {
-            "job_id": VALID_REQUEST,
-            "user_id": USER,
-            "source_conversation_id": "doug_primary",
-            "source_message_id": VALID_REQUEST,
-            "request_text": "Plan Vanuatu and include diving",
-            "status": "completed",
-            "completed_at": "2026-09-28T02:00:00Z",
-            "updated_at": "2026-09-28T02:01:00Z",
-            "final_result_sha256": packet_sha,
-            "final_answer": answer,
-            "final_answer_sha256": answer_sha,
-            "synthesis_status": "ready",
+            "requestId": VALID_REQUEST,
+            "sourceConversationId": "11111111-2222-4333-8444-555555555555",
+            "sourceMessageId": VALID_REQUEST,
+            "requestText": "Plan Vanuatu and include diving",
+            "completedAt": "2026-09-28T02:00:00Z",
+            "updatedAt": "2026-09-28T02:01:00Z",
+            "packetSha256": packet_sha,
+            "finalAnswer": answer,
+            "finalAnswerSha256": answer_sha,
+            "finalAnswerGeneratedAt": "2026-09-28T02:00:30Z",
+            "temporalReceipt": None,
         },
         {
-            "job_id": BAD_REQUEST,
-            "user_id": USER,
-            "source_conversation_id": "doug_primary",
-            "source_message_id": BAD_REQUEST,
-            "request_text": "Tampered answer",
-            "status": "completed",
-            "completed_at": "2026-09-28T02:00:00Z",
-            "updated_at": "2026-09-28T02:01:00Z",
-            "final_result_sha256": packet_sha,
-            "final_answer": "changed after hashing",
-            "final_answer_sha256": answer_sha,
-            "synthesis_status": "ready",
+            "requestId": BAD_REQUEST,
+            "sourceConversationId": "11111111-2222-4333-8444-555555555555",
+            "sourceMessageId": BAD_REQUEST,
+            "requestText": "Tampered answer",
+            "completedAt": "2026-09-28T02:00:00Z",
+            "updatedAt": "2026-09-28T02:01:00Z",
+            "packetSha256": packet_sha,
+            "finalAnswer": "changed after hashing",
+            "finalAnswerSha256": answer_sha,
+            "finalAnswerGeneratedAt": "2026-09-28T02:00:30Z",
+            "temporalReceipt": None,
         },
     ])
 
     result = list_delayed_completion_history(db, USER, limit=100)
 
     assert result["status"] == "ok"
-    assert result["version"] == "1.0"
+    assert result["version"] == "2.0"
     assert result["returned_count"] == 1
     assert result["rejected_count"] == 1
     assert result["items"][0]["request_id"] == VALID_REQUEST
     assert result["items"][0]["final_answer"] == answer
     assert result["items"][0]["integrity"] == "verified"
+    assert result["items"][0]["freshness"]["status"] == "not_tracked"
+    assert result["items"][0]["completion_receipt"]["status"] == "sealed"
     assert "inputs" not in result["items"][0]
 
 
@@ -131,14 +114,15 @@ def test_browser_history_reverifies_answer_hash_before_saved_answer_merge():
     assert "window.lConciergeCompletions?.history?.(100)" in index
     assert "run.delayed.set(item.requestId, item)" in index
     assert "Delayed final answer" in index
-    assert "savedText = delayed.finalAnswer" in index
-    assert 'concierge-completions.js?v=190' in index
+    assert "savedText = delayed.displayAnswer || delayed.finalAnswer" in index
+    assert "verifyCompletionReceipt" in completions
+    assert 'concierge-completions.js?v=191' in index
 
 
 def test_delayed_final_answer_precedence_does_not_mutate_server_task_history():
     index = Path("ui/index.html").read_text(encoding="utf-8")
     assert "const delayed = run.delayed.get(task.requestId)" in index
-    assert "savedText = delayed.finalAnswer" in index
+    assert "savedText = delayed.displayAnswer || delayed.finalAnswer" in index
     assert "clearPendingRequest(task.requestId)" in index
     assert "Delayed final answer" in index
 
