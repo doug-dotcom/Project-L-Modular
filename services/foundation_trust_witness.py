@@ -18,6 +18,11 @@ DEFAULT_FOUNDATION_WITNESS_URL = (
     "project-l-trust-witness"
 )
 WITNESS_ID = "foundation-project-l"
+ROSTER_HEAD_WITNESS_ID = "foundation-project-l-roster-head"
+ROSTER_HEAD_WITNESS_TYPE = (
+    "decision_trace_trust_state_witness_quorum_policy_"
+    "external_head_witness_quorum_monotonic_head_witness"
+)
 MAX_RESPONSE_BYTES = 32 * 1024
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 CHAIN_VERSION = 1
@@ -152,6 +157,237 @@ def _record_witness(
             str(data.get("reasonCode") or "foundation-witness-rejected")
         )
     return data
+
+
+
+def _current_roster_head_witness(
+    db,
+    *,
+    witness_url: str | None = None,
+    timeout_seconds: float = 4.0,
+    get_impl=None,
+) -> dict:
+    token = _client_token(db)
+    get = get_impl or httpx.get
+    try:
+        response = get(
+            _witness_url(witness_url),
+            headers={"X-Shine-Client-Token": token},
+            params={
+                "scope": "external-roster-head",
+                "witnessId": ROSTER_HEAD_WITNESS_ID,
+            },
+            timeout=timeout_seconds,
+            follow_redirects=False,
+        )
+        data = _response_json(response)
+    except FoundationWitnessError:
+        raise
+    except Exception as exc:
+        raise FoundationWitnessError(
+            "foundation-roster-head-witness-unavailable"
+        ) from exc
+    if int(response.status_code) >= 400:
+        raise FoundationWitnessError(
+            str(
+                data.get("reasonCode")
+                or "foundation-roster-head-witness-rejected"
+            )
+        )
+    return data
+
+
+def _record_roster_head_witness(
+    db,
+    head: dict,
+    *,
+    witness_url: str | None = None,
+    timeout_seconds: float = 4.0,
+    post_impl=None,
+) -> dict:
+    token = _client_token(db)
+    post = post_impl or httpx.post
+    payload = {
+        "scope": "external-roster-head",
+        "witnessId": ROSTER_HEAD_WITNESS_ID,
+        "sequence": head["sequence"],
+        "headSha256": head["headSha256"],
+        "generation": head["generation"],
+        "policySha256": head["policySha256"],
+        "stateSha256": head["stateSha256"],
+    }
+    try:
+        response = post(
+            _witness_url(witness_url),
+            headers={
+                "X-Shine-Client-Token": token,
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=timeout_seconds,
+            follow_redirects=False,
+        )
+        data = _response_json(response)
+    except FoundationWitnessError:
+        raise
+    except Exception as exc:
+        raise FoundationWitnessError(
+            "foundation-roster-head-witness-unavailable"
+        ) from exc
+    if int(response.status_code) >= 400:
+        raise FoundationWitnessError(
+            str(
+                data.get("reasonCode")
+                or "foundation-roster-head-witness-rejected"
+            )
+        )
+    return data
+
+
+def _roster_head_witness_projection(value: Any) -> dict:
+    if not isinstance(value, dict):
+        raise FoundationWitnessError(
+            "foundation-roster-head-witness-response-invalid"
+        )
+    if value.get("status") != "witnessed":
+        raise FoundationWitnessError(
+            str(
+                value.get("reasonCode")
+                or "foundation-roster-head-witness-response-invalid"
+            )
+        )
+    result = {
+        "witness_id": value.get("witnessId"),
+        "auth_key_id": value.get("authKeyId"),
+        "sequence": value.get("sequence"),
+        "head_sha256": value.get("headSha256"),
+        "generation": value.get("generation"),
+        "policy_sha256": value.get("policySha256"),
+        "state_sha256": value.get("stateSha256"),
+        "auth_tag": value.get("authTag"),
+    }
+    if (
+        value.get("witnessVersion") != 1
+        or value.get("witnessType") != ROSTER_HEAD_WITNESS_TYPE
+        or value.get("authAlgorithm") != "HMAC-SHA-256"
+        or value.get("headVersion") != 1
+        or result["witness_id"] != ROSTER_HEAD_WITNESS_ID
+        or not isinstance(result["auth_key_id"], str)
+        or not result["auth_key_id"]
+        or not isinstance(result["sequence"], int)
+        or result["sequence"] < 1
+        or not isinstance(result["generation"], int)
+        or result["generation"] < 1
+        or any(
+            not isinstance(result[key], str)
+            or SHA256_RE.fullmatch(result[key]) is None
+            for key in (
+                "head_sha256",
+                "policy_sha256",
+                "state_sha256",
+                "auth_tag",
+            )
+        )
+    ):
+        raise FoundationWitnessError(
+            "foundation-roster-head-witness-response-invalid"
+        )
+    return result
+
+
+def _roster_head_matches(witness: dict, head: dict) -> bool:
+    return (
+        witness["sequence"] == head["sequence"]
+        and witness["head_sha256"] == head["headSha256"]
+        and witness["generation"] == head["generation"]
+        and witness["policy_sha256"] == head["policySha256"]
+        and witness["state_sha256"] == head["stateSha256"]
+    )
+
+
+def ensure_foundation_roster_head_witness(
+    db,
+    head: dict,
+    *,
+    witness_url: str | None = None,
+    timeout_seconds: float = 4.0,
+    get_impl=None,
+    post_impl=None,
+) -> dict:
+    current_raw = _current_roster_head_witness(
+        db,
+        witness_url=witness_url,
+        timeout_seconds=timeout_seconds,
+        get_impl=get_impl,
+    )
+    status = str(current_raw.get("status") or "")
+
+    if status == "empty":
+        if head.get("sequence") != 1 or head.get("generation") != 1:
+            raise FoundationWitnessError(
+                "foundation-roster-head-witness-history-missing"
+            )
+        recorded = _roster_head_witness_projection(
+            _record_roster_head_witness(
+                db,
+                head,
+                witness_url=witness_url,
+                timeout_seconds=timeout_seconds,
+                post_impl=post_impl,
+            )
+        )
+        if not _roster_head_matches(recorded, head):
+            raise FoundationWitnessError(
+                "foundation-roster-head-witness-commit-mismatch"
+            )
+        return {
+            "status": "verified",
+            **recorded,
+            "mode": "created",
+            "independent_retention": "foundation-supabase",
+        }
+
+    current = _roster_head_witness_projection(current_raw)
+    if _roster_head_matches(current, head):
+        return {
+            "status": "verified",
+            **current,
+            "mode": "existing-witness",
+            "independent_retention": "foundation-supabase",
+        }
+
+    if current["sequence"] > head.get("sequence", 0):
+        raise FoundationWitnessError(
+            "foundation-roster-head-witness-ahead"
+        )
+    if current["sequence"] == head.get("sequence"):
+        raise FoundationWitnessError(
+            "foundation-roster-head-witness-fork"
+        )
+    if head.get("sequence") != current["sequence"] + 1:
+        raise FoundationWitnessError(
+            "foundation-roster-head-witness-sequence-gap"
+        )
+
+    recorded = _roster_head_witness_projection(
+        _record_roster_head_witness(
+            db,
+            head,
+            witness_url=witness_url,
+            timeout_seconds=timeout_seconds,
+            post_impl=post_impl,
+        )
+    )
+    if not _roster_head_matches(recorded, head):
+        raise FoundationWitnessError(
+            "foundation-roster-head-witness-commit-mismatch"
+        )
+    return {
+        "status": "verified",
+        **recorded,
+        "mode": "advanced",
+        "independent_retention": "foundation-supabase",
+    }
 
 
 def ensure_foundation_roster_transition_authorization(
@@ -509,8 +745,11 @@ def ensure_foundation_trust_witness(
 __all__ = [
     "DEFAULT_FOUNDATION_WITNESS_URL",
     "FoundationWitnessError",
+    "ROSTER_HEAD_WITNESS_ID",
+    "ROSTER_HEAD_WITNESS_TYPE",
     "WITNESS_ID",
     "ensure_foundation_policy_transition_authorization",
+    "ensure_foundation_roster_head_witness",
     "ensure_foundation_roster_transition_authorization",
     "ensure_foundation_trust_witness",
 ]
