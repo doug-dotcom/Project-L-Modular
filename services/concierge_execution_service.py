@@ -6,6 +6,7 @@ import json
 
 from services.foundation_companion_service import (
     invoke_foundation_orchestration,
+    mark_local_concierge_retired,
     set_pending_concierge_job_status,
 )
 
@@ -101,7 +102,20 @@ def execute_concierge_route(
     local_state = "unchanged"
     try:
         status = str(execution.get("status") or "")
-        if status == "completed":
+        if status == "retired":
+            retirement = execution.get("retirement")
+            if not isinstance(retirement, dict):
+                raise RuntimeError("concierge-retirement-receipt-missing")
+            local = mark_local_concierge_retired(
+                db,
+                user_id=user_id,
+                request_id=request_id,
+                retirement=retirement,
+            )
+            if local.get("status") not in {"retired", "already-retired"}:
+                raise RuntimeError("local-concierge-retirement-failed")
+            local_state = str(local.get("status") or "retired")
+        elif status == "completed":
             set_pending_concierge_job_status(
                 db, user_id=user_id, job_id=request_id, status="completed"
             )
@@ -154,6 +168,11 @@ def _execution_summary(execution: dict) -> dict:
             execution.get("skipped_capabilities") or []
         )[:4],
         "execution_performed": execution.get("execution_performed") is True,
+        "retirement": (
+            execution.get("retirement")
+            if isinstance(execution.get("retirement"), dict)
+            else None
+        ),
         "retry_scheduled": execution.get("retry_scheduled") is True,
         "synthesis_ready": execution.get("synthesis_ready") is True,
         "synthesis_must_disclose_partial": (
