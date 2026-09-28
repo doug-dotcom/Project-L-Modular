@@ -95,9 +95,8 @@ def main() -> None:
             quorum.get("external_roster_transition_evidence_chain_version")
             or 0
         ) != 1
-        or int(
-            quorum.get("external_roster_transition_evidence_chain_rows")
-            or -1
+        or quorum.get(
+            "external_roster_transition_evidence_chain_rows"
         ) != 0
         or int(
             quorum.get(
