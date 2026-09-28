@@ -19,6 +19,10 @@ from uuid import UUID
 
 import httpx
 
+from services.foundation_chain_checkpoint import (
+    FoundationChainCheckpointError,
+    ensure_foundation_chain_checkpoint,
+)
 from services.foundation_companion_service import (
     foundation_account_owner,
     foundation_fleet_status,
@@ -48,7 +52,7 @@ from services.shine_trust_storage import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v8"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v9"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -331,6 +335,27 @@ def _foundation_chain_receipt_valid(
             sequence == 1
             and previous_chain_tag != "0" * 64
         )
+    ):
+        return False
+    return True
+
+
+def _foundation_chain_checkpoint_receipt_valid(
+    value: Any,
+    chain: Any,
+) -> bool:
+    if not isinstance(value, dict) or not isinstance(chain, dict):
+        return False
+    if (
+        value.get("status") != "verified"
+        or value.get("checkpoint_version") != 1
+        or value.get("witness_id") != "foundation-project-l"
+        or value.get("chain_version") != 1
+        or value.get("storage") != "project-l-supabase-vault-hmac"
+        or value.get("sequence") != chain.get("sequence")
+        or value.get("previous_chain_tag")
+            != chain.get("previous_chain_tag")
+        or value.get("chain_tag") != chain.get("chain_tag")
     ):
         return False
     return True
@@ -938,6 +963,40 @@ def _shine_ai_verification_keyset(
                     "reason_code":
                         "trust-witness-foundation-chain-unverified",
                 }
+            cached_checkpoint = quorum.get(
+                "foundation_chain_checkpoint"
+            )
+            if not _foundation_chain_checkpoint_receipt_valid(
+                cached_checkpoint,
+                chain,
+            ):
+                return None, "trust-witness-foundation-chain-checkpoint-unverified", {
+                    "status": "invalid",
+                    "reason_code":
+                        "trust-witness-foundation-chain-checkpoint-unverified",
+                }
+            try:
+                live_checkpoint = ensure_foundation_chain_checkpoint(
+                    db,
+                    chain,
+                )
+            except FoundationChainCheckpointError as exc:
+                reason = str(exc) or (
+                    "trust-witness-foundation-chain-checkpoint-unavailable"
+                )
+                return None, reason, {
+                    "status": "invalid",
+                    "reason_code": reason,
+                }
+            if not _foundation_chain_checkpoint_receipt_valid(
+                live_checkpoint,
+                chain,
+            ):
+                return None, "trust-witness-foundation-chain-checkpoint-mismatch", {
+                    "status": "invalid",
+                    "reason_code":
+                        "trust-witness-foundation-chain-checkpoint-mismatch",
+                }
         elif _foundation_witness_required():
             witness = cached_trust.get("external_witness")
             if (
@@ -956,6 +1015,38 @@ def _shine_ai_verification_keyset(
                 return None, "foundation-witness-chain-unverified", {
                     "status": "invalid",
                     "reason_code": "foundation-witness-chain-unverified",
+                }
+            cached_checkpoint = witness.get("chain_checkpoint")
+            if not _foundation_chain_checkpoint_receipt_valid(
+                cached_checkpoint,
+                witness,
+            ):
+                return None, "foundation-witness-chain-checkpoint-unverified", {
+                    "status": "invalid",
+                    "reason_code":
+                        "foundation-witness-chain-checkpoint-unverified",
+                }
+            try:
+                live_checkpoint = ensure_foundation_chain_checkpoint(
+                    db,
+                    witness,
+                )
+            except FoundationChainCheckpointError as exc:
+                reason = str(exc) or (
+                    "foundation-witness-chain-checkpoint-unavailable"
+                )
+                return None, reason, {
+                    "status": "invalid",
+                    "reason_code": reason,
+                }
+            if not _foundation_chain_checkpoint_receipt_valid(
+                live_checkpoint,
+                witness,
+            ):
+                return None, "foundation-witness-chain-checkpoint-mismatch", {
+                    "status": "invalid",
+                    "reason_code":
+                        "foundation-witness-chain-checkpoint-mismatch",
                 }
         return cached, None, cached_trust
 
@@ -1059,6 +1150,31 @@ def _shine_ai_verification_keyset(
                     "reason_code": reason,
                 },
             }
+        try:
+            chain_checkpoint = ensure_foundation_chain_checkpoint(
+                db,
+                external_witness,
+            )
+        except FoundationChainCheckpointError as exc:
+            reason = str(exc) or (
+                "foundation-witness-chain-checkpoint-unavailable"
+            )
+            return None, reason, {
+                **trust,
+                "status": "invalid",
+                "reason_code": reason,
+                "external_witness": {
+                    **external_witness,
+                    "chain_checkpoint": {
+                        "status": "invalid",
+                        "reason_code": reason,
+                    },
+                },
+            }
+        external_witness = {
+            **external_witness,
+            "chain_checkpoint": chain_checkpoint,
+        }
         trust["external_witness"] = external_witness
 
     _TRACE_KEYSET_CACHE.update({
@@ -1398,28 +1514,58 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                         "storage_authenticated", "checkpoint_independent",
                     ),
                 ),
-                "external_witness": _project(
-                    (
-                        item.get("decision_trace_trust", {}).get(
-                            "external_witness",
-                            {},
-                        )
-                        if isinstance(
-                            item.get("decision_trace_trust"),
-                            dict,
-                        )
-                        else {}
+                "external_witness": {
+                    **_project(
+                        (
+                            item.get("decision_trace_trust", {}).get(
+                                "external_witness",
+                                {},
+                            )
+                            if isinstance(
+                                item.get("decision_trace_trust"),
+                                dict,
+                            )
+                            else {}
+                        ),
+                        (
+                            "status", "witness_id", "sequence",
+                            "head_sha256", "generation",
+                            "keyset_sha256", "state_sha256",
+                            "auth_key_id", "mode",
+                            "independent_retention", "history_status",
+                            "chain_version", "previous_chain_tag",
+                            "chain_tag",
+                        ),
                     ),
-                    (
-                        "status", "witness_id", "sequence",
-                        "head_sha256", "generation",
-                        "keyset_sha256", "state_sha256",
-                        "auth_key_id", "mode",
-                        "independent_retention", "history_status",
-                        "chain_version", "previous_chain_tag",
-                        "chain_tag",
+                    "chain_checkpoint": _project(
+                        (
+                            item.get("decision_trace_trust", {}).get(
+                                "external_witness",
+                                {},
+                            ).get("chain_checkpoint", {})
+                            if (
+                                isinstance(
+                                    item.get("decision_trace_trust"),
+                                    dict,
+                                )
+                                and isinstance(
+                                    item.get(
+                                        "decision_trace_trust",
+                                        {},
+                                    ).get("external_witness"),
+                                    dict,
+                                )
+                            )
+                            else {}
+                        ),
+                        (
+                            "status", "checkpoint_version", "witness_id",
+                            "chain_version", "sequence",
+                            "previous_chain_tag", "chain_tag",
+                            "storage", "ledger_rows", "mode",
+                        ),
                     ),
-                ),
+                },
                 "witness_quorum": {
                     **_project(
                         (
@@ -1467,6 +1613,37 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                         (
                             "status", "witness_id", "chain_version",
                             "sequence", "previous_chain_tag", "chain_tag",
+                        ),
+                    ),
+                    "foundation_chain_checkpoint": _project(
+                        (
+                            item.get("decision_trace_trust", {}).get(
+                                "witness_quorum",
+                                {},
+                            ).get(
+                                "foundation_chain_checkpoint",
+                                {},
+                            )
+                            if (
+                                isinstance(
+                                    item.get("decision_trace_trust"),
+                                    dict,
+                                )
+                                and isinstance(
+                                    item.get(
+                                        "decision_trace_trust",
+                                        {},
+                                    ).get("witness_quorum"),
+                                    dict,
+                                )
+                            )
+                            else {}
+                        ),
+                        (
+                            "status", "checkpoint_version", "witness_id",
+                            "chain_version", "sequence",
+                            "previous_chain_tag", "chain_tag",
+                            "storage", "ledger_rows", "mode",
                         ),
                     ),
                 },
