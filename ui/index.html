@@ -1243,10 +1243,14 @@
                             if (pendingConcierge && !run.delayed.has(task.requestId)) {
                                 working = true;
                                 attention = true;
+                                const cancellationPending = pendingConcierge.status === 'cancelling';
+                                const pendingLabel = cancellationPending
+                                    ? 'cancellation pending'
+                                    : 'delayed specialist work pending';
                                 if (resultLabel === 'Saved answer') {
-                                    resultLabel = 'Saved answer · delayed specialist work pending';
+                                    resultLabel = 'Saved answer · ' + pendingLabel;
                                 } else if (!resultLabel.includes('Delayed')) {
-                                    resultLabel += ' · delayed specialist work pending';
+                                    resultLabel += ' · ' + pendingLabel;
                                 }
                             }
                             const entry = document.createElement('details'); entry.className = 'saved-answer-entry';
@@ -1280,20 +1284,30 @@
                             if (pendingConcierge && !run.delayed.has(task.requestId)) {
                                 const cancelDelayed = document.createElement('button');
                                 cancelDelayed.type = 'button';
-                                cancelDelayed.textContent = 'Cancel delayed work';
+                                cancelDelayed.textContent = pendingConcierge.status === 'cancelling'
+                                    ? 'Retry cancellation'
+                                    : 'Cancel delayed work';
                                 cancelDelayed.onclick = async () => {
                                     if (!usable() || cancelDelayed.disabled) return;
                                     cancelDelayed.disabled = true;
                                     actionStatus.textContent = 'Cancelling delayed specialist work…';
                                     try {
                                         const cancelled = await window.lConciergeCompletions?.cancel?.(task.requestId);
-                                        if (!cancelled || !['cancelled', 'already-cancelled'].includes(cancelled.status)) {
+                                        if (!cancelled || !['cancelled', 'already-cancelled', 'cancelling'].includes(cancelled.status)) {
                                             throw new Error('Cancellation was not confirmed');
                                         }
-                                        run.pendingConcierge.delete(task.requestId);
-                                        clearPendingRequest(task.requestId);
-                                        cancelDelayed.remove();
-                                        actionStatus.textContent = 'Delayed specialist work cancelled. The saved answer above has not been rewritten.';
+                                        if (cancelled.status === 'cancelling') {
+                                            pendingConcierge.status = 'cancelling';
+                                            run.pendingConcierge.set(task.requestId, pendingConcierge);
+                                            cancelDelayed.disabled = false;
+                                            cancelDelayed.textContent = 'Retry cancellation';
+                                            actionStatus.textContent = 'Cancellation is pending confirmation. The delayed work remains held and will not be surfaced.';
+                                        } else {
+                                            run.pendingConcierge.delete(task.requestId);
+                                            clearPendingRequest(task.requestId);
+                                            cancelDelayed.remove();
+                                            actionStatus.textContent = 'Delayed specialist work cancelled. The saved answer above has not been rewritten.';
+                                        }
                                     } catch (_) {
                                         cancelDelayed.disabled = false;
                                         actionStatus.textContent = 'I could not confirm cancellation. The delayed work has not been hidden; try again shortly.';
@@ -1402,7 +1416,7 @@
 
 <script src="/ui/chat-tools.js?v=2"></script>
 <script src="/ui/foundation-fleet.js?v=1"></script>
-<script src="/ui/concierge-completions.js?v=192"></script>
+<script src="/ui/concierge-completions.js?v=193"></script>
 <script src="/ui/recovery-status.js?v=118"></script>
 <script src="/ui/evidence.js?v=156"></script>
 <script src="/ui/voice.js"></script>
