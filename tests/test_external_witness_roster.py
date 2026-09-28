@@ -814,3 +814,123 @@ def test_layer207_redis_transition_authorization_is_separate_domain(
     assert auth["toGeneration"] == 2
     assert auth["authKeyId"] == "roster-transition-a"
     assert len(auth["authTag"]) == 64
+
+
+
+def test_layer212_generation_two_chain_witness_flows_into_roster_receipt(
+    monkeypatch,
+):
+    state = {
+        "generation": 2,
+        "previousPolicySha256": "1" * 64,
+        "policySha256": "2" * 64,
+    }
+    evidence = {
+        "status": "verified",
+        "generation": 2,
+        "previousPolicySha256": "1" * 64,
+        "policySha256": "2" * 64,
+        "evidenceSha256": "3" * 64,
+    }
+    chain = {
+        "status": "verified",
+        "chainVersion": 1,
+        "latestGeneration": 2,
+        "rows": 1,
+        "latestPreviousChainTag": "0" * 64,
+        "latestEvidenceSha256": "3" * 64,
+        "latestChainTag": "4" * 64,
+    }
+
+    monkeypatch.setattr(
+        roster,
+        "_transition_evidence",
+        lambda _db, _generation: evidence,
+    )
+    monkeypatch.setattr(
+        roster,
+        "_transition_evidence_chain",
+        lambda _db: chain,
+    )
+    monkeypatch.setattr(
+        roster,
+        "ensure_chain_witness",
+        lambda value, **_kwargs: {
+            "status": "verified",
+            "mode": "advanced",
+            "generation": value["latestGeneration"],
+            "rows": value["rows"],
+            "chain_tag": value["latestChainTag"],
+            "evidence_sha256": value["latestEvidenceSha256"],
+            "auth_key_id": "chain-a",
+            "storage": "railway-redis-volume",
+        },
+    )
+    monkeypatch.setattr(
+        roster,
+        "ensure_evidence_mirror",
+        lambda _value, **_kwargs: {
+            "status": "verified",
+            "mode": "advanced",
+            "generation": 2,
+            "evidence_sha256": "3" * 64,
+            "storage": "railway-redis-volume",
+        },
+    )
+
+    result = roster._verify_transition_evidence_retention(
+        object(),
+        state,
+    )
+
+    assert result["chain_status"] == "verified"
+    assert result["chain_generation"] == 2
+    assert result["chain_tag"] == "4" * 64
+    assert result["chain_witness_status"] == "verified"
+    assert result["chain_witness_generation"] == 2
+    assert result["chain_witness_rows"] == 1
+    assert result["chain_witness_tag"] == "4" * 64
+    assert result["chain_witness_evidence_sha256"] == "3" * 64
+    assert result["chain_witness_auth_key_id"] == "chain-a"
+    assert result["chain_witness_storage"] == "railway-redis-volume"
+
+
+def test_layer212_generation_two_requires_predecessor_chain_tag(monkeypatch):
+    state = {
+        "generation": 2,
+        "previousPolicySha256": "1" * 64,
+        "policySha256": "2" * 64,
+    }
+    monkeypatch.setattr(
+        roster,
+        "_transition_evidence",
+        lambda _db, _generation: {
+            "status": "verified",
+            "generation": 2,
+            "previousPolicySha256": "1" * 64,
+            "policySha256": "2" * 64,
+            "evidenceSha256": "3" * 64,
+        },
+    )
+    monkeypatch.setattr(
+        roster,
+        "_transition_evidence_chain",
+        lambda _db: {
+            "status": "verified",
+            "chainVersion": 1,
+            "latestGeneration": 2,
+            "rows": 1,
+            "latestPreviousChainTag": None,
+            "latestEvidenceSha256": "3" * 64,
+            "latestChainTag": "4" * 64,
+        },
+    )
+
+    with pytest.raises(
+        roster.ExternalWitnessRosterError,
+        match="external-witness-roster-transition-evidence-chain-head-mismatch",
+    ):
+        roster._verify_transition_evidence_retention(
+            object(),
+            state,
+        )
