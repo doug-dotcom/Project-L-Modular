@@ -1394,7 +1394,7 @@
                                     actionStatus.textContent = 'Cancelling delayed specialist work…';
                                     try {
                                         const cancelled = await window.lConciergeCompletions?.cancel?.(task.requestId);
-                                        if (!cancelled || !['cancelled', 'already-cancelled', 'cancelling'].includes(cancelled.status)) {
+                                        if (!cancelled || !['cancelled', 'already-cancelled', 'cancelling', 'retired'].includes(cancelled.status)) {
                                             throw new Error('Cancellation was not confirmed');
                                         }
                                         if (cancelled.status === 'cancelling') {
@@ -1407,7 +1407,9 @@
                                             run.pendingConcierge.delete(task.requestId);
                                             clearPendingRequest(task.requestId);
                                             cancelDelayed.remove();
-                                            actionStatus.textContent = 'Delayed specialist work cancelled. The saved answer above has not been rewritten.';
+                                            actionStatus.textContent = cancelled.status === 'retired'
+                                                ? 'That unused Concierge plan had already expired, so no cancellation was needed. The saved answer above has not been rewritten.'
+                                                : 'Delayed specialist work cancelled. The saved answer above has not been rewritten.';
                                         }
                                     } catch (_) {
                                         cancelDelayed.disabled = false;
@@ -1517,7 +1519,7 @@
 
 <script src="/ui/chat-tools.js?v=2"></script>
 <script src="/ui/foundation-fleet.js?v=1"></script>
-<script src="/ui/concierge-completions.js?v=194"></script>
+<script src="/ui/concierge-completions.js?v=195"></script>
 <script src="/ui/recovery-status.js?v=118"></script>
 <script src="/ui/evidence.js?v=156"></script>
 <script src="/ui/voice.js"></script>
