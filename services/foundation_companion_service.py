@@ -1493,6 +1493,14 @@ def foundation_concierge_jobs_as_user(
         retirement_integrity = str(raw.get("retirementReceiptIntegrity") or "")
         safe_retirement = None
         if retirement is not None:
+            minimum_age = retirement.get("minimumAgeSeconds") if isinstance(retirement, dict) else None
+            step_count = retirement.get("stepCount") if isinstance(retirement, dict) else None
+            checkpoint_count = (
+                retirement.get("specialistCheckpointCount")
+                if isinstance(retirement, dict)
+                else None
+            )
+            retry_count = retirement.get("retryCount") if isinstance(retirement, dict) else None
             valid_retirement = (
                 isinstance(retirement, dict)
                 and retirement_integrity == "verified"
@@ -1502,8 +1510,14 @@ def foundation_concierge_jobs_as_user(
                 and retirement.get("schemaVersion") == "1.0.0"
                 and str(retirement.get("requestId") or "") == request_id
                 and retirement.get("executionStarted") is False
-                and int(retirement.get("specialistCheckpointCount") or 0) == 0
-                and int(retirement.get("retryCount") or 0) == 0
+                and isinstance(minimum_age, int)
+                and not isinstance(minimum_age, bool)
+                and 1800 <= minimum_age <= 86400
+                and isinstance(step_count, int)
+                and not isinstance(step_count, bool)
+                and 0 <= step_count <= 20
+                and checkpoint_count == 0
+                and retry_count == 0
                 and isinstance(retirement.get("requestedCapabilities"), list)
                 and len(retirement.get("requestedCapabilities")) <= 20
                 and len(str(retirement.get("receiptSha256") or "")) == 64
@@ -1519,13 +1533,11 @@ def foundation_concierge_jobs_as_user(
                     "reason_code": str(retirement.get("reasonCode") or "")[:160],
                     "requested_at": retirement.get("requestedAt"),
                     "retired_at": retirement.get("retiredAt"),
-                    "minimum_age_seconds": int(
-                        retirement.get("minimumAgeSeconds") or 0
-                    ),
+                    "minimum_age_seconds": minimum_age,
                     "requested_capabilities": safe_capabilities(
                         retirement.get("requestedCapabilities")
                     ),
-                    "step_count": int(retirement.get("stepCount") or 0),
+                    "step_count": step_count,
                     "execution_started": False,
                     "specialist_checkpoint_count": 0,
                     "retry_count": 0,
