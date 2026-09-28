@@ -136,7 +136,18 @@ def test_runtime_trace_is_content_free_and_carries_shine_ai_attestation():
         "status": "ready",
         "warnings": [],
         "components": {
-            "l": {"status": "active", "authority": "voice+synthesis+durable-task"},
+            "l": {
+                "status": "active",
+                "authority": "voice+synthesis+durable-task",
+                "runtime": {
+                    "provider": "railway",
+                    "commit": "commit-1",
+                    "branch": "main",
+                    "deployment": "deploy-1",
+                    "service": "Project-L-Modular",
+                    "environment": "production",
+                },
+            },
             "foundation": {
                 "status": "healthy",
                 "specialist_count": 1,
@@ -165,12 +176,13 @@ def test_runtime_trace_is_content_free_and_carries_shine_ai_attestation():
             },
             "defence": {
                 "status": "completed",
-                "summary": "reviewed",
+                "summary": "PRIVATE DEFENCE SUMMARY",
                 "reviews": [{
                     "appId": "project-l",
                     "reviewCommitSha": "abc123",
                     "profileVersion": "1",
                     "status": "reviewed",
+                    "limitation": "PRIVATE DEFENCE LIMITATION",
                 }],
                 "boundaries": {"snapshotOnly": True},
             },
@@ -181,6 +193,7 @@ def test_runtime_trace_is_content_free_and_carries_shine_ai_attestation():
                 "provider": "openai",
                 "model": "example-model",
                 "model_tier": "fast",
+                "reason": "PRIVATE ROUTING REASON",
                 "request_id": "ai-request-1",
                 "decision_trace": {
                     "version": 1,
@@ -224,10 +237,14 @@ def test_runtime_trace_is_content_free_and_carries_shine_ai_attestation():
     assert trace["version"] == runtime.RUNTIME_TRACE_VERSION
     assert trace["content_exposed"] is False
     assert trace["components"]["shine_ai"]["decision_lineage_sha256"] == digest
+    assert trace["component_status"]["l"] == "active"
     assert "PRIVATE ADVISORY" not in rendered
     assert "PRIVATE TASK SUMMARY" not in rendered
     assert "PRIVATE SPECIALIST RESULT" not in rendered
     assert "PRIVATE PAYLOAD" not in rendered
+    assert "PRIVATE DEFENCE SUMMARY" not in rendered
+    assert "PRIVATE DEFENCE LIMITATION" not in rendered
+    assert "PRIVATE ROUTING REASON" not in rendered
 
 
 def test_runtime_trace_ignores_private_text_but_changes_on_control_plane_drift():
