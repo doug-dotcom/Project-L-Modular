@@ -348,6 +348,32 @@ def quorum_env(monkeypatch):
             "policySha256": POLICY_SHA,
         }),
     )
+    monkeypatch.setattr(
+        quorum,
+        "load_persisted_external_witness_roster",
+        lambda *_args, **_kwargs: {
+            "policyVersion": 1,
+            "policyType":
+                "decision_trace_trust_state_witness_quorum_policy_external_head_witness_quorum_policy",
+            "generation": 1,
+            "minimumWitnesses": 2,
+            "acceptedWitnessIds": [
+                "foundation-project-l",
+                "redis-project-l",
+            ],
+            "previousPolicySha256": None,
+            "policySha256":
+                "a5c456d49e47f1be3f2a7b7ed017328844484ba05c4e6ef3212412c6361156c4",
+            "roster_trust_persisted": True,
+            "roster_trust_source": "project-l-supabase",
+            "roster_storage_authenticated": True,
+            "roster_storage_auth_key_id": "roster-a",
+            "roster_storage_state_sha256": "1" * 64,
+            "roster_storage_checkpoint_independent": True,
+            "roster_storage_checkpoint_retention":
+                "railway-redis-volume",
+        },
+    )
 
 
 def redis_receipt():
@@ -988,6 +1014,41 @@ def test_quorum_rejects_checkpoint_store_disagreement(monkeypatch):
     with pytest.raises(
         quorum.WitnessQuorumError,
         match="trust-witness-foundation-chain-checkpoint-disagreement",
+    ):
+        quorum.ensure_trust_witness_quorum(
+            FakePolicyDB(),
+            {"state": "unused"},
+            redis_client=FakeRedis(),
+        )
+
+
+
+def test_quorum_rejects_external_roster_policy_mismatch(monkeypatch):
+    monkeypatch.setattr(
+        quorum,
+        "load_persisted_external_witness_roster",
+        lambda *_args, **_kwargs: {
+            "generation": 1,
+            "minimumWitnesses": 2,
+            "acceptedWitnessIds": [
+                "foundation-project-l",
+                "other-witness",
+            ],
+            "policySha256": "a" * 64,
+            "roster_trust_persisted": True,
+            "roster_trust_source": "project-l-supabase",
+            "roster_storage_authenticated": True,
+            "roster_storage_auth_key_id": "roster-a",
+            "roster_storage_state_sha256": "b" * 64,
+            "roster_storage_checkpoint_independent": True,
+            "roster_storage_checkpoint_retention":
+                "railway-redis-volume",
+        },
+    )
+
+    with pytest.raises(
+        quorum.WitnessQuorumError,
+        match="trust-witness-external-roster-policy-mismatch",
     ):
         quorum.ensure_trust_witness_quorum(
             FakePolicyDB(),
