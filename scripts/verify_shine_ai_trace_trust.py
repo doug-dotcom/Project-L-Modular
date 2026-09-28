@@ -81,7 +81,8 @@ def main() -> None:
         f"storage=authenticated "
         f"checkpoint={storage.get('independent_retention')} "
         f"quorum={quorum.get('verified_witness_count')}/"
-        f"{quorum.get('minimum_witnesses')}"
+        f"{quorum.get('minimum_witnesses')} "
+        f"policy=persisted-g{quorum.get('policy_trust_generation')}"
     )
 
 
