@@ -8,13 +8,20 @@ delivery mode and release identity.
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import re
 from typing import Any
 
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
+KEY_ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
+SIGNATURE_B64_RE = re.compile(r"^[A-Za-z0-9+/]{86}==$")
 VERIFICATION_VERSION = "shine-ai/decision-trace-verification-v1"
+AUTHENTICITY_VERSION = "shine-ai/decision-trace-authenticity-v1"
+SIGNATURE_DOMAIN = "shine-ai:decision-trace:v1"
 
 
 def _digest(material: dict[str, Any]) -> str:
@@ -316,8 +323,212 @@ def verify_decision_trace(
     }
 
 
+def digest_verification_keyset(keyset: Any) -> str | None:
+    if not isinstance(keyset, dict):
+        return None
+    active_key_id = keyset.get("active_key_id")
+    verification_keys = keyset.get("verification_keys")
+    declared = keyset.get("keyset_sha256")
+    if (
+        not isinstance(active_key_id, str)
+        or KEY_ID_RE.fullmatch(active_key_id) is None
+        or not isinstance(verification_keys, dict)
+        or not isinstance(declared, str)
+        or SHA256_RE.fullmatch(declared) is None
+        or not 1 <= len(verification_keys) <= 4
+    ):
+        return None
+
+    clean_keys: dict[str, dict[str, str]] = {}
+    for key_id in sorted(verification_keys):
+        value = verification_keys.get(key_id)
+        if (
+            not isinstance(key_id, str)
+            or KEY_ID_RE.fullmatch(key_id) is None
+            or not isinstance(value, dict)
+            or not isinstance(value.get("public_key_b64"), str)
+            or not isinstance(value.get("public_key_sha256"), str)
+            or SHA256_RE.fullmatch(value["public_key_sha256"]) is None
+        ):
+            return None
+        try:
+            public_bytes = base64.b64decode(
+                value["public_key_b64"].strip(),
+                validate=True,
+            )
+        except Exception:
+            return None
+        if (
+            len(public_bytes) != 32
+            or hashlib.sha256(public_bytes).hexdigest()
+            != value["public_key_sha256"]
+        ):
+            return None
+        clean_keys[key_id] = {
+            "public_key_b64": value["public_key_b64"],
+            "public_key_sha256": value["public_key_sha256"],
+        }
+
+    if active_key_id not in clean_keys:
+        return None
+
+    computed = _digest({"version": 1, "keys": clean_keys})
+    return computed if computed == declared else None
+
+
+def verify_decision_trace_authenticity(
+    response_data: Any,
+    *,
+    trusted_keyset: Any,
+    accepted_keyset_sha256: list[str] | tuple[str, ...],
+    header_version: str | None,
+    header_release: str | None,
+) -> dict[str, Any]:
+    verification = verify_decision_trace(
+        response_data,
+        header_version=header_version,
+        header_release=header_release,
+        require_response_identity=True,
+    )
+    if verification.get("status") != "verified":
+        return {
+            "version": AUTHENTICITY_VERSION,
+            "status": "invalid",
+            "authenticated": False,
+            "reason_code": "decision-trace-verification-failed",
+        }
+
+    if (
+        not isinstance(accepted_keyset_sha256, (list, tuple))
+        or not 1 <= len(accepted_keyset_sha256) <= 4
+        or any(
+            not isinstance(value, str)
+            or SHA256_RE.fullmatch(value) is None
+            for value in accepted_keyset_sha256
+        )
+    ):
+        return {
+            "version": AUTHENTICITY_VERSION,
+            "status": "unavailable",
+            "authenticated": False,
+            "reason_code": "trusted-keyset-pin-unavailable",
+        }
+
+    keyset_sha256 = digest_verification_keyset(trusted_keyset)
+    if (
+        keyset_sha256 is None
+        or keyset_sha256 not in set(accepted_keyset_sha256)
+    ):
+        return {
+            "version": AUTHENTICITY_VERSION,
+            "status": "invalid",
+            "authenticated": False,
+            "reason_code": "trusted-keyset-mismatch",
+        }
+
+    signature = (
+        response_data.get("decision_trace_signature")
+        if isinstance(response_data, dict)
+        else None
+    )
+    trace = (
+        response_data.get("decision_trace")
+        if isinstance(response_data, dict)
+        else None
+    )
+    if (
+        not isinstance(signature, dict)
+        or signature.get("version") != 1
+        or signature.get("algorithm") != "ed25519"
+        or signature.get("domain") != SIGNATURE_DOMAIN
+        or not isinstance(signature.get("key_id"), str)
+        or KEY_ID_RE.fullmatch(signature["key_id"]) is None
+        or not isinstance(signature.get("public_key_sha256"), str)
+        or SHA256_RE.fullmatch(signature["public_key_sha256"]) is None
+        or not isinstance(signature.get("signature_b64"), str)
+        or SIGNATURE_B64_RE.fullmatch(signature["signature_b64"]) is None
+        or not isinstance(trace, dict)
+        or not isinstance(trace.get("lineage_sha256"), str)
+        or SHA256_RE.fullmatch(trace["lineage_sha256"]) is None
+    ):
+        return {
+            "version": AUTHENTICITY_VERSION,
+            "status": "invalid",
+            "authenticated": False,
+            "reason_code": "decision-trace-signature-invalid",
+            "keyset_sha256": keyset_sha256,
+        }
+
+    verification_keys = trusted_keyset.get("verification_keys", {})
+    key = verification_keys.get(signature["key_id"])
+    if not isinstance(key, dict):
+        return {
+            "version": AUTHENTICITY_VERSION,
+            "status": "invalid",
+            "authenticated": False,
+            "reason_code": "decision-trace-signing-key-unknown",
+            "keyset_sha256": keyset_sha256,
+        }
+    if key.get("public_key_sha256") != signature["public_key_sha256"]:
+        return {
+            "version": AUTHENTICITY_VERSION,
+            "status": "invalid",
+            "authenticated": False,
+            "reason_code": "decision-trace-public-key-mismatch",
+            "keyset_sha256": keyset_sha256,
+        }
+
+    try:
+        public_bytes = base64.b64decode(
+            str(key.get("public_key_b64") or "").strip(),
+            validate=True,
+        )
+        signature_bytes = base64.b64decode(
+            signature["signature_b64"],
+            validate=True,
+        )
+        if len(public_bytes) != 32 or len(signature_bytes) != 64:
+            raise ValueError("invalid-ed25519-length")
+        if hashlib.sha256(public_bytes).hexdigest() != signature["public_key_sha256"]:
+            raise ValueError("public-key-fingerprint-mismatch")
+        Ed25519PublicKey.from_public_bytes(public_bytes).verify(
+            signature_bytes,
+            (
+                SIGNATURE_DOMAIN
+                + "\n"
+                + signature["key_id"]
+                + "\n"
+                + trace["lineage_sha256"]
+            ).encode("utf-8"),
+        )
+    except Exception:
+        return {
+            "version": AUTHENTICITY_VERSION,
+            "status": "invalid",
+            "authenticated": False,
+            "reason_code": "decision-trace-signature-verification-failed",
+            "key_id": signature["key_id"],
+            "keyset_sha256": keyset_sha256,
+        }
+
+    return {
+        "version": AUTHENTICITY_VERSION,
+        "status": "authenticated",
+        "authenticated": True,
+        "key_id": signature["key_id"],
+        "public_key_sha256": signature["public_key_sha256"],
+        "keyset_sha256": keyset_sha256,
+        "service_version": verification.get("service_version"),
+        "service_release": verification.get("service_release"),
+        "lineage_sha256": verification.get("lineage_sha256"),
+    }
+
+
 __all__ = [
+    "AUTHENTICITY_VERSION",
     "VERIFICATION_VERSION",
+    "digest_verification_keyset",
     "recompute_decision_trace",
     "verify_decision_trace",
+    "verify_decision_trace_authenticity",
 ]
