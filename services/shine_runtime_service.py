@@ -178,7 +178,7 @@ def _defence_snapshot(data: dict) -> dict:
         if isinstance(item, dict):
             reviews.append(_project(item, (
                 "appId", "repo", "reviewCommitSha", "profileVersion",
-                "policies", "status", "limitation",
+                "policies", "status",
             )))
     boundaries = result.get("boundaries") if isinstance(result.get("boundaries"), dict) else {}
     return {
@@ -357,7 +357,16 @@ def _sorted_dicts(items: list[dict]) -> list[dict]:
 def _runtime_component_trace_projection(name: str, value: Any) -> dict:
     item = value if isinstance(value, dict) else {}
     if name == "l":
-        return _project(item, ("status", "authority"))
+        return {
+            **_project(item, ("status", "authority")),
+            "runtime": _project(
+                item.get("runtime", {}),
+                (
+                    "provider", "commit", "branch",
+                    "deployment", "service", "environment",
+                ),
+            ),
+        }
 
     if name == "foundation":
         specialists = [
@@ -405,7 +414,7 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
             if isinstance(row, dict)
         ]
         return {
-            **_project(item, ("status", "summary")),
+            **_project(item, ("status",)),
             "reviews": _sorted_dicts(reviews),
             "boundaries": _project(
                 item.get("boundaries", {}),
@@ -437,7 +446,7 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
         return {
             **_project(item, (
                 "status", "route", "provider", "model", "model_tier",
-                "reason", "request_id",
+                "request_id",
             )),
             "decision_trace": safe_trace,
         }
@@ -512,6 +521,22 @@ def build_runtime_trace(runtime: dict | None, execution: dict | None = None) -> 
     }
 
 
+def _l_runtime_provenance() -> dict:
+    values = {
+        "provider": "railway" if os.getenv("RAILWAY_DEPLOYMENT_ID") else None,
+        "commit": os.getenv("RAILWAY_GIT_COMMIT_SHA"),
+        "branch": os.getenv("RAILWAY_GIT_BRANCH"),
+        "deployment": os.getenv("RAILWAY_DEPLOYMENT_ID"),
+        "service": os.getenv("RAILWAY_SERVICE_NAME"),
+        "environment": os.getenv("RAILWAY_ENVIRONMENT_NAME"),
+    }
+    return {
+        key: value
+        for key, value in values.items()
+        if isinstance(value, str) and value
+    }
+
+
 def preflight_shine_request(
     db,
     *,
@@ -528,7 +553,11 @@ def preflight_shine_request(
         "version": RUNTIME_VERSION,
         "request_id": _uuid(request_id),
         "components": {
-            "l": {"status": "active", "authority": "voice+synthesis+durable-task"},
+            "l": {
+                "status": "active",
+                "authority": "voice+synthesis+durable-task",
+                "runtime": _l_runtime_provenance(),
+            },
         },
         "warnings": [],
     }
