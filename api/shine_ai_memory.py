@@ -1,12 +1,15 @@
 import os
 import re
 import secrets
+
+import httpx
 from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, Field
 from supabase import create_client
+from supabase.lib.client_options import SyncClientOptions
 
 router = APIRouter(prefix="/internal/shine-ai", tags=["internal-shine-ai"])
 
@@ -33,6 +36,7 @@ _STOP_TERMS = {
 
 Priority = Literal["high", "normal", "low"]
 _db_client = None
+_db_transport = None
 
 
 class MemoryRetrieveRequest(BaseModel):
@@ -113,7 +117,7 @@ def _validate_access(request: MemoryRetrieveRequest, owner_id: str) -> frozenset
 
 
 def _database():
-    global _db_client
+    global _db_client, _db_transport
     if _db_client is not None:
         return _db_client
     url = os.getenv("SUPABASE_URL", "").strip()
@@ -126,7 +130,34 @@ def _database():
             status_code=503,
             detail="Project L owner-scoped retrieval is not configured.",
         )
-    _db_client = create_client(url, key)
+
+    # Match L's durable-ledger transport discipline. The default shared HTTP/2
+    # pool has previously produced ambiguous protocol failures under Railway.
+    # This bridge is read-only, so one bounded HTTP/1.1 client is safer and does
+    # not change memory authority or retry semantics.
+    _db_transport = httpx.Client(
+        http2=False,
+        timeout=httpx.Timeout(12, connect=5, pool=5),
+        limits=httpx.Limits(
+            max_connections=4,
+            max_keepalive_connections=2,
+            keepalive_expiry=5,
+        ),
+    )
+    try:
+        _db_client = create_client(
+            url,
+            key,
+            options=SyncClientOptions(
+                httpx_client=_db_transport,
+                auto_refresh_token=False,
+                persist_session=False,
+            ),
+        )
+    except Exception:
+        _db_transport.close()
+        _db_transport = None
+        raise
     return _db_client
 
 
