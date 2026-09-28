@@ -1165,12 +1165,19 @@
                             try {
                                 const delayed = run.delayed.get(task.requestId);
                                 if (delayed) {
-                                    savedText = delayed.finalAnswer;
+                                    savedText = delayed.displayAnswer || delayed.finalAnswer;
                                     failed = false;
-                                    attention = false;
+                                    const delayedFreshness = String(
+                                        delayed.freshness?.status || 'unavailable'
+                                    );
+                                    attention = ['superseded', 'unavailable'].includes(delayedFreshness);
                                     copyable = true;
                                     working = false;
-                                    resultLabel = 'Delayed final answer';
+                                    resultLabel = delayedFreshness === 'superseded'
+                                        ? 'Delayed answer · facts changed'
+                                        : delayedFreshness === 'unavailable'
+                                        ? 'Delayed answer · freshness unchecked'
+                                        : 'Delayed final answer';
                                     clearPendingRequest(task.requestId);
                                 } else {
                                     const result = await fetchChatJson(`/chat/result/${encodeURIComponent(task.requestId)}`,
@@ -1337,7 +1344,7 @@
 
 <script src="/ui/chat-tools.js?v=2"></script>
 <script src="/ui/foundation-fleet.js?v=1"></script>
-<script src="/ui/concierge-completions.js?v=190"></script>
+<script src="/ui/concierge-completions.js?v=191"></script>
 <script src="/ui/recovery-status.js?v=118"></script>
 <script src="/ui/evidence.js?v=156"></script>
 <script src="/ui/voice.js"></script>
