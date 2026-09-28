@@ -2,7 +2,25 @@ import hashlib
 import hmac
 import json
 
+import pytest
+
 from services import shine_runtime_service as runtime
+from services import shine_trust_storage as trust_storage
+
+
+@pytest.fixture(autouse=True)
+def trust_storage_env(monkeypatch):
+    monkeypatch.setenv(
+        "SHINE_AI_TRUST_STATE_STORAGE_KEYRING_JSON",
+        json.dumps({
+            "storage-a": "S" * 48,
+            "storage-b": "T" * 48,
+        }),
+    )
+    monkeypatch.setenv(
+        "SHINE_AI_TRUST_STATE_STORAGE_ACTIVE_KEY_ID",
+        "storage-a",
+    )
 
 
 def test_shine_ai_signature_matches_keyring_contract(monkeypatch):
