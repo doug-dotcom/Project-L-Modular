@@ -28,10 +28,12 @@ _BROAD_RECALL_RE = re.compile(
 )
 _TOKEN_RE = re.compile(r"[a-z0-9]+", re.IGNORECASE)
 _STOP_TERMS = {
-    "about", "and", "are", "can", "completed", "could", "did", "does", "for",
-    "from", "have", "how", "into", "know", "more", "please", "that", "the",
-    "their", "them", "this", "was", "were", "what", "when", "where", "which",
-    "who", "why", "with", "would", "you", "your",
+    "about", "am", "an", "and", "are", "as", "at", "be", "by", "can",
+    "completed", "could", "did", "does", "for", "from", "have", "how", "in",
+    "into", "is", "it", "know", "me", "more", "my", "of", "on", "or", "our",
+    "please", "that", "the", "their", "them", "this", "to", "was", "we", "were",
+    "what", "when", "where", "which", "who", "why", "with", "would", "you",
+    "your",
 }
 
 Priority = Literal["high", "normal", "low"]

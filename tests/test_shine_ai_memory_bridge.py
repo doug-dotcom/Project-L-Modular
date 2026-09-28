@@ -241,7 +241,15 @@ def test_query_terms_are_bounded_and_drop_low_value_words():
     assert "qualifications" in terms
     assert "bali" in terms
     assert "what" not in terms
+    assert "in" not in terms
     assert len(terms) <= 24
+
+
+def test_production_bali_probe_keeps_only_discriminating_terms():
+    terms = bridge._query_terms(
+        "What diving qualifications have I completed in Bali?"
+    )
+    assert terms == ["diving", "qualifications", "bali"]
 
 
 def test_database_client_uses_bounded_http1_transport(monkeypatch):
