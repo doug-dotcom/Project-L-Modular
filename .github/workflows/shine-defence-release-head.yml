@@ -97,3 +97,102 @@ jobs:
             if(r.status!=='accepted'||r.accepted!==1) throw new Error('release-head ingest mismatch');
             console.log('Release head accepted:',r.accepted);
           "
+
+
+      - name: Acquire rollback-readiness OIDC token
+        run: |
+          OIDC_JSON="$(curl -fsSL \
+            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=shine-defence-rollback-readiness")"
+          OIDC_TOKEN="$(printf '%s' "$OIDC_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])')"
+          echo "::add-mask::$OIDC_TOKEN"
+          printf '%s' "$OIDC_TOKEN" > /tmp/shine-defence-rollback-oidc
+
+      - name: Claim rollback anchor
+        id: rollback
+        run: |
+          OIDC_TOKEN="$(cat /tmp/shine-defence-rollback-oidc)"
+          node -e 'const fs=require("fs");fs.writeFileSync("/tmp/rollback-claim-body.json",JSON.stringify({action:"claim",targetId:process.env.SHINE_DEFENCE_TARGET_ID}))'
+          HTTP_STATUS="$(curl -sS \
+            -o /tmp/rollback-claim.json \
+            -w '%{http_code}' \
+            -X POST \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data-binary @/tmp/rollback-claim-body.json \
+            https://sjpxqeyewahraxvidvcc.supabase.co/functions/v1/defence-rollback-readiness)"
+          if [ "$HTTP_STATUS" != "200" ]; then
+            cat /tmp/rollback-claim.json
+            exit 1
+          fi
+          node <<'NODE'
+          const fs=require('fs');
+          const response=JSON.parse(fs.readFileSync('/tmp/rollback-claim.json','utf8'));
+          const claim=response.claim;
+          if(response.status!=='ok'||!claim) throw new Error('invalid rollback claim response');
+          const out=process.env.GITHUB_OUTPUT;
+          const emit=(k,v)=>fs.appendFileSync(out,k+'='+v+'\n');
+          if(claim.status==='history-building'){
+            emit('has_anchor','false');
+            console.log('Rollback history is still building for',claim.targetId);
+            process.exit(0);
+          }
+          if(claim.status!=='work') throw new Error('rollback claim blocked: '+claim.reasonCode);
+          emit('has_anchor','true');
+          emit('rollback_commit',claim.rollbackCommitSha);
+          emit('canonical_commit',claim.canonicalCommitSha);
+          console.log('Rollback anchor claimed:',claim.rollbackCommitSha);
+          NODE
+
+      - name: Verify rollback source commit
+        if: steps.rollback.outputs.has_anchor == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ROLLBACK_COMMIT: ${{ steps.rollback.outputs.rollback_commit }}
+          CANONICAL_COMMIT: ${{ steps.rollback.outputs.canonical_commit }}
+        run: |
+          node <<'NODE'
+          (async()=>{
+            const fs=require('fs');
+            const endpoint='https://api.github.com/repos/'+process.env.GITHUB_REPOSITORY+'/commits/'+process.env.ROLLBACK_COMMIT;
+            const response=await fetch(endpoint,{headers:{
+              'Accept':'application/vnd.github+json',
+              'Authorization':'Bearer '+process.env.GITHUB_TOKEN,
+              'User-Agent':'Shine-Defence-Rollback-Readiness/1.0',
+              'X-GitHub-Api-Version':'2022-11-28'
+            }});
+            if(response.status!==200&&response.status!==404){
+              throw new Error('rollback commit lookup failed '+response.status);
+            }
+            fs.writeFileSync('/tmp/rollback-attest-body.json',JSON.stringify({
+              action:'attest',
+              submission:{
+                contract:'shine-defence/rollback-source-attestation-v1',
+                schemaVersion:'1.0.0',
+                targetId:process.env.SHINE_DEFENCE_TARGET_ID,
+                rollbackCommitSha:process.env.ROLLBACK_COMMIT,
+                canonicalCommitSha:process.env.CANONICAL_COMMIT,
+                sourceAvailable:response.status===200
+              }
+            }));
+            console.log('Rollback source available:',response.status===200);
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+
+      - name: Submit rollback source attestation
+        if: steps.rollback.outputs.has_anchor == 'true'
+        run: |
+          OIDC_TOKEN="$(cat /tmp/shine-defence-rollback-oidc)"
+          HTTP_STATUS="$(curl -sS \
+            -o /tmp/rollback-attest-response.json \
+            -w '%{http_code}' \
+            -X POST \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data-binary @/tmp/rollback-attest-body.json \
+            https://sjpxqeyewahraxvidvcc.supabase.co/functions/v1/defence-rollback-readiness)"
+          if [ "$HTTP_STATUS" != "200" ]; then
+            cat /tmp/rollback-attest-response.json
+            exit 1
+          fi
+          node -e "const fs=require('fs');const r=JSON.parse(fs.readFileSync('/tmp/rollback-attest-response.json','utf8'));if(r.status!=='accepted'||!r.result)throw new Error('rollback attestation mismatch');console.log('Rollback source attestation accepted:',JSON.stringify(r.result));"
