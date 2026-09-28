@@ -582,6 +582,52 @@ class FakeTrustRedis:
             }
             return ["advanced"]
 
+        if len(args) == 5:
+            (
+                generation,
+                policy_sha,
+                state_sha,
+                previous_policy_sha,
+                checkpoint_json,
+            ) = args
+            generation = int(generation)
+            current = self.rows.get(key)
+            if current is None:
+                if generation != 1:
+                    return ["bootstrap-generation-invalid"]
+                if previous_policy_sha:
+                    return ["bootstrap-predecessor-invalid"]
+                self.rows[key] = {
+                    "generation": str(generation),
+                    "policy_sha256": policy_sha,
+                    "state_sha256": state_sha,
+                    "checkpoint_json": checkpoint_json,
+                }
+                return ["created"]
+            current_generation = int(current["generation"])
+            if generation < current_generation:
+                return ["rollback"]
+            if generation > current_generation + 1:
+                return ["generation-skip"]
+            if generation == current_generation:
+                if current["policy_sha256"] != policy_sha:
+                    return ["equivocation"]
+                if current["state_sha256"] != state_sha:
+                    return ["state-mismatch"]
+                current["checkpoint_json"] = checkpoint_json
+                return ["refreshed"]
+            if previous_policy_sha != current["policy_sha256"]:
+                return ["predecessor-policy-mismatch"]
+            if policy_sha == current["policy_sha256"]:
+                return ["generation-without-policy-change"]
+            self.rows[key] = {
+                "generation": str(generation),
+                "policy_sha256": policy_sha,
+                "state_sha256": state_sha,
+                "checkpoint_json": checkpoint_json,
+            }
+            return ["advanced"]
+
         if len(args) == 4:
             generation, policy_sha, state_sha, checkpoint_json = args
             generation = int(generation)
