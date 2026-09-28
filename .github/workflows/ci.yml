@@ -63,6 +63,7 @@ jobs:
           services/foundation_roster_head_witness.py
           services/external_witness_roster.py
           services/roster_transition_evidence_mirror.py
+          services/roster_transition_evidence_chain_witness.py
           services/shine_runtime_service.py
           api/foundation_companion.py
           services/external_research_service.py
@@ -112,8 +113,10 @@ jobs:
           tests/test_external_witness_roster_stable_high_water.py
           tests/test_external_roster_transition_evidence_schema.py
           tests/test_external_roster_transition_evidence_chain_schema.py
+          tests/test_external_roster_transition_evidence_chain_witness_schema.py
           tests/test_shine_trace_trust_smoke_contract.py
           tests/test_roster_transition_evidence_mirror.py
+          tests/test_roster_transition_evidence_chain_witness.py
           tests/test_external_roster_head_history_schema.py
           tests/test_external_roster_head_witness.py
           tests/test_foundation_external_roster_head_witness_contract.py
