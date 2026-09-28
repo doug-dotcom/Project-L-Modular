@@ -1054,7 +1054,26 @@ def load_runtime_execution(
         for row in tasks[:12]
         if isinstance(row, dict)
     ]
-    status = "completed" if clean_results else "pending" if clean_tasks else "empty"
+    task_statuses = {
+        str(row.get("status") or "").strip().lower()
+        for row in clean_tasks
+        if isinstance(row, dict)
+    }
+    failed_task_statuses = {
+        "failed", "blocked", "cancelled", "canceled", "error",
+    }
+    active_task_statuses = {
+        "ready", "running", "dispatched", "waiting",
+    }
+    if clean_results:
+        status = "completed"
+    elif task_statuses & failed_task_statuses:
+        status = "failed"
+    elif task_statuses & active_task_statuses or _needs_user_action({"tasks": clean_tasks}):
+        status = "pending"
+    else:
+        status = "empty"
+
     observation_timed_out = bool(
         active
         and not clean_results
