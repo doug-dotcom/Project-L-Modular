@@ -1754,7 +1754,6 @@ def test_runtime_trace_binds_external_witness_without_foundation_auth_tag():
     assert "PRIVATE-FOUNDATION-HMAC" not in rendered
     assert "PRIVATE-CHECKPOINT-HMAC" not in rendered
     assert "PRIVATE-REDIS-CHECKPOINT-HMAC" not in rendered
-    assert "PRIVATE-REDIS-CHECKPOINT-HMAC" not in rendered
 
 
 
