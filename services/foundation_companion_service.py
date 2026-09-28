@@ -822,7 +822,26 @@ def _concierge_work_fingerprint(
     ).hexdigest()
 
 
-def _cancel_local_concierge_job(
+def _local_cancel_params(
+    *,
+    user_id: str,
+    request_id: str,
+    reason_code: str,
+    superseded_by_request_id: str | None = None,
+) -> dict:
+    return {
+        "p_user_id": _uuid(user_id),
+        "p_request_id": _uuid(request_id),
+        "p_reason_code": str(reason_code or "")[:160],
+        "p_superseded_by_request_id": (
+            _uuid(superseded_by_request_id)
+            if superseded_by_request_id is not None
+            else None
+        ),
+    }
+
+
+def _begin_local_concierge_cancel(
     db,
     *,
     user_id: str,
@@ -832,20 +851,39 @@ def _cancel_local_concierge_job(
 ) -> dict:
     result = _rpc_data(
         db,
-        "companion_cancel_local_concierge_job_v2",
-        {
-            "p_user_id": _uuid(user_id),
-            "p_request_id": _uuid(request_id),
-            "p_reason_code": str(reason_code or "")[:160],
-            "p_superseded_by_request_id": (
-                _uuid(superseded_by_request_id)
-                if superseded_by_request_id is not None
-                else None
-            ),
-        },
+        "companion_begin_local_concierge_cancel_v1",
+        _local_cancel_params(
+            user_id=user_id,
+            request_id=request_id,
+            reason_code=reason_code,
+            superseded_by_request_id=superseded_by_request_id,
+        ),
     )
     if not isinstance(result, dict):
-        raise RuntimeError("local-concierge-cancellation-unavailable")
+        raise RuntimeError("local-concierge-cancellation-intent-unavailable")
+    return result
+
+
+def _finish_local_concierge_cancel(
+    db,
+    *,
+    user_id: str,
+    request_id: str,
+    reason_code: str,
+    superseded_by_request_id: str | None = None,
+) -> dict:
+    result = _rpc_data(
+        db,
+        "companion_finish_local_concierge_cancel_v1",
+        _local_cancel_params(
+            user_id=user_id,
+            request_id=request_id,
+            reason_code=reason_code,
+            superseded_by_request_id=superseded_by_request_id,
+        ),
+    )
+    if not isinstance(result, dict):
+        raise RuntimeError("local-concierge-cancellation-finish-unavailable")
     return result
 
 
@@ -865,20 +903,31 @@ def _supersedable_pending_jobs(
         # Automatic supersession is limited to strongly bound browser conversations.
         return []
 
-    result = (
-        db.table("companion_foundation_pending_jobs")
-        .select("job_id,status,work_fingerprint,source_conversation_id")
-        .eq("user_id", _uuid(user_id))
-        .eq("source_conversation_id", source_conversation_id)
-        .eq("work_fingerprint", work_fingerprint)
-        .eq("status", "ready")
-        .neq("job_id", _uuid(request_id))
-        .order("created_at", desc=True)
-        .limit(8)
-        .execute()
-    )
-    rows = _pending_job_rows(result)
-    return [row for row in rows if isinstance(row, dict)]
+    rows = []
+    for state in ("ready", "cancelling"):
+        result = (
+            db.table("companion_foundation_pending_jobs")
+            .select("job_id,status,work_fingerprint,source_conversation_id")
+            .eq("user_id", _uuid(user_id))
+            .eq("source_conversation_id", source_conversation_id)
+            .eq("work_fingerprint", work_fingerprint)
+            .eq("status", state)
+            .neq("job_id", _uuid(request_id))
+            .order("created_at", desc=True)
+            .limit(8)
+            .execute()
+        )
+        rows.extend(_pending_job_rows(result))
+    seen = set()
+    projected = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        job_id = str(row.get("job_id") or "")
+        if job_id and job_id not in seen:
+            seen.add(job_id)
+            projected.append(row)
+    return projected
 
 
 def _supersede_previous_concierge_jobs(
@@ -910,6 +959,15 @@ def _supersede_previous_concierge_jobs(
     superseded = []
     for row in candidates:
         old_request_id = _uuid(row.get("job_id"))
+        local_intent = _begin_local_concierge_cancel(
+            db,
+            user_id=user_id,
+            request_id=old_request_id,
+            reason_code="superseded-by-newer-request",
+            superseded_by_request_id=new_request_id,
+        )
+        if local_intent.get("status") not in {"cancelling", "already-cancelled"}:
+            raise RuntimeError("local-concierge-supersession-intent-failed")
         envelope = {
             "conciergeSupersede": "shine-concierge/supersede-v1",
             "schemaVersion": "1.0.0",
@@ -939,7 +997,7 @@ def _supersede_previous_concierge_jobs(
             raise RuntimeError(
                 str(body.get("reasonCode") or "concierge-supersession-rejected")
             )
-        local = _cancel_local_concierge_job(
+        local = _finish_local_concierge_cancel(
             db,
             user_id=user_id,
             request_id=old_request_id,
@@ -947,7 +1005,7 @@ def _supersede_previous_concierge_jobs(
             superseded_by_request_id=new_request_id,
         )
         if local.get("status") not in {"cancelled", "already-cancelled"}:
-            raise RuntimeError("local-concierge-supersession-failed")
+            raise RuntimeError("local-concierge-supersession-finish-failed")
         superseded.append(old_request_id)
     return superseded
 
@@ -968,22 +1026,19 @@ def cancel_foundation_concierge_request_as_user(
     if not auth.startswith("Bearer ") or len(auth) < 40:
         raise ValueError("valid user authorization required")
 
-    rows = (
-        db.table("companion_foundation_pending_jobs")
-        .select("job_id,user_id,status")
-        .eq("job_id", request_id)
-        .eq("user_id", owner_id)
-        .limit(2)
-        .execute()
+    local_intent = _begin_local_concierge_cancel(
+        db,
+        user_id=owner_id,
+        request_id=request_id,
+        reason_code="user-cancelled",
     )
-    matches = _pending_job_rows(rows)
-    if len(matches) != 1:
-        return {"status": "not-found", "request_id": request_id}
-    status = str(matches[0].get("status") or "")
-    if status in {"completed", "failed"}:
-        return {"status": status, "request_id": request_id}
-    if status == "cancelled":
+    intent_status = str(local_intent.get("status") or "")
+    if intent_status in {"not-found", "completed", "failed"}:
+        return {"status": intent_status, "request_id": request_id}
+    if intent_status == "already-cancelled":
         return {"status": "already-cancelled", "request_id": request_id}
+    if intent_status != "cancelling":
+        raise RuntimeError("local-concierge-cancellation-intent-failed")
 
     post = post_impl or httpx.post
     envelope = {
@@ -1005,26 +1060,34 @@ def cancel_foundation_concierge_request_as_user(
             follow_redirects=False,
         )
         body = _response_json(response)
-    except (httpx.HTTPError, RuntimeError) as exc:
-        raise RuntimeError("concierge-user-cancellation-unavailable") from exc
-
-    if response.status_code != 200 or body.get("status") not in {
-        "cancelled", "already-cancelled"
-    }:
+    except (httpx.HTTPError, RuntimeError):
         return {
-            "status": str(body.get("status") or "unavailable"),
+            "status": "cancelling",
+            "reason_code": "cancellation-acknowledgement-unavailable",
+            "request_id": request_id,
+        }
+
+    if (
+        response.status_code != 200
+        or body.get("status") not in {"cancelled", "already-cancelled"}
+        or body.get("reasonCode") != "user-cancelled"
+    ):
+        return {
+            "status": "cancelling",
             "reason_code": str(
                 body.get("reasonCode") or "concierge-user-cancellation-rejected"
             ),
             "request_id": request_id,
         }
 
-    local = _cancel_local_concierge_job(
+    local = _finish_local_concierge_cancel(
         db,
         user_id=owner_id,
         request_id=request_id,
         reason_code="user-cancelled",
     )
+    if local.get("status") not in {"cancelled", "already-cancelled"}:
+        raise RuntimeError("local-concierge-cancellation-finish-failed")
     return {
         "status": "cancelled" if local.get("status") == "cancelled" else "already-cancelled",
         "reason_code": "user-cancelled",
