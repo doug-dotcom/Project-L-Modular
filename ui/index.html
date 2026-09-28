@@ -1386,7 +1386,22 @@
                                 }
                             }
 
+                            const deadlineState = taskCentreJob?.deadlinePosture?.state;
                             if (
+                                taskCentreJob
+                                && !['retired', 'cancelled', 'completed', 'failed'].includes(taskCentreJob.status)
+                                && taskCentreJob.deadlinePostureText
+                                && ['start-soon', 'expiry-due'].includes(deadlineState)
+                            ) {
+                                savedText = (savedText || '') + '\n\n' + taskCentreJob.deadlinePostureText;
+                                attention = true;
+                                if (deadlineState === 'expiry-due') {
+                                    working = false;
+                                    resultLabel = 'Plan expiry due';
+                                } else {
+                                    resultLabel = 'Plan starts soon or retires';
+                                }
+                            } else if (
                                 taskCentreJob
                                 && !['retired', 'cancelled', 'completed', 'failed'].includes(taskCentreJob.status)
                                 && taskCentreJob.planUrgencyText
