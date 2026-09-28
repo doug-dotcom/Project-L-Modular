@@ -1432,6 +1432,28 @@ def ensure_trust_witness_quorum(
             roster["roster_storage_checkpoint_retention"],
         "external_roster_storage_rotation":
             roster["roster_storage_rotation"],
+        "external_roster_chain_verified":
+            roster["roster_chain_verified"],
+        "external_roster_chain_version":
+            roster["roster_chain_version"],
+        "external_roster_chain_sequence":
+            roster["roster_chain_sequence"],
+        "external_roster_chain_previous_checkpoint_sha256":
+            roster["roster_chain_previous_checkpoint_sha256"],
+        "external_roster_chain_checkpoint_sha256":
+            roster["roster_chain_checkpoint_sha256"],
+        "external_roster_chain_head_version":
+            roster["roster_chain_head_version"],
+        "external_roster_chain_head_sha256":
+            roster["roster_chain_head_sha256"],
+        "external_roster_chain_head_auth_key_id":
+            roster["roster_chain_head_auth_key_id"],
+        "external_roster_chain_head_independent":
+            roster["roster_chain_head_independent"],
+        "external_roster_chain_head_retention":
+            roster["roster_chain_head_retention"],
+        "external_roster_chain_history_records_verified":
+            roster["roster_chain_history_records_verified"],
         "minimum_witnesses": policy["minimumWitnesses"],
         "verified_witness_count": len(by_id),
         "witness_ids": sorted(by_id),
