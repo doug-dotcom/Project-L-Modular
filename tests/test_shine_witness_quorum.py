@@ -429,6 +429,23 @@ def test_quorum_requires_two_distinct_matching_witnesses(monkeypatch):
         "ensure_foundation_chain_checkpoint",
         lambda *_args, **_kwargs: checkpoint_receipt,
     )
+    redis_checkpoint_receipt = {
+        "status": "verified",
+        "checkpoint_version": 1,
+        "witness_id": "foundation-project-l",
+        "chain_version": 1,
+        "sequence": HEAD["sequence"],
+        "previous_chain_tag": "6" * 64,
+        "chain_tag": "7" * 64,
+        "auth_key_id": "foundation-chain-redis-a",
+        "storage": "railway-redis-volume",
+        "mode": "existing",
+    }
+    monkeypatch.setattr(
+        quorum,
+        "ensure_redis_foundation_chain_checkpoint",
+        lambda *_args, **_kwargs: redis_checkpoint_receipt,
+    )
 
     result = quorum.ensure_trust_witness_quorum(
         FakePolicyDB(),
@@ -459,6 +476,23 @@ def test_quorum_requires_two_distinct_matching_witnesses(monkeypatch):
         "chain_tag": "7" * 64,
     }
     assert result["foundation_chain_checkpoint"] == checkpoint_receipt
+    assert (
+        result["foundation_chain_redis_checkpoint"]
+        == redis_checkpoint_receipt
+    )
+    assert result["foundation_chain_checkpoint_redundancy"] == {
+        "status": "verified",
+        "witness_id": "foundation-project-l",
+        "chain_version": 1,
+        "sequence": HEAD["sequence"],
+        "previous_chain_tag": "6" * 64,
+        "chain_tag": "7" * 64,
+        "verified_store_count": 2,
+        "stores": [
+            "project-l-supabase-vault-hmac",
+            "railway-redis-volume",
+        ],
+    }
     assert "authTag" not in json.dumps(result)
 
 
@@ -602,6 +636,109 @@ def test_quorum_fails_closed_when_chain_checkpoint_rejects(monkeypatch):
     with pytest.raises(
         quorum.WitnessQuorumError,
         match="foundation-chain-checkpoint-ahead",
+    ):
+        quorum.ensure_trust_witness_quorum(
+            FakePolicyDB(),
+            {"state": "unused"},
+        )
+
+
+
+def test_quorum_fails_closed_when_redis_chain_checkpoint_rejects(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        quorum,
+        "ensure_redis_trust_witness",
+        lambda *_args, **_kwargs: redis_receipt(),
+    )
+    monkeypatch.setattr(
+        quorum,
+        "ensure_foundation_trust_witness",
+        lambda *_args, **_kwargs: foundation_receipt(),
+    )
+    monkeypatch.setattr(
+        quorum,
+        "ensure_foundation_chain_checkpoint",
+        lambda *_args, **_kwargs: {
+            "status": "verified",
+            "checkpoint_version": 1,
+            "witness_id": "foundation-project-l",
+            "chain_version": 1,
+            "sequence": HEAD["sequence"],
+            "previous_chain_tag": "6" * 64,
+            "chain_tag": "7" * 64,
+            "storage": "project-l-supabase-vault-hmac",
+            "mode": "existing",
+        },
+    )
+
+    def fail(*_args, **_kwargs):
+        raise quorum.RedisFoundationChainCheckpointError(
+            "foundation-chain-redis-ahead"
+        )
+
+    monkeypatch.setattr(
+        quorum,
+        "ensure_redis_foundation_chain_checkpoint",
+        fail,
+    )
+
+    with pytest.raises(
+        quorum.WitnessQuorumError,
+        match="foundation-chain-redis-ahead",
+    ):
+        quorum.ensure_trust_witness_quorum(
+            FakePolicyDB(),
+            {"state": "unused"},
+        )
+
+
+def test_quorum_rejects_checkpoint_store_disagreement(monkeypatch):
+    monkeypatch.setattr(
+        quorum,
+        "ensure_redis_trust_witness",
+        lambda *_args, **_kwargs: redis_receipt(),
+    )
+    monkeypatch.setattr(
+        quorum,
+        "ensure_foundation_trust_witness",
+        lambda *_args, **_kwargs: foundation_receipt(),
+    )
+    monkeypatch.setattr(
+        quorum,
+        "ensure_foundation_chain_checkpoint",
+        lambda *_args, **_kwargs: {
+            "status": "verified",
+            "checkpoint_version": 1,
+            "witness_id": "foundation-project-l",
+            "chain_version": 1,
+            "sequence": HEAD["sequence"],
+            "previous_chain_tag": "6" * 64,
+            "chain_tag": "7" * 64,
+            "storage": "project-l-supabase-vault-hmac",
+            "mode": "existing",
+        },
+    )
+    monkeypatch.setattr(
+        quorum,
+        "ensure_redis_foundation_chain_checkpoint",
+        lambda *_args, **_kwargs: {
+            "status": "verified",
+            "checkpoint_version": 1,
+            "witness_id": "foundation-project-l",
+            "chain_version": 1,
+            "sequence": HEAD["sequence"],
+            "previous_chain_tag": "6" * 64,
+            "chain_tag": "8" * 64,
+            "storage": "railway-redis-volume",
+            "mode": "existing",
+        },
+    )
+
+    with pytest.raises(
+        quorum.WitnessQuorumError,
+        match="trust-witness-foundation-chain-checkpoint-disagreement",
     ):
         quorum.ensure_trust_witness_quorum(
             FakePolicyDB(),
