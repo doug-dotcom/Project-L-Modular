@@ -809,7 +809,7 @@ def _concierge_work_fingerprint(
 ) -> str:
     payload = {
         "conversation_id": str(source_conversation_id or ""),
-        "capability_ids": list(capability_ids),
+        "capability_ids": sorted(str(value) for value in capability_ids),
         "inputs": inputs,
     }
     return sha256(
