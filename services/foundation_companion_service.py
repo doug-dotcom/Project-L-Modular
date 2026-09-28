@@ -962,6 +962,93 @@ def store_delayed_synthesis_answer(
     }
 
 
+def list_delayed_completion_history(
+    db,
+    user_id: str,
+    *,
+    limit: int = 100,
+) -> dict:
+    """Return only integrity-verified delayed L answers for owner recovery."""
+    owner_id = _uuid(user_id)
+    if not isinstance(limit, int) or isinstance(limit, bool) or limit < 1 or limit > 100:
+        raise ValueError("delayed completion history limit invalid")
+
+    result = (
+        db.table("companion_foundation_pending_jobs")
+        .select(
+            "job_id,source_conversation_id,source_message_id,request_text,"
+            "status,completed_at,updated_at,final_result_sha256,"
+            "final_answer,final_answer_sha256,synthesis_status"
+        )
+        .eq("user_id", owner_id)
+        .eq("status", "completed")
+        .eq("synthesis_status", "ready")
+        .order("updated_at", desc=True)
+        .limit(limit)
+        .execute()
+    )
+    rows = getattr(result, "data", None)
+    if not isinstance(rows, list):
+        raise RuntimeError("delayed-completion-history-unavailable")
+
+    items = []
+    rejected = 0
+    for row in rows:
+        if not isinstance(row, dict):
+            rejected += 1
+            continue
+        try:
+            request_id = _uuid(row.get("job_id"))
+        except Exception:
+            rejected += 1
+            continue
+        answer = row.get("final_answer")
+        declared_answer_sha = str(row.get("final_answer_sha256") or "")
+        packet_sha = str(row.get("final_result_sha256") or "")
+        request_text = str(row.get("request_text") or "").strip()
+        if (
+            not isinstance(answer, str)
+            or not answer.strip()
+            or len(answer) > 50000
+            or len(request_text) > 100000
+            or len(declared_answer_sha) != 64
+            or any(ch not in "0123456789abcdef" for ch in declared_answer_sha)
+            or len(packet_sha) != 64
+            or any(ch not in "0123456789abcdef" for ch in packet_sha)
+        ):
+            rejected += 1
+            continue
+        clean_answer = answer.strip()
+        actual_answer_sha = sha256(clean_answer.encode("utf-8")).hexdigest()
+        if actual_answer_sha != declared_answer_sha:
+            rejected += 1
+            continue
+        items.append({
+            "request_id": request_id,
+            "source_conversation_id": (
+                str(row.get("source_conversation_id") or "")[:180]
+            ),
+            "source_message_id": (
+                str(row.get("source_message_id") or "")[:180]
+            ),
+            "request_text": request_text,
+            "final_answer": clean_answer,
+            "final_answer_sha256": declared_answer_sha,
+            "result_packet_sha256": packet_sha,
+            "completed_at": row.get("completed_at"),
+            "updated_at": row.get("updated_at"),
+            "integrity": "verified",
+        })
+
+    return {
+        "status": "ok",
+        "version": "1.0",
+        "items": items,
+        "returned_count": len(items),
+        "rejected_count": rejected,
+    }
+
+
 def set_pending_concierge_job_status(
     db,
     *,
