@@ -2927,3 +2927,26 @@ def test_runtime_trace_binds_quorum_policy_storage_without_hmac_tag():
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-POLICY-HMAC" not in rendered
     assert "PRIVATE-POLICY-KEYRING" not in rendered
+
+
+
+def test_layer203_redis_chain_projection_survives_normalisation():
+    redis = FakeTrustRedis()
+    chain = {
+        "status": "verified",
+        "witness_id": "foundation-project-l",
+        "chain_version": 1,
+        "sequence": 1,
+        "previous_chain_tag": "0" * 64,
+        "chain_tag": "d" * 64,
+    }
+
+    result = chain_redis.ensure_redis_foundation_chain_checkpoint(
+        chain,
+        redis_client=redis,
+    )
+
+    assert result["status"] == "verified"
+    assert result["sequence"] == 1
+    assert result["chain_tag"] == "d" * 64
+    assert result["storage"] == "railway-redis-volume"
