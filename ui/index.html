@@ -1203,11 +1203,33 @@
                                 historyNotice.textContent += 'Concierge cancellation history could not be checked right now.';
                             }
 
-                            run.tasks = readable.slice(-100).reverse();
+                            const newest = readable.slice(-100).reverse();
+                            run.tasks = newest
+                                .map((task, index) => ({
+                                    task,
+                                    index,
+                                    job: run.conciergeJobs.get(task.requestId),
+                                }))
+                                .sort((left, right) => {
+                                    const leftAttention = left.job?.attentionRequired === true;
+                                    const rightAttention = right.job?.attentionRequired === true;
+                                    if (leftAttention !== rightAttention) {
+                                        return leftAttention ? -1 : 1;
+                                    }
+                                    if (leftAttention && rightAttention) {
+                                        const leftOrder = Number.isSafeInteger(left.job?.attentionOrder)
+                                            ? left.job.attentionOrder : 999;
+                                        const rightOrder = Number.isSafeInteger(right.job?.attentionOrder)
+                                            ? right.job.attentionOrder : 999;
+                                        if (leftOrder !== rightOrder) return leftOrder - rightOrder;
+                                    }
+                                    return left.index - right.index;
+                                })
+                                .map(row => row.task);
                             run.total = run.tasks.length;
                         }
                         const recent = run.tasks.slice(run.checked, run.checked + 20);
-                        progress.textContent = recent.length ? count() + '. Newest first; 20 per batch, using the tasks saved in this browser when the review opened.' :
+                        progress.textContent = recent.length ? count() + '. Needs attention first; then newest. 20 per batch.' :
                             !historyNotice.hidden ? 'No saved entries have usable request details. No tasks were checked.' :
                             'Your saved answers will appear here after you send a message.';
                         const deadline = performance.now() + ANSWER_RECOVERY_BUDGET_MS;
@@ -1341,6 +1363,15 @@
                             }
 
                             if (
+                                taskCentreJob?.attentionRequired === true
+                                && !['retired', 'cancelled', 'completed'].includes(taskCentreJob.status)
+                                && taskCentreJob.attentionReason
+                            ) {
+                                attention = true;
+                                resultLabel = taskCentreJob.attentionReason;
+                            }
+
+                            if (
                                 taskCentreJob
                                 && !['retired', 'cancelled', 'completed', 'failed'].includes(taskCentreJob.status)
                                 && taskCentreJob.planTtlText
@@ -1349,8 +1380,18 @@
                                 if (taskCentreJob.planTtl?.state === 'expiry-due') {
                                     attention = true;
                                     working = false;
-                                    resultLabel = 'Plan expiry due';
+                                    if (taskCentreJob.attentionRequired !== true) {
+                                        resultLabel = 'Plan expiry due';
+                                    }
                                 }
+                            }
+
+                            if (
+                                taskCentreJob
+                                && !['retired', 'cancelled', 'completed', 'failed'].includes(taskCentreJob.status)
+                                && taskCentreJob.planUrgencyText
+                            ) {
+                                savedText = (savedText || '') + '\n\n' + taskCentreJob.planUrgencyText;
                             }
 
                             const pendingConcierge = run.pendingConcierge.get(task.requestId);
