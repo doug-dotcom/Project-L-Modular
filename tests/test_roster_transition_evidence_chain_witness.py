@@ -178,12 +178,15 @@ def test_generation_three_must_extend_exact_previous_chain_tag():
         redis_client=redis,
     )
 
-    result = witness.ensure_chain_witness(
-        generation_three(),
-        redis_client=redis,
+    bad_redis = FakeRedis()
+    witness.ensure_chain_witness(
+        genesis(),
+        redis_client=bad_redis,
     )
-    assert result["mode"] == "advanced"
-
+    witness.ensure_chain_witness(
+        generation_two(),
+        redis_client=bad_redis,
+    )
     bad = generation_three(
         previous_chain_tag="f" * 64,
         chain_tag="e" * 64,
@@ -193,7 +196,16 @@ def test_generation_three_must_extend_exact_previous_chain_tag():
         witness.RosterEvidenceChainWitnessError,
         match="predecessor-chain-mismatch",
     ):
-        witness.ensure_chain_witness(bad, redis_client=redis)
+        witness.ensure_chain_witness(
+            bad,
+            redis_client=bad_redis,
+        )
+
+    result = witness.ensure_chain_witness(
+        generation_three(),
+        redis_client=redis,
+    )
+    assert result["mode"] == "advanced"
 
 
 def test_same_generation_history_rewrite_is_rejected():
