@@ -1562,6 +1562,34 @@ def test_runtime_trace_binds_external_witness_without_foundation_auth_tag():
             "mode": "existing-witness",
             "independent_retention": "foundation-supabase",
             "authTag": "PRIVATE-FOUNDATION-HMAC",
+            "local_witness": {
+                "status": "verified",
+                "witness_id": "project-l-redis",
+                "sequence": 1,
+                "head_sha256": "b" * 64,
+                "generation": 1,
+                "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+                "state_sha256": "a" * 64,
+                "auth_key_id": "storage-a",
+                "mode": "existing-head",
+                "independent_retention": "railway-redis-volume",
+                "authTag": "PRIVATE-REDIS-HMAC",
+            },
+        },
+        "witness_quorum": {
+            "status": "verified",
+            "policy_generation": 1,
+            "policy_sha256": quorum_policy.GENESIS_POLICY_SHA256,
+            "minimum_witnesses": 2,
+            "accepted_witness_ids": [
+                "foundation-project-l",
+                "project-l-redis",
+            ],
+            "verified_witness_ids": [
+                "foundation-project-l",
+                "project-l-redis",
+            ],
+            "verified_count": 2,
         },
     }
     first = runtime.build_runtime_trace(
@@ -1582,3 +1610,46 @@ def test_runtime_trace_binds_external_witness_without_foundation_auth_tag():
     assert first["version"] == "shine/runtime-trace-v7"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-FOUNDATION-HMAC" not in rendered
+    assert "PRIVATE-REDIS-HMAC" not in rendered
+
+
+
+def test_runtime_trace_binds_witness_quorum_policy_without_secret_material():
+    packet = runtime_for_human_status()
+    packet["components"]["shine_ai"]["decision_trace_trust"] = {
+        "status": "trusted",
+        "witness_quorum": {
+            "status": "verified",
+            "policy_generation": 1,
+            "policy_sha256": quorum_policy.GENESIS_POLICY_SHA256,
+            "minimum_witnesses": 2,
+            "accepted_witness_ids": [
+                "foundation-project-l",
+                "project-l-redis",
+            ],
+            "verified_witness_ids": [
+                "foundation-project-l",
+                "project-l-redis",
+            ],
+            "verified_count": 2,
+            "private_policy_authorization": "PRIVATE-POLICY-AUTH",
+        },
+    }
+    first = runtime.build_runtime_trace(
+        packet,
+        {"status": "not_required"},
+    )
+
+    changed = json.loads(json.dumps(packet))
+    changed["components"]["shine_ai"]["decision_trace_trust"][
+        "witness_quorum"
+    ]["minimum_witnesses"] = 1
+    second = runtime.build_runtime_trace(
+        changed,
+        {"status": "not_required"},
+    )
+
+    rendered = json.dumps(first)
+    assert first["version"] == "shine/runtime-trace-v7"
+    assert first["lineage_sha256"] != second["lineage_sha256"]
+    assert "PRIVATE-POLICY-AUTH" not in rendered
