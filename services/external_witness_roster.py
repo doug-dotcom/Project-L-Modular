@@ -24,6 +24,10 @@ from services.foundation_trust_witness import (
     FoundationWitnessError,
     ensure_foundation_roster_transition_authorization,
 )
+from services.roster_transition_evidence_mirror import (
+    RosterTransitionEvidenceMirrorError,
+    ensure_evidence_mirror,
+)
 
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 KEY_ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
@@ -792,6 +796,65 @@ def _snapshot(db) -> dict[str, Any]:
     return result.data if isinstance(result.data, dict) else {}
 
 
+def _transition_evidence(db, generation: int) -> dict[str, Any]:
+    try:
+        result = db.rpc(
+            "shine_ai_external_roster_transition_evidence_v1",
+            {"p_generation": generation},
+        ).execute()
+    except Exception as exc:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-transition-evidence-read-unavailable"
+        ) from exc
+    value = result.data if isinstance(result.data, dict) else {}
+    if value.get("status") != "verified":
+        raise ExternalWitnessRosterError(
+            str(
+                value.get("reason_code")
+                or "external-witness-roster-transition-evidence-missing"
+            )
+        )
+    return value
+
+
+def _verify_transition_evidence_retention(
+    db,
+    state: dict[str, Any],
+    *,
+    redis_client=None,
+) -> dict[str, Any]:
+    generation = state["generation"]
+    if generation == 1:
+        return {
+            "status": "not-applicable",
+            "generation": 1,
+            "evidence_sha256": None,
+            "retention": None,
+        }
+    evidence = _transition_evidence(db, generation)
+    if (
+        evidence.get("previousPolicySha256")
+        != state["previousPolicySha256"]
+        or evidence.get("policySha256") != state["policySha256"]
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-transition-evidence-state-mismatch"
+        )
+    try:
+        mirror = ensure_evidence_mirror(
+            evidence,
+            redis_client=redis_client,
+        )
+    except RosterTransitionEvidenceMirrorError as exc:
+        raise ExternalWitnessRosterError(str(exc)) from exc
+    return {
+        "status": "verified",
+        "generation": generation,
+        "evidence_sha256": mirror["evidence_sha256"],
+        "retention": mirror["storage"],
+    }
+
+
 def rotate_storage_authentication(
     db,
     *,
@@ -1142,6 +1205,17 @@ def load_persisted_external_witness_roster(
                         or "external-witness-roster-transition-evidence-unverified"
                     )
                 )
+            evidence_value = _transition_evidence(
+                db,
+                candidate["generation"],
+            )
+            try:
+                ensure_evidence_mirror(
+                    evidence_value,
+                    redis_client=redis_client,
+                )
+            except RosterTransitionEvidenceMirrorError as exc:
+                raise ExternalWitnessRosterError(str(exc)) from exc
             payload = _snapshot(db)
             state = project_trust_state(payload.get("trust_state"))
             if state != next_state:
@@ -1164,6 +1238,12 @@ def load_persisted_external_witness_roster(
                 )
             policy = candidate
             _ = checkpoint_receipt
+
+    evidence_retention = _verify_transition_evidence_retention(
+        db,
+        state,
+        redis_client=redis_client,
+    )
 
     target = _rotation_target_key_id()
     rotation_receipt = None
@@ -1237,6 +1317,14 @@ def load_persisted_external_witness_roster(
         "roster_storage_rotation_supported": True,
         "roster_storage_rotation_mode": safe_rotation["mode"],
         "roster_storage_rotation": safe_rotation,
+        "roster_transition_evidence_status":
+            evidence_retention["status"],
+        "roster_transition_evidence_generation":
+            evidence_retention["generation"],
+        "roster_transition_evidence_sha256":
+            evidence_retention["evidence_sha256"],
+        "roster_transition_evidence_retention":
+            evidence_retention["retention"],
     }
 
 
