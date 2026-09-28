@@ -79,6 +79,31 @@ Deno.serve(async (request: Request) => {
       const body = await readJson(request);
       const operation = String(body.operation || '').trim();
 
+      if (operation === 'external-roster-transition-authorize') {
+        const previousPolicy = body.previousPolicy;
+        const nextPolicy = body.nextPolicy;
+        const rows = await runAsGateway((tx) =>
+          tx`select foundation.project_l_external_roster_transition_authorize_v1(
+            ${token},
+            ${JSON.stringify(previousPolicy)}::jsonb,
+            ${JSON.stringify(nextPolicy)}::jsonb
+          ) as result`
+        );
+        const result = rows?.[0]?.result;
+        if (!result || typeof result !== 'object') {
+          return json(
+            { status: 'unavailable', reasonCode: 'witness-result-invalid' },
+            503,
+          );
+        }
+        const status =
+          result.status === 'denied' ? 401 :
+          result.status === 'invalid' ? 400 :
+          result.status === 'unavailable' ? 503 :
+          200;
+        return json(result, status);
+      }
+
       if (operation === 'policy-transition-authorize') {
         const previousPolicy = body.previousPolicy;
         const nextPolicy = body.nextPolicy;
