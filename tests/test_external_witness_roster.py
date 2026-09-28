@@ -143,12 +143,27 @@ class FakeRedis:
         return dict(self.rows.get(key, {}))
 
     def eval(self, _script, _numkeys, key, *args):
-        generation, policy_sha, state_sha, checkpoint_json = args
+        if len(args) == 4:
+            generation, policy_sha, state_sha, checkpoint_json = args
+            previous_policy_sha = ""
+        elif len(args) == 5:
+            (
+                generation,
+                policy_sha,
+                state_sha,
+                previous_policy_sha,
+                checkpoint_json,
+            ) = args
+        else:
+            raise AssertionError(f"unexpected CAS arg count: {len(args)}")
+
         generation = int(generation)
         current = self.rows.get(key)
         if current is None:
             if generation != 1:
                 return ["bootstrap-generation-invalid"]
+            if previous_policy_sha:
+                return ["bootstrap-predecessor-invalid"]
             self.rows[key] = {
                 "generation": str(generation),
                 "policy_sha256": policy_sha,
@@ -156,6 +171,7 @@ class FakeRedis:
                 "checkpoint_json": checkpoint_json,
             }
             return ["created"]
+
         current_generation = int(current["generation"])
         if generation < current_generation:
             return ["rollback"]
@@ -168,7 +184,18 @@ class FakeRedis:
                 return ["state-mismatch"]
             current["checkpoint_json"] = checkpoint_json
             return ["refreshed"]
-        return ["transition-unimplemented"]
+
+        if previous_policy_sha != current["policy_sha256"]:
+            return ["predecessor-policy-mismatch"]
+        if policy_sha == current["policy_sha256"]:
+            return ["generation-without-policy-change"]
+        self.rows[key] = {
+            "generation": str(generation),
+            "policy_sha256": policy_sha,
+            "state_sha256": state_sha,
+            "checkpoint_json": checkpoint_json,
+        }
+        return ["advanced"]
 
 
 @pytest.fixture(autouse=True)
@@ -549,7 +576,6 @@ def test_rotation_target_without_overlap_secret_fails(monkeypatch):
 
 
 def test_layer207_redis_checkpoint_advances_with_predecessor(monkeypatch):
-    _set_storage_keys(monkeypatch)
     redis = FakeRedis()
     previous = {
         "policyVersion": 1,
@@ -596,7 +622,6 @@ def test_layer207_redis_checkpoint_advances_with_predecessor(monkeypatch):
 def test_layer207_redis_transition_authorization_is_separate_domain(
     monkeypatch,
 ):
-    _set_storage_keys(monkeypatch)
     monkeypatch.setenv(
         "SHINE_TRACE_EXTERNAL_ROSTER_TRANSITION_REDIS_KEYRING_JSON",
         json.dumps({"roster-transition-a": "T" * 48}),
