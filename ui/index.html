@@ -1004,6 +1004,7 @@
                     pass: 0,
                     tasks: [],
                     delayed: new Map(),
+                    pendingConcierge: new Map(),
                     entries: [],
                     expanded: view.expanded === true,
                     expansion: new Map(view.expansion || []),
@@ -1121,10 +1122,10 @@
                                 historyNotice.textContent = `Skipped ${skipped} saved ${skipped === 1 ? 'entry' : 'entries'} with incomplete request details. These entries have not been removed.`;
                             }
 
+                            const known = new Set(readable.map(task => task.requestId));
                             try {
                                 const delayed = await window.lConciergeCompletions?.history?.(100) || [];
                                 if (!valid()) return;
-                                const known = new Set(readable.map(task => task.requestId));
                                 for (const item of delayed) {
                                     if (!item?.requestId || typeof item.finalAnswer !== 'string') continue;
                                     run.delayed.set(item.requestId, item);
@@ -1143,6 +1144,29 @@
                                 if (!historyNotice.hidden) historyNotice.textContent += ' ';
                                 historyNotice.hidden = false;
                                 historyNotice.textContent += 'Delayed Concierge answers could not be checked right now; browser-saved tasks are still available.';
+                            }
+
+                            try {
+                                const pendingConcierge = await window.lConciergeCompletions?.pending?.(100) || [];
+                                if (!valid()) return;
+                                for (const item of pendingConcierge) {
+                                    if (!item?.requestId) continue;
+                                    run.pendingConcierge.set(item.requestId, item);
+                                    if (!known.has(item.requestId)) {
+                                        readable.push({
+                                            requestId: item.requestId,
+                                            message: item.requestText || 'Pending Concierge request',
+                                            kind: 'concierge',
+                                            pending: true,
+                                            delayedRecovered: true,
+                                        });
+                                        known.add(item.requestId);
+                                    }
+                                }
+                            } catch (_) {
+                                if (!historyNotice.hidden) historyNotice.textContent += ' ';
+                                historyNotice.hidden = false;
+                                historyNotice.textContent += 'Pending Concierge work could not be checked right now.';
                             }
 
                             run.tasks = readable.slice(-100).reverse();
@@ -1215,6 +1239,16 @@
                                 savedText = 'This saved answer is temporarily unavailable. Your task is still saved.';
                             }
                             if (!valid()) return;
+                            const pendingConcierge = run.pendingConcierge.get(task.requestId);
+                            if (pendingConcierge && !run.delayed.has(task.requestId)) {
+                                working = true;
+                                attention = true;
+                                if (resultLabel === 'Saved answer') {
+                                    resultLabel = 'Saved answer · delayed specialist work pending';
+                                } else if (!resultLabel.includes('Delayed')) {
+                                    resultLabel += ' · delayed specialist work pending';
+                                }
+                            }
                             const entry = document.createElement('details'); entry.className = 'saved-answer-entry';
                             entry.open = run.expansion.has(task.requestId) ? run.expansion.get(task.requestId) : run.expanded;
                             const summary = document.createElement('summary');
@@ -1243,6 +1277,30 @@
                                 actionStatus.textContent = 'Question placed in the message box. Review it before pressing Send.';
                             };
                             actions.append(useQuestion);
+                            if (pendingConcierge && !run.delayed.has(task.requestId)) {
+                                const cancelDelayed = document.createElement('button');
+                                cancelDelayed.type = 'button';
+                                cancelDelayed.textContent = 'Cancel delayed work';
+                                cancelDelayed.onclick = async () => {
+                                    if (!usable() || cancelDelayed.disabled) return;
+                                    cancelDelayed.disabled = true;
+                                    actionStatus.textContent = 'Cancelling delayed specialist work…';
+                                    try {
+                                        const cancelled = await window.lConciergeCompletions?.cancel?.(task.requestId);
+                                        if (!cancelled || !['cancelled', 'already-cancelled'].includes(cancelled.status)) {
+                                            throw new Error('Cancellation was not confirmed');
+                                        }
+                                        run.pendingConcierge.delete(task.requestId);
+                                        clearPendingRequest(task.requestId);
+                                        cancelDelayed.remove();
+                                        actionStatus.textContent = 'Delayed specialist work cancelled. The saved answer above has not been rewritten.';
+                                    } catch (_) {
+                                        cancelDelayed.disabled = false;
+                                        actionStatus.textContent = 'I could not confirm cancellation. The delayed work has not been hidden; try again shortly.';
+                                    }
+                                };
+                                actions.append(cancelDelayed);
+                            }
                             function addCopyAction(label, text, success, failure) {
                                 const copy = document.createElement('button'); copy.type = 'button'; copy.textContent = label;
                                 copy.disabled = copyBusy; copyControls.add(copy);
@@ -1344,7 +1402,7 @@
 
 <script src="/ui/chat-tools.js?v=2"></script>
 <script src="/ui/foundation-fleet.js?v=1"></script>
-<script src="/ui/concierge-completions.js?v=191"></script>
+<script src="/ui/concierge-completions.js?v=192"></script>
 <script src="/ui/recovery-status.js?v=118"></script>
 <script src="/ui/evidence.js?v=156"></script>
 <script src="/ui/voice.js"></script>
