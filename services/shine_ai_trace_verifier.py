@@ -201,6 +201,7 @@ def verify_decision_trace(
     *,
     header_version: str | None = None,
     header_release: str | None = None,
+    require_response_identity: bool = False,
 ) -> dict[str, Any]:
     trace = response_data.get("decision_trace") if isinstance(response_data, dict) else None
     if not isinstance(trace, dict):
@@ -239,6 +240,15 @@ def verify_decision_trace(
 
     service_version = str(trace.get("service_version") or "")
     service_release = str(trace.get("service_release") or "")
+    if require_response_identity and (not header_version or not header_release):
+        return {
+            "version": VERIFICATION_VERSION,
+            "status": "invalid",
+            "verified": False,
+            "reason_code": "decision-trace-response-identity-missing",
+            "service_version": service_version,
+            "service_release": service_release,
+        }
     if header_version and service_version != header_version:
         return {
             "version": VERIFICATION_VERSION,
