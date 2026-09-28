@@ -1534,6 +1534,17 @@ def foundation_concierge_jobs_as_user(
     if not isinstance(raw_items, list) or len(raw_items) > limit:
         raise RuntimeError("concierge-task-centre-response-invalid")
 
+    ttl_contract = body.get("planTtlContract")
+    ttl_contract_valid = (
+        isinstance(ttl_contract, dict)
+        and ttl_contract.get("version") == "shine-foundation/concierge-plan-ttl-v1"
+        and ttl_contract.get("ttlSeconds") == 3600
+        and ttl_contract.get("computedBy") == "foundation-server"
+        and ttl_contract.get("clientClockAuthoritative") is False
+        and ttl_contract.get("startedExecutionExempt") is True
+        and ttl_contract.get("expiryDueMutatesState") is False
+    )
+
     def safe_capabilities(value):
         if not isinstance(value, list) or len(value) > 20:
             return []
@@ -1712,6 +1723,48 @@ def foundation_concierge_jobs_as_user(
             except Exception:
                 local_retirement_reconciliation = "update-failed"
 
+        safe_plan_ttl = None
+        raw_plan_ttl = raw.get("planTtl")
+        if ttl_contract_valid and isinstance(raw_plan_ttl, dict):
+            ttl_state = str(raw_plan_ttl.get("state") or "")
+            ttl_applies = raw_plan_ttl.get("applies")
+            seconds_remaining = raw_plan_ttl.get("secondsRemaining")
+            expires_at = raw_plan_ttl.get("expiresAt")
+            valid_ttl = ttl_state in {
+                "counting-down", "expiry-due", "started-exempt", "terminal"
+            }
+            if ttl_state in {"counting-down", "expiry-due"}:
+                valid_ttl = (
+                    valid_ttl
+                    and ttl_applies is True
+                    and isinstance(seconds_remaining, int)
+                    and not isinstance(seconds_remaining, bool)
+                    and 0 <= seconds_remaining <= 3600
+                    and expires_at is not None
+                )
+                if ttl_state == "counting-down":
+                    valid_ttl = valid_ttl and seconds_remaining > 0
+                else:
+                    valid_ttl = valid_ttl and seconds_remaining == 0
+            else:
+                valid_ttl = (
+                    valid_ttl
+                    and ttl_applies is False
+                    and seconds_remaining is None
+                    and expires_at is None
+                )
+            if valid_ttl:
+                safe_plan_ttl = {
+                    "version": "1.0",
+                    "state": ttl_state,
+                    "applies": ttl_applies,
+                    "reason_code": str(raw_plan_ttl.get("reasonCode") or "")[:160],
+                    "expires_at": expires_at,
+                    "seconds_remaining": seconds_remaining,
+                    "server_time": raw_plan_ttl.get("serverTime"),
+                    "server_authoritative": True,
+                }
+
         progress = raw.get("progress") if isinstance(raw.get("progress"), dict) else {}
         items.append({
             "request_id": request_id,
@@ -1752,6 +1805,7 @@ def foundation_concierge_jobs_as_user(
             ),
             "retirement_receipt": safe_retirement,
             "local_retirement_reconciliation": local_retirement_reconciliation,
+            "plan_ttl": safe_plan_ttl,
         })
 
     return {
@@ -1766,6 +1820,13 @@ def foundation_concierge_jobs_as_user(
             "version": "shine-foundation/concierge-cancellation-receipt-v1",
             "retirement_version": "shine-foundation/concierge-retirement-receipt-v1",
             "read_time_verification": True,
+        },
+        "plan_ttl_contract": {
+            "version": "shine-foundation/concierge-plan-ttl-v1",
+            "ttl_seconds": 3600,
+            "server_authoritative": True,
+            "client_clock_authoritative": False,
+            "valid": ttl_contract_valid,
         },
         "summary": body.get("summary") if isinstance(body.get("summary"), dict) else {},
         "items": items,
