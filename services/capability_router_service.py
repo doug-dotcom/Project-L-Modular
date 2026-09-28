@@ -236,6 +236,20 @@ def route_capability(
                 "foundation_orchestration": concierge_plan,
             }
 
+    if len(_foundation_matches(text)) > 1:
+        return {
+            "handled": False,
+            "capability": "foundation_orchestration",
+            "reply": "",
+            "status": "unavailable",
+            "foundation_orchestration": {
+                "status": "unavailable",
+                "reason_code": "concierge-planning-unavailable",
+                "selected_capabilities": [],
+                "steps": [],
+            },
+        }
+
     from services.external_research_service import research, should_handle
     if should_handle(message) and not _personal_reflection(text):
         try:
