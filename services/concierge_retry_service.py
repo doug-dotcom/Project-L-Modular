@@ -21,7 +21,7 @@ from services.foundation_companion_service import (
 
 
 CLIENT_ID = "shine.companion"
-MAX_RETRY_CAPABILITIES = 4
+MAX_RETRY_CAPABILITIES = 20
 DEFAULT_RETRY_POLL_SECONDS = 30.0
 MAX_LOCAL_INPUT_BYTES = 48 * 1024
 
@@ -119,6 +119,15 @@ def claim_foundation_retry(
         not capability_ids
         or len(capability_ids) > MAX_RETRY_CAPABILITIES
         or len(set(capability_ids)) != len(capability_ids)
+        or any(
+            not capability_id
+            or len(capability_id) > 128
+            or any(
+                ch not in "abcdefghijklmnopqrstuvwxyz0123456789._-"
+                for ch in capability_id
+            )
+            for capability_id in capability_ids
+        )
     ):
         return {"status": "unavailable", "reason_code": "retry-claim-invalid"}
     return claimed
