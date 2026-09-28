@@ -25,6 +25,7 @@ from services.foundation_companion_service import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v1"
 SHINE_AI_PATH = "/v1/respond"
 MAX_RESPONSE_BYTES = 128 * 1024
 MAX_CONTEXT_TEXT = 10_000
@@ -312,6 +313,202 @@ def _shine_ai_advisory(
         "model_tier": data.get("model_tier"),
         "reason": data.get("reason"),
         "request_id": data.get("request_id"),
+        "decision_trace": (
+            _project(
+                data.get("decision_trace"),
+                (
+                    "version", "algorithm", "scope", "service_version",
+                    "service_release", "response_profile_contract_sha256",
+                    "planning_sha256", "recovery_sha256",
+                    "execution_sha256", "grounding_sha256",
+                    "verification_sha256", "delivery_sha256",
+                    "lineage_sha256",
+                ),
+            )
+            if isinstance(data.get("decision_trace"), dict)
+            else {}
+        ),
+    }
+
+
+
+def _canonical_sha256(value: Any) -> str:
+    encoded = json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _sorted_dicts(items: list[dict]) -> list[dict]:
+    return sorted(
+        items,
+        key=lambda item: json.dumps(
+            item,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ),
+    )
+
+
+def _runtime_component_trace_projection(name: str, value: Any) -> dict:
+    item = value if isinstance(value, dict) else {}
+    if name == "l":
+        return _project(item, ("status", "authority"))
+
+    if name == "foundation":
+        specialists = [
+            _project(row, (
+                "app_id", "capability_id", "executable",
+                "reason_code", "runtime_available",
+            ))
+            for row in item.get("specialists", [])
+            if isinstance(row, dict)
+        ]
+        return {
+            **_project(item, (
+                "status", "reason_code", "specialist_count",
+                "executable_count", "blocked_count",
+            )),
+            "specialists": _sorted_dicts(specialists),
+        }
+
+    if name == "concierge":
+        selected = [
+            _project(row, (
+                "specialistKey", "capability", "ruleKey",
+                "priority", "sensitive", "role",
+            ))
+            for row in item.get("selected_routes", [])
+            if isinstance(row, dict)
+        ]
+        return {
+            **_project(item, (
+                "status", "request_id", "resolver_version", "mode",
+                "intent_key", "confidence", "dispatch_allowed",
+                "execution_owner", "foundation_bridge_required",
+            )),
+            "selected_routes": selected,
+            "foundation_routes": list(item.get("foundation_routes", []))[:8],
+        }
+
+    if name == "defence":
+        reviews = [
+            _project(row, (
+                "appId", "reviewCommitSha", "profileVersion",
+                "policies", "status", "limitation",
+            ))
+            for row in item.get("reviews", [])
+            if isinstance(row, dict)
+        ]
+        return {
+            **_project(item, ("status", "summary")),
+            "reviews": _sorted_dicts(reviews),
+            "boundaries": _project(
+                item.get("boundaries", {}),
+                (
+                    "snapshotOnly",
+                    "currentHeadCertificationNotImplied",
+                    "revocationLedgerSnapshot",
+                ),
+            ),
+        }
+
+    if name == "shine_ai":
+        trace = item.get("decision_trace")
+        safe_trace = (
+            _project(
+                trace,
+                (
+                    "version", "algorithm", "scope", "service_version",
+                    "service_release", "response_profile_contract_sha256",
+                    "planning_sha256", "recovery_sha256",
+                    "execution_sha256", "grounding_sha256",
+                    "verification_sha256", "delivery_sha256",
+                    "lineage_sha256",
+                ),
+            )
+            if isinstance(trace, dict)
+            else {}
+        )
+        return {
+            **_project(item, (
+                "status", "route", "provider", "model", "model_tier",
+                "reason", "request_id",
+            )),
+            "decision_trace": safe_trace,
+        }
+
+    return _project(item, ("status", "reason_code"))
+
+
+def _runtime_execution_trace_projection(execution: Any) -> dict:
+    item = execution if isinstance(execution, dict) else {}
+    tasks = [
+        _project(row, ("id", "specialist_key", "status", "action_type"))
+        for row in item.get("tasks", [])
+        if isinstance(row, dict)
+    ]
+    results = [
+        _project(row, ("specialist", "result_type", "authoritative"))
+        for row in item.get("results", [])
+        if isinstance(row, dict)
+    ]
+    return {
+        **_project(item, ("status", "request_id")),
+        "tasks": _sorted_dicts(tasks),
+        "results": _sorted_dicts(results),
+    }
+
+
+def build_runtime_trace(runtime: dict | None, execution: dict | None = None) -> dict:
+    """Return a content-free deterministic control-plane receipt."""
+    source = runtime if isinstance(runtime, dict) else {}
+    components = source.get("components") if isinstance(source.get("components"), dict) else {}
+    component_receipts = {}
+    component_status = {}
+
+    for name in ("l", "foundation", "concierge", "defence", "shine_ai"):
+        projection = _runtime_component_trace_projection(name, components.get(name))
+        status = str(projection.get("status") or "unknown")
+        component_status[name] = status
+        receipt = {
+            "status": status,
+            "sha256": _canonical_sha256(projection),
+        }
+        if name == "shine_ai":
+            decision = projection.get("decision_trace")
+            if isinstance(decision, dict) and decision.get("lineage_sha256"):
+                receipt["decision_lineage_sha256"] = decision["lineage_sha256"]
+        component_receipts[name] = receipt
+
+    execution_projection = _runtime_execution_trace_projection(execution)
+    execution_receipt = {
+        "status": str(execution_projection.get("status") or "not_run"),
+        "sha256": _canonical_sha256(execution_projection),
+    }
+
+    lineage_material = {
+        "version": RUNTIME_TRACE_VERSION,
+        "runtime_version": source.get("version"),
+        "request_id": source.get("request_id"),
+        "runtime_status": source.get("status"),
+        "warnings": sorted(
+            str(item)
+            for item in source.get("warnings", [])
+            if isinstance(item, str)
+        ),
+        "components": component_receipts,
+        "concierge_execution": execution_receipt,
+    }
+    return {
+        **lineage_material,
+        "component_status": component_status,
+        "lineage_sha256": _canonical_sha256(lineage_material),
+        "content_exposed": False,
     }
 
 
@@ -416,6 +613,7 @@ def preflight_shine_request(
             runtime["warnings"].append(f"{name}:{status}")
 
     runtime["status"] = "ready" if not runtime["warnings"] else "degraded"
+    runtime["trace"] = build_runtime_trace(runtime)
     return runtime
 
 
