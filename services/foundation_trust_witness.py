@@ -198,6 +198,29 @@ def _matches_head(witness: dict, head: dict) -> bool:
     )
 
 
+def _local_witness_projection(local: dict, head: dict) -> dict:
+    if (
+        not isinstance(local, dict)
+        or local.get("status") != "ready"
+        or not isinstance(head, dict)
+    ):
+        raise FoundationWitnessError(
+            "foundation-witness-local-head-invalid"
+        )
+    return {
+        "status": "verified",
+        "witness_id": "project-l-redis",
+        "sequence": head["sequence"],
+        "head_sha256": head["headSha256"],
+        "generation": head["generation"],
+        "keyset_sha256": head["keyset_sha256"],
+        "state_sha256": head["stateSha256"],
+        "auth_key_id": head["authKeyId"],
+        "mode": str(local.get("mode") or "unknown"),
+        "independent_retention": "railway-redis-volume",
+    }
+
+
 def ensure_foundation_trust_witness(
     db,
     state: Any,
@@ -219,6 +242,7 @@ def ensure_foundation_trust_witness(
     head = local.get("head")
     if not isinstance(head, dict):
         raise FoundationWitnessError("foundation-witness-local-head-invalid")
+    local_witness = _local_witness_projection(local, head)
 
     current_raw = _current_witness(
         db,
@@ -250,6 +274,7 @@ def ensure_foundation_trust_witness(
             **witnessed,
             "mode": "created",
             "independent_retention": "foundation-supabase",
+            "local_witness": local_witness,
         }
 
     current = _witness_projection(current_raw)
@@ -259,6 +284,7 @@ def ensure_foundation_trust_witness(
             **current,
             "mode": "existing-witness",
             "independent_retention": "foundation-supabase",
+            "local_witness": local_witness,
         }
 
     if current["sequence"] > head["sequence"]:
@@ -285,6 +311,7 @@ def ensure_foundation_trust_witness(
         **witnessed,
         "mode": "advanced",
         "independent_retention": "foundation-supabase",
+        "local_witness": local_witness,
     }
 
 
