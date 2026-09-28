@@ -628,16 +628,22 @@ def start_chat(
         for name, value in (shine_runtime.get("components") or {}).items()
         if isinstance(value, dict)
     }
+    start_human_status = (
+        shine_runtime.get("human_status")
+        if isinstance(shine_runtime.get("human_status"), dict)
+        else build_human_status(shine_runtime, final=False)
+    )
     return {
         **result,
         "durable": True,
+        "shine_status": start_human_status,
         "shine_runtime": {
             "version": shine_runtime.get("version"),
             "status": shine_runtime.get("status"),
             "components": component_status,
             "concierge_dispatch": concierge_dispatch,
             "trace": shine_runtime.get("trace"),
-            "human_status": shine_runtime.get("human_status"),
+            "human_status": start_human_status,
         },
     }
 
@@ -2304,6 +2310,7 @@ RESPONSE RULES:
         "reply": reply,
         "server": "vx",
         "route": route,
+        "shine_status": human_status,
         "shine_runtime": {
             "version": (shine_runtime or {}).get("version"),
             "status": (shine_runtime or {}).get("status", "legacy"),
