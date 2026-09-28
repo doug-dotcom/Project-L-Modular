@@ -74,7 +74,8 @@ local key = KEYS[1]
 local generation = tonumber(ARGV[1])
 local policy_sha = ARGV[2]
 local state_sha = ARGV[3]
-local checkpoint_json = ARGV[4]
+local previous_policy_sha = ARGV[4]
+local checkpoint_json = ARGV[5]
 
 local current_generation_raw = redis.call('HGET', key, 'generation')
 if not current_generation_raw then
@@ -103,7 +104,20 @@ if generation == current_generation then
   return {'refreshed'}
 end
 
-return {'transition-unimplemented'}
+if previous_policy_sha ~= current_policy_sha then
+  return {'predecessor-policy-mismatch'}
+end
+if policy_sha == current_policy_sha then
+  return {'generation-without-policy-change'}
+end
+redis.call(
+  'HSET', key,
+  'generation', tostring(generation),
+  'policy_sha256', policy_sha,
+  'state_sha256', state_sha,
+  'checkpoint_json', checkpoint_json
+)
+return {'advanced'}
 """
 
 
@@ -709,6 +723,7 @@ def persist_checkpoint(
             str(projected["generation"]),
             projected["policySha256"],
             checkpoint["stateSha256"],
+            projected["previousPolicySha256"] or "",
             _canonical_json(checkpoint),
         )
     except RedisError as exc:
@@ -720,7 +735,7 @@ def persist_checkpoint(
         if isinstance(result, (list, tuple)) and result
         else str(result or "")
     )
-    if code not in {"created", "refreshed"}:
+    if code not in {"created", "refreshed", "advanced"}:
         raise ExternalWitnessRosterError(
             "external-witness-roster-storage-checkpoint-cas-"
             + (code or "failed")
