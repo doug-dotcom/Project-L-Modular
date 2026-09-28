@@ -217,4 +217,4 @@ def test_saved_answers_explains_verified_cancellation_without_rewriting_answer()
     assert "Saved answer · delayed work cancelled" in index
     assert "Cancellation receipt verification failed" in index
     assert "savedText += '\\n\\n' + taskCentreJob.cancellationText" in index
-    assert 'concierge-completions.js?v=193' in index
+    assert 'concierge-completions.js?v=194' in index
