@@ -401,3 +401,35 @@ def test_server_executes_concierge_before_working_memory_and_cognition():
     cognition_index = source.index("cognitive_packet = run_cognitive_core(", working_index)
     assert execute_index < bind_index < working_index < cognition_index
     assert "checkpoint(\"concierge_execution\")" in source
+
+
+
+def test_foundation_can_block_after_plan_without_being_misreported_as_bad_result():
+    def post(url, **kwargs):
+        if url.endswith("/v1/concierge/plan"):
+            return FakeResponse(200, {
+                "status": "planned",
+                "reasonCode": "concierge-plan-created",
+            })
+        return FakeResponse(409, {
+            "status": "blocked",
+            "reasonCode": "integration-grant-inactive",
+            "gate": {"status": "blocked"},
+        })
+
+    execution = execute_concierge_route(
+        FakeDb(),
+        USER,
+        request_id=REQUEST,
+        route=multi_route(),
+        post_impl=post,
+    )
+    assert execution["status"] == "blocked"
+    assert execution["reason_code"] == "integration-grant-inactive"
+    assert execution["results"] == []
+    assert execution["synthesis_ready"] is False
+
+    bound = bind_concierge_execution(multi_route(), execution)
+    assert bound["handled"] is False
+    assert bound["reply"] == ""
+    assert bound["foundation_execution"]["status"] == "blocked"
