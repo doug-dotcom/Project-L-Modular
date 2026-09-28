@@ -404,7 +404,9 @@ def ensure_redis_foundation_chain_checkpoint(
             "foundation-chain-redis-history-missing"
         )
 
-    candidate = create_redis_foundation_chain_checkpoint(chain)
+    candidate = create_redis_foundation_chain_checkpoint(
+        chain_receipt
+    )
     try:
         result = client.eval(
             _CAS,
