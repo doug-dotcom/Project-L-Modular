@@ -21,6 +21,17 @@ def trust_storage_env(monkeypatch):
         "SHINE_AI_TRUST_STATE_STORAGE_ACTIVE_KEY_ID",
         "storage-a",
     )
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_POLICY_STORAGE_KEYRING_JSON",
+        json.dumps({
+            "policy-a": "P" * 48,
+            "policy-b": "Q" * 48,
+        }),
+    )
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_POLICY_STORAGE_ACTIVE_KEY_ID",
+        "policy-a",
+    )
 
 
 def test_shine_ai_signature_matches_keyring_contract(monkeypatch):
@@ -523,6 +534,32 @@ class FakeTrustRedis:
         return dict(self.rows.get(key, {}))
 
     def eval(self, _script, _numkeys, key, *args):
+        if len(args) == 4:
+            generation, policy_sha, state_sha, checkpoint_json = args
+            generation = int(generation)
+            current = self.rows.get(key)
+            if current is None:
+                if generation != 1:
+                    return ["bootstrap-generation-invalid"]
+                self.rows[key] = {
+                    "generation": str(generation),
+                    "policy_sha256": policy_sha,
+                    "state_sha256": state_sha,
+                    "checkpoint_json": checkpoint_json,
+                }
+                return ["created"]
+            current_generation = int(current["generation"])
+            if generation < current_generation:
+                return ["rollback"]
+            if generation > current_generation:
+                return ["generation-transition-unimplemented"]
+            if current["policy_sha256"] != policy_sha:
+                return ["equivocation"]
+            if current["state_sha256"] != state_sha:
+                return ["state-mismatch"]
+            current["checkpoint_json"] = checkpoint_json
+            return ["refreshed"]
+
         (
             expected_generation,
             expected_state_sha,
@@ -600,6 +637,7 @@ class FakeTrustDB:
         sealed=True,
         policy_state=None,
         policy_inconsistent_reason=None,
+        policy_storage=None,
     ):
         self.state = state
         self.inconsistent_reason = inconsistent_reason
@@ -607,6 +645,7 @@ class FakeTrustDB:
         self.sealed = sealed
         self.policy_state = policy_state
         self.policy_inconsistent_reason = policy_inconsistent_reason
+        self.policy_storage = policy_storage
         if self.state is not None and sealed:
             self._seal_current()
 
@@ -663,7 +702,10 @@ class FakeTrustDB:
 
         class Call:
             def execute(self):
-                if name == "shine_ai_witness_quorum_policy_snapshot_v1":
+                if name in {
+                    "shine_ai_witness_quorum_policy_snapshot_v1",
+                    "shine_ai_witness_quorum_policy_snapshot_v2",
+                }:
                     if db.policy_inconsistent_reason:
                         return FakeTrustResult({
                             "status": "inconsistent",
@@ -671,10 +713,21 @@ class FakeTrustDB:
                         })
                     if db.policy_state is None:
                         return FakeTrustResult({"status": "unbootstrapped"})
-                    return FakeTrustResult({
+                    payload = {
                         "status": "trusted",
                         "trust_state": dict(db.policy_state),
-                    })
+                    }
+                    if name.endswith("_v2"):
+                        if db.policy_storage is None:
+                            payload.update({
+                                "status": "unsealed",
+                                "reason_code":
+                                    "witness-quorum-policy-storage-authentication-missing",
+                            })
+                        else:
+                            payload.update(dict(db.policy_storage))
+                    return FakeTrustResult(payload)
+
                 if name == "shine_ai_witness_quorum_policy_bootstrap_v1":
                     db.policy_state = {
                         "trustStateVersion": 1,
@@ -695,6 +748,66 @@ class FakeTrustDB:
                         "status": "trusted",
                         "trust_state": dict(db.policy_state),
                     })
+
+                if name == "shine_ai_witness_quorum_policy_bootstrap_v2":
+                    if db.policy_state is None:
+                        db.policy_state = {
+                            "trustStateVersion": 1,
+                            "trustStateType":
+                                "decision_trace_trust_state_witness_quorum_policy",
+                            "generation": 1,
+                            "minimumWitnesses": 2,
+                            "acceptedWitnessIds": [
+                                "foundation-project-l",
+                                "redis-project-l",
+                            ],
+                            "previousPolicySha256": None,
+                            "policySha256":
+                                "26b6d1a3b4183cfa596f8c9c06c18e73"
+                                "aa0eda6a80a6362649130e9357bf220e",
+                        }
+                    db.policy_storage = {
+                        "state_sha256": params["p_state_sha256"],
+                        "storage_auth_key_id":
+                            params["p_storage_auth_key_id"],
+                        "storage_auth_tag": params["p_storage_auth_tag"],
+                    }
+                    return FakeTrustResult({
+                        "status": "trusted",
+                        "trust_state": dict(db.policy_state),
+                    })
+
+                if name == "shine_ai_witness_quorum_policy_seal_v2":
+                    assert db.policy_state is not None
+                    db.policy_storage = {
+                        "state_sha256": params["p_state_sha256"],
+                        "storage_auth_key_id":
+                            params["p_storage_auth_key_id"],
+                        "storage_auth_tag": params["p_storage_auth_tag"],
+                    }
+                    return FakeTrustResult({
+                        "status": "sealed",
+                        "generation": db.policy_state["generation"],
+                        "policy_sha256": db.policy_state["policySha256"],
+                    })
+
+                if name == "shine_ai_witness_quorum_policy_rotate_storage_v2":
+                    assert db.policy_state is not None
+                    assert db.policy_storage is not None
+                    db.policy_storage["storage_auth_key_id"] = params[
+                        "p_target_auth_key_id"
+                    ]
+                    db.policy_storage["storage_auth_tag"] = params[
+                        "p_storage_auth_tag"
+                    ]
+                    return FakeTrustResult({
+                        "status": "rotated",
+                        "generation": db.policy_state["generation"],
+                        "policy_sha256": db.policy_state["policySha256"],
+                        "storage_auth_key_id":
+                            db.policy_storage["storage_auth_key_id"],
+                    })
+
                 if name == "shine_ai_trace_trust_snapshot_v2":
                     return db._snapshot(2)
                 if name == "shine_ai_trace_trust_snapshot_v3":
