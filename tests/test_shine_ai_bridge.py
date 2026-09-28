@@ -154,3 +154,21 @@ def test_partial_bridge_configuration_fails_closed():
     )
     assert adapter.available is False
     assert adapter.model_id == "shine-ai-model-bridge-misconfigured"
+
+
+def test_deployed_companion_variable_names_activate_bridge():
+    adapter = configured_adapter(
+        None,
+        "gpt-4o-mini",
+        {
+            "SHINE_AI_BASE_URL": "https://shine-ai.example",
+            "SHINE_AI_APP_ID": "shine-companion",
+            "SHINE_AI_APP_KEY_ID": "l-runtime-test",
+            "SHINE_AI_APP_SECRET": "test-credential-material-" * 2,
+            "PROJECT_L_OWNER_ID": "4ad046b3-06a5-4e62-a3ef-17a4f83dcdde",
+        },
+    )
+    assert adapter.available is True
+    assert adapter.provider == "shine-ai"
+    assert adapter.model_id == "shine-ai-router"
+    assert adapter.routing_manifest["status"] == "shine_ai_shared_intelligence"

@@ -16,6 +16,7 @@ def configure(monkeypatch):
     monkeypatch.setenv("SHINE_AI_MEMORY_TOKEN", "x" * 32)
     monkeypatch.setenv("PROJECT_L_OWNER_ID", OWNER)
     bridge._db_client = None
+    bridge._db_transport = None
 
 
 def owner_context():
@@ -241,3 +242,25 @@ def test_query_terms_are_bounded_and_drop_low_value_words():
     assert "bali" in terms
     assert "what" not in terms
     assert len(terms) <= 24
+
+
+def test_database_client_uses_bounded_http1_transport(monkeypatch):
+    configure(monkeypatch)
+    seen = {}
+
+    class FakeClient:
+        pass
+
+    def fake_create(url, key, options=None):
+        seen["url"] = url
+        seen["key"] = key
+        seen["options"] = options
+        return FakeClient()
+
+    monkeypatch.setattr(bridge, "create_client", fake_create)
+    db = bridge._database()
+
+    assert isinstance(db, FakeClient)
+    assert seen["options"].persist_session is False
+    assert seen["options"].auto_refresh_token is False
+    assert bridge._db_transport is not None
