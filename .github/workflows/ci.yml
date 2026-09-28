@@ -60,6 +60,7 @@ jobs:
           services/concierge_specialist_inputs.py
           services/concierge_planner_service.py
           services/concierge_execution_service.py
+          services/concierge_retry_service.py
           services/foundation_companion_service.py
           api/foundation_companion.py
           services/external_research_service.py
