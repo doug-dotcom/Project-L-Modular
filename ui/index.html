@@ -1176,6 +1176,9 @@
                                 for (const item of conciergeJobs) {
                                     if (!item?.requestId) continue;
                                     run.conciergeJobs.set(item.requestId, item);
+                                    if (['cancelled', 'retired', 'completed', 'failed'].includes(item.status)) {
+                                        run.pendingConcierge.delete(item.requestId);
+                                    }
                                     if (['cancelled', 'retired'].includes(item.status) && !known.has(item.requestId)) {
                                         const capabilities = Array.isArray(item.requestedCapabilities)
                                             ? item.requestedCapabilities.join(' + ')
