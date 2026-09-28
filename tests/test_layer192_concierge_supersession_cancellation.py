@@ -406,7 +406,7 @@ def test_saved_answers_exposes_cancel_delayed_work_only_for_pending_overlay():
     assert "run.pendingConcierge.get(task.requestId)" in index
     assert "window.lConciergeCompletions?.cancel?.(task.requestId)" in index
     assert "The saved answer above has not been rewritten." in index
-    assert 'concierge-completions.js?v=194' in index
+    assert 'concierge-completions.js?v=195' in index
 
     assert "async function pendingJobs" in completions
     assert "async function cancelPending" in completions
