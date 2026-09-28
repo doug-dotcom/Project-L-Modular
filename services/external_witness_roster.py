@@ -1242,6 +1242,28 @@ def _transition_evidence(db, generation: int) -> dict[str, Any]:
     return value
 
 
+def _transition_evidence_chain(db) -> dict[str, Any]:
+    try:
+        result = db.rpc(
+            "shine_ai_external_roster_transition_evidence_chain_verify_v1",
+            {},
+        ).execute()
+    except Exception as exc:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-transition-evidence-chain-unavailable"
+        ) from exc
+    value = result.data if isinstance(result.data, dict) else {}
+    status = str(value.get("status") or "")
+    if status not in {"empty", "verified"}:
+        raise ExternalWitnessRosterError(
+            str(
+                value.get("reason_code")
+                or "external-witness-roster-transition-evidence-chain-invalid"
+            )
+        )
+    return value
+
+
 def _verify_transition_evidence_retention(
     db,
     state: dict[str, Any],
@@ -1249,12 +1271,27 @@ def _verify_transition_evidence_retention(
     redis_client=None,
 ) -> dict[str, Any]:
     generation = state["generation"]
+    chain = _transition_evidence_chain(db)
     if generation == 1:
+        if (
+            chain.get("status") != "empty"
+            or chain.get("chainVersion") != 1
+            or chain.get("latestGeneration") != 1
+            or chain.get("rows") != 0
+        ):
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-transition-evidence-chain-genesis-mismatch"
+            )
         return {
             "status": "not-applicable",
             "generation": 1,
             "evidence_sha256": None,
             "retention": None,
+            "chain_status": "empty",
+            "chain_version": 1,
+            "chain_rows": 0,
+            "chain_generation": 1,
+            "chain_tag": None,
         }
 
     evidence = _transition_evidence(db, generation)
@@ -1265,6 +1302,20 @@ def _verify_transition_evidence_retention(
     ):
         raise ExternalWitnessRosterError(
             "external-witness-roster-transition-evidence-state-mismatch"
+        )
+
+    if (
+        chain.get("status") != "verified"
+        or chain.get("chainVersion") != 1
+        or chain.get("latestGeneration") != generation
+        or chain.get("rows") != generation - 1
+        or chain.get("latestEvidenceSha256")
+            != evidence.get("evidenceSha256")
+        or not isinstance(chain.get("latestChainTag"), str)
+        or SHA256_RE.fullmatch(chain["latestChainTag"]) is None
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-transition-evidence-chain-head-mismatch"
         )
 
     try:
@@ -1280,6 +1331,11 @@ def _verify_transition_evidence_retention(
         "generation": generation,
         "evidence_sha256": mirror["evidence_sha256"],
         "retention": mirror["storage"],
+        "chain_status": "verified",
+        "chain_version": 1,
+        "chain_rows": chain["rows"],
+        "chain_generation": chain["latestGeneration"],
+        "chain_tag": chain["latestChainTag"],
     }
 
 
@@ -1773,6 +1829,16 @@ def load_persisted_external_witness_roster(
             evidence_retention["evidence_sha256"],
         "roster_transition_evidence_retention":
             evidence_retention["retention"],
+        "roster_transition_evidence_chain_status":
+            evidence_retention["chain_status"],
+        "roster_transition_evidence_chain_version":
+            evidence_retention["chain_version"],
+        "roster_transition_evidence_chain_rows":
+            evidence_retention["chain_rows"],
+        "roster_transition_evidence_chain_generation":
+            evidence_retention["chain_generation"],
+        "roster_transition_evidence_chain_tag":
+            evidence_retention["chain_tag"],
         "roster_head_verified": True,
         "roster_head_sequence": head["sequence"],
         "roster_head_checkpoint_sha256": head["checkpointSha256"],
