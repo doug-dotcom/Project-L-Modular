@@ -858,6 +858,18 @@ def test_quorum_requires_two_distinct_matching_witnesses(monkeypatch):
             "railway-redis-volume",
         ],
     }
+    assert result["external_roster_head_sequence"] == 1
+    assert result["external_roster_head_sha256"] == "b" * 64
+    assert result["external_roster_head_checkpoint_sha256"] == "a" * 64
+    assert result["external_roster_head_witness_status"] == "verified"
+    assert (
+        result["external_roster_head_witness_id"]
+        == "foundation-project-l-roster-head"
+    )
+    assert (
+        result["external_roster_head_witness_independent_retention"]
+        == "foundation-supabase"
+    )
     assert "authTag" not in json.dumps(result)
 
 
@@ -1469,6 +1481,53 @@ def test_quorum_rejects_external_roster_policy_mismatch(monkeypatch):
     with pytest.raises(
         quorum.WitnessQuorumError,
         match="trust-witness-external-roster-policy-mismatch",
+    ):
+        quorum.ensure_trust_witness_quorum(
+            FakePolicyDB(),
+            {"state": "unused"},
+            redis_client=FakeRedis(),
+        )
+
+
+
+def test_quorum_fails_when_foundation_roster_head_is_ahead(monkeypatch):
+    def fail(*_args, **_kwargs):
+        raise quorum.FoundationWitnessError(
+            "foundation-roster-head-witness-ahead"
+        )
+
+    monkeypatch.setattr(
+        quorum,
+        "ensure_foundation_roster_head_witness",
+        fail,
+    )
+
+    with pytest.raises(
+        quorum.WitnessQuorumError,
+        match="foundation-roster-head-witness-ahead",
+    ):
+        quorum.ensure_trust_witness_quorum(
+            FakePolicyDB(),
+            {"state": "unused"},
+            redis_client=FakeRedis(),
+        )
+
+
+def test_quorum_fails_when_foundation_roster_head_forks(monkeypatch):
+    def fail(*_args, **_kwargs):
+        raise quorum.FoundationWitnessError(
+            "foundation-roster-head-witness-fork"
+        )
+
+    monkeypatch.setattr(
+        quorum,
+        "ensure_foundation_roster_head_witness",
+        fail,
+    )
+
+    with pytest.raises(
+        quorum.WitnessQuorumError,
+        match="foundation-roster-head-witness-fork",
     ):
         quorum.ensure_trust_witness_quorum(
             FakePolicyDB(),
