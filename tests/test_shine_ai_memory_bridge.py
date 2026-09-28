@@ -264,3 +264,16 @@ def test_database_client_uses_bounded_http1_transport(monkeypatch):
     assert seen["options"].persist_session is False
     assert seen["options"].auto_refresh_token is False
     assert bridge._db_transport is not None
+
+
+def test_safe_rpc_error_redacts_credential_like_values():
+    class Boom(Exception):
+        code = "PGRST202"
+        message = "token=super-secret authorization:Bearer-thing function missing"
+
+    summary = bridge._safe_rpc_error(Boom())
+
+    assert "PGRST202" in summary
+    assert "super-secret" not in summary
+    assert "Bearer-thing" not in summary
+    assert "[redacted]" in summary
