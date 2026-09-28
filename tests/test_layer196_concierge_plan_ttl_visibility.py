@@ -169,4 +169,4 @@ def test_ui_formats_ttl_states_without_using_browser_clock_as_authority():
     assert "Date.now()" not in bridge[bridge.index("function planTtlText"):bridge.index("async function taskCentre")]
     assert "taskCentreJob.planTtlText" in index
     assert "Plan expiry due" in index
-    assert 'concierge-completions.js?v=196' in index
+    assert 'src="/ui/concierge-completions.js?v=' in index
