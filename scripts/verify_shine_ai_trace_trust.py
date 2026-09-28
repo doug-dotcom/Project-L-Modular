@@ -82,6 +82,31 @@ def main() -> None:
             is not True
         or not quorum.get("external_roster_storage_auth_key_id")
         or not quorum.get("external_roster_storage_state_sha256")
+        or quorum.get("external_roster_transition_evidence_status")
+            != "not-applicable"
+        or int(
+            quorum.get("external_roster_transition_evidence_generation")
+            or 0
+        ) != 1
+        or quorum.get(
+            "external_roster_transition_evidence_chain_status"
+        ) != "empty"
+        or int(
+            quorum.get("external_roster_transition_evidence_chain_version")
+            or 0
+        ) != 1
+        or int(
+            quorum.get("external_roster_transition_evidence_chain_rows")
+            or -1
+        ) != 0
+        or int(
+            quorum.get(
+                "external_roster_transition_evidence_chain_generation"
+            )
+            or 0
+        ) != 1
+        or quorum.get("external_roster_transition_evidence_chain_tag")
+            is not None
         or quorum.get("external_roster_head_verified") is not True
         or int(quorum.get("external_roster_head_sequence") or 0) != 1
         or int(quorum.get("external_roster_head_generation") or 0) != 1
@@ -209,6 +234,8 @@ def main() -> None:
         f"roster=persisted-g{quorum.get('external_roster_generation')} "
         f"roster_storage={quorum.get('external_roster_storage_auth_key_id')} "
         f"roster_checkpoint={quorum.get('external_roster_storage_checkpoint_retention')} "
+        f"roster_evidence_chain={quorum.get('external_roster_transition_evidence_chain_status')}-g"
+        f"{quorum.get('external_roster_transition_evidence_chain_generation')} "
         f"roster_head_witness={quorum.get('external_roster_head_witness_id')} "
         f"foundation_chain=verified "
         f"chain_checkpoint=verified "
