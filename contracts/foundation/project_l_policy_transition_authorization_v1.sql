@@ -1,4 +1,4 @@
--- Layer 201: Foundation-side previous-quorum policy authorisation.
+-- Layer 202: Foundation-side previous-quorum policy authorisation.
 -- The Foundation witness keeps its HMAC secret in Foundation Vault and will
 -- sign only a canonical N -> N+1 policy change after re-verifying its current
 -- Project L trust-head witness/history.
