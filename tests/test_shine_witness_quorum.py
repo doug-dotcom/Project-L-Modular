@@ -22,6 +22,58 @@ HEAD = {
 }
 
 
+class FakeResult:
+    def __init__(self, data):
+        self.data = data
+
+
+class FakePolicyDB:
+    def __init__(self, state=None, *, inconsistent_reason=None):
+        self.state = state
+        self.inconsistent_reason = inconsistent_reason
+        self.rpc_calls = []
+
+    def rpc(self, name, params):
+        self.rpc_calls.append((name, params))
+        db = self
+
+        class Call:
+            def execute(self):
+                if name == "shine_ai_witness_quorum_policy_snapshot_v1":
+                    if db.inconsistent_reason:
+                        return FakeResult({
+                            "status": "inconsistent",
+                            "reason_code": db.inconsistent_reason,
+                        })
+                    if db.state is None:
+                        return FakeResult({"status": "unbootstrapped"})
+                    return FakeResult({
+                        "status": "trusted",
+                        "trust_state": dict(db.state),
+                    })
+                if name == "shine_ai_witness_quorum_policy_bootstrap_v1":
+                    db.state = {
+                        "trustStateVersion": 1,
+                        "trustStateType":
+                            "decision_trace_trust_state_witness_quorum_policy",
+                        "generation": 1,
+                        "minimumWitnesses": 2,
+                        "acceptedWitnessIds": [
+                            "foundation-project-l",
+                            "redis-project-l",
+                        ],
+                        "previousPolicySha256": None,
+                        "policySha256": POLICY_SHA,
+                    }
+                    return FakeResult({
+                        "status": "trusted",
+                        "trust_state": dict(db.state),
+                    })
+                raise AssertionError(name)
+
+        return Call()
+
+
 class FakeRedis:
     def __init__(self):
         self.rows = {}
@@ -152,6 +204,104 @@ def test_policy_is_exact_fixed_two_of_two():
     assert policy["policySha256"] == POLICY_SHA
 
 
+
+def test_persisted_policy_bootstraps_from_certified_deployment_pin():
+    db = FakePolicyDB()
+
+    value = quorum.load_persisted_quorum_policy(db)
+
+    assert value["generation"] == 1
+    assert value["minimumWitnesses"] == 2
+    assert value["acceptedWitnessIds"] == [
+        "foundation-project-l",
+        "redis-project-l",
+    ]
+    assert value["policySha256"] == POLICY_SHA
+    assert value["policy_trust_persisted"] is True
+    assert value["policy_trust_source"] == "project-l-supabase"
+    assert value["policy_trust_generation"] == 1
+    assert db.state["policySha256"] == POLICY_SHA
+    assert [name for name, _params in db.rpc_calls] == [
+        "shine_ai_witness_quorum_policy_snapshot_v1",
+        "shine_ai_witness_quorum_policy_bootstrap_v1",
+    ]
+
+
+def test_persisted_policy_rejects_same_generation_deployment_fork(
+    monkeypatch,
+):
+    db = FakePolicyDB({
+        "trustStateVersion": 1,
+        "trustStateType":
+            "decision_trace_trust_state_witness_quorum_policy",
+        "generation": 1,
+        "minimumWitnesses": 2,
+        "acceptedWitnessIds": [
+            "foundation-project-l",
+            "redis-project-l",
+        ],
+        "previousPolicySha256": None,
+        "policySha256": POLICY_SHA,
+    })
+    fork = {
+        "policyVersion": 1,
+        "policyType":
+            "decision_trace_trust_state_witness_quorum_policy",
+        "generation": 1,
+        "minimumWitnesses": 2,
+        "acceptedWitnessIds": [
+            "foundation-project-l",
+            "redis-project-l",
+        ],
+        "previousPolicySha256": None,
+        "policySha256": "0" * 64,
+    }
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_POLICY_JSON",
+        json.dumps(fork),
+    )
+
+    with pytest.raises(
+        quorum.WitnessQuorumError,
+        match="policy-digest-mismatch",
+    ):
+        quorum.load_persisted_quorum_policy(db)
+
+
+def test_persisted_policy_refuses_uncertified_future_state():
+    db = FakePolicyDB({
+        "trustStateVersion": 1,
+        "trustStateType":
+            "decision_trace_trust_state_witness_quorum_policy",
+        "generation": 2,
+        "minimumWitnesses": 2,
+        "acceptedWitnessIds": [
+            "foundation-project-l",
+            "redis-project-l",
+        ],
+        "previousPolicySha256": POLICY_SHA,
+        "policySha256": "1" * 64,
+    })
+
+    with pytest.raises(
+        quorum.WitnessQuorumError,
+        match="policy",
+    ):
+        quorum.load_persisted_quorum_policy(db)
+
+
+def test_persisted_policy_storage_inconsistency_fails_closed():
+    db = FakePolicyDB(
+        inconsistent_reason="witness-quorum-policy-high-water-mismatch"
+    )
+
+    with pytest.raises(
+        quorum.WitnessQuorumError,
+        match="high-water-mismatch",
+    ):
+        quorum.load_persisted_quorum_policy(db)
+
+
 @pytest.mark.parametrize(
     "mutator",
     [
@@ -259,7 +409,7 @@ def test_quorum_requires_two_distinct_matching_witnesses(monkeypatch):
     )
 
     result = quorum.ensure_trust_witness_quorum(
-        object(),
+        FakePolicyDB(),
         {"state": "unused"},
     )
 
@@ -271,6 +421,9 @@ def test_quorum_requires_two_distinct_matching_witnesses(monkeypatch):
         "redis-project-l",
     ]
     assert result["policy_sha256"] == POLICY_SHA
+    assert result["policy_trust_persisted"] is True
+    assert result["policy_trust_source"] == "project-l-supabase"
+    assert result["policy_trust_generation"] == 1
     assert result["independence"] == [
         "foundation-supabase",
         "railway-redis-volume",

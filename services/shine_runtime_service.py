@@ -30,6 +30,7 @@ from services.foundation_trust_witness import (
 from services.shine_witness_quorum import (
     WitnessQuorumError,
     ensure_trust_witness_quorum,
+    load_persisted_quorum_policy,
 )
 from services.shine_ai_trace_verifier import (
     digest_verification_keyset,
@@ -47,7 +48,7 @@ from services.shine_trust_storage import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v7"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v8"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -862,6 +863,28 @@ def _shine_ai_verification_keyset(
                     "status": "invalid",
                     "reason_code": "trust-witness-quorum-unverified",
                 }
+            try:
+                persisted_policy = load_persisted_quorum_policy(db)
+            except WitnessQuorumError as exc:
+                reason = str(exc) or "trust-witness-quorum-policy-unverified"
+                return None, reason, {
+                    "status": "invalid",
+                    "reason_code": reason,
+                }
+            if (
+                quorum.get("policy_sha256")
+                != persisted_policy.get("policySha256")
+                or int(quorum.get("policy_generation") or 0)
+                != int(persisted_policy.get("generation") or 0)
+                or int(quorum.get("minimum_witnesses") or 0)
+                != int(persisted_policy.get("minimumWitnesses") or 0)
+                or quorum.get("witness_ids")
+                != persisted_policy.get("acceptedWitnessIds")
+            ):
+                return None, "trust-witness-quorum-policy-cache-mismatch", {
+                    "status": "invalid",
+                    "reason_code": "trust-witness-quorum-policy-cache-mismatch",
+                }
         elif _foundation_witness_required():
             witness = cached_trust.get("external_witness")
             if (
@@ -1347,6 +1370,8 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                     ),
                     (
                         "status", "policy_generation", "policy_sha256",
+                        "policy_trust_persisted", "policy_trust_source",
+                        "policy_trust_generation",
                         "minimum_witnesses", "verified_witness_count",
                         "witness_ids", "sequence", "head_sha256",
                         "generation", "keyset_sha256", "state_sha256",

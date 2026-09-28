@@ -39,6 +39,10 @@ WITNESS_AUTH_DOMAIN = (
     "shine-ai:decision-trace-trust-state-monotonic-head-witness:v1"
 )
 QUORUM_POLICY_TYPE = "decision_trace_trust_state_witness_quorum_policy"
+CERTIFIED_GENESIS_POLICY_SHA256 = (
+    "26b6d1a3b4183cfa596f8c9c06c18e73"
+    "aa0eda6a80a6362649130e9357bf220e"
+)
 REDIS_WITNESS_KEY = "shine:project-l:trace-trust:witness:redis:v1"
 
 _REDIS_WITNESS_CAS = r"""
@@ -403,16 +407,7 @@ def ensure_redis_trust_witness(
     }
 
 
-def load_quorum_policy() -> dict[str, Any]:
-    raw = os.getenv("SHINE_TRACE_WITNESS_QUORUM_POLICY_JSON", "").strip()
-    if not raw:
-        raise WitnessQuorumError("trust-witness-quorum-policy-unavailable")
-    try:
-        value = json.loads(raw)
-    except Exception as exc:
-        raise WitnessQuorumError(
-            "trust-witness-quorum-policy-invalid"
-        ) from exc
+def _project_quorum_policy(value: Any) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise WitnessQuorumError("trust-witness-quorum-policy-invalid")
 
@@ -426,7 +421,7 @@ def load_quorum_policy() -> dict[str, Any]:
         or value.get("policyType") != QUORUM_POLICY_TYPE
         or not isinstance(generation, int)
         or isinstance(generation, bool)
-        or generation != 1
+        or not 1 <= generation <= 1_000_000
         or not isinstance(ids, list)
         or not 2 <= len(ids) <= 4
         or ids != sorted(ids)
@@ -440,34 +435,201 @@ def load_quorum_policy() -> dict[str, Any]:
         or isinstance(minimum, bool)
         or minimum < 2
         or minimum > len(ids)
-        or previous is not None
         or not isinstance(policy_sha, str)
         or SHA256_RE.fullmatch(policy_sha) is None
+    ):
+        raise WitnessQuorumError("trust-witness-quorum-policy-invalid")
+
+    if generation == 1:
+        if previous is not None:
+            raise WitnessQuorumError(
+                "trust-witness-quorum-policy-invalid"
+            )
+    elif (
+        not isinstance(previous, str)
+        or SHA256_RE.fullmatch(previous) is None
     ):
         raise WitnessQuorumError("trust-witness-quorum-policy-invalid")
 
     material = {
         "policyVersion": 1,
         "policyType": QUORUM_POLICY_TYPE,
-        "generation": 1,
+        "generation": generation,
         "minimumWitnesses": minimum,
-        "acceptedWitnessIds": ids,
-        "previousPolicySha256": None,
+        "acceptedWitnessIds": list(ids),
+        "previousPolicySha256": previous,
     }
     if _sha256_text(_canonical_json(material)) != policy_sha:
         raise WitnessQuorumError(
             "trust-witness-quorum-policy-digest-mismatch"
         )
+    return {**material, "policySha256": policy_sha}
 
-    # Layer 198 is deliberately fixed to the initial 2-of-2 deployment.
+
+def _deployment_quorum_policy_candidate() -> dict[str, Any] | None:
+    raw = os.getenv("SHINE_TRACE_WITNESS_QUORUM_POLICY_JSON", "").strip()
+    if not raw:
+        return None
+    try:
+        value = json.loads(raw)
+    except Exception as exc:
+        raise WitnessQuorumError(
+            "trust-witness-quorum-policy-invalid"
+        ) from exc
+    return _project_quorum_policy(value)
+
+
+def load_quorum_policy() -> dict[str, Any]:
+    """Load the Layer 198 deployment pin.
+
+    This remains the out-of-band genesis candidate. Layer 199 persists the
+    accepted policy separately and no longer treats this value as the ongoing
+    source of truth.
+    """
+    policy = _deployment_quorum_policy_candidate()
+    if policy is None:
+        raise WitnessQuorumError(
+            "trust-witness-quorum-policy-unavailable"
+        )
     if (
-        minimum != 2
-        or ids != sorted([FOUNDATION_WITNESS_ID, REDIS_WITNESS_ID])
+        policy["generation"] != 1
+        or policy["minimumWitnesses"] != 2
+        or policy["acceptedWitnessIds"]
+        != sorted([FOUNDATION_WITNESS_ID, REDIS_WITNESS_ID])
+        or policy["previousPolicySha256"] is not None
+        or policy["policySha256"] != CERTIFIED_GENESIS_POLICY_SHA256
     ):
         raise WitnessQuorumError(
             "trust-witness-quorum-policy-not-certified"
         )
-    return {**material, "policySha256": policy_sha}
+    return policy
+
+
+def _project_policy_trust_state(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise WitnessQuorumError(
+            "trust-witness-quorum-policy-trust-invalid"
+        )
+    if (
+        value.get("trustStateVersion") != 1
+        or value.get("trustStateType") != QUORUM_POLICY_TYPE
+    ):
+        raise WitnessQuorumError(
+            "trust-witness-quorum-policy-trust-invalid"
+        )
+
+    policy = _project_quorum_policy({
+        "policyVersion": 1,
+        "policyType": QUORUM_POLICY_TYPE,
+        "generation": value.get("generation"),
+        "minimumWitnesses": value.get("minimumWitnesses"),
+        "acceptedWitnessIds": value.get("acceptedWitnessIds"),
+        "previousPolicySha256": value.get("previousPolicySha256"),
+        "policySha256": value.get("policySha256"),
+    })
+    return {
+        "trustStateVersion": 1,
+        "trustStateType": QUORUM_POLICY_TYPE,
+        "generation": policy["generation"],
+        "minimumWitnesses": policy["minimumWitnesses"],
+        "acceptedWitnessIds": policy["acceptedWitnessIds"],
+        "previousPolicySha256": policy["previousPolicySha256"],
+        "policySha256": policy["policySha256"],
+    }
+
+
+def _policy_from_trust_state(state: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "policyVersion": 1,
+        "policyType": QUORUM_POLICY_TYPE,
+        "generation": state["generation"],
+        "minimumWitnesses": state["minimumWitnesses"],
+        "acceptedWitnessIds": list(state["acceptedWitnessIds"]),
+        "previousPolicySha256": state["previousPolicySha256"],
+        "policySha256": state["policySha256"],
+    }
+
+
+def load_persisted_quorum_policy(db) -> dict[str, Any]:
+    """Load monotonic quorum-policy trust from Project L's durable store."""
+    try:
+        result = db.rpc(
+            "shine_ai_witness_quorum_policy_snapshot_v1",
+            {},
+        ).execute()
+    except Exception as exc:
+        raise WitnessQuorumError(
+            "trust-witness-quorum-policy-snapshot-unavailable"
+        ) from exc
+
+    payload = result.data if isinstance(result.data, dict) else {}
+    status = str(payload.get("status") or "")
+    if status == "unbootstrapped":
+        # Genesis can only be established from the certified deployment pin.
+        load_quorum_policy()
+        try:
+            result = db.rpc(
+                "shine_ai_witness_quorum_policy_bootstrap_v1",
+                {},
+            ).execute()
+        except Exception as exc:
+            raise WitnessQuorumError(
+                "trust-witness-quorum-policy-bootstrap-failed"
+            ) from exc
+        payload = result.data if isinstance(result.data, dict) else {}
+        status = str(payload.get("status") or "")
+
+    if status not in {"trusted", "already_trusted"}:
+        raise WitnessQuorumError(
+            str(
+                payload.get("reason_code")
+                or "trust-witness-quorum-policy-storage-invalid"
+            )
+        )
+
+    state = _project_policy_trust_state(payload.get("trust_state"))
+    policy = _policy_from_trust_state(state)
+
+    # Layer 199 has no membership-transition acceptance path. Anything other
+    # than the certified genesis state is therefore fail-closed.
+    if (
+        state["generation"] != 1
+        or state["minimumWitnesses"] != 2
+        or state["acceptedWitnessIds"]
+        != sorted([FOUNDATION_WITNESS_ID, REDIS_WITNESS_ID])
+        or state["previousPolicySha256"] is not None
+        or state["policySha256"] != CERTIFIED_GENESIS_POLICY_SHA256
+    ):
+        raise WitnessQuorumError(
+            "trust-witness-quorum-policy-persisted-state-uncertified"
+        )
+
+    candidate = _deployment_quorum_policy_candidate()
+    if candidate is not None:
+        if candidate["generation"] < state["generation"]:
+            raise WitnessQuorumError(
+                "trust-witness-quorum-policy-rollback-detected"
+            )
+        if candidate["generation"] == state["generation"]:
+            if candidate != policy:
+                raise WitnessQuorumError(
+                    "trust-witness-quorum-policy-equivocation-detected"
+                )
+        elif candidate["generation"] > state["generation"] + 1:
+            raise WitnessQuorumError(
+                "trust-witness-quorum-policy-generation-skip"
+            )
+        else:
+            raise WitnessQuorumError(
+                "trust-witness-quorum-policy-transition-unimplemented"
+            )
+
+    return {
+        **policy,
+        "policy_trust_persisted": True,
+        "policy_trust_source": "project-l-supabase",
+        "policy_trust_generation": state["generation"],
+    }
 
 
 def ensure_trust_witness_quorum(
@@ -478,7 +640,7 @@ def ensure_trust_witness_quorum(
     foundation_get_impl=None,
     foundation_post_impl=None,
 ) -> dict[str, Any]:
-    policy = load_quorum_policy()
+    policy = load_persisted_quorum_policy(db)
     try:
         redis_witness = ensure_redis_trust_witness(
             state,
@@ -529,6 +691,9 @@ def ensure_trust_witness_quorum(
         "status": "verified",
         "policy_generation": policy["generation"],
         "policy_sha256": policy["policySha256"],
+        "policy_trust_persisted": policy["policy_trust_persisted"],
+        "policy_trust_source": policy["policy_trust_source"],
+        "policy_trust_generation": policy["policy_trust_generation"],
         "minimum_witnesses": policy["minimumWitnesses"],
         "verified_witness_count": len(by_id),
         "witness_ids": sorted(by_id),
@@ -545,6 +710,7 @@ def ensure_trust_witness_quorum(
 
 
 __all__ = [
+    "CERTIFIED_GENESIS_POLICY_SHA256",
     "FOUNDATION_WITNESS_ID",
     "QUORUM_POLICY_TYPE",
     "REDIS_WITNESS_ID",
@@ -553,6 +719,7 @@ __all__ = [
     "create_redis_witness",
     "ensure_redis_trust_witness",
     "ensure_trust_witness_quorum",
+    "load_persisted_quorum_policy",
     "load_quorum_policy",
     "read_redis_witness",
     "verify_witness",

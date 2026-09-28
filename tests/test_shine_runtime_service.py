@@ -499,7 +499,7 @@ def test_runtime_trace_binds_recovery_control_plane_without_private_content():
     changed["recovery"]["reason_codes"] = ["PRIVATE-REASON-TEXT-NOT-HASHED"]
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v7"
+    assert first["version"] == "shine/runtime-trace-v8"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-REASON-TEXT-NOT-HASHED" not in json.dumps(second)
 
@@ -598,11 +598,15 @@ class FakeTrustDB:
         *,
         inconsistent_reason=None,
         sealed=True,
+        policy_state=None,
+        policy_inconsistent_reason=None,
     ):
         self.state = state
         self.inconsistent_reason = inconsistent_reason
         self.rpc_calls = []
         self.sealed = sealed
+        self.policy_state = policy_state
+        self.policy_inconsistent_reason = policy_inconsistent_reason
         if self.state is not None and sealed:
             self._seal_current()
 
@@ -659,6 +663,38 @@ class FakeTrustDB:
 
         class Call:
             def execute(self):
+                if name == "shine_ai_witness_quorum_policy_snapshot_v1":
+                    if db.policy_inconsistent_reason:
+                        return FakeTrustResult({
+                            "status": "inconsistent",
+                            "reason_code": db.policy_inconsistent_reason,
+                        })
+                    if db.policy_state is None:
+                        return FakeTrustResult({"status": "unbootstrapped"})
+                    return FakeTrustResult({
+                        "status": "trusted",
+                        "trust_state": dict(db.policy_state),
+                    })
+                if name == "shine_ai_witness_quorum_policy_bootstrap_v1":
+                    db.policy_state = {
+                        "trustStateVersion": 1,
+                        "trustStateType":
+                            "decision_trace_trust_state_witness_quorum_policy",
+                        "generation": 1,
+                        "minimumWitnesses": 2,
+                        "acceptedWitnessIds": [
+                            "foundation-project-l",
+                            "redis-project-l",
+                        ],
+                        "previousPolicySha256": None,
+                        "policySha256":
+                            "26b6d1a3b4183cfa596f8c9c06c18e73"
+                            "aa0eda6a80a6362649130e9357bf220e",
+                    }
+                    return FakeTrustResult({
+                        "status": "trusted",
+                        "trust_state": dict(db.policy_state),
+                    })
                 if name == "shine_ai_trace_trust_snapshot_v2":
                     return db._snapshot(2)
                 if name == "shine_ai_trace_trust_snapshot_v3":
@@ -934,7 +970,7 @@ def test_runtime_trace_binds_authenticity_without_signature_bytes():
     changed["components"]["shine_ai"]["decision_trace_authenticity"]["authenticated"] = False
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v7"
+    assert first["version"] == "shine/runtime-trace-v8"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(first)
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(second)
@@ -1092,7 +1128,7 @@ def test_runtime_trace_binds_trust_generation_without_certificate_signature():
     changed["components"]["shine_ai"]["decision_trace_trust"]["generation"] = 3
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v7"
+    assert first["version"] == "shine/runtime-trace-v8"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-CERTIFICATE-SIGNATURE" not in json.dumps(first)
 
@@ -1427,7 +1463,7 @@ def test_runtime_trace_binds_storage_proof_without_hmac_tag_or_redis_url():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v7"
+    assert first["version"] == "shine/runtime-trace-v8"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-HMAC-TAG" not in rendered
     assert "PRIVATE-REDIS-URL" not in rendered
@@ -1523,7 +1559,7 @@ def test_runtime_trace_binds_external_witness_without_foundation_auth_tag():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v7"
+    assert first["version"] == "shine/runtime-trace-v8"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-FOUNDATION-HMAC" not in rendered
 
@@ -1746,7 +1782,126 @@ def test_runtime_trace_binds_quorum_without_witness_hmac_tags():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v7"
+    assert first["version"] == "shine/runtime-trace-v8"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-FOUNDATION-HMAC" not in rendered
     assert "PRIVATE-REDIS-HMAC" not in rendered
+
+
+def test_cached_trust_rejects_quorum_receipt_that_drifted_from_persisted_policy(
+    monkeypatch,
+):
+    monkeypatch.setenv(
+        "SHINE_AI_TRACE_ACCEPTED_KEYSET_SHA256",
+        TRACE_SINGLE_KEYSET_SHA256,
+    )
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_REQUIRED",
+        "true",
+    )
+    monkeypatch.setenv(
+        "SHINE_TRACE_WITNESS_QUORUM_POLICY_JSON",
+        json.dumps({
+            "policyVersion": 1,
+            "policyType":
+                "decision_trace_trust_state_witness_quorum_policy",
+            "generation": 1,
+            "minimumWitnesses": 2,
+            "acceptedWitnessIds": [
+                "foundation-project-l",
+                "redis-project-l",
+            ],
+            "previousPolicySha256": None,
+            "policySha256":
+                "26b6d1a3b4183cfa596f8c9c06c18e73"
+                "aa0eda6a80a6362649130e9357bf220e",
+        }),
+    )
+    keyset = {
+        "active_key_id": "trace-v1",
+        "verification_keys": {
+            "trace-v1": {
+                "public_key_b64": TRACE_PUBLIC_KEY_B64,
+                "public_key_sha256": TRACE_PUBLIC_KEY_SHA256,
+            },
+        },
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "generation": 1,
+    }
+    redis = FakeTrustRedis()
+    seed_checkpoint(redis, keyset)
+    db = FakeTrustDB({
+        "generation": 1,
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "trusted_keyset": keyset,
+        "source": "genesis-pin",
+        "ledger_rows": 1,
+    })
+    runtime._TRACE_KEYSET_CACHE.update({
+        "expires_at": float("inf"),
+        "pin": TRACE_SINGLE_KEYSET_SHA256,
+        "keyset": keyset,
+        "trust": {
+            "status": "trusted",
+            "acceptance_mode": "existing-ledger",
+            "witness_quorum": {
+                "status": "verified",
+                "policy_generation": 1,
+                "policy_sha256": "0" * 64,
+                "minimum_witnesses": 2,
+                "verified_witness_count": 2,
+                "witness_ids": [
+                    "foundation-project-l",
+                    "redis-project-l",
+                ],
+            },
+        },
+    })
+
+    trusted, error, trust = runtime._shine_ai_verification_keyset(
+        db,
+        redis_client=redis,
+    )
+
+    assert trusted is None
+    assert error == "trust-witness-quorum-policy-cache-mismatch"
+    assert trust["status"] == "invalid"
+    assert db.policy_state is not None
+
+
+def test_runtime_trace_binds_persisted_quorum_policy_proof():
+    packet = runtime_for_human_status()
+    packet["components"]["shine_ai"]["decision_trace_trust"] = {
+        "status": "trusted",
+        "witness_quorum": {
+            "status": "verified",
+            "policy_generation": 1,
+            "policy_sha256":
+                "26b6d1a3b4183cfa596f8c9c06c18e73"
+                "aa0eda6a80a6362649130e9357bf220e",
+            "policy_trust_persisted": True,
+            "policy_trust_source": "project-l-supabase",
+            "policy_trust_generation": 1,
+            "minimum_witnesses": 2,
+            "verified_witness_count": 2,
+            "witness_ids": [
+                "foundation-project-l",
+                "redis-project-l",
+            ],
+        },
+    }
+    first = runtime.build_runtime_trace(
+        packet,
+        {"status": "not_required"},
+    )
+    changed = json.loads(json.dumps(packet))
+    changed["components"]["shine_ai"]["decision_trace_trust"][
+        "witness_quorum"
+    ]["policy_trust_generation"] = 2
+    second = runtime.build_runtime_trace(
+        changed,
+        {"status": "not_required"},
+    )
+
+    assert first["version"] == "shine/runtime-trace-v8"
+    assert first["lineage_sha256"] != second["lineage_sha256"]
