@@ -19,6 +19,10 @@ from typing import Any
 
 from redis.exceptions import RedisError
 
+from services.external_witness_roster import (
+    ExternalWitnessRosterError,
+    load_persisted_external_witness_roster,
+)
 from services.foundation_chain_checkpoint import (
     FoundationChainCheckpointError,
     ensure_foundation_chain_checkpoint,
@@ -950,6 +954,22 @@ def ensure_trust_witness_quorum(
         redis_client=redis_client,
     )
     try:
+        roster = load_persisted_external_witness_roster(
+            db,
+            redis_client=redis_client,
+        )
+    except ExternalWitnessRosterError as exc:
+        raise WitnessQuorumError(str(exc)) from exc
+
+    if (
+        roster["minimumWitnesses"] != policy["minimumWitnesses"]
+        or roster["acceptedWitnessIds"] != policy["acceptedWitnessIds"]
+    ):
+        raise WitnessQuorumError(
+            "trust-witness-external-roster-policy-mismatch"
+        )
+
+    try:
         redis_witness = ensure_redis_trust_witness(
             state,
             redis_client=redis_client,
@@ -1069,6 +1089,26 @@ def ensure_trust_witness_quorum(
             policy["policy_storage_checkpoint_retention"],
         "policy_storage_rotation":
             policy["policy_storage_rotation"],
+        "external_roster_generation": roster["generation"],
+        "external_roster_policy_sha256": roster["policySha256"],
+        "external_roster_minimum_witnesses":
+            roster["minimumWitnesses"],
+        "external_roster_witness_ids":
+            roster["acceptedWitnessIds"],
+        "external_roster_trust_persisted":
+            roster["roster_trust_persisted"],
+        "external_roster_trust_source":
+            roster["roster_trust_source"],
+        "external_roster_storage_authenticated":
+            roster["roster_storage_authenticated"],
+        "external_roster_storage_auth_key_id":
+            roster["roster_storage_auth_key_id"],
+        "external_roster_storage_state_sha256":
+            roster["roster_storage_state_sha256"],
+        "external_roster_storage_checkpoint_independent":
+            roster["roster_storage_checkpoint_independent"],
+        "external_roster_storage_checkpoint_retention":
+            roster["roster_storage_checkpoint_retention"],
         "minimum_witnesses": policy["minimumWitnesses"],
         "verified_witness_count": len(by_id),
         "witness_ids": sorted(by_id),
