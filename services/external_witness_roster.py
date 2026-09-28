@@ -1,0 +1,801 @@
+"""Persisted authenticated external-witness roster for Project L.
+
+This mirrors Shine-AI Layers 157-159 for the policy-head witness roster.
+Generation 1 is an out-of-band pinned 2-of-2 roster:
+  foundation-project-l + redis-project-l
+
+Later roster generations are deliberately not accepted in this layer. A future
+membership change must carry previous-external-quorum transition authority.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import hmac
+import json
+import os
+import re
+from typing import Any
+
+from redis import Redis
+from redis.exceptions import RedisError
+
+SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
+KEY_ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
+
+ROSTER_POLICY_TYPE = (
+    "decision_trace_trust_state_witness_quorum_policy_"
+    "external_head_witness_quorum_policy"
+)
+CERTIFIED_GENESIS_ROSTER_SHA256 = (
+    "a5c456d49e47f1be3f2a7b7ed017328"
+    "844484ba05c4e6ef3212412c6361156c4"
+)
+CERTIFIED_GENESIS_WITNESS_IDS = [
+    "foundation-project-l",
+    "redis-project-l",
+]
+
+STATE_AUTH_DOMAIN = (
+    "shine-ai:decision-trace-trust-state-witness-quorum-policy-"
+    "external-head-witness-quorum-state:v1"
+)
+CHECKPOINT_AUTH_DOMAIN = (
+    "shine-ai:decision-trace-trust-state-witness-quorum-policy-"
+    "external-head-witness-quorum-state-checkpoint:v1"
+)
+ENVELOPE_TYPE = (
+    "decision_trace_trust_state_witness_quorum_policy_"
+    "external_head_witness_quorum_authenticated"
+)
+CHECKPOINT_TYPE = (
+    "decision_trace_trust_state_witness_quorum_policy_"
+    "external_head_witness_quorum_rollback_checkpoint"
+)
+REDIS_ROSTER_CHECKPOINT_KEY = (
+    "shine:project-l:trace-trust:external-witness-roster:checkpoint:v1"
+)
+
+_CHECKPOINT_CAS = r"""
+local key = KEYS[1]
+local generation = tonumber(ARGV[1])
+local policy_sha = ARGV[2]
+local state_sha = ARGV[3]
+local checkpoint_json = ARGV[4]
+
+local current_generation_raw = redis.call('HGET', key, 'generation')
+if not current_generation_raw then
+  if generation ~= 1 then return {'bootstrap-generation-invalid'} end
+  redis.call(
+    'HSET', key,
+    'generation', tostring(generation),
+    'policy_sha256', policy_sha,
+    'state_sha256', state_sha,
+    'checkpoint_json', checkpoint_json
+  )
+  return {'created'}
+end
+
+local current_generation = tonumber(current_generation_raw)
+local current_policy_sha = redis.call('HGET', key, 'policy_sha256') or ''
+local current_state_sha = redis.call('HGET', key, 'state_sha256') or ''
+
+if generation < current_generation then return {'rollback'} end
+if generation > current_generation + 1 then return {'generation-skip'} end
+
+if generation == current_generation then
+  if policy_sha ~= current_policy_sha then return {'equivocation'} end
+  if state_sha ~= current_state_sha then return {'state-mismatch'} end
+  redis.call('HSET', key, 'checkpoint_json', checkpoint_json)
+  return {'refreshed'}
+end
+
+return {'transition-unimplemented'}
+"""
+
+
+class ExternalWitnessRosterError(RuntimeError):
+    pass
+
+
+def _canonical_json(value: Any) -> str:
+    return json.dumps(
+        value,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+
+
+def _sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _hmac_sha256(secret: str, value: str) -> str:
+    return hmac.new(
+        secret.encode("utf-8"),
+        value.encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+
+
+def _storage_keyring() -> tuple[str, dict[str, str]]:
+    raw = os.getenv(
+        "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_STORAGE_KEYRING_JSON",
+        "",
+    ).strip()
+    active = os.getenv(
+        "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_STORAGE_ACTIVE_KEY_ID",
+        "",
+    ).strip()
+    if not raw or KEY_ID_RE.fullmatch(active) is None:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-keyring-unavailable"
+        )
+    try:
+        parsed = json.loads(raw)
+    except Exception as exc:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-keyring-invalid"
+        ) from exc
+    if not isinstance(parsed, dict) or not 1 <= len(parsed) <= 4:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-keyring-invalid"
+        )
+    keyring: dict[str, str] = {}
+    for raw_key, raw_secret in parsed.items():
+        key_id = str(raw_key)
+        if (
+            KEY_ID_RE.fullmatch(key_id) is None
+            or not isinstance(raw_secret, str)
+            or len(raw_secret) < 32
+            or len(raw_secret) > 8192
+        ):
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-storage-keyring-invalid"
+            )
+        keyring[key_id] = raw_secret
+    if active not in keyring:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-active-key-unavailable"
+        )
+    return active, keyring
+
+
+def _storage_secret(key_id: str) -> str:
+    _active, keyring = _storage_keyring()
+    value = keyring.get(key_id)
+    if value is None:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-key-retired"
+        )
+    return value
+
+
+def _redis_client(redis_client=None):
+    if redis_client is not None:
+        return redis_client
+    url = os.getenv("REDIS_URL", "").strip()
+    if not url:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-checkpoint-redis-unavailable"
+        )
+    return Redis.from_url(
+        url,
+        decode_responses=True,
+        socket_connect_timeout=3,
+        socket_timeout=3,
+        health_check_interval=30,
+    )
+
+
+def project_policy(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-policy-invalid"
+        )
+    generation = value.get("generation")
+    minimum = value.get("minimumWitnesses")
+    ids = value.get("acceptedWitnessIds")
+    previous = value.get("previousPolicySha256")
+    policy_sha = value.get("policySha256")
+    if (
+        value.get("policyVersion") != 1
+        or value.get("policyType") != ROSTER_POLICY_TYPE
+        or not isinstance(generation, int)
+        or isinstance(generation, bool)
+        or not 1 <= generation <= 1_000_000
+        or not isinstance(minimum, int)
+        or isinstance(minimum, bool)
+        or not isinstance(ids, list)
+        or not 2 <= len(ids) <= 4
+        or ids != sorted(ids)
+        or len(set(ids)) != len(ids)
+        or any(
+            not isinstance(item, str)
+            or KEY_ID_RE.fullmatch(item) is None
+            for item in ids
+        )
+        or minimum < 2
+        or minimum > len(ids)
+        or not isinstance(policy_sha, str)
+        or SHA256_RE.fullmatch(policy_sha) is None
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-policy-invalid"
+        )
+    if generation == 1:
+        if previous is not None:
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-policy-invalid"
+            )
+    elif (
+        not isinstance(previous, str)
+        or SHA256_RE.fullmatch(previous) is None
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-policy-invalid"
+        )
+
+    material = {
+        "policyVersion": 1,
+        "policyType": ROSTER_POLICY_TYPE,
+        "generation": generation,
+        "minimumWitnesses": minimum,
+        "acceptedWitnessIds": list(ids),
+        "previousPolicySha256": previous,
+    }
+    if _sha256_text(_canonical_json(material)) != policy_sha:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-policy-digest-mismatch"
+        )
+    return {**material, "policySha256": policy_sha}
+
+
+def _deployment_candidate() -> dict[str, Any] | None:
+    raw = os.getenv(
+        "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_POLICY_JSON",
+        "",
+    ).strip()
+    if not raw:
+        return None
+    try:
+        return project_policy(json.loads(raw))
+    except Exception as exc:
+        if isinstance(exc, ExternalWitnessRosterError):
+            raise
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-policy-invalid"
+        ) from exc
+
+
+def _genesis_pin() -> str:
+    value = os.getenv(
+        "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_GENESIS_SHA256",
+        "",
+    ).strip()
+    if SHA256_RE.fullmatch(value) is None:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-genesis-pin-unavailable"
+        )
+    return value
+
+
+def load_genesis_policy() -> dict[str, Any]:
+    policy = _deployment_candidate()
+    if policy is None:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-policy-unavailable"
+        )
+    pin = _genesis_pin()
+    if (
+        policy["generation"] != 1
+        or policy["minimumWitnesses"] != 2
+        or policy["acceptedWitnessIds"] != CERTIFIED_GENESIS_WITNESS_IDS
+        or policy["previousPolicySha256"] is not None
+        or policy["policySha256"] != pin
+        or pin != CERTIFIED_GENESIS_ROSTER_SHA256
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-genesis-not-certified"
+        )
+    return policy
+
+
+def policy_to_trust_state(policy: Any) -> dict[str, Any]:
+    projected = project_policy(policy)
+    return {
+        "trustStateVersion": 1,
+        "trustStateType": ROSTER_POLICY_TYPE,
+        "generation": projected["generation"],
+        "minimumWitnesses": projected["minimumWitnesses"],
+        "acceptedWitnessIds": list(projected["acceptedWitnessIds"]),
+        "previousPolicySha256": projected["previousPolicySha256"],
+        "policySha256": projected["policySha256"],
+    }
+
+
+def project_trust_state(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-state-invalid"
+        )
+    return policy_to_trust_state({
+        "policyVersion": 1,
+        "policyType": ROSTER_POLICY_TYPE,
+        "generation": value.get("generation"),
+        "minimumWitnesses": value.get("minimumWitnesses"),
+        "acceptedWitnessIds": value.get("acceptedWitnessIds"),
+        "previousPolicySha256": value.get("previousPolicySha256"),
+        "policySha256": value.get("policySha256"),
+    })
+
+
+def serialize_trust_state(state: Any) -> str:
+    return _canonical_json(project_trust_state(state))
+
+
+def digest_trust_state(state: Any) -> str:
+    return _sha256_text(serialize_trust_state(state))
+
+
+def create_envelope(
+    state: Any,
+    *,
+    auth_key_id: str | None = None,
+) -> dict[str, Any]:
+    projected = project_trust_state(state)
+    active, keyring = _storage_keyring()
+    key_id = auth_key_id or active
+    if KEY_ID_RE.fullmatch(key_id) is None or key_id not in keyring:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-auth-key-unavailable"
+        )
+    serialized = serialize_trust_state(projected)
+    state_sha = _sha256_text(serialized)
+    material = (
+        STATE_AUTH_DOMAIN
+        + "\n"
+        + key_id
+        + "\n"
+        + state_sha
+        + "\n"
+        + serialized
+    )
+    return {
+        "envelopeVersion": 1,
+        "envelopeType": ENVELOPE_TYPE,
+        "authAlgorithm": "HMAC-SHA-256",
+        "authKeyId": key_id,
+        "stateSha256": state_sha,
+        "authTag": _hmac_sha256(keyring[key_id], material),
+        "state": projected,
+    }
+
+
+def verify_envelope(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-envelope-invalid"
+        )
+    key_id = value.get("authKeyId")
+    state_sha = value.get("stateSha256")
+    auth_tag = value.get("authTag")
+    if (
+        value.get("envelopeVersion") != 1
+        or value.get("envelopeType") != ENVELOPE_TYPE
+        or value.get("authAlgorithm") != "HMAC-SHA-256"
+        or not isinstance(key_id, str)
+        or KEY_ID_RE.fullmatch(key_id) is None
+        or not isinstance(state_sha, str)
+        or SHA256_RE.fullmatch(state_sha) is None
+        or not isinstance(auth_tag, str)
+        or SHA256_RE.fullmatch(auth_tag) is None
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-envelope-invalid"
+        )
+    state = project_trust_state(value.get("state"))
+    serialized = serialize_trust_state(state)
+    actual_sha = _sha256_text(serialized)
+    if not hmac.compare_digest(actual_sha, state_sha):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-envelope-digest-mismatch"
+        )
+    material = (
+        STATE_AUTH_DOMAIN
+        + "\n"
+        + key_id
+        + "\n"
+        + state_sha
+        + "\n"
+        + serialized
+    )
+    if not hmac.compare_digest(
+        _hmac_sha256(_storage_secret(key_id), material),
+        auth_tag,
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-envelope-auth-failed"
+        )
+    return state
+
+
+def create_checkpoint(
+    state: Any,
+    *,
+    auth_key_id: str | None = None,
+) -> dict[str, Any]:
+    projected = project_trust_state(state)
+    active, keyring = _storage_keyring()
+    key_id = auth_key_id or active
+    if KEY_ID_RE.fullmatch(key_id) is None or key_id not in keyring:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-auth-key-unavailable"
+        )
+    state_sha = digest_trust_state(projected)
+    base = {
+        "checkpointVersion": 1,
+        "checkpointType": CHECKPOINT_TYPE,
+        "authAlgorithm": "HMAC-SHA-256",
+        "authKeyId": key_id,
+        "trustStateVersion": 1,
+        "generation": projected["generation"],
+        "policySha256": projected["policySha256"],
+        "stateSha256": state_sha,
+    }
+    material = _canonical_json({
+        "checkpointVersion": 1,
+        "checkpointType": CHECKPOINT_TYPE,
+        "trustStateVersion": 1,
+        "generation": projected["generation"],
+        "policySha256": projected["policySha256"],
+        "stateSha256": state_sha,
+    })
+    return {
+        **base,
+        "authTag": _hmac_sha256(
+            keyring[key_id],
+            CHECKPOINT_AUTH_DOMAIN
+            + "\n"
+            + key_id
+            + "\n"
+            + material,
+        ),
+    }
+
+
+def verify_checkpoint(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-checkpoint-invalid"
+        )
+    key_id = value.get("authKeyId")
+    generation = value.get("generation")
+    policy_sha = value.get("policySha256")
+    state_sha = value.get("stateSha256")
+    auth_tag = value.get("authTag")
+    if (
+        value.get("checkpointVersion") != 1
+        or value.get("checkpointType") != CHECKPOINT_TYPE
+        or value.get("authAlgorithm") != "HMAC-SHA-256"
+        or value.get("trustStateVersion") != 1
+        or not isinstance(key_id, str)
+        or KEY_ID_RE.fullmatch(key_id) is None
+        or not isinstance(generation, int)
+        or isinstance(generation, bool)
+        or not 1 <= generation <= 1_000_000
+        or not isinstance(policy_sha, str)
+        or SHA256_RE.fullmatch(policy_sha) is None
+        or not isinstance(state_sha, str)
+        or SHA256_RE.fullmatch(state_sha) is None
+        or not isinstance(auth_tag, str)
+        or SHA256_RE.fullmatch(auth_tag) is None
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-checkpoint-invalid"
+        )
+    material = _canonical_json({
+        "checkpointVersion": 1,
+        "checkpointType": CHECKPOINT_TYPE,
+        "trustStateVersion": 1,
+        "generation": generation,
+        "policySha256": policy_sha,
+        "stateSha256": state_sha,
+    })
+    if not hmac.compare_digest(
+        _hmac_sha256(
+            _storage_secret(key_id),
+            CHECKPOINT_AUTH_DOMAIN
+            + "\n"
+            + key_id
+            + "\n"
+            + material,
+        ),
+        auth_tag,
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-checkpoint-auth-failed"
+        )
+    return {
+        "checkpointVersion": 1,
+        "checkpointType": CHECKPOINT_TYPE,
+        "authAlgorithm": "HMAC-SHA-256",
+        "authKeyId": key_id,
+        "trustStateVersion": 1,
+        "generation": generation,
+        "policySha256": policy_sha,
+        "stateSha256": state_sha,
+        "authTag": auth_tag,
+    }
+
+
+def read_checkpoint(*, redis_client=None) -> dict[str, Any] | None:
+    client = _redis_client(redis_client)
+    try:
+        data = client.hgetall(REDIS_ROSTER_CHECKPOINT_KEY)
+    except RedisError as exc:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-checkpoint-redis-unavailable"
+        ) from exc
+    if not data:
+        return None
+    raw = data.get("checkpoint_json")
+    if not isinstance(raw, str) or not raw:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-checkpoint-missing"
+        )
+    try:
+        checkpoint = verify_checkpoint(json.loads(raw))
+    except ExternalWitnessRosterError:
+        raise
+    except Exception as exc:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-checkpoint-invalid"
+        ) from exc
+    if (
+        str(data.get("generation") or "")
+        != str(checkpoint["generation"])
+        or data.get("policy_sha256")
+        != checkpoint["policySha256"]
+        or data.get("state_sha256")
+        != checkpoint["stateSha256"]
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-checkpoint-mismatch"
+        )
+    return checkpoint
+
+
+def persist_checkpoint(
+    state: Any,
+    *,
+    auth_key_id: str | None = None,
+    redis_client=None,
+) -> dict[str, Any]:
+    projected = project_trust_state(state)
+    checkpoint = create_checkpoint(
+        projected,
+        auth_key_id=auth_key_id,
+    )
+    client = _redis_client(redis_client)
+    try:
+        result = client.eval(
+            _CHECKPOINT_CAS,
+            1,
+            REDIS_ROSTER_CHECKPOINT_KEY,
+            str(projected["generation"]),
+            projected["policySha256"],
+            checkpoint["stateSha256"],
+            _canonical_json(checkpoint),
+        )
+    except RedisError as exc:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-checkpoint-redis-unavailable"
+        ) from exc
+    code = (
+        str(result[0])
+        if isinstance(result, (list, tuple)) and result
+        else str(result or "")
+    )
+    if code not in {"created", "refreshed"}:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-checkpoint-cas-"
+            + (code or "failed")
+        )
+    stored = read_checkpoint(redis_client=client)
+    if (
+        stored is None
+        or stored["generation"] != projected["generation"]
+        or stored["policySha256"] != projected["policySha256"]
+        or stored["stateSha256"] != checkpoint["stateSha256"]
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-checkpoint-write-unverified"
+        )
+    return {
+        "status": "verified",
+        "mode": code,
+        "generation": projected["generation"],
+        "policy_sha256": projected["policySha256"],
+        "state_sha256": checkpoint["stateSha256"],
+        "auth_key_id": checkpoint["authKeyId"],
+        "independent_retention": "railway-redis-volume",
+    }
+
+
+def verify_pair(
+    envelope: Any,
+    checkpoint: Any,
+) -> dict[str, Any]:
+    state = verify_envelope(envelope)
+    cp = verify_checkpoint(checkpoint)
+    if (
+        state["generation"] != cp["generation"]
+        or state["policySha256"] != cp["policySha256"]
+        or digest_trust_state(state) != cp["stateSha256"]
+        or envelope.get("stateSha256") != cp["stateSha256"]
+    ):
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-pair-mismatch"
+        )
+    return state
+
+
+def _snapshot(db) -> dict[str, Any]:
+    try:
+        result = db.rpc(
+            "shine_ai_external_witness_roster_snapshot_v1",
+            {},
+        ).execute()
+    except Exception as exc:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-snapshot-unavailable"
+        ) from exc
+    return result.data if isinstance(result.data, dict) else {}
+
+
+def load_persisted_external_witness_roster(
+    db,
+    *,
+    redis_client=None,
+) -> dict[str, Any]:
+    payload = _snapshot(db)
+    status = str(payload.get("status") or "")
+
+    if status == "unbootstrapped":
+        policy = load_genesis_policy()
+        state = policy_to_trust_state(policy)
+        envelope = create_envelope(state)
+        checkpoint = persist_checkpoint(
+            state,
+            redis_client=redis_client,
+        )
+        try:
+            result = db.rpc(
+                "shine_ai_external_witness_roster_bootstrap_v1",
+                {
+                    "p_state_sha256": envelope["stateSha256"],
+                    "p_storage_auth_key_id": envelope["authKeyId"],
+                    "p_storage_auth_tag": envelope["authTag"],
+                },
+            ).execute()
+        except Exception as exc:
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-bootstrap-failed"
+            ) from exc
+        accepted = result.data if isinstance(result.data, dict) else {}
+        if accepted.get("status") not in {
+            "trusted",
+            "already_trusted",
+        }:
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-bootstrap-unverified"
+            )
+        payload = _snapshot(db)
+        status = str(payload.get("status") or "")
+        _ = checkpoint
+
+    if status != "trusted":
+        raise ExternalWitnessRosterError(
+            str(
+                payload.get("reason_code")
+                or "external-witness-roster-storage-invalid"
+            )
+        )
+
+    state = project_trust_state(payload.get("trust_state"))
+    envelope = {
+        "envelopeVersion": 1,
+        "envelopeType": ENVELOPE_TYPE,
+        "authAlgorithm": "HMAC-SHA-256",
+        "authKeyId": payload.get("storage_auth_key_id"),
+        "stateSha256": payload.get("state_sha256"),
+        "authTag": payload.get("storage_auth_tag"),
+        "state": state,
+    }
+    checkpoint = read_checkpoint(redis_client=redis_client)
+    if checkpoint is None:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-checkpoint-missing"
+        )
+    verified = verify_pair(envelope, checkpoint)
+    if verified != state:
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-state-mismatch"
+        )
+
+    policy = {
+        "policyVersion": 1,
+        "policyType": ROSTER_POLICY_TYPE,
+        "generation": state["generation"],
+        "minimumWitnesses": state["minimumWitnesses"],
+        "acceptedWitnessIds": list(state["acceptedWitnessIds"]),
+        "previousPolicySha256": state["previousPolicySha256"],
+        "policySha256": state["policySha256"],
+    }
+
+    candidate = _deployment_candidate()
+    if candidate is not None:
+        if candidate["generation"] < state["generation"]:
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-rollback-detected"
+            )
+        if candidate["generation"] == state["generation"]:
+            if candidate != policy:
+                raise ExternalWitnessRosterError(
+                    "external-witness-roster-equivocation-detected"
+                )
+        elif candidate["generation"] > state["generation"] + 1:
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-generation-skip"
+            )
+        else:
+            raise ExternalWitnessRosterError(
+                "external-witness-roster-transition-not-certified"
+            )
+
+    active, _keyring = _storage_keyring()
+    if envelope["authKeyId"] != active:
+        # Rotation is intentionally fail-closed in Layer 205. It keeps the
+        # current overlap key usable while a later layer can certify the
+        # exact dual-store rotation workflow.
+        raise ExternalWitnessRosterError(
+            "external-witness-roster-storage-key-rotation-required"
+        )
+
+    return {
+        **policy,
+        "roster_trust_persisted": True,
+        "roster_trust_source": "project-l-supabase",
+        "roster_storage_authenticated": True,
+        "roster_storage_auth_key_id": envelope["authKeyId"],
+        "roster_storage_state_sha256": envelope["stateSha256"],
+        "roster_storage_checkpoint_independent": True,
+        "roster_storage_checkpoint_retention": "railway-redis-volume",
+    }
+
+
+__all__ = [
+    "CERTIFIED_GENESIS_ROSTER_SHA256",
+    "CERTIFIED_GENESIS_WITNESS_IDS",
+    "CHECKPOINT_AUTH_DOMAIN",
+    "ENVELOPE_TYPE",
+    "ExternalWitnessRosterError",
+    "REDIS_ROSTER_CHECKPOINT_KEY",
+    "ROSTER_POLICY_TYPE",
+    "STATE_AUTH_DOMAIN",
+    "create_checkpoint",
+    "create_envelope",
+    "digest_trust_state",
+    "load_genesis_policy",
+    "load_persisted_external_witness_roster",
+    "persist_checkpoint",
+    "policy_to_trust_state",
+    "project_policy",
+    "project_trust_state",
+    "read_checkpoint",
+    "serialize_trust_state",
+    "verify_checkpoint",
+    "verify_envelope",
+    "verify_pair",
+]
