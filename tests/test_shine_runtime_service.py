@@ -66,6 +66,43 @@ def trust_storage_env(monkeypatch):
                 "railway-redis-volume",
         },
     )
+    monkeypatch.setattr(
+        runtime,
+        "build_monotonic_roster_head",
+        lambda *_args, **_kwargs: {
+            "headVersion": 1,
+            "headType":
+                "decision_trace_trust_state_witness_quorum_policy_"
+                "external_head_witness_quorum_monotonic_head",
+            "checkpointChainVersion": 1,
+            "sequence": 1,
+            "checkpointSha256": "a" * 64,
+            "generation": 1,
+            "policySha256":
+                "a5c456d49e47f1be3f2a7b7ed017328"
+                "844484ba05c4e6ef3212412c6361156c4",
+            "stateSha256": "f" * 64,
+            "headSha256": "b" * 64,
+        },
+    )
+    monkeypatch.setattr(
+        runtime,
+        "ensure_foundation_roster_head_witness",
+        lambda *_args, **_kwargs: {
+            "status": "verified",
+            "witness_id": "foundation-project-l-roster-head",
+            "auth_key_id": "foundation-roster-head-witness-v1",
+            "sequence": 1,
+            "head_sha256": "b" * 64,
+            "generation": 1,
+            "policy_sha256":
+                "a5c456d49e47f1be3f2a7b7ed017328"
+                "844484ba05c4e6ef3212412c6361156c4",
+            "state_sha256": "f" * 64,
+            "mode": "existing-witness",
+            "independent_retention": "foundation-supabase",
+        },
+    )
 
 
 def test_shine_ai_signature_matches_keyring_contract(monkeypatch):
@@ -544,7 +581,7 @@ def test_runtime_trace_binds_recovery_control_plane_without_private_content():
     changed["recovery"]["reason_codes"] = ["PRIVATE-REASON-TEXT-NOT-HASHED"]
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v13"
+    assert first["version"] == "shine/runtime-trace-v14"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-REASON-TEXT-NOT-HASHED" not in json.dumps(second)
 
@@ -1199,7 +1236,7 @@ def test_runtime_trace_binds_authenticity_without_signature_bytes():
     changed["components"]["shine_ai"]["decision_trace_authenticity"]["authenticated"] = False
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v13"
+    assert first["version"] == "shine/runtime-trace-v14"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(first)
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(second)
@@ -1357,7 +1394,7 @@ def test_runtime_trace_binds_trust_generation_without_certificate_signature():
     changed["components"]["shine_ai"]["decision_trace_trust"]["generation"] = 3
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v13"
+    assert first["version"] == "shine/runtime-trace-v14"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-CERTIFICATE-SIGNATURE" not in json.dumps(first)
 
@@ -1692,7 +1729,7 @@ def test_runtime_trace_binds_storage_proof_without_hmac_tag_or_redis_url():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v13"
+    assert first["version"] == "shine/runtime-trace-v14"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-HMAC-TAG" not in rendered
     assert "PRIVATE-REDIS-URL" not in rendered
@@ -1817,7 +1854,7 @@ def test_runtime_trace_binds_external_witness_without_foundation_auth_tag():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v13"
+    assert first["version"] == "shine/runtime-trace-v14"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-FOUNDATION-HMAC" not in rendered
     assert "PRIVATE-CHECKPOINT-HMAC" not in rendered
@@ -1964,6 +2001,15 @@ def test_cached_quorum_without_foundation_chain_fails_closed(
                 "external_roster_storage_checkpoint_independent": True,
                 "external_roster_storage_checkpoint_retention":
                     "railway-redis-volume",
+                "external_roster_head_sequence": 1,
+                "external_roster_head_sha256": "b" * 64,
+                "external_roster_head_checkpoint_sha256": "a" * 64,
+                "external_roster_head_witness_status": "verified",
+                "external_roster_head_witness_id":
+                    "foundation-project-l-roster-head",
+                "external_roster_head_witness_mode": "existing-witness",
+                "external_roster_head_witness_independent_retention":
+                    "foundation-supabase",
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
@@ -2129,6 +2175,15 @@ def test_cached_quorum_without_chain_checkpoint_fails_closed(
                 "external_roster_storage_checkpoint_independent": True,
                 "external_roster_storage_checkpoint_retention":
                     "railway-redis-volume",
+                "external_roster_head_sequence": 1,
+                "external_roster_head_sha256": "b" * 64,
+                "external_roster_head_checkpoint_sha256": "a" * 64,
+                "external_roster_head_witness_status": "verified",
+                "external_roster_head_witness_id":
+                    "foundation-project-l-roster-head",
+                "external_roster_head_witness_mode": "existing-witness",
+                "external_roster_head_witness_independent_retention":
+                    "foundation-supabase",
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
@@ -2258,6 +2313,15 @@ def test_cached_quorum_detects_checkpoint_ahead_rollback(
                 "external_roster_storage_checkpoint_independent": True,
                 "external_roster_storage_checkpoint_retention":
                     "railway-redis-volume",
+                "external_roster_head_sequence": 1,
+                "external_roster_head_sha256": "b" * 64,
+                "external_roster_head_checkpoint_sha256": "a" * 64,
+                "external_roster_head_witness_status": "verified",
+                "external_roster_head_witness_id":
+                    "foundation-project-l-roster-head",
+                "external_roster_head_witness_mode": "existing-witness",
+                "external_roster_head_witness_independent_retention":
+                    "foundation-supabase",
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
@@ -2409,6 +2473,15 @@ def test_cached_quorum_without_redis_chain_checkpoint_fails_closed(
                 "external_roster_storage_checkpoint_independent": True,
                 "external_roster_storage_checkpoint_retention":
                     "railway-redis-volume",
+                "external_roster_head_sequence": 1,
+                "external_roster_head_sha256": "b" * 64,
+                "external_roster_head_checkpoint_sha256": "a" * 64,
+                "external_roster_head_witness_status": "verified",
+                "external_roster_head_witness_id":
+                    "foundation-project-l-roster-head",
+                "external_roster_head_witness_mode": "existing-witness",
+                "external_roster_head_witness_independent_retention":
+                    "foundation-supabase",
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
@@ -2580,6 +2653,15 @@ def test_cached_quorum_detects_redis_checkpoint_ahead_rollback(
                 "external_roster_storage_checkpoint_independent": True,
                 "external_roster_storage_checkpoint_retention":
                     "railway-redis-volume",
+                "external_roster_head_sequence": 1,
+                "external_roster_head_sha256": "b" * 64,
+                "external_roster_head_checkpoint_sha256": "a" * 64,
+                "external_roster_head_witness_status": "verified",
+                "external_roster_head_witness_id":
+                    "foundation-project-l-roster-head",
+                "external_roster_head_witness_mode": "existing-witness",
+                "external_roster_head_witness_independent_retention":
+                    "foundation-supabase",
                 "minimum_witnesses": 2,
                 "verified_witness_count": 2,
                 "witness_ids": [
@@ -2866,7 +2948,7 @@ def test_runtime_trace_binds_quorum_without_witness_hmac_tags():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v13"
+    assert first["version"] == "shine/runtime-trace-v14"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-FOUNDATION-HMAC" not in rendered
     assert "PRIVATE-REDIS-HMAC" not in rendered
@@ -2989,7 +3071,7 @@ def test_runtime_trace_binds_persisted_quorum_policy_proof():
         {"status": "not_required"},
     )
 
-    assert first["version"] == "shine/runtime-trace-v13"
+    assert first["version"] == "shine/runtime-trace-v14"
     assert first["lineage_sha256"] != second["lineage_sha256"]
 
 
@@ -3081,7 +3163,7 @@ def test_runtime_trace_binds_quorum_policy_storage_without_hmac_tag():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v13"
+    assert first["version"] == "shine/runtime-trace-v14"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-POLICY-HMAC" not in rendered
     assert "PRIVATE-POLICY-KEYRING" not in rendered
@@ -3167,7 +3249,7 @@ def test_runtime_trace_binds_external_roster_without_hmac_or_keyring():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v13"
+    assert first["version"] == "shine/runtime-trace-v14"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-ROSTER-HMAC" not in rendered
     assert "PRIVATE-ROSTER-KEYRING" not in rendered
