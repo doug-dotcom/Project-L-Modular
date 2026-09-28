@@ -71,6 +71,43 @@ class MeasuredModelRouter:
 
 
 def configured_adapter(client, model_id, environ):
-    return MeasuredModelRouter(client, model_id,
-        routes_path=environ.get("L_MODEL_ROUTES_PATH", str(Path(__file__).resolve().parents[2] / "configs/model_routes.json")),
-        api=environ.get("L_MODEL_API", "auto"), reasoning_effort=environ.get("L_REASONING_EFFORT", "low"))
+    local = MeasuredModelRouter(
+        client,
+        model_id,
+        routes_path=environ.get(
+            "L_MODEL_ROUTES_PATH",
+            str(Path(__file__).resolve().parents[2] / "configs/model_routes.json"),
+        ),
+        api=environ.get("L_MODEL_API", "auto"),
+        reasoning_effort=environ.get("L_REASONING_EFFORT", "low"),
+    )
+
+    bridge_values = {
+        "base_url": str(
+            environ.get("SHINE_AI_MODEL_URL")
+            or environ.get("SHINE_AI_BASE_URL")
+            or ""
+        ).strip(),
+        "app_id": str(environ.get("SHINE_AI_MODEL_APP_ID") or "").strip(),
+        "key_id": str(environ.get("SHINE_AI_MODEL_APP_KEY_ID") or "").strip(),
+        "secret": str(environ.get("SHINE_AI_MODEL_APP_SECRET") or "").strip(),
+    }
+    configured = [bool(value) for value in bridge_values.values()]
+    if any(configured) and not all(configured):
+        from core.cognition.model_independence import UnavailableModelAdapter
+        return UnavailableModelAdapter("shine-ai-model-bridge-misconfigured")
+
+    if all(configured):
+        from core.cognition.shine_ai_bridge import ShineAIModelAdapter
+        return ShineAIModelAdapter(
+            **bridge_values,
+            owner_id=str(
+                environ.get("PROJECT_L_OWNER_ID")
+                or environ.get("L_MEMORY_OWNER_ID")
+                or ""
+            ).strip() or None,
+            fallback=local,
+            timeout_seconds=float(environ.get("SHINE_AI_MODEL_TIMEOUT_SECONDS", "60")),
+        )
+
+    return local
