@@ -328,7 +328,7 @@
                 : [];
             if (
                 !UUID.test(requestId)
-                || item.status !== 'ready'
+                || !['ready', 'cancelling'].includes(String(item.status || ''))
                 || requestText.length > 100000
                 || capabilities.length < 1
             ) return [];
@@ -337,6 +337,7 @@
                 sourceConversationId,
                 sourceMessageId: String(item.source_message_id || ''),
                 requestText,
+                status: String(item.status || ''),
                 capabilityIds: capabilities,
                 createdAt: item.created_at || null,
                 updatedAt: item.updated_at || null,
@@ -351,7 +352,7 @@
             '/foundation/completions/' + encodeURIComponent(id) + '/cancel',
             {method: 'POST'},
         );
-        if (!['cancelled', 'already-cancelled'].includes(String(result.status || ''))) {
+        if (!['cancelled', 'already-cancelled', 'cancelling'].includes(String(result.status || ''))) {
             throw new Error('pending-concierge-cancellation-failed');
         }
         return result;
