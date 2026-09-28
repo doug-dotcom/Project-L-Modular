@@ -1307,7 +1307,6 @@ def _verify_transition_evidence_retention(
             "chain_generation": 1,
             "chain_tag": None,
             "chain_witness_status": chain_witness["status"],
-            "chain_witness_mode": chain_witness["mode"],
             "chain_witness_generation":
                 chain_witness["generation"],
             "chain_witness_rows": chain_witness["rows"],
@@ -1376,7 +1375,6 @@ def _verify_transition_evidence_retention(
         "chain_generation": chain["latestGeneration"],
         "chain_tag": chain["latestChainTag"],
         "chain_witness_status": chain_witness["status"],
-        "chain_witness_mode": chain_witness["mode"],
         "chain_witness_generation":
             chain_witness["generation"],
         "chain_witness_rows": chain_witness["rows"],
@@ -1891,8 +1889,6 @@ def load_persisted_external_witness_roster(
             evidence_retention["chain_tag"],
         "roster_transition_evidence_chain_witness_status":
             evidence_retention["chain_witness_status"],
-        "roster_transition_evidence_chain_witness_mode":
-            evidence_retention["chain_witness_mode"],
         "roster_transition_evidence_chain_witness_generation":
             evidence_retention["chain_witness_generation"],
         "roster_transition_evidence_chain_witness_rows":
