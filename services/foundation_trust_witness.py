@@ -154,6 +154,68 @@ def _record_witness(
     return data
 
 
+def ensure_foundation_roster_transition_authorization(
+    db,
+    previous_policy: dict,
+    next_policy: dict,
+    *,
+    witness_url: str | None = None,
+    timeout_seconds: float = 4.0,
+    post_impl=None,
+) -> dict:
+    token = _client_token(db)
+    post = post_impl or httpx.post
+    try:
+        response = post(
+            _witness_url(witness_url),
+            headers={
+                "X-Shine-Client-Token": token,
+                "Content-Type": "application/json",
+            },
+            json={
+                "operation": "external-roster-transition-authorize",
+                "previousPolicy": previous_policy,
+                "nextPolicy": next_policy,
+            },
+            timeout=timeout_seconds,
+            follow_redirects=False,
+        )
+        data = _response_json(response)
+    except FoundationWitnessError:
+        raise
+    except Exception as exc:
+        raise FoundationWitnessError(
+            "foundation-roster-transition-unavailable"
+        ) from exc
+    if int(response.status_code) >= 400:
+        raise FoundationWitnessError(
+            str(
+                data.get("reasonCode")
+                or "foundation-roster-transition-rejected"
+            )
+        )
+    if (
+        data.get("status") != "authorized"
+        or data.get("authorizationVersion") != 1
+        or data.get("authorizationType")
+            != "decision_trace_trust_state_external_witness_roster_transition"
+        or data.get("authAlgorithm") != "HMAC-SHA-256"
+        or data.get("witnessId") != WITNESS_ID
+        or data.get("fromGeneration") != previous_policy.get("generation")
+        or data.get("toGeneration") != next_policy.get("generation")
+        or data.get("fromPolicySha256")
+            != previous_policy.get("policySha256")
+        or data.get("toPolicySha256")
+            != next_policy.get("policySha256")
+        or not isinstance(data.get("authTag"), str)
+        or SHA256_RE.fullmatch(data["authTag"]) is None
+    ):
+        raise FoundationWitnessError(
+            "foundation-roster-transition-response-invalid"
+        )
+    return data
+
+
 def _policy_transition_authorization_projection(
     value: Any,
     *,
@@ -449,5 +511,6 @@ __all__ = [
     "FoundationWitnessError",
     "WITNESS_ID",
     "ensure_foundation_policy_transition_authorization",
+    "ensure_foundation_roster_transition_authorization",
     "ensure_foundation_trust_witness",
 ]
