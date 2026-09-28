@@ -135,6 +135,21 @@ def current_task_request_id():
     return str(parts[1] or '')
 
 
+def current_task_request():
+    """Return a defensive copy of the exact durable request bound to this worker."""
+    task = getattr(CONTEXT, 'task', None)
+    if not task:
+        return {}
+    parts = _task_binding_parts(task)
+    request = parts[4]
+    if not isinstance(request, dict):
+        return {}
+    try:
+        return json.loads(json.dumps(request, sort_keys=True, separators=(',', ':')))
+    except Exception:
+        return {}
+
+
 def record_current_action_receipt(receipt):
     """Persist one provider-confirmed action immediately when running durably."""
     task = getattr(CONTEXT, 'task', None)
