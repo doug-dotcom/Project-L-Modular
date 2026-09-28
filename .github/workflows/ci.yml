@@ -60,6 +60,7 @@ jobs:
           services/capability_router_service.py
           services/foundation_companion_service.py
           services/foundation_chain_redis_checkpoint.py
+          services/roster_transition_evidence_mirror.py
           services/shine_runtime_service.py
           api/foundation_companion.py
           services/external_research_service.py
