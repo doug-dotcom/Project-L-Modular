@@ -31,12 +31,17 @@ class Query:
         self.mode = mode
         self.payload = payload
         self.filters = {}
+        self.not_filters = {}
 
     def select(self, *args):
         return self
 
     def eq(self, key, value):
         self.filters[key] = value
+        return self
+
+    def neq(self, key, value):
+        self.not_filters[key] = value
         return self
 
     def limit(self, value):
@@ -54,6 +59,7 @@ class Query:
                 row.copy()
                 for row in self.db.tables.get(self.table, [])
                 if all(str(row.get(k)) == str(v) for k, v in self.filters.items())
+                and all(str(row.get(k)) != str(v) for k, v in self.not_filters.items())
             ]
             return Result(rows)
         if self.mode == "insert":
@@ -62,7 +68,10 @@ class Query:
         if self.mode == "update":
             changed = []
             for row in self.db.tables.get(self.table, []):
-                if all(str(row.get(k)) == str(v) for k, v in self.filters.items()):
+                if (
+                    all(str(row.get(k)) == str(v) for k, v in self.filters.items())
+                    and all(str(row.get(k)) != str(v) for k, v in self.not_filters.items())
+                ):
                     row.update(self.payload)
                     changed.append(row.copy())
             return Result(changed)
