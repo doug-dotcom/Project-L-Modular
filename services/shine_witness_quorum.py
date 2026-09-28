@@ -1,6 +1,6 @@
 """Bounded witness quorum for Project L's monotonic Shine-AI trust head.
 
-Layer 196 counts two independently retained witnesses:
+Layer 197 counts two independently retained witnesses:
 - redis-project-l: private Railway Redis volume, separately HMAC-keyed
 - foundation-project-l: separate Foundation Supabase project
 
@@ -459,7 +459,7 @@ def load_quorum_policy() -> dict[str, Any]:
             "trust-witness-quorum-policy-digest-mismatch"
         )
 
-    # Layer 196 is deliberately fixed to the initial 2-of-2 deployment.
+    # Layer 197 is deliberately fixed to the initial 2-of-2 deployment.
     if (
         minimum != 2
         or ids != sorted([FOUNDATION_WITNESS_ID, REDIS_WITNESS_ID])
