@@ -1407,7 +1407,7 @@ def foundation_concierge_jobs_as_user(
         status = str(raw.get("status") or "")[:40]
         if status not in {
             "planned", "ready", "running", "partial", "retry-scheduled",
-            "retry-running", "completed", "failed", "blocked", "cancelled",
+            "retry-running", "completed", "failed", "blocked", "cancelled", "retired",
         }:
             continue
 
@@ -1489,6 +1489,52 @@ def foundation_concierge_jobs_as_user(
             else:
                 rejected_receipts += 1
 
+        retirement = raw.get("retirementReceipt")
+        retirement_integrity = str(raw.get("retirementReceiptIntegrity") or "")
+        safe_retirement = None
+        if retirement is not None:
+            valid_retirement = (
+                isinstance(retirement, dict)
+                and retirement_integrity == "verified"
+                and retirement.get("integrity") == "verified"
+                and retirement.get("retirementReceipt")
+                    == "shine-foundation/concierge-retirement-receipt-v1"
+                and retirement.get("schemaVersion") == "1.0.0"
+                and str(retirement.get("requestId") or "") == request_id
+                and retirement.get("executionStarted") is False
+                and int(retirement.get("specialistCheckpointCount") or 0) == 0
+                and int(retirement.get("retryCount") or 0) == 0
+                and isinstance(retirement.get("requestedCapabilities"), list)
+                and len(retirement.get("requestedCapabilities")) <= 20
+                and len(str(retirement.get("receiptSha256") or "")) == 64
+                and all(
+                    ch in "0123456789abcdef"
+                    for ch in str(retirement.get("receiptSha256") or "")
+                )
+            )
+            if valid_retirement:
+                safe_retirement = {
+                    "version": "1.0",
+                    "request_id": request_id,
+                    "reason_code": str(retirement.get("reasonCode") or "")[:160],
+                    "requested_at": retirement.get("requestedAt"),
+                    "retired_at": retirement.get("retiredAt"),
+                    "minimum_age_seconds": int(
+                        retirement.get("minimumAgeSeconds") or 0
+                    ),
+                    "requested_capabilities": safe_capabilities(
+                        retirement.get("requestedCapabilities")
+                    ),
+                    "step_count": int(retirement.get("stepCount") or 0),
+                    "execution_started": False,
+                    "specialist_checkpoint_count": 0,
+                    "retry_count": 0,
+                    "receipt_sha256": str(retirement.get("receiptSha256")),
+                    "integrity": "verified",
+                }
+            else:
+                rejected_receipts += 1
+
         progress = raw.get("progress") if isinstance(raw.get("progress"), dict) else {}
         items.append({
             "request_id": request_id,
@@ -1524,6 +1570,10 @@ def foundation_concierge_jobs_as_user(
                 receipt_integrity or None
             ),
             "cancellation_receipt": safe_receipt,
+            "retirement_receipt_integrity": (
+                retirement_integrity or None
+            ),
+            "retirement_receipt": safe_retirement,
         })
 
     return {
@@ -1536,6 +1586,7 @@ def foundation_concierge_jobs_as_user(
         },
         "receipt_contract": {
             "version": "shine-foundation/concierge-cancellation-receipt-v1",
+            "retirement_version": "shine-foundation/concierge-retirement-receipt-v1",
             "read_time_verification": True,
         },
         "summary": body.get("summary") if isinstance(body.get("summary"), dict) else {},
