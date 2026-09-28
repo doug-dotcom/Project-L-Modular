@@ -164,6 +164,7 @@ from services.foundation_companion_service import (
 )
 from services.shine_runtime_service import (
     build_human_status,
+    build_runtime_recovery,
     build_runtime_trace,
     concierge_route_packet,
     dispatch_runtime_concierge,
@@ -631,10 +632,31 @@ def start_chat(
         for name, value in (shine_runtime.get("components") or {}).items()
         if isinstance(value, dict)
     }
-    start_human_status = (
-        shine_runtime.get("human_status")
-        if isinstance(shine_runtime.get("human_status"), dict)
-        else build_human_status(shine_runtime, final=False)
+    start_runtime = shine_runtime
+    start_recovery = (
+        shine_runtime.get("recovery")
+        if isinstance(shine_runtime.get("recovery"), dict)
+        else build_runtime_recovery(shine_runtime, final=False)
+    )
+    dispatch_status = str(concierge_dispatch.get("status") or "")
+    if dispatch_status == "unavailable":
+        start_runtime = dict(shine_runtime)
+        start_recovery = build_runtime_recovery(
+            start_runtime,
+            {"status": "unavailable"},
+            final=False,
+        )
+        start_runtime["recovery"] = start_recovery
+    start_execution = (
+        {"status": "unavailable"}
+        if dispatch_status == "unavailable"
+        else None
+    )
+    start_trace = build_runtime_trace(start_runtime, start_execution)
+    start_human_status = build_human_status(
+        start_runtime,
+        start_execution,
+        final=False,
     )
     return {
         **result,
@@ -645,7 +667,8 @@ def start_chat(
             "status": shine_runtime.get("status"),
             "components": component_status,
             "concierge_dispatch": concierge_dispatch,
-            "trace": shine_runtime.get("trace"),
+            "recovery": start_recovery,
+            "trace": start_trace,
             "human_status": start_human_status,
         },
     }
@@ -1430,6 +1453,13 @@ def chat(req: ChatRequest):
             )
             runtime_route = concierge_route_packet(runtime_execution)
 
+    runtime_recovery = build_runtime_recovery(
+        shine_runtime,
+        runtime_execution,
+        final=True,
+    )
+    if isinstance(shine_runtime, dict):
+        shine_runtime["recovery"] = runtime_recovery
     runtime_trace = build_runtime_trace(shine_runtime, runtime_execution)
     human_status = build_human_status(
         shine_runtime,
@@ -2319,6 +2349,7 @@ RESPONSE RULES:
             "status": (shine_runtime or {}).get("status", "legacy"),
             "components": component_status,
             "concierge_execution": runtime_execution.get("status"),
+            "recovery": runtime_recovery,
             "trace": runtime_trace,
             "human_status": human_status,
         },
