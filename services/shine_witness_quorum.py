@@ -1430,6 +1430,8 @@ def ensure_trust_witness_quorum(
             roster["roster_storage_checkpoint_independent"],
         "external_roster_storage_checkpoint_retention":
             roster["roster_storage_checkpoint_retention"],
+        "external_roster_storage_rotation":
+            roster["roster_storage_rotation"],
         "minimum_witnesses": policy["minimumWitnesses"],
         "verified_witness_count": len(by_id),
         "witness_ids": sorted(by_id),
