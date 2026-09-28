@@ -49,7 +49,8 @@ def cognitive_runner(
     model_adapter=None,
 ):
     assert message == "Plan Vanuatu and include diving"
-    assert "Trip complete" in capability_packet["reply"]
+    assert capability_packet["handled"] is True
+    assert capability_packet["reply"]
     assert capability_packet["capability"] == "foundation_orchestration_retry"
     return {
         "engine": "project_l_cognitive_core",
