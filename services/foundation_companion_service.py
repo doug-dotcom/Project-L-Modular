@@ -2277,21 +2277,54 @@ def invoke_foundation_orchestration(
         foundation_status = "unavailable"
         foundation_reason = "concierge-execution-status-invalid"
 
+    gate_payload = execute_body.get("gate")
+    gate_retirement = None
+    if isinstance(gate_payload, dict):
+        gate_retirement = _safe_foundation_retirement(
+            gate_payload.get("retirement"),
+            request_id,
+        )
+    expiry_block = (
+        foundation_status == "blocked"
+        and foundation_reason in {
+            "concierge-plan-expired",
+            "concierge-request-retired",
+        }
+    )
+    if expiry_block and gate_retirement is None:
+        return {
+            "status": "unavailable",
+            "reason_code": "concierge-retirement-receipt-invalid",
+            "foundation_status": foundation_status,
+            "foundation_reason_code": foundation_reason,
+            "request_id": request_id,
+            "selected_capabilities": normalised["selected_capabilities"],
+            "executed_capabilities": [],
+            "completed_capabilities": [],
+            "unavailable_capabilities": capability_ids,
+            "skipped_capabilities": skipped,
+            "results": [],
+            "execution_performed": False,
+            "synthesis_ready": False,
+            "synthesis_must_disclose_partial": bool(skipped),
+        }
+
     raw_results = execute_body.get("results")
     if foundation_status not in {"completed", "partial"} and raw_results is None:
         return {
-            "status": foundation_status,
+            "status": "retired" if expiry_block else foundation_status,
             "reason_code": foundation_reason,
             "foundation_status": foundation_status,
             "foundation_reason_code": foundation_reason,
             "request_id": request_id,
             "selected_capabilities": normalised["selected_capabilities"],
-            "executed_capabilities": capability_ids,
+            "executed_capabilities": [] if expiry_block else capability_ids,
             "completed_capabilities": [],
             "unavailable_capabilities": capability_ids,
             "skipped_capabilities": skipped,
             "results": [],
-            "execution_performed": True,
+            "execution_performed": False if expiry_block else True,
+            "retirement": gate_retirement,
             "synthesis_ready": False,
             "synthesis_must_disclose_partial": bool(skipped),
         }
