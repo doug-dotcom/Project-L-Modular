@@ -104,6 +104,40 @@ def main() -> None:
             "witness-quorum-unverified"
         )
 
+    witness_rotation_target = os.getenv(
+        "SHINE_TRACE_EXTERNAL_ROSTER_HEAD_WITNESS_ROTATION_TARGET_KEY_ID",
+        "",
+    ).strip()
+    witness_rotation = (
+        quorum.get("external_roster_head_witness_rotation")
+        if isinstance(
+            quorum.get("external_roster_head_witness_rotation"),
+            dict,
+        )
+        else {}
+    )
+    if (
+        quorum.get("external_roster_head_witness_rotation_supported")
+        is not True
+        or not witness_rotation
+        or witness_rotation.get("status") != "verified"
+        or witness_rotation.get("state_preserved") is not True
+        or (
+            witness_rotation_target
+            and (
+                quorum.get(
+                    "external_roster_head_witness_auth_key_id"
+                ) != witness_rotation_target
+                or witness_rotation.get("target_auth_key_id")
+                    != witness_rotation_target
+            )
+        )
+    ):
+        raise SystemExit(
+            "Project L Shine-AI trace trust smoke: FAIL "
+            "roster-head-witness-rotation-unverified"
+        )
+
     chain = (
         quorum.get("foundation_chain")
         if isinstance(quorum.get("foundation_chain"), dict)
@@ -210,6 +244,8 @@ def main() -> None:
         f"roster_storage={quorum.get('external_roster_storage_auth_key_id')} "
         f"roster_checkpoint={quorum.get('external_roster_storage_checkpoint_retention')} "
         f"roster_head_witness={quorum.get('external_roster_head_witness_id')} "
+        f"roster_head_witness_key={quorum.get('external_roster_head_witness_auth_key_id')} "
+        f"roster_head_witness_rotation={witness_rotation.get('mode')} "
         f"foundation_chain=verified "
         f"chain_checkpoint=verified "
         f"chain_checkpoint_redundancy=2/2"
