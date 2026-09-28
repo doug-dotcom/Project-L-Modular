@@ -34,11 +34,12 @@ def test_layer202_rotation_ledger_is_read_only_to_runtime_role():
         in sql
     )
     assert "enable row level security" in sql
+    flat = " ".join(sql.split())
     assert (
         "grant select on "
         "public.shine_ai_witness_quorum_policy_storage_rotation_ledger "
         "to service_role"
-        in sql
+        in flat
     )
     assert (
         "grant insert on "
