@@ -47,7 +47,7 @@ from services.shine_trust_storage import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v7"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v8"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -1347,6 +1347,8 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                     ),
                     (
                         "status", "policy_generation", "policy_sha256",
+                        "policy_trust_persisted", "policy_trust_source",
+                        "policy_trust_generation",
                         "minimum_witnesses", "verified_witness_count",
                         "witness_ids", "sequence", "head_sha256",
                         "generation", "keyset_sha256", "state_sha256",
