@@ -87,7 +87,12 @@ class FakeDb:
                 },
                 "source_conversation_id": "doug_primary",
                 "source_message_id": REQUEST,
+                "request_text": "Plan Vanuatu and include diving",
                 "status": "ready",
+                "synthesis_status": "not-required",
+                "final_result_sha256": None,
+                "final_answer": None,
+                "final_answer_sha256": None,
             }],
             "companion_concierge_completion_outbox": [],
         }
@@ -108,6 +113,48 @@ class FakeDb:
             })
         if name == "companion_foundation_delegation_token_v1":
             return Rpc("d" * 128)
+        if name == "companion_store_delayed_synthesis_packet_v1":
+            row = self.tables["companion_foundation_pending_jobs"][0]
+            packet = (params or {})["p_packet"]
+            digest = (params or {})["p_packet_sha256"]
+            existing = getattr(self, "synthesis_packet", None)
+            if existing is not None and existing != packet:
+                raise AssertionError("synthesis packet conflict")
+            self.synthesis_packet = packet
+            row["final_result_sha256"] = digest
+            if row.get("synthesis_status") != "ready":
+                row["synthesis_status"] = "pending"
+                row["final_answer"] = None
+                row["final_answer_sha256"] = None
+            return Rpc({
+                "stored": True,
+                "replayed": row.get("synthesis_status") == "ready",
+                "packetSha256": digest,
+                "synthesisStatus": row.get("synthesis_status"),
+            })
+        if name == "companion_delayed_synthesis_state_v1":
+            row = self.tables["companion_foundation_pending_jobs"][0]
+            return Rpc({
+                "found": True,
+                "requestId": row["job_id"],
+                "requestText": row.get("request_text"),
+                "synthesisStatus": row.get("synthesis_status"),
+                "packetSha256": row.get("final_result_sha256"),
+                "resultPacket": getattr(self, "synthesis_packet", None),
+                "finalAnswer": row.get("final_answer"),
+                "finalAnswerSha256": row.get("final_answer_sha256"),
+            })
+        if name == "companion_store_delayed_synthesis_answer_v1":
+            row = self.tables["companion_foundation_pending_jobs"][0]
+            row["final_answer"] = (params or {})["p_answer"]
+            row["final_answer_sha256"] = (params or {})["p_answer_sha256"]
+            row["synthesis_status"] = "ready"
+            return Rpc({
+                "stored": True,
+                "replayed": False,
+                "answerSha256": row["final_answer_sha256"],
+                "synthesisStatus": "ready",
+            })
         raise AssertionError(name)
 
 
@@ -184,10 +231,20 @@ def test_resume_reuses_completed_checkpoint_and_finishes_retry():
         raise AssertionError(url)
 
     db = FakeDb()
-    result = run_concierge_retry_once(db, post_impl=post)
+    result = run_concierge_retry_once(
+        db,
+        post_impl=post,
+        synthesise=lambda request, packet: {
+            "status": "ready",
+            "reply": "Your final Vanuatu plan now includes the completed dive brief.",
+        },
+    )
     assert result["status"] == "completed"
     assert result["reused_count"] == 1
-    assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "completed"
+    row = db.tables["companion_foundation_pending_jobs"][0]
+    assert row["status"] == "completed"
+    assert row["synthesis_status"] == "ready"
+    assert row["final_answer"].startswith("Your final Vanuatu plan")
     outbox = db.tables["companion_concierge_completion_outbox"]
     assert len(outbox) == 1
     assert outbox[0]["event_type"] == "retry-completed"
@@ -406,3 +463,125 @@ def test_claim_transport_accepts_foundation_legacy_batch_up_to_twenty():
     result = claim_foundation_retry(FakeDb(), post_impl=post)
     assert result["status"] == "claimed"
     assert result["capability_ids"] == capabilities
+
+
+
+def test_completed_specialists_hold_retry_lease_until_l_answer_is_ready():
+    finish_calls = []
+
+    def post(url, *, json, **kwargs):
+        if url.endswith("/retry/claim"):
+            return Response(200, claim_payload())
+        if url.endswith("/concierge/resume"):
+            return Response(200, {
+                "status": "completed",
+                "reasonCode": "concierge-execution-completed",
+                "results": [{
+                    "capabilityId": "dive.destination_brief",
+                    "status": "completed",
+                    "reasonCode": "capability-completed",
+                    "result": {"summary": "Dive complete"},
+                }],
+                "synthesisReady": True,
+                "synthesisMustDisclosePartial": False,
+            })
+        if url.endswith("/retry/finish"):
+            finish_calls.append(json)
+            return Response(200, {
+                "status": "ok",
+                "reasonCode": "retry-finished",
+            })
+        raise AssertionError(url)
+
+    db = FakeDb()
+    result = run_concierge_retry_once(
+        db,
+        post_impl=post,
+        synthesise=lambda request, packet: {
+            "status": "unavailable",
+            "reason_code": "model-temporarily-unavailable",
+        },
+    )
+    assert result["status"] == "synthesis-retry"
+    assert finish_calls == []
+    assert db.tables["companion_concierge_completion_outbox"] == []
+    row = db.tables["companion_foundation_pending_jobs"][0]
+    assert row["status"] == "ready"
+    assert row["synthesis_status"] == "pending"
+    assert row["final_result_sha256"]
+
+
+def test_reclaimed_completed_retry_reuses_saved_final_answer_without_model_call():
+    finish_calls = []
+
+    def post(url, *, json, **kwargs):
+        if url.endswith("/retry/claim"):
+            return Response(200, claim_payload())
+        if url.endswith("/concierge/resume"):
+            return Response(200, {
+                "status": "completed",
+                "reasonCode": "concierge-execution-completed",
+                "results": [{
+                    "capabilityId": "dive.destination_brief",
+                    "status": "completed",
+                    "reasonCode": "concierge-step-reused",
+                    "result": {"summary": "Dive complete"},
+                    "reused": True,
+                }],
+                "synthesisReady": True,
+                "synthesisMustDisclosePartial": False,
+            })
+        if url.endswith("/retry/finish"):
+            finish_calls.append(json["outcome"])
+            return Response(200, {
+                "status": "ok",
+                "reasonCode": "retry-finished",
+                "retry": {"status": "completed"},
+            })
+        raise AssertionError(url)
+
+    db = FakeDb()
+    db.synthesis_packet = {
+        "version": "shine-concierge-delayed-result/v1",
+        "request_id": REQUEST,
+        "status": "completed",
+        "reason_code": "concierge-execution-completed",
+        "capability_ids": ["dive.destination_brief"],
+        "results": [{
+            "capabilityId": "dive.destination_brief",
+            "status": "completed",
+            "reasonCode": "concierge-step-reused",
+            "result": {"summary": "Dive complete"},
+            "reused": True,
+        }],
+        "synthesis_ready": True,
+        "synthesis_must_disclose_partial": False,
+    }
+    row = db.tables["companion_foundation_pending_jobs"][0]
+    import hashlib
+    encoded = json.dumps(
+        db.synthesis_packet,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+    row["final_result_sha256"] = hashlib.sha256(encoded).hexdigest()
+    row["final_answer"] = "Saved final answer"
+    row["final_answer_sha256"] = hashlib.sha256(
+        row["final_answer"].encode()
+    ).hexdigest()
+    row["synthesis_status"] = "ready"
+    row["status"] = "completed"
+
+    def forbidden_synthesis(*args, **kwargs):
+        raise AssertionError("model must not run twice")
+
+    result = run_concierge_retry_once(
+        db,
+        post_impl=post,
+        synthesise=forbidden_synthesis,
+    )
+    assert result["status"] == "completed"
+    assert result["synthesis_replayed"] is True
+    assert finish_calls == ["completed"]
+    assert len(db.tables["companion_concierge_completion_outbox"]) == 1
