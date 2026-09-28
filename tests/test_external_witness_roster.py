@@ -3,6 +3,7 @@ import json
 import pytest
 
 from services import external_witness_roster as roster
+from services import external_witness_roster_chain as roster_chain
 
 
 POLICY_SHA = (
@@ -47,6 +48,7 @@ class FakeDB:
     def __init__(self):
         self.state = None
         self.rpc_calls = []
+        self.chain_records = []
 
     def rpc(self, name, params):
         self.rpc_calls.append((name, params))
@@ -54,6 +56,40 @@ class FakeDB:
 
         class Call:
             def execute(self):
+                if name == "shine_ai_external_witness_roster_chain_snapshot_v1":
+                    return FakeResult({
+                        "status": "empty" if not db.chain_records else "ok",
+                        "records": list(db.chain_records),
+                    })
+                if name == "shine_ai_external_witness_roster_chain_append_v1":
+                    record = {
+                        "chainVersion": 1,
+                        "chainType": roster_chain.CHAIN_TYPE,
+                        "authAlgorithm": "HMAC-SHA-256",
+                        "authKeyId": params["p_auth_key_id"],
+                        "sequence": params["p_sequence"],
+                        "previousCheckpointSha256":
+                            params["p_previous_checkpoint_sha256"],
+                        "trustStateVersion": 1,
+                        "generation": params["p_generation"],
+                        "previousPolicySha256":
+                            params["p_previous_policy_sha256"],
+                        "policySha256": params["p_policy_sha256"],
+                        "stateSha256": params["p_state_sha256"],
+                        "checkpointSha256":
+                            params["p_checkpoint_sha256"],
+                        "authTag": params["p_auth_tag"],
+                    }
+                    existing = [
+                        row for row in db.chain_records
+                        if row["sequence"] == record["sequence"]
+                    ]
+                    if existing:
+                        assert existing[0] == record
+                        return FakeResult({"status": "already_present"})
+                    db.chain_records.append(record)
+                    db.chain_records.sort(key=lambda row: row["sequence"])
+                    return FakeResult({"status": "appended"})
                 if name == "shine_ai_external_witness_roster_snapshot_v1":
                     if db.state is None:
                         return FakeResult({"status": "unbootstrapped"})
@@ -143,12 +179,74 @@ class FakeRedis:
         return dict(self.rows.get(key, {}))
 
     def eval(self, _script, _numkeys, key, *args):
-        generation, policy_sha, state_sha, checkpoint_json = args
+        if key == roster_chain.REDIS_HEAD_KEY:
+            (
+                sequence,
+                checkpoint_sha,
+                generation,
+                policy_sha,
+                state_sha,
+                previous_checkpoint_sha,
+                head_json,
+            ) = args
+            sequence = int(sequence)
+            generation = int(generation)
+            current = self.rows.get(key)
+            if current is None:
+                if sequence != 1 or previous_checkpoint_sha:
+                    return ["genesis-invalid"]
+                self.rows[key] = {
+                    "sequence": str(sequence),
+                    "checkpoint_sha256": checkpoint_sha,
+                    "generation": str(generation),
+                    "policy_sha256": policy_sha,
+                    "state_sha256": state_sha,
+                    "head_json": head_json,
+                }
+                return ["created"]
+            current_sequence = int(current["sequence"])
+            if sequence < current_sequence:
+                return ["rollback"]
+            if sequence > current_sequence + 1:
+                return ["sequence-skip"]
+            if sequence == current_sequence:
+                if (
+                    checkpoint_sha != current["checkpoint_sha256"]
+                    or generation != int(current["generation"])
+                    or policy_sha != current["policy_sha256"]
+                    or state_sha != current["state_sha256"]
+                ):
+                    return ["fork"]
+                current["head_json"] = head_json
+                return ["refreshed"]
+            if previous_checkpoint_sha != current["checkpoint_sha256"]:
+                return ["predecessor-checkpoint-mismatch"]
+            if generation != int(current["generation"]) + 1:
+                return ["generation-mismatch"]
+            self.rows[key] = {
+                "sequence": str(sequence),
+                "checkpoint_sha256": checkpoint_sha,
+                "generation": str(generation),
+                "policy_sha256": policy_sha,
+                "state_sha256": state_sha,
+                "head_json": head_json,
+            }
+            return ["advanced"]
+
+        (
+            generation,
+            policy_sha,
+            state_sha,
+            previous_policy_sha,
+            checkpoint_json,
+        ) = args
         generation = int(generation)
         current = self.rows.get(key)
         if current is None:
             if generation != 1:
                 return ["bootstrap-generation-invalid"]
+            if previous_policy_sha:
+                return ["bootstrap-predecessor-invalid"]
             self.rows[key] = {
                 "generation": str(generation),
                 "policy_sha256": policy_sha,
@@ -168,7 +266,17 @@ class FakeRedis:
                 return ["state-mismatch"]
             current["checkpoint_json"] = checkpoint_json
             return ["refreshed"]
-        return ["transition-unimplemented"]
+        if previous_policy_sha != current["policy_sha256"]:
+            return ["predecessor-policy-mismatch"]
+        if policy_sha == current["policy_sha256"]:
+            return ["generation-without-policy-change"]
+        self.rows[key] = {
+            "generation": str(generation),
+            "policy_sha256": policy_sha,
+            "state_sha256": state_sha,
+            "checkpoint_json": checkpoint_json,
+        }
+        return ["advanced"]
 
 
 @pytest.fixture(autouse=True)
@@ -191,6 +299,17 @@ def env(monkeypatch):
     monkeypatch.setenv(
         "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_STORAGE_ACTIVE_KEY_ID",
         "roster-a",
+    )
+    monkeypatch.setenv(
+        "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_CHAIN_KEYRING_JSON",
+        json.dumps({
+            "chain-a": "C" * 48,
+            "chain-b": "D" * 48,
+        }),
+    )
+    monkeypatch.setenv(
+        "SHINE_TRACE_EXTERNAL_WITNESS_ROSTER_CHAIN_ACTIVE_KEY_ID",
+        "chain-a",
     )
 
 
