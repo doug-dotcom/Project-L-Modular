@@ -1340,6 +1340,19 @@
                                 }
                             }
 
+                            if (
+                                taskCentreJob
+                                && !['retired', 'cancelled', 'completed', 'failed'].includes(taskCentreJob.status)
+                                && taskCentreJob.planTtlText
+                            ) {
+                                savedText = (savedText || '') + '\n\n' + taskCentreJob.planTtlText;
+                                if (taskCentreJob.planTtl?.state === 'expiry-due') {
+                                    attention = true;
+                                    working = false;
+                                    resultLabel = 'Plan expiry due';
+                                }
+                            }
+
                             const pendingConcierge = run.pendingConcierge.get(task.requestId);
                             if (pendingConcierge && !run.delayed.has(task.requestId)) {
                                 working = true;
