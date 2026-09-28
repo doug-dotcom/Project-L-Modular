@@ -500,7 +500,7 @@ def test_runtime_trace_binds_recovery_control_plane_without_private_content():
     changed["recovery"]["reason_codes"] = ["PRIVATE-REASON-TEXT-NOT-HASHED"]
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v6"
+    assert first["version"] == "shine/runtime-trace-v7"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-REASON-TEXT-NOT-HASHED" not in json.dumps(second)
 
@@ -950,7 +950,7 @@ def test_runtime_trace_binds_authenticity_without_signature_bytes():
     changed["components"]["shine_ai"]["decision_trace_authenticity"]["authenticated"] = False
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v6"
+    assert first["version"] == "shine/runtime-trace-v7"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(first)
     assert "PRIVATE-SIGNATURE-BYTES" not in json.dumps(second)
@@ -1108,7 +1108,7 @@ def test_runtime_trace_binds_trust_generation_without_certificate_signature():
     changed["components"]["shine_ai"]["decision_trace_trust"]["generation"] = 3
     second = runtime.build_runtime_trace(changed, {"status": "not_required"})
 
-    assert first["version"] == "shine/runtime-trace-v6"
+    assert first["version"] == "shine/runtime-trace-v7"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-CERTIFICATE-SIGNATURE" not in json.dumps(first)
 
@@ -1443,14 +1443,14 @@ def test_runtime_trace_binds_storage_proof_without_hmac_tag_or_redis_url():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v6"
+    assert first["version"] == "shine/runtime-trace-v7"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-HMAC-TAG" not in rendered
     assert "PRIVATE-REDIS-URL" not in rendered
 
 
 
-def test_required_external_witness_cannot_be_missing_from_cached_trust(
+def test_cached_trust_revalidates_fresh_two_of_two_witness_quorum(
     monkeypatch,
 ):
     monkeypatch.setenv(
@@ -1474,6 +1474,47 @@ def test_required_external_witness_cannot_be_missing_from_cached_trust(
     }
     redis = FakeTrustRedis()
     seed_checkpoint(redis, keyset)
+    db = FakeTrustDB({
+        "generation": 1,
+        "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+        "trusted_keyset": keyset,
+        "source": "genesis-pin",
+        "ledger_rows": 1,
+    })
+    calls = []
+
+    def fake_witness(_db, state, **_kwargs):
+        calls.append(state)
+        return {
+            "status": "verified",
+            "witness_id": "foundation-project-l",
+            "sequence": 1,
+            "head_sha256": "d" * 64,
+            "generation": 1,
+            "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+            "state_sha256": trust_storage.digest_trust_state(keyset),
+            "auth_key_id": "foundation-witness-v1",
+            "mode": "existing-witness",
+            "independent_retention": "foundation-supabase",
+            "local_witness": {
+                "status": "verified",
+                "witness_id": "project-l-redis",
+                "sequence": 1,
+                "head_sha256": "d" * 64,
+                "generation": 1,
+                "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
+                "state_sha256": trust_storage.digest_trust_state(keyset),
+                "auth_key_id": "storage-a",
+                "mode": "existing-head",
+                "independent_retention": "railway-redis-volume",
+            },
+        }
+
+    monkeypatch.setattr(
+        runtime,
+        "ensure_foundation_trust_witness",
+        fake_witness,
+    )
     runtime._TRACE_KEYSET_CACHE.update({
         "expires_at": float("inf"),
         "pin": TRACE_SINGLE_KEYSET_SHA256,
@@ -1485,19 +1526,18 @@ def test_required_external_witness_cannot_be_missing_from_cached_trust(
     })
 
     trusted, error, trust = runtime._shine_ai_verification_keyset(
-        FakeTrustDB({
-            "generation": 1,
-            "keyset_sha256": TRACE_SINGLE_KEYSET_SHA256,
-            "trusted_keyset": keyset,
-            "source": "genesis-pin",
-            "ledger_rows": 1,
-        }),
+        db,
         redis_client=redis,
     )
 
-    assert trusted is None
-    assert error == "foundation-witness-unverified"
-    assert trust["status"] == "invalid"
+    assert error is None
+    assert trusted == keyset
+    assert len(calls) == 1
+    assert db.policy_state == quorum_policy.genesis_policy_trust_state()
+    assert trust["external_witness"]["status"] == "verified"
+    assert trust["witness_quorum"]["status"] == "verified"
+    assert trust["witness_quorum"]["verified_count"] == 2
+    assert trust["witness_quorum"]["minimum_witnesses"] == 2
 
 
 def test_runtime_trace_binds_external_witness_without_foundation_auth_tag():
@@ -1539,6 +1579,6 @@ def test_runtime_trace_binds_external_witness_without_foundation_auth_tag():
     )
 
     rendered = json.dumps(first)
-    assert first["version"] == "shine/runtime-trace-v6"
+    assert first["version"] == "shine/runtime-trace-v7"
     assert first["lineage_sha256"] != second["lineage_sha256"]
     assert "PRIVATE-FOUNDATION-HMAC" not in rendered
