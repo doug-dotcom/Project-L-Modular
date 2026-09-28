@@ -449,6 +449,19 @@ def quorum_env(monkeypatch):
             "roster_storage_checkpoint_independent": True,
             "roster_storage_checkpoint_retention":
                 "railway-redis-volume",
+            "roster_storage_rotation": {
+                "status": "verified",
+                "mode": "not-needed",
+                "generation": 1,
+                "policy_sha256":
+                    "a5c456d49e47f1be3f2a7b7ed017328844484ba05c4e6ef3212412c6361156c4",
+                "state_sha256": "1" * 64,
+                "source_envelope_auth_key_id": "roster-a",
+                "source_checkpoint_auth_key_id": "roster-a",
+                "target_auth_key_id": "roster-a",
+                "checkpoint_mode": "existing-checkpoint",
+                "state_preserved": True,
+            },
         },
     )
 
