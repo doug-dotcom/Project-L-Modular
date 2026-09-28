@@ -1867,7 +1867,6 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                             "external_roster_transition_evidence_chain_generation",
                             "external_roster_transition_evidence_chain_tag",
                             "external_roster_transition_evidence_chain_witness_status",
-                            "external_roster_transition_evidence_chain_witness_mode",
                             "external_roster_transition_evidence_chain_witness_generation",
                             "external_roster_transition_evidence_chain_witness_rows",
                             "external_roster_transition_evidence_chain_witness_tag",
