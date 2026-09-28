@@ -874,17 +874,6 @@ def _store_pending_concierge_job(
     }).execute()
 
 
-def _canonical_json_sha256(value: dict) -> str:
-    return sha256(
-        json.dumps(
-            value,
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-    ).hexdigest()
-
-
 def store_delayed_synthesis_packet(
     db,
     *,
