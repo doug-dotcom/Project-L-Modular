@@ -14,7 +14,7 @@ def client() -> TestClient:
 
 def configure(monkeypatch):
     monkeypatch.setenv("SHINE_AI_MEMORY_TOKEN", "x" * 32)
-    monkeypatch.setenv("PROJECT_L_OWNER_ID", OWNER)
+    monkeypatch.setattr(bridge, "_bound_owner", lambda: OWNER)
     bridge._db_client = None
 
 
@@ -108,14 +108,19 @@ def test_retrieval_is_service_authenticated_owner_scoped_and_bounded(monkeypatch
     assert body["receipt"]["bounded"] is True
 
 
-def test_invalid_service_token_is_rejected_before_owner_scoped_query(monkeypatch):
+def test_invalid_service_token_is_rejected_before_owner_resolution(monkeypatch):
     configure(monkeypatch)
-    called = {"value": False}
+    called = {"owner": False, "query": False}
+
+    def should_not_bind():
+        called["owner"] = True
+        return OWNER
 
     def should_not_run(owner_id, query, limit):
-        called["value"] = True
+        called["query"] = True
         return owner_context()
 
+    monkeypatch.setattr(bridge, "_bound_owner", should_not_bind)
     monkeypatch.setattr(bridge, "_owner_context", should_not_run)
 
     response = client().post(
@@ -130,18 +135,20 @@ def test_invalid_service_token_is_rejected_before_owner_scoped_query(monkeypatch
     )
 
     assert response.status_code == 401
-    assert called["value"] is False
+    assert called == {"owner": False, "query": False}
 
 
-def test_owner_and_scope_boundaries_are_enforced(monkeypatch):
+def test_server_owned_binding_ignores_caller_owner_and_keeps_scope_boundary(monkeypatch):
     configure(monkeypatch)
-    monkeypatch.setattr(
-        bridge,
-        "_owner_context",
-        lambda owner_id, query, limit: owner_context(),
-    )
+    seen = {"owner": None}
 
-    wrong_owner = client().post(
+    def scoped(owner_id, query, limit):
+        seen["owner"] = owner_id
+        return owner_context()
+
+    monkeypatch.setattr(bridge, "_owner_context", scoped)
+
+    redirected = client().post(
         "/internal/shine-ai/memory/retrieve",
         headers={"X-Shine-Service-Token": "x" * 32},
         json={
@@ -151,7 +158,11 @@ def test_owner_and_scope_boundaries_are_enforced(monkeypatch):
             "scopes": ["sport"],
         },
     )
-    assert wrong_owner.status_code == 403
+    assert redirected.status_code == 200
+    assert seen["owner"] == OWNER
+    redirected_body = redirected.json()
+    assert redirected_body["receipt"]["owner_binding_source"] == "project_l_account"
+    assert redirected_body["receipt"]["caller_user_id_authoritative"] is False
 
     forbidden_scope = client().post(
         "/internal/shine-ai/memory/retrieve",
