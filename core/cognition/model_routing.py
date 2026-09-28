@@ -88,9 +88,21 @@ def configured_adapter(client, model_id, environ):
             or environ.get("SHINE_AI_BASE_URL")
             or ""
         ).strip(),
-        "app_id": str(environ.get("SHINE_AI_MODEL_APP_ID") or "").strip(),
-        "key_id": str(environ.get("SHINE_AI_MODEL_APP_KEY_ID") or "").strip(),
-        "secret": str(environ.get("SHINE_AI_MODEL_APP_SECRET") or "").strip(),
+        "app_id": str(
+            environ.get("SHINE_AI_MODEL_APP_ID")
+            or environ.get("SHINE_AI_APP_ID")
+            or ""
+        ).strip(),
+        "key_id": str(
+            environ.get("SHINE_AI_MODEL_APP_KEY_ID")
+            or environ.get("SHINE_AI_APP_KEY_ID")
+            or ""
+        ).strip(),
+        "secret": str(
+            environ.get("SHINE_AI_MODEL_APP_SECRET")
+            or environ.get("SHINE_AI_APP_SECRET")
+            or ""
+        ).strip(),
     }
     configured = [bool(value) for value in bridge_values.values()]
     if any(configured) and not all(configured):
