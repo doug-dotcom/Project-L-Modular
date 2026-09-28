@@ -357,7 +357,7 @@ def test_same_generation_roster_fork_is_rejected(monkeypatch):
         )
 
 
-def test_future_generation_requires_separate_transition_certification(
+def test_future_generation_requires_separate_transition_authority_keyring(
     monkeypatch,
 ):
     db = FakeDB()
@@ -396,7 +396,7 @@ def test_future_generation_requires_separate_transition_certification(
 
     with pytest.raises(
         roster.ExternalWitnessRosterError,
-        match="external-witness-roster-transition-not-certified",
+        match="external-witness-roster-transition-keyring-invalid",
     ):
         roster.load_persisted_external_witness_roster(
             db,
