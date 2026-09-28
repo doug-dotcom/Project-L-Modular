@@ -259,6 +259,45 @@ def env(monkeypatch):
                 "foundation-supabase-vault-hmac",
         },
     )
+    monkeypatch.delenv(
+        "SHINE_TRACE_EXTERNAL_ROSTER_HEAD_WITNESS_ROTATION_TARGET_KEY_ID",
+        raising=False,
+    )
+    monkeypatch.setattr(
+        roster,
+        "rotate_foundation_roster_head_witness",
+        lambda _db, target_key: {
+            "status": "verified",
+            "mode": "rotated",
+            "source_auth_key_id":
+                "foundation-roster-head-witness-v1",
+            "target_auth_key_id": target_key,
+            "sequence": 1,
+            "head_sha256":
+                "7d45840c825f15861bf3368024b36e394"
+                "22bd5f66a5f54ef6927bacd05f3cce5",
+            "generation": 1,
+            "policy_sha256": POLICY_SHA,
+            "state_sha256": STATE_SHA,
+            "state_preserved": True,
+            "witness": {
+                "status": "verified",
+                "witness_id":
+                    "foundation-project-l-roster-head",
+                "auth_key_id": target_key,
+                "sequence": 1,
+                "head_sha256":
+                    "7d45840c825f15861bf3368024b36e394"
+                    "22bd5f66a5f54ef6927bacd05f3cce5",
+                "generation": 1,
+                "policy_sha256": POLICY_SHA,
+                "state_sha256": STATE_SHA,
+                "replayed": False,
+                "independent_retention":
+                    "foundation-supabase-vault-hmac",
+            },
+        },
+    )
 
 
 def test_genesis_policy_matches_layer157_vector():
@@ -699,3 +738,70 @@ def test_layer207_redis_transition_authorization_is_separate_domain(
     assert auth["toGeneration"] == 2
     assert auth["authKeyId"] == "roster-transition-a"
     assert len(auth["authTag"]) == 64
+
+
+
+def test_layer211_load_rotates_foundation_roster_head_witness(monkeypatch):
+    db = FakeDB()
+    redis = FakeRedis()
+    # Bootstrap first on the original Foundation witness key.
+    before = roster.load_persisted_external_witness_roster(
+        db,
+        redis_client=redis,
+    )
+    assert (
+        before["roster_head_witness_auth_key_id"]
+        == "foundation-roster-head-witness-v1"
+    )
+    original_head = before["roster_head_sha256"]
+    original_policy = before["roster_head_policy_sha256"]
+    original_state = before["roster_head_state_sha256"]
+
+    monkeypatch.setenv(
+        "SHINE_TRACE_EXTERNAL_ROSTER_HEAD_WITNESS_ROTATION_TARGET_KEY_ID",
+        "foundation-roster-head-witness-v2",
+    )
+    after = roster.load_persisted_external_witness_roster(
+        db,
+        redis_client=redis,
+    )
+
+    assert (
+        after["roster_head_witness_auth_key_id"]
+        == "foundation-roster-head-witness-v2"
+    )
+    assert after["roster_head_witness_rotation_supported"] is True
+    assert after["roster_head_witness_rotation_mode"] == "rotated"
+    rotation = after["roster_head_witness_rotation"]
+    assert rotation["status"] == "verified"
+    assert rotation["source_auth_key_id"] == (
+        "foundation-roster-head-witness-v1"
+    )
+    assert rotation["target_auth_key_id"] == (
+        "foundation-roster-head-witness-v2"
+    )
+    assert rotation["head_sha256"] == original_head
+    assert rotation["policy_sha256"] == original_policy
+    assert rotation["state_sha256"] == original_state
+    assert rotation["state_preserved"] is True
+    assert after["roster_head_sha256"] == original_head
+    assert after["roster_head_policy_sha256"] == original_policy
+    assert after["roster_head_state_sha256"] == original_state
+
+
+def test_layer211_no_rotation_target_keeps_safe_not_needed_receipt():
+    loaded = roster.load_persisted_external_witness_roster(
+        FakeDB(),
+        redis_client=FakeRedis(),
+    )
+
+    assert loaded["roster_head_witness_rotation_supported"] is True
+    assert loaded["roster_head_witness_rotation_mode"] == "not-needed"
+    receipt = loaded["roster_head_witness_rotation"]
+    assert receipt["source_auth_key_id"] == (
+        "foundation-roster-head-witness-v1"
+    )
+    assert receipt["target_auth_key_id"] == (
+        "foundation-roster-head-witness-v1"
+    )
+    assert receipt["state_preserved"] is True
