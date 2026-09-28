@@ -3,7 +3,7 @@ from pathlib import Path
 
 MIGRATION = Path(
     "supabase/migrations/"
-    "20260928101500_project_l_layer201_quorum_policy_storage_stage.sql"
+    "20260928102500_project_l_layer202_quorum_policy_storage_stage.sql"
 )
 
 
@@ -11,7 +11,7 @@ def source() -> str:
     return MIGRATION.read_text(encoding="utf-8").lower()
 
 
-def test_layer201_adds_authenticated_policy_storage_fields():
+def test_layer202_adds_authenticated_policy_storage_fields():
     sql = source()
 
     for column in (
@@ -25,7 +25,7 @@ def test_layer201_adds_authenticated_policy_storage_fields():
     assert "witness-quorum-policy-storage-authentication-missing" in sql
 
 
-def test_layer201_rotation_ledger_is_read_only_to_runtime_role():
+def test_layer202_rotation_ledger_is_read_only_to_runtime_role():
     sql = source()
 
     assert (
@@ -48,7 +48,7 @@ def test_layer201_rotation_ledger_is_read_only_to_runtime_role():
     )
 
 
-def test_layer201_seal_is_exact_and_idempotent():
+def test_layer202_seal_is_exact_and_idempotent():
     sql = source()
     seal = sql.split(
         "create or replace function "
@@ -68,7 +68,7 @@ def test_layer201_seal_is_exact_and_idempotent():
     assert "storage_auth_tag=p_storage_auth_tag" in seal
 
 
-def test_layer201_rotation_changes_only_storage_authentication_wrapper():
+def test_layer202_rotation_changes_only_storage_authentication_wrapper():
     sql = source()
     rotate = sql.split(
         "create or replace function "
@@ -98,7 +98,7 @@ def test_layer201_rotation_changes_only_storage_authentication_wrapper():
         assert token not in update_section
 
 
-def test_layer201_stage_preserves_v1_bootstrap_until_runtime_cutover():
+def test_layer202_stage_preserves_v1_bootstrap_until_runtime_cutover():
     sql = source()
 
     assert (
@@ -108,7 +108,7 @@ def test_layer201_stage_preserves_v1_bootstrap_until_runtime_cutover():
     )
 
 
-def test_layer201_schema_stores_tags_but_no_storage_secrets():
+def test_layer202_schema_stores_tags_but_no_storage_secrets():
     sql = source()
 
     assert "storage_auth_tag" in sql
