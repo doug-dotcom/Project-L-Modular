@@ -135,8 +135,10 @@ from services.capability_router_service import route_capability, foundation_spec
 from services.foundation_companion_service import (
     ensure_foundation_delegation,
     foundation_account_owner,
+    foundation_connection_status,
     foundation_fleet_status,
 )
+from services.shine_convergence_service import build_shine_convergence_preflight
 
 from memory.continuity.live_short_term import (
     classify_short_term_domain,
@@ -402,6 +404,7 @@ class ChatRequest(BaseModel):
     message: str
     request_id: str | None = None
     conversation_id: str | None = None
+    shine_context: dict | None = None
 
 
 CHAT_RESULT_TTL_SECONDS = 600
@@ -522,7 +525,11 @@ def stop_durable_tasks():
 
 
 @app.post("/chat/start")
-def start_chat(req: ChatRequest, x_l_recovery_token: str = Header(default="")):
+def start_chat(
+    req: ChatRequest,
+    request: Request,
+    x_l_recovery_token: str = Header(default=""),
+):
     """Acknowledge only after the task has been durably committed."""
     request_id = normalise_request_id(req.request_id)
     if not request_id:
@@ -530,9 +537,39 @@ def start_chat(req: ChatRequest, x_l_recovery_token: str = Header(default="")):
     if not req.message.strip() or len(req.message) > 100000:
         raise HTTPException(400, "Send a message between 1 and 100000 characters")
     try:
-        request = {"message": req.message, "request_id": request_id,
-                   "conversation_id": req.conversation_id}
-        result = task_store.submit(request, x_l_recovery_token)
+        account = getattr(request.state, "account", {}) or {}
+        user_id = str(account.get("user_id") or "")
+        foundation_state = None
+        if supabase is not None and user_id:
+            try:
+                raw_foundation = foundation_connection_status(supabase, user_id)
+                foundation_state = {
+                    "status": raw_foundation.get("state"),
+                    "linkStatus": raw_foundation.get("linkStatus"),
+                    "approvedCapabilities": raw_foundation.get("approvedCapabilities"),
+                    "delegationExpiresAt": raw_foundation.get("delegationExpiresAt"),
+                    "refreshExpiresAt": raw_foundation.get("refreshExpiresAt"),
+                    "refreshGeneration": raw_foundation.get("refreshGeneration"),
+                }
+            except Exception:
+                foundation_state = {"status": "unavailable"}
+
+        shine_context = build_shine_convergence_preflight(
+            supabase_url=SUPABASE_URL,
+            authorization=request.headers.get("authorization", ""),
+            user_id=user_id,
+            request_id=request_id,
+            message=req.message,
+            conversation_id=req.conversation_id,
+            foundation_status=foundation_state,
+        )
+        durable_request = {
+            "message": req.message,
+            "request_id": request_id,
+            "conversation_id": req.conversation_id,
+            "shine_context": shine_context,
+        }
+        result = task_store.submit(durable_request, x_l_recovery_token)
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
     except Exception as exc:
@@ -1200,6 +1237,7 @@ def chat(req: ChatRequest):
     user_message = (req.message or "").strip()
     request_id = normalise_request_id(req.request_id)
     conversation_scope = str(req.conversation_id or "doug_primary")[:100]
+    shine_context = req.shine_context if isinstance(req.shine_context, dict) else {}
     active_model_adapter = resolve_model_adapter()
     store_chat_result(request_id, "pending")
 
@@ -1380,6 +1418,7 @@ def chat(req: ChatRequest):
         "guardrails": {"passed": True, "issues": []},
         "working_memory": working_memory_packet,
         "model_independence": build_model_independence_packet(active_model_adapter),
+        "shine_convergence": shine_context,
         "portability": portability_manifest(),
     }
 
@@ -1488,6 +1527,9 @@ ACTIVE WORKING MEMORY:
 
 MODEL INTERFACE:
 {json.dumps(cognitive_packet.get("model_independence", {}), ensure_ascii=False, indent=2)}
+
+SHINE CONVERGENCE RECEIPT:
+{json.dumps(cognitive_packet.get("shine_convergence", {}), ensure_ascii=False, indent=2)}
 
 {architecture_audit_context}
 
