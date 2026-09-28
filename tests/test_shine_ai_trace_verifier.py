@@ -1,4 +1,12 @@
-from services.shine_ai_trace_verifier import verify_decision_trace
+import base64
+
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+
+from services.shine_ai_trace_verifier import (
+    digest_verification_keyset,
+    verify_decision_trace,
+    verify_decision_trace_authenticity,
+)
 
 
 def response_fixture():
@@ -147,3 +155,141 @@ def test_live_verifier_requires_response_identity_headers():
 
     assert result["status"] == "invalid"
     assert result["reason_code"] == "decision-trace-response-identity-missing"
+
+
+TEST_PRIVATE_KEY_B64 = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="
+TEST_PUBLIC_KEY_B64 = "A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg="
+TEST_PUBLIC_KEY_SHA256 = "56475aa75463474c0285df5dbf2bcab73da651358839e9b77481b2eab107708c"
+TEST_PUBLIC_KEY_V2_B64 = "Kay64UG8yvCyLhqU000LxzYeUm0L/hLIl5S8kyKWbdc="
+TEST_PUBLIC_KEY_V2_SHA256 = "24f6ed6acbfe1009c030d7ca567c33ca4830911498236b5561a6c82abec5de28"
+SINGLE_KEYSET_SHA256 = "00d100d5873dd2fecc3049dc501b2f2f5dfc268710858b9cf68b0f5858666f4a"
+OVERLAP_KEYSET_SHA256 = "5d9919a8cf9453a330016410e2903d7556a170d7ce95450dc4a90cab366cd9ca"
+
+
+def single_keyset():
+    return {
+        "active_key_id": "trace-v1",
+        "verification_keys": {
+            "trace-v1": {
+                "public_key_b64": TEST_PUBLIC_KEY_B64,
+                "public_key_sha256": TEST_PUBLIC_KEY_SHA256,
+            },
+        },
+        "keyset_sha256": SINGLE_KEYSET_SHA256,
+    }
+
+
+def overlap_keyset():
+    return {
+        "active_key_id": "trace-v2",
+        "verification_keys": {
+            "trace-v1": {
+                "public_key_b64": TEST_PUBLIC_KEY_B64,
+                "public_key_sha256": TEST_PUBLIC_KEY_SHA256,
+            },
+            "trace-v2": {
+                "public_key_b64": TEST_PUBLIC_KEY_V2_B64,
+                "public_key_sha256": TEST_PUBLIC_KEY_V2_SHA256,
+            },
+        },
+        "keyset_sha256": OVERLAP_KEYSET_SHA256,
+    }
+
+
+def sign_fixture(payload, key_id="trace-v1"):
+    private_bytes = base64.b64decode(TEST_PRIVATE_KEY_B64)
+    signer = Ed25519PrivateKey.from_private_bytes(private_bytes)
+    lineage = payload["decision_trace"]["lineage_sha256"]
+    signature = signer.sign(
+        (
+            "shine-ai:decision-trace:v1\n"
+            + key_id
+            + "\n"
+            + lineage
+        ).encode("utf-8")
+    )
+    payload["decision_trace_signature"] = {
+        "version": 1,
+        "algorithm": "ed25519",
+        "domain": "shine-ai:decision-trace:v1",
+        "key_id": key_id,
+        "public_key_sha256": TEST_PUBLIC_KEY_SHA256,
+        "signature_b64": base64.b64encode(signature).decode("ascii"),
+    }
+    return payload
+
+
+def test_keyset_digest_matches_shine_ai_layer140_golden_vectors():
+    assert digest_verification_keyset(single_keyset()) == SINGLE_KEYSET_SHA256
+    assert digest_verification_keyset(overlap_keyset()) == OVERLAP_KEYSET_SHA256
+
+
+def test_authenticity_verifies_signed_independently_recomputed_trace():
+    payload = sign_fixture(response_fixture())
+
+    result = verify_decision_trace_authenticity(
+        payload,
+        trusted_keyset=single_keyset(),
+        accepted_keyset_sha256=[SINGLE_KEYSET_SHA256],
+        header_version="1.37.0",
+        header_release="1.37.0+git.abcdef123456",
+    )
+
+    assert result["status"] == "authenticated"
+    assert result["authenticated"] is True
+    assert result["key_id"] == "trace-v1"
+    assert result["keyset_sha256"] == SINGLE_KEYSET_SHA256
+    assert result["lineage_sha256"] == payload["decision_trace"]["lineage_sha256"]
+
+
+def test_overlap_keyset_accepts_old_signature_during_active_key_cutover():
+    payload = sign_fixture(response_fixture(), "trace-v1")
+
+    result = verify_decision_trace_authenticity(
+        payload,
+        trusted_keyset=overlap_keyset(),
+        accepted_keyset_sha256=[OVERLAP_KEYSET_SHA256],
+        header_version="1.37.0",
+        header_release="1.37.0+git.abcdef123456",
+    )
+
+    assert result["status"] == "authenticated"
+    assert result["key_id"] == "trace-v1"
+    assert result["keyset_sha256"] == OVERLAP_KEYSET_SHA256
+
+
+def test_authenticity_rejects_unpinned_or_tampered_signature():
+    payload = sign_fixture(response_fixture())
+    bad_pin = verify_decision_trace_authenticity(
+        payload,
+        trusted_keyset=single_keyset(),
+        accepted_keyset_sha256=["f" * 64],
+        header_version="1.37.0",
+        header_release="1.37.0+git.abcdef123456",
+    )
+    assert bad_pin["status"] == "invalid"
+    assert bad_pin["reason_code"] == "trusted-keyset-mismatch"
+
+    payload["decision_trace_signature"]["signature_b64"] = "A" * 86 + "=="
+    tampered = verify_decision_trace_authenticity(
+        payload,
+        trusted_keyset=single_keyset(),
+        accepted_keyset_sha256=[SINGLE_KEYSET_SHA256],
+        header_version="1.37.0",
+        header_release="1.37.0+git.abcdef123456",
+    )
+    assert tampered["status"] == "invalid"
+    assert tampered["reason_code"] == "decision-trace-signature-verification-failed"
+
+
+def test_authenticity_requires_an_independent_keyset_pin():
+    payload = sign_fixture(response_fixture())
+    result = verify_decision_trace_authenticity(
+        payload,
+        trusted_keyset=single_keyset(),
+        accepted_keyset_sha256=[],
+        header_version="1.37.0",
+        header_release="1.37.0+git.abcdef123456",
+    )
+    assert result["status"] == "unavailable"
+    assert result["reason_code"] == "trusted-keyset-pin-unavailable"
