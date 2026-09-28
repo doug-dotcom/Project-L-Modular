@@ -483,6 +483,18 @@
         return '';
     }
 
+    function deadlinePostureText(job) {
+        const posture = job?.deadlinePosture;
+        if (!posture || posture.server_authoritative !== true) return '';
+        if (posture.state === 'start-soon') {
+            return 'Start soon · 10 min or less before this unused plan retires.';
+        }
+        if (posture.state === 'expiry-due') {
+            return 'Expiry due · this unused plan must retire before execution.';
+        }
+        return '';
+    }
+
     async function taskCentre(limit = 50) {
         const bounded = Number.isSafeInteger(limit)
             ? Math.max(1, Math.min(100, limit))
@@ -554,6 +566,14 @@
                 && item.plan_urgency.auto_starts_execution === false
             ) ? item.plan_urgency : null;
 
+            const projectedDeadline = (
+                item.deadline_posture
+                && typeof item.deadline_posture === 'object'
+                && !Array.isArray(item.deadline_posture)
+                && item.deadline_posture.server_authoritative === true
+                && item.deadline_posture.automatic_execution_triggered === false
+            ) ? item.deadline_posture : null;
+
             const projected = {
                 requestId,
                 status,
@@ -581,11 +601,13 @@
                 retirementReceipt: retirement || null,
                 planTtl: item.plan_ttl || null,
                 planUrgency: projectedUrgency,
+                deadlinePosture: projectedDeadline,
             };
             projected.cancellationText = cancellationReceiptText(item);
             projected.retirementText = retirementReceiptText(item);
             projected.planTtlText = planTtlText(item);
             projected.planUrgencyText = planUrgencyText(projected);
+            projected.deadlinePostureText = deadlinePostureText(projected);
             return [projected];
         });
     }
