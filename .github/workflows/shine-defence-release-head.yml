@@ -144,7 +144,7 @@ jobs:
           console.log('Rollback anchor claimed:',claim.rollbackCommitSha);
           NODE
 
-      - name: Verify rollback source commit
+      - name: Verify rollback and canonical source commits
         if: steps.rollback.outputs.has_anchor == 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -154,16 +154,24 @@ jobs:
           node <<'NODE'
           (async()=>{
             const fs=require('fs');
-            const endpoint='https://api.github.com/repos/'+process.env.GITHUB_REPOSITORY+'/commits/'+process.env.ROLLBACK_COMMIT;
-            const response=await fetch(endpoint,{headers:{
+            const headers={
               'Accept':'application/vnd.github+json',
               'Authorization':'Bearer '+process.env.GITHUB_TOKEN,
-              'User-Agent':'Shine-Defence-Rollback-Readiness/1.1',
+              'User-Agent':'Shine-Defence-Rollback-Readiness/2.0',
               'X-GitHub-Api-Version':'2022-11-28'
-            }});
-            if(response.status!==200&&response.status!==404){
-              throw new Error('rollback commit lookup failed '+response.status);
-            }
+            };
+            const check=async sha=>{
+              const endpoint='https://api.github.com/repos/'+process.env.GITHUB_REPOSITORY+'/commits/'+sha;
+              const response=await fetch(endpoint,{headers});
+              if(response.status!==200&&response.status!==404){
+                throw new Error('rollback source commit lookup failed '+response.status);
+              }
+              return response.status===200;
+            };
+            const rollbackAvailable=await check(process.env.ROLLBACK_COMMIT);
+            const canonicalAvailable=process.env.CANONICAL_COMMIT===process.env.ROLLBACK_COMMIT
+              ? rollbackAvailable
+              : await check(process.env.CANONICAL_COMMIT);
             fs.writeFileSync('/tmp/rollback-attest-body.json',JSON.stringify({
               action:'attest',
               submission:{
@@ -172,10 +180,11 @@ jobs:
                 targetId:process.env.SHINE_DEFENCE_TARGET_ID,
                 rollbackCommitSha:process.env.ROLLBACK_COMMIT,
                 canonicalCommitSha:process.env.CANONICAL_COMMIT,
-                sourceAvailable:response.status===200
+                sourceAvailable:rollbackAvailable,
+                canonicalSourceAvailable:canonicalAvailable
               }
             }));
-            console.log('Rollback source available:',response.status===200);
+            console.log('Rollback source available:',rollbackAvailable,'Canonical source available:',canonicalAvailable);
           })().catch(error=>{console.error(error);process.exit(1)});
           NODE
 
