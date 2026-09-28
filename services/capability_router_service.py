@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from core.cognition.action_receipt import verify_action_receipt
+from services.concierge_specialist_inputs import compile_specialist_input
 from core.cognition.durable_tasks import (
     DurableTaskBindingError,
     current_task_request_id,
@@ -190,11 +191,20 @@ def route_capability(message: str, write_guard=None, foundation_fleet=None) -> d
     foundation_candidate = _foundation_candidate(text)
     if foundation_candidate:
         specialist = _foundation_route_packet(foundation_fleet, foundation_candidate)
+        input_contract = compile_specialist_input(foundation_candidate, message)
+        specialist["input_contract"] = input_contract
+        route_status = (
+            "blocked"
+            if not specialist["executable"]
+            else "ready"
+            if input_contract.get("status") == "ready"
+            else "needs_input"
+        )
         return {
             "handled": False,
             "capability": "foundation_specialist",
             "reply": "",
-            "status": "ready" if specialist["executable"] else "blocked",
+            "status": route_status,
             "foundation_specialist": specialist,
         }
 
