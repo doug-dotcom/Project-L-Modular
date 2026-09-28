@@ -1005,6 +1005,7 @@
                     tasks: [],
                     delayed: new Map(),
                     pendingConcierge: new Map(),
+                    conciergeJobs: new Map(),
                     entries: [],
                     expanded: view.expanded === true,
                     expansion: new Map(view.expansion || []),
@@ -1169,6 +1170,34 @@
                                 historyNotice.textContent += 'Pending Concierge work could not be checked right now.';
                             }
 
+                            try {
+                                const conciergeJobs = await window.lConciergeCompletions?.jobs?.(50) || [];
+                                if (!valid()) return;
+                                for (const item of conciergeJobs) {
+                                    if (!item?.requestId) continue;
+                                    run.conciergeJobs.set(item.requestId, item);
+                                    if (item.status === 'cancelled' && !known.has(item.requestId)) {
+                                        const capabilities = Array.isArray(item.requestedCapabilities)
+                                            ? item.requestedCapabilities.join(' + ')
+                                            : '';
+                                        readable.push({
+                                            requestId: item.requestId,
+                                            message: capabilities
+                                                ? 'Concierge history — ' + capabilities
+                                                : 'Concierge cancellation history',
+                                            kind: 'concierge-history',
+                                            pending: false,
+                                            delayedRecovered: true,
+                                        });
+                                        known.add(item.requestId);
+                                    }
+                                }
+                            } catch (_) {
+                                if (!historyNotice.hidden) historyNotice.textContent += ' ';
+                                historyNotice.hidden = false;
+                                historyNotice.textContent += 'Concierge cancellation history could not be checked right now.';
+                            }
+
                             run.tasks = readable.slice(-100).reverse();
                             run.total = run.tasks.length;
                         }
@@ -1187,6 +1216,23 @@
                             let savedText, failed = false, attention = true, copyable = false, working = false;
                             let resultLabel = 'Status unavailable';
                             try {
+                                const taskCentreJob = run.conciergeJobs.get(task.requestId);
+                                if (task.kind === 'concierge-history' && taskCentreJob?.status === 'cancelled') {
+                                    const receiptVerified = taskCentreJob.cancellationReceiptIntegrity === 'verified'
+                                        && taskCentreJob.cancellationReceipt?.integrity === 'verified';
+                                    savedText = taskCentreJob.cancellationText
+                                        || 'Cancellation history exists, but no verified receipt was available.';
+                                    failed = !receiptVerified;
+                                    attention = !receiptVerified;
+                                    copyable = false;
+                                    working = false;
+                                    resultLabel = receiptVerified
+                                        ? (taskCentreJob.supersededByRequestId
+                                            ? 'Superseded Concierge job'
+                                            : 'Cancelled Concierge job')
+                                        : 'Cancellation receipt verification failed';
+                                    clearPendingRequest(task.requestId);
+                                } else {
                                 const delayed = run.delayed.get(task.requestId);
                                 if (delayed) {
                                     savedText = delayed.displayAnswer || delayed.finalAnswer;
@@ -1233,12 +1279,32 @@
                                          result.status === "not_found" ? "This answer is unavailable in this browser." :
                                          ["queued", "running"].includes(result.status) ? "L is working on this saved task." : "The status of this saved task is unavailable.");
                                 }
+                                }
                             } catch (_) {
                                 if (!valid()) return;
                                 failed = true; copyable = false; working = false; attention = true; resultLabel = 'Check unavailable';
                                 savedText = 'This saved answer is temporarily unavailable. Your task is still saved.';
                             }
                             if (!valid()) return;
+                            const taskCentreJob = run.conciergeJobs.get(task.requestId);
+                            if (taskCentreJob?.status === 'cancelled' && task.kind !== 'concierge-history') {
+                                const receiptVerified = taskCentreJob.cancellationReceiptIntegrity === 'verified'
+                                    && taskCentreJob.cancellationReceipt?.integrity === 'verified';
+                                if (taskCentreJob.cancellationText) {
+                                    savedText += '\n\n' + taskCentreJob.cancellationText;
+                                }
+                                working = false;
+                                clearPendingRequest(task.requestId);
+                                if (!receiptVerified) {
+                                    attention = true;
+                                    resultLabel = 'Cancellation receipt verification failed';
+                                } else {
+                                    resultLabel = taskCentreJob.supersededByRequestId
+                                        ? 'Saved answer · delayed work superseded'
+                                        : 'Saved answer · delayed work cancelled';
+                                }
+                            }
+
                             const pendingConcierge = run.pendingConcierge.get(task.requestId);
                             if (pendingConcierge && !run.delayed.has(task.requestId)) {
                                 working = true;
