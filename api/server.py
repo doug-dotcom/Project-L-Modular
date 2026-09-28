@@ -142,6 +142,9 @@ from services.concierge_execution_service import (
     execute_concierge_route,
 )
 from services.concierge_retry_service import ConciergeRetryRunner
+from services.concierge_completion_synthesis import (
+    synthesise_delayed_concierge_completion,
+)
 from services.foundation_companion_service import (
     ensure_foundation_delegation,
     foundation_account_owner,
@@ -497,7 +500,19 @@ def execute_durable_request(request):
 
 task_runner = TaskRunner(task_store, execute_durable_request)
 concierge_retry_runner = (
-    ConciergeRetryRunner(supabase, logger=log)
+    ConciergeRetryRunner(
+        supabase,
+        logger=log,
+        synthesise=lambda original_request, result_packet: (
+            synthesise_delayed_concierge_completion(
+                original_request,
+                result_packet,
+                model_adapter=resolve_model_adapter(),
+                client=client,
+                model=MODEL,
+            )
+        ),
+    )
     if supabase is not None
     else None
 )
@@ -1402,6 +1417,7 @@ def chat(req: ChatRequest):
                 route=route,
                 source_conversation_id=conversation_scope,
                 source_message_id=request_id,
+                request_text=user_message,
             )
             route = bind_concierge_execution(route, concierge_execution)
             log(
