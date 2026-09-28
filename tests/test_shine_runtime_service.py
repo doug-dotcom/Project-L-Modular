@@ -515,11 +515,143 @@ class FakeTrustResult:
         self.data = data
 
 
+class FakeTrustRedis:
+    def __init__(self):
+        self.rows = {}
+
+    def hgetall(self, key):
+        return dict(self.rows.get(key, {}))
+
+    def eval(self, _script, _numkeys, key, *args):
+        (
+            expected_generation,
+            expected_state_sha,
+            expected_keyset_sha,
+            next_generation,
+            next_state_sha,
+            next_keyset_sha,
+            checkpoint_json,
+        ) = args
+        expected_generation = int(expected_generation)
+        next_generation = int(next_generation)
+        current = self.rows.get(key)
+
+        if current is None:
+            if expected_generation != 0:
+                return ["missing"]
+            self.rows[key] = {
+                "generation": str(next_generation),
+                "state_sha256": next_state_sha,
+                "keyset_sha256": next_keyset_sha,
+                "checkpoint_json": checkpoint_json,
+            }
+            return ["created"]
+
+        current_generation = int(current["generation"])
+        if current_generation != expected_generation:
+            return ["precondition-generation", str(current_generation)]
+        if current["state_sha256"] != expected_state_sha:
+            return ["precondition-state", current["state_sha256"]]
+        if current["keyset_sha256"] != expected_keyset_sha:
+            return ["precondition-keyset", current["keyset_sha256"]]
+        if next_generation < current_generation:
+            return ["rollback"]
+        if next_generation > current_generation + 1:
+            return ["generation-skip"]
+        if (
+            next_generation == current_generation
+            and next_keyset_sha != current["keyset_sha256"]
+        ):
+            return ["equivocation"]
+
+        self.rows[key] = {
+            "generation": str(next_generation),
+            "state_sha256": next_state_sha,
+            "keyset_sha256": next_keyset_sha,
+            "checkpoint_json": checkpoint_json,
+        }
+        return [
+            "refreshed"
+            if next_generation == current_generation
+            else "advanced"
+        ]
+
+
+def seed_checkpoint(redis, keyset):
+    state = trust_storage.project_trust_state(keyset)
+    checkpoint = trust_storage.create_rollback_checkpoint(state)
+    redis.rows[trust_storage.REDIS_CHECKPOINT_KEY] = {
+        "generation": str(state["generation"]),
+        "state_sha256": checkpoint["stateSha256"],
+        "keyset_sha256": checkpoint["keyset_sha256"],
+        "checkpoint_json": json.dumps(
+            checkpoint,
+            separators=(",", ":"),
+        ),
+    }
+
+
 class FakeTrustDB:
-    def __init__(self, state=None, *, inconsistent_reason=None):
+    def __init__(
+        self,
+        state=None,
+        *,
+        inconsistent_reason=None,
+        sealed=True,
+    ):
         self.state = state
         self.inconsistent_reason = inconsistent_reason
         self.rpc_calls = []
+        self.sealed = sealed
+        if self.state is not None and sealed:
+            self._seal_current()
+
+    def _seal_current(self):
+        keyset = self.state["trusted_keyset"]
+        envelope = trust_storage.create_authenticated_envelope(keyset)
+        self.state["state_sha256"] = envelope["stateSha256"]
+        self.state["storage_auth_key_id"] = envelope["authKeyId"]
+        self.state["storage_auth_tag"] = envelope["authTag"]
+        self.sealed = True
+
+    def _snapshot(self, version):
+        if self.inconsistent_reason:
+            return FakeTrustResult({
+                "status": "inconsistent",
+                "reason_code": self.inconsistent_reason,
+            })
+        if self.state is None:
+            return FakeTrustResult({"status": "unbootstrapped"})
+
+        payload = {
+            "status": "trusted",
+            "generation": self.state["generation"],
+            "keyset_sha256": self.state["keyset_sha256"],
+            "trusted_keyset": self.state["trusted_keyset"],
+            "source": self.state.get("source"),
+            "authorization_key_id": self.state.get(
+                "authorization_key_id"
+            ),
+            "authorization_public_key_sha256": self.state.get(
+                "authorization_public_key_sha256"
+            ),
+            "ledger_rows": self.state.get("ledger_rows", 1),
+        }
+        if version == 3:
+            if not self.sealed:
+                return FakeTrustResult({
+                    **payload,
+                    "status": "unsealed",
+                    "reason_code": "trust-state-authentication-missing",
+                })
+            payload.update({
+                "state_sha256": self.state["state_sha256"],
+                "storage_auth_key_id": self.state[
+                    "storage_auth_key_id"
+                ],
+                "storage_auth_tag": self.state["storage_auth_tag"],
+            })
+        return FakeTrustResult(payload)
 
     def rpc(self, name, params):
         self.rpc_calls.append((name, params))
@@ -528,28 +660,33 @@ class FakeTrustDB:
         class Call:
             def execute(self):
                 if name == "shine_ai_trace_trust_snapshot_v2":
-                    if db.inconsistent_reason:
-                        return FakeTrustResult({
-                            "status": "inconsistent",
-                            "reason_code": db.inconsistent_reason,
-                        })
-                    if db.state is None:
-                        return FakeTrustResult({"status": "unbootstrapped"})
+                    return db._snapshot(2)
+                if name == "shine_ai_trace_trust_snapshot_v3":
+                    return db._snapshot(3)
+                if name == "shine_ai_trace_trust_seal_v3":
+                    assert db.state is not None
+                    assert (
+                        db.state["generation"]
+                        == params["p_expected_generation"]
+                    )
+                    assert (
+                        db.state["keyset_sha256"]
+                        == params["p_expected_keyset_sha256"]
+                    )
+                    db.state["state_sha256"] = params["p_state_sha256"]
+                    db.state["storage_auth_key_id"] = params[
+                        "p_storage_auth_key_id"
+                    ]
+                    db.state["storage_auth_tag"] = params[
+                        "p_storage_auth_tag"
+                    ]
+                    db.sealed = True
                     return FakeTrustResult({
-                        "status": "trusted",
+                        "status": "sealed",
                         "generation": db.state["generation"],
                         "keyset_sha256": db.state["keyset_sha256"],
-                        "trusted_keyset": db.state["trusted_keyset"],
-                        "source": db.state.get("source"),
-                        "authorization_key_id": db.state.get(
-                            "authorization_key_id"
-                        ),
-                        "authorization_public_key_sha256": db.state.get(
-                            "authorization_public_key_sha256"
-                        ),
-                        "ledger_rows": db.state.get("ledger_rows", 1),
                     })
-                if name == "shine_ai_trace_trust_bootstrap_v2":
+                if name == "shine_ai_trace_trust_bootstrap_v3":
                     assert params["p_generation"] == 1
                     db.state = {
                         "generation": 1,
@@ -557,13 +694,48 @@ class FakeTrustDB:
                         "trusted_keyset": params["p_trusted_keyset"],
                         "source": "genesis-pin",
                         "ledger_rows": 1,
+                        "state_sha256": params["p_state_sha256"],
+                        "storage_auth_key_id": params[
+                            "p_storage_auth_key_id"
+                        ],
+                        "storage_auth_tag": params[
+                            "p_storage_auth_tag"
+                        ],
                     }
+                    db.sealed = True
                     return FakeTrustResult({
                         "status": "trusted",
                         "generation": 1,
                         "keyset_sha256": params["p_keyset_sha256"],
                     })
-                if name == "shine_ai_trace_trust_advance_v2":
+                if name == "shine_ai_trace_trust_observe_v3":
+                    assert db.state is not None
+                    assert (
+                        db.state["generation"]
+                        == params["p_expected_generation"]
+                    )
+                    assert (
+                        db.state["keyset_sha256"]
+                        == params["p_expected_keyset_sha256"]
+                    )
+                    db.state["trusted_keyset"] = params[
+                        "p_trusted_keyset"
+                    ]
+                    db.state["state_sha256"] = params["p_state_sha256"]
+                    db.state["storage_auth_key_id"] = params[
+                        "p_storage_auth_key_id"
+                    ]
+                    db.state["storage_auth_tag"] = params[
+                        "p_storage_auth_tag"
+                    ]
+                    db.sealed = True
+                    return FakeTrustResult({
+                        "status": "observed",
+                        "generation": db.state["generation"],
+                        "keyset_sha256": db.state["keyset_sha256"],
+                    })
+                if name == "shine_ai_trace_trust_advance_v3":
+                    assert db.state is not None
                     assert (
                         db.state["generation"]
                         == params["p_expected_generation"]
@@ -584,7 +756,15 @@ class FakeTrustDB:
                             "p_authorization_public_key_sha256"
                         ],
                         "ledger_rows": db.state.get("ledger_rows", 1) + 1,
+                        "state_sha256": params["p_state_sha256"],
+                        "storage_auth_key_id": params[
+                            "p_storage_auth_key_id"
+                        ],
+                        "storage_auth_tag": params[
+                            "p_storage_auth_tag"
+                        ],
                     }
+                    db.sealed = True
                     return FakeTrustResult({
                         "status": "advanced",
                         "generation": params["p_next_generation"],
