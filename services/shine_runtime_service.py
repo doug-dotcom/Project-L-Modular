@@ -48,7 +48,7 @@ from services.shine_trust_storage import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v8"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v9"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -1437,10 +1437,47 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                             "status", "policy_generation", "policy_sha256",
                             "policy_trust_persisted", "policy_trust_source",
                             "policy_trust_generation",
+                            "policy_storage_authenticated",
+                            "policy_storage_auth_key_id",
+                            "policy_storage_state_sha256",
+                            "policy_storage_checkpoint_independent",
+                            "policy_storage_checkpoint_retention",
                             "minimum_witnesses", "verified_witness_count",
                             "witness_ids", "sequence", "head_sha256",
                             "generation", "keyset_sha256", "state_sha256",
                             "independence",
+                        ),
+                    ),
+                    "policy_storage_rotation": _project(
+                        (
+                            item.get("decision_trace_trust", {}).get(
+                                "witness_quorum",
+                                {},
+                            ).get("policy_storage_rotation", {})
+                            if (
+                                isinstance(
+                                    item.get("decision_trace_trust"),
+                                    dict,
+                                )
+                                and isinstance(
+                                    item.get(
+                                        "decision_trace_trust",
+                                        {},
+                                    ).get("witness_quorum"),
+                                    dict,
+                                )
+                            )
+                            else {}
+                        ),
+                        (
+                            "status",
+                            "source_envelope_auth_key_id",
+                            "source_checkpoint_auth_key_id",
+                            "target_auth_key_id",
+                            "generation",
+                            "policy_sha256",
+                            "state_sha256",
+                            "checkpoint_mode",
                         ),
                     ),
                     "foundation_chain": _project(
