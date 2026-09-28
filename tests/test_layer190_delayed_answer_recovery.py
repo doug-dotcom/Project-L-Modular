@@ -141,3 +141,18 @@ def test_delayed_final_answer_precedence_does_not_mutate_server_task_history():
     assert "savedText = delayed.finalAnswer" in index
     assert "clearPendingRequest(task.requestId)" in index
     assert "Delayed final answer" in index
+
+
+
+def test_fresh_browser_still_exposes_saved_answers_and_live_completion_clears_pending():
+    index = Path("ui/index.html").read_text(encoding="utf-8")
+    completions = Path("ui/concierge-completions.js").read_text(encoding="utf-8")
+
+    tasks_lookup = index.index("async function resumePendingRequest()")
+    button_lookup = index.index('button.id = \'savedAnswersAction\'', tasks_lookup)
+    assert tasks_lookup < button_lookup
+    assert "if (!tasks.length)" in index[tasks_lookup:button_lookup]
+    assert "insertBefore(button" in index[button_lookup:button_lookup + 500]
+
+    assert "event.sourceMessageId || event.requestId" in completions
+    assert "window.clearPendingRequest(sourceMessageId)" in completions
