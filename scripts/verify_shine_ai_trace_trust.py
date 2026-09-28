@@ -72,6 +72,26 @@ def main() -> None:
             "witness-quorum-unverified"
         )
 
+    chain = (
+        quorum.get("foundation_chain")
+        if isinstance(quorum.get("foundation_chain"), dict)
+        else {}
+    )
+    chain_tag = chain.get("chain_tag")
+    if (
+        chain.get("status") != "verified"
+        or chain.get("witness_id") != "foundation-project-l"
+        or chain.get("chain_version") != 1
+        or chain.get("sequence") != quorum.get("sequence")
+        or not isinstance(chain_tag, str)
+        or len(chain_tag) != 64
+        or any(ch not in "0123456789abcdef" for ch in chain_tag)
+    ):
+        raise SystemExit(
+            "Project L Shine-AI trace trust smoke: FAIL "
+            "foundation-chain-unverified"
+        )
+
     storage = sealed.get("storage") if isinstance(sealed.get("storage"), dict) else {}
     print(
         "Project L Shine-AI trace trust smoke: PASS "
@@ -82,7 +102,8 @@ def main() -> None:
         f"checkpoint={storage.get('independent_retention')} "
         f"quorum={quorum.get('verified_witness_count')}/"
         f"{quorum.get('minimum_witnesses')} "
-        f"policy=persisted-g{quorum.get('policy_trust_generation')}"
+        f"policy=persisted-g{quorum.get('policy_trust_generation')} "
+        f"foundation_chain=verified"
     )
 
 
