@@ -470,6 +470,44 @@ def load_quorum_policy() -> dict[str, Any]:
     return {**material, "policySha256": policy_sha}
 
 
+def _foundation_chain_receipt(witness: Any) -> dict[str, Any]:
+    if not isinstance(witness, dict):
+        raise WitnessQuorumError("trust-witness-foundation-chain-invalid")
+
+    sequence = witness.get("sequence")
+    chain_version = witness.get("chain_version")
+    previous_chain_tag = witness.get("previous_chain_tag")
+    chain_tag = witness.get("chain_tag")
+    if (
+        witness.get("witness_id") != FOUNDATION_WITNESS_ID
+        or witness.get("history_status") != "verified"
+        or chain_version != 1
+        or not isinstance(sequence, int)
+        or isinstance(sequence, bool)
+        or sequence < 1
+        or not isinstance(previous_chain_tag, str)
+        or SHA256_RE.fullmatch(previous_chain_tag) is None
+        or not isinstance(chain_tag, str)
+        or SHA256_RE.fullmatch(chain_tag) is None
+        or (
+            sequence == 1
+            and previous_chain_tag != "0" * 64
+        )
+    ):
+        raise WitnessQuorumError(
+            "trust-witness-foundation-chain-invalid"
+        )
+
+    return {
+        "status": "verified",
+        "witness_id": FOUNDATION_WITNESS_ID,
+        "chain_version": chain_version,
+        "sequence": sequence,
+        "previous_chain_tag": previous_chain_tag,
+        "chain_tag": chain_tag,
+    }
+
+
 def ensure_trust_witness_quorum(
     db,
     state: Any,
@@ -497,6 +535,10 @@ def ensure_trust_witness_quorum(
         )
     except FoundationWitnessError as exc:
         raise WitnessQuorumError(str(exc)) from exc
+
+    foundation_chain = _foundation_chain_receipt(
+        foundation_witness
+    )
 
     witnesses = [redis_witness, foundation_witness]
     by_id: dict[str, dict] = {}
@@ -541,6 +583,7 @@ def ensure_trust_witness_quorum(
             by_id[item]["independent_retention"]
             for item in sorted(by_id)
         ],
+        "foundation_chain": foundation_chain,
     }
 
 
