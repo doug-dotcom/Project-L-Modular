@@ -137,6 +137,10 @@ from services.capability_router_service import (
     needs_concierge_planning,
 )
 from services.concierge_planner_service import plan_concierge_specialists
+from services.concierge_execution_service import (
+    bind_concierge_execution,
+    execute_concierge_route,
+)
 from services.foundation_companion_service import (
     ensure_foundation_delegation,
     foundation_account_owner,
@@ -1309,13 +1313,14 @@ def chat(req: ChatRequest):
 
     checkpoint("connected_actions")
     foundation_fleet = None
+    foundation_owner_id = None
     if foundation_specialist_interest(user_message) and supabase is not None:
-        owner_id = foundation_account_owner(supabase)
-        if owner_id:
+        foundation_owner_id = foundation_account_owner(supabase)
+        if foundation_owner_id:
             try:
                 foundation_fleet = foundation_fleet_status(
                     supabase,
-                    owner_id,
+                    foundation_owner_id,
                     timeout_seconds=5.0,
                 )
                 log(
@@ -1370,6 +1375,45 @@ def chat(req: ChatRequest):
             "reply": "",
             "status": "error",
         }
+
+    if (
+        foundation_owner_id
+        and route.get("capability") in {
+            "foundation_specialist",
+            "foundation_orchestration",
+        }
+    ):
+        checkpoint("concierge_execution")
+        try:
+            concierge_execution = execute_concierge_route(
+                supabase,
+                foundation_owner_id,
+                request_id=request_id,
+                route=route,
+            )
+            route = bind_concierge_execution(route, concierge_execution)
+            log(
+                "CONCIERGE EXECUTION: "
+                f"status={concierge_execution.get('status')} | "
+                f"completed={concierge_execution.get('completed_capabilities', [])} | "
+                f"unavailable={concierge_execution.get('unavailable_capabilities', [])}"
+            )
+        except DurableTaskBindingError:
+            raise
+        except Exception as exc:
+            log(f"CONCIERGE EXECUTION ERROR: {type(exc).__name__}")
+            route = {
+                **route,
+                "handled": False,
+                "reply": "",
+                "status": "unavailable",
+                "foundation_execution": {
+                    "status": "unavailable",
+                    "reason_code": "concierge-execution-adapter-failed",
+                    "execution_performed": False,
+                    "synthesis_ready": False,
+                },
+            }
 
     working_memory_packet = active_context_service.begin_turn(
         conversation_scope,
