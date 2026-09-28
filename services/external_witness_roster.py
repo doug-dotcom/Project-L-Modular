@@ -20,6 +20,10 @@ from typing import Any
 from redis import Redis
 from redis.exceptions import RedisError
 
+from services.external_witness_roster_chain import (
+    ExternalWitnessRosterChainError,
+    ensure_roster_chain,
+)
 from services.foundation_trust_witness import (
     FoundationWitnessError,
     ensure_foundation_roster_transition_authorization,
@@ -1193,6 +1197,15 @@ def load_persisted_external_witness_roster(
                 "external-witness-roster-storage-rotation-verification-failed"
             )
 
+    try:
+        roster_chain = ensure_roster_chain(
+            db,
+            state,
+            redis_client=redis_client,
+        )
+    except ExternalWitnessRosterChainError as exc:
+        raise ExternalWitnessRosterError(str(exc)) from exc
+
     safe_rotation = (
         {
             "status": rotation_receipt.get("status"),
@@ -1237,6 +1250,24 @@ def load_persisted_external_witness_roster(
         "roster_storage_rotation_supported": True,
         "roster_storage_rotation_mode": safe_rotation["mode"],
         "roster_storage_rotation": safe_rotation,
+        "roster_chain_verified": roster_chain.get("status") == "verified",
+        "roster_chain_version": roster_chain.get("chain_version"),
+        "roster_chain_sequence": roster_chain.get("sequence"),
+        "roster_chain_previous_checkpoint_sha256":
+            roster_chain.get("previous_checkpoint_sha256"),
+        "roster_chain_checkpoint_sha256":
+            roster_chain.get("checkpoint_sha256"),
+        "roster_chain_head_version": roster_chain.get("head_version"),
+        "roster_chain_head_sha256": roster_chain.get("head_sha256"),
+        "roster_chain_head_auth_key_id":
+            roster_chain.get("head_auth_key_id"),
+        "roster_chain_head_independent":
+            roster_chain.get("head_independent_retention")
+            == "railway-redis-volume",
+        "roster_chain_head_retention":
+            roster_chain.get("head_independent_retention"),
+        "roster_chain_history_records_verified":
+            roster_chain.get("history_records_verified"),
     }
 
 
