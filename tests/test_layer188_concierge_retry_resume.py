@@ -594,3 +594,35 @@ def test_reclaimed_completed_retry_reuses_saved_final_answer_without_model_call(
     assert result["synthesis_replayed"] is True
     assert finish_calls == ["completed"]
     assert len(db.tables["companion_concierge_completion_outbox"]) == 1
+
+
+
+def test_cancelled_job_abandons_claim_without_resuming_specialists():
+    outcomes = []
+
+    def post(url, *, json, **kwargs):
+        if url.endswith("/retry/claim"):
+            return Response(200, claim_payload())
+        if url.endswith("/retry/finish"):
+            outcomes.append((json["outcome"], json["reasonCode"]))
+            return Response(200, {
+                "status": "ok",
+                "reasonCode": "retry-finished",
+                "retry": {"status": "abandoned"},
+            })
+        if url.endswith("/concierge/resume"):
+            raise AssertionError("cancelled job must never resume specialists")
+        raise AssertionError(url)
+
+    db = FakeDb()
+    row = db.tables["companion_foundation_pending_jobs"][0]
+    row["status"] = "cancelled"
+    row["cancellation_reason"] = "user-cancelled"
+    row["superseded_by_request_id"] = None
+    row["cancelled_at"] = "2026-09-28T04:00:00Z"
+
+    result = run_concierge_retry_once(db, post_impl=post)
+    assert result["status"] == "cancelled"
+    assert result["reason_code"] == "user-cancelled"
+    assert outcomes == [("abandoned", "user-cancelled")]
+    assert db.tables["companion_concierge_completion_outbox"] == []
