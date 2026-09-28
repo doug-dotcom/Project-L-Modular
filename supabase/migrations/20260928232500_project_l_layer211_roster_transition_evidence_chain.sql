@@ -32,6 +32,7 @@ declare
   v_row record;
   v_previous_chain_tag text := repeat('0',64);
   v_previous_policy_sha256 text := null;
+  v_expected_generation integer := 2;
   v_evidence_material jsonb;
   v_evidence_sha256 text;
   v_chain_material jsonb;
@@ -53,6 +54,9 @@ begin
     from public.shine_ai_external_roster_transition_evidence
     order by generation
   loop
+    if v_row.generation<>v_expected_generation then
+      raise exception 'external-roster-evidence-chain-backfill-generation-gap';
+    end if;
     if v_row.generation=2 then
       if v_row.previous_policy_sha256 is null then
         raise exception 'external-roster-evidence-chain-genesis-invalid';
@@ -106,6 +110,7 @@ begin
 
     v_previous_chain_tag := v_chain_tag;
     v_previous_policy_sha256 := v_row.policy_sha256;
+    v_expected_generation := v_expected_generation+1;
   end loop;
 end $$;
 
