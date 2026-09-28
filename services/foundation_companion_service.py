@@ -1133,8 +1133,26 @@ def cancel_foundation_concierge_request_as_user(
         reason_code="user-cancelled",
     )
     intent_status = str(local_intent.get("status") or "")
-    if intent_status in {"not-found", "completed", "failed"}:
-        return {"status": intent_status, "request_id": request_id}
+    if intent_status in {"not-found", "completed", "failed", "retired"}:
+        return {
+            "status": intent_status,
+            "request_id": request_id,
+            "reason_code": (
+                str(local_intent.get("reasonCode") or "")
+                if intent_status == "retired"
+                else None
+            ),
+            "retired_at": (
+                local_intent.get("retiredAt")
+                if intent_status == "retired"
+                else None
+            ),
+            "receipt_sha256": (
+                local_intent.get("receiptSha256")
+                if intent_status == "retired"
+                else None
+            ),
+        }
     if intent_status == "already-cancelled":
         return {"status": "already-cancelled", "request_id": request_id}
     if intent_status != "cancelling":
@@ -1165,6 +1183,30 @@ def cancel_foundation_concierge_request_as_user(
             "status": "cancelling",
             "reason_code": "cancellation-acknowledgement-unavailable",
             "request_id": request_id,
+        }
+
+    if response.status_code == 200 and body.get("status") == "retired":
+        retirement = _safe_foundation_retirement(body, request_id)
+        if retirement is None:
+            return {
+                "status": "cancelling",
+                "reason_code": "concierge-retirement-receipt-invalid",
+                "request_id": request_id,
+            }
+        local = mark_local_concierge_retired(
+            db,
+            user_id=owner_id,
+            request_id=request_id,
+            retirement=retirement,
+        )
+        if local.get("status") not in {"retired", "already-retired"}:
+            raise RuntimeError("local-concierge-retirement-failed")
+        return {
+            "status": "retired",
+            "reason_code": retirement["reason_code"],
+            "request_id": request_id,
+            "retired_at": retirement["retired_at"],
+            "receipt_sha256": retirement["receipt_sha256"],
         }
 
     if (
