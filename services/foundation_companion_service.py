@@ -802,6 +802,235 @@ def _safe_foundation_execution_results(
     return safe_results
 
 
+def _concierge_work_fingerprint(
+    source_conversation_id: str | None,
+    capability_ids: list[str],
+    inputs: dict,
+) -> str:
+    payload = {
+        "conversation_id": str(source_conversation_id or ""),
+        "capability_ids": list(capability_ids),
+        "inputs": inputs,
+    }
+    return sha256(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def _cancel_local_concierge_job(
+    db,
+    *,
+    user_id: str,
+    request_id: str,
+    reason_code: str,
+    superseded_by_request_id: str | None = None,
+) -> dict:
+    result = _rpc_data(
+        db,
+        "companion_cancel_local_concierge_job_v2",
+        {
+            "p_user_id": _uuid(user_id),
+            "p_request_id": _uuid(request_id),
+            "p_reason_code": str(reason_code or "")[:160],
+            "p_superseded_by_request_id": (
+                _uuid(superseded_by_request_id)
+                if superseded_by_request_id is not None
+                else None
+            ),
+        },
+    )
+    if not isinstance(result, dict):
+        raise RuntimeError("local-concierge-cancellation-unavailable")
+    return result
+
+
+def _supersedable_pending_jobs(
+    db,
+    *,
+    user_id: str,
+    request_id: str,
+    source_conversation_id: str | None,
+    work_fingerprint: str,
+) -> list[dict]:
+    if not source_conversation_id:
+        return []
+    try:
+        _uuid(source_conversation_id)
+    except Exception:
+        # Automatic supersession is limited to strongly bound browser conversations.
+        return []
+
+    result = (
+        db.table("companion_foundation_pending_jobs")
+        .select("job_id,status,work_fingerprint,source_conversation_id")
+        .eq("user_id", _uuid(user_id))
+        .eq("source_conversation_id", source_conversation_id)
+        .eq("work_fingerprint", work_fingerprint)
+        .eq("status", "ready")
+        .neq("job_id", _uuid(request_id))
+        .order("created_at", desc=True)
+        .limit(8)
+        .execute()
+    )
+    rows = _pending_job_rows(result)
+    return [row for row in rows if isinstance(row, dict)]
+
+
+def _supersede_previous_concierge_jobs(
+    db,
+    *,
+    user_id: str,
+    new_request_id: str,
+    source_conversation_id: str | None,
+    capability_ids: list[str],
+    inputs: dict,
+    client_token: str,
+    delegation_token: str,
+    foundation_url: str | None,
+    timeout_seconds: float,
+    post_impl=None,
+) -> list[str]:
+    work_fingerprint = _concierge_work_fingerprint(
+        source_conversation_id,
+        capability_ids,
+        inputs,
+    )
+    candidates = _supersedable_pending_jobs(
+        db,
+        user_id=user_id,
+        request_id=new_request_id,
+        source_conversation_id=source_conversation_id,
+        work_fingerprint=work_fingerprint,
+    )
+    superseded = []
+    for row in candidates:
+        old_request_id = _uuid(row.get("job_id"))
+        envelope = {
+            "conciergeSupersede": "shine-concierge/supersede-v1",
+            "schemaVersion": "1.0.0",
+            "requestId": old_request_id,
+            "supersededByRequestId": _uuid(new_request_id),
+            "clientId": "shine.companion",
+            "requestedAt": _utc_now(),
+        }
+        try:
+            response = _post_concierge(
+                path="/v1/concierge/supersede",
+                envelope=envelope,
+                client_token=client_token,
+                delegation_token=delegation_token,
+                foundation_url=foundation_url,
+                timeout_seconds=min(timeout_seconds, 12.0),
+                post_impl=post_impl,
+            )
+            body = _response_json(response)
+        except (httpx.HTTPError, RuntimeError) as exc:
+            raise RuntimeError("concierge-supersession-unavailable") from exc
+        if response.status_code != 200 or body.get("status") not in {
+            "superseded", "already-superseded"
+        }:
+            raise RuntimeError(
+                str(body.get("reasonCode") or "concierge-supersession-rejected")
+            )
+        local = _cancel_local_concierge_job(
+            db,
+            user_id=user_id,
+            request_id=old_request_id,
+            reason_code="superseded-by-newer-request",
+            superseded_by_request_id=new_request_id,
+        )
+        if local.get("status") not in {"cancelled", "already-cancelled"}:
+            raise RuntimeError("local-concierge-supersession-failed")
+        superseded.append(old_request_id)
+    return superseded
+
+
+def cancel_foundation_concierge_request_as_user(
+    db,
+    user_id: str,
+    *,
+    request_id: str,
+    authorization: str,
+    foundation_url: str | None = None,
+    timeout_seconds: float = 12.0,
+    post_impl=None,
+) -> dict:
+    owner_id = _uuid(user_id)
+    request_id = _uuid(request_id)
+    auth = str(authorization or "")
+    if not auth.startswith("Bearer ") or len(auth) < 40:
+        raise ValueError("valid user authorization required")
+
+    rows = (
+        db.table("companion_foundation_pending_jobs")
+        .select("job_id,user_id,status")
+        .eq("job_id", request_id)
+        .eq("user_id", owner_id)
+        .limit(2)
+        .execute()
+    )
+    matches = _pending_job_rows(rows)
+    if len(matches) != 1:
+        return {"status": "not-found", "request_id": request_id}
+    status = str(matches[0].get("status") or "")
+    if status == "completed":
+        return {"status": "completed", "request_id": request_id}
+    if status == "cancelled":
+        return {"status": "already-cancelled", "request_id": request_id}
+
+    post = post_impl or httpx.post
+    envelope = {
+        "userConciergeCancel": "shine-foundation/user-concierge-cancel-v1",
+        "schemaVersion": "1.0.0",
+        "requestId": request_id,
+        "clientId": "shine.companion",
+        "cancel": True,
+    }
+    try:
+        response = post(
+            _foundation_url(foundation_url) + "/v1/concierge/cancel",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": auth,
+            },
+            json=envelope,
+            timeout=timeout_seconds,
+            follow_redirects=False,
+        )
+        body = _response_json(response)
+    except (httpx.HTTPError, RuntimeError) as exc:
+        raise RuntimeError("concierge-user-cancellation-unavailable") from exc
+
+    if response.status_code != 200 or body.get("status") not in {
+        "cancelled", "already-cancelled"
+    }:
+        return {
+            "status": str(body.get("status") or "unavailable"),
+            "reason_code": str(
+                body.get("reasonCode") or "concierge-user-cancellation-rejected"
+            ),
+            "request_id": request_id,
+        }
+
+    local = _cancel_local_concierge_job(
+        db,
+        user_id=owner_id,
+        request_id=request_id,
+        reason_code="user-cancelled",
+    )
+    return {
+        "status": "cancelled" if local.get("status") == "cancelled" else "already-cancelled",
+        "reason_code": "user-cancelled",
+        "request_id": request_id,
+        "cancelled_at": local.get("cancelledAt"),
+    }
+
+
 def _pending_job_rows(result) -> list[dict]:
     data = getattr(result, "data", None)
     return data if isinstance(data, list) else []
@@ -823,7 +1052,7 @@ def _store_pending_concierge_job(
         db.table("companion_foundation_pending_jobs")
         .select(
             "job_id,user_id,link_request_id,purpose,capability_ids,inputs,"
-            "source_conversation_id,source_message_id,request_text,status"
+            "source_conversation_id,source_message_id,request_text,status,work_fingerprint"
         )
         .eq("job_id", job_id)
         .limit(2)
@@ -843,6 +1072,9 @@ def _store_pending_concierge_job(
             and str(row.get("source_conversation_id") or "") == str(source_conversation_id or "")
             and str(row.get("source_message_id") or "") == str(source_message_id or "")
             and str(row.get("request_text") or "") == str(request_text or "")
+            and str(row.get("work_fingerprint") or "") == _concierge_work_fingerprint(
+                source_conversation_id, capability_ids, inputs
+            )
         )
         if not exact:
             raise RuntimeError("concierge-local-replay-conflict")
@@ -869,6 +1101,11 @@ def _store_pending_concierge_job(
             str(request_text)[:100000]
             if request_text is not None
             else None
+        ),
+        "work_fingerprint": _concierge_work_fingerprint(
+            source_conversation_id,
+            capability_ids,
+            inputs,
         ),
         "status": "ready",
     }).execute()
@@ -1357,6 +1594,37 @@ def invoke_foundation_orchestration(
         }
 
     try:
+        superseded_request_ids = _supersede_previous_concierge_jobs(
+            db,
+            user_id=_uuid(user_id),
+            new_request_id=request_id,
+            source_conversation_id=source_conversation_id,
+            capability_ids=capability_ids,
+            inputs=inputs,
+            client_token=authority["client_token"],
+            delegation_token=authority["delegation_token"],
+            foundation_url=foundation_url,
+            timeout_seconds=timeout_seconds,
+            post_impl=post_impl,
+        )
+    except Exception:
+        return {
+            "status": "unavailable",
+            "reason_code": "concierge-supersession-unavailable",
+            "foundation_status": "planned",
+            "request_id": request_id,
+            "selected_capabilities": normalised["selected_capabilities"],
+            "executed_capabilities": [],
+            "completed_capabilities": [],
+            "unavailable_capabilities": capability_ids,
+            "skipped_capabilities": skipped,
+            "results": [],
+            "execution_performed": False,
+            "synthesis_ready": False,
+            "synthesis_must_disclose_partial": bool(skipped),
+        }
+
+    try:
         _store_pending_concierge_job(
             db,
             user_id=_uuid(user_id),
@@ -1544,6 +1812,7 @@ def invoke_foundation_orchestration(
         "results": safe_results,
         "execution_performed": True,
         "retry_scheduled": retry_scheduled,
+        "superseded_request_ids": superseded_request_ids,
         "synthesis_ready": synthesis_ready,
         "synthesis_must_disclose_partial": partial or bool(
             execute_body.get("synthesisMustDisclosePartial")
