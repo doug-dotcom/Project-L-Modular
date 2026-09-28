@@ -975,7 +975,18 @@
                 older.type = 'button'; older.textContent = 'Check older tasks'; older.disabled = true;
                 panel.append(heading, progress, stop, filters, results, older); chat.append(panel);
                 panel.focus?.(); chat.scrollTop = chat.scrollHeight;
-                const run = {panel, cancelled: false, checked: 0, total: 0, pass: 0, tasks: [], entries: [], expanded: view.expanded === true, expansion: new Map(view.expansion || [])}; active = run;
+                const run = {
+                    panel,
+                    cancelled: false,
+                    checked: 0,
+                    total: 0,
+                    pass: 0,
+                    tasks: [],
+                    delayed: new Map(),
+                    entries: [],
+                    expanded: view.expanded === true,
+                    expansion: new Map(view.expansion || []),
+                }; active = run;
                 const orderLabel = document.createElement('label'); orderLabel.textContent = 'Order';
                 const order = document.createElement('select');
                 for (const [value, text] of [['newest', 'Newest first'], ['attention', 'Needs attention first']]) {
@@ -1088,6 +1099,31 @@
                                 historyNotice.hidden = false;
                                 historyNotice.textContent = `Skipped ${skipped} saved ${skipped === 1 ? 'entry' : 'entries'} with incomplete request details. These entries have not been removed.`;
                             }
+
+                            try {
+                                const delayed = await window.lConciergeCompletions?.history?.(100) || [];
+                                if (!valid()) return;
+                                const known = new Set(readable.map(task => task.requestId));
+                                for (const item of delayed) {
+                                    if (!item?.requestId || typeof item.finalAnswer !== 'string') continue;
+                                    run.delayed.set(item.requestId, item);
+                                    if (!known.has(item.requestId)) {
+                                        readable.push({
+                                            requestId: item.requestId,
+                                            message: item.requestText || 'Delayed Concierge request',
+                                            kind: 'concierge',
+                                            pending: false,
+                                            delayedRecovered: true,
+                                        });
+                                        known.add(item.requestId);
+                                    }
+                                }
+                            } catch (_) {
+                                if (!historyNotice.hidden) historyNotice.textContent += ' ';
+                                historyNotice.hidden = false;
+                                historyNotice.textContent += 'Delayed Concierge answers could not be checked right now; browser-saved tasks are still available.';
+                            }
+
                             run.tasks = readable.slice(-100).reverse();
                             run.total = run.tasks.length;
                         }
@@ -1106,34 +1142,45 @@
                             let savedText, failed = false, attention = true, copyable = false, working = false;
                             let resultLabel = 'Status unavailable';
                             try {
-                                const result = await fetchChatJson(`/chat/result/${encodeURIComponent(task.requestId)}`,
-                                    {cache: "no-store", headers: recoveryHeaders()}, Math.min(CHAT_REQUEST_TIMEOUT_MS, remaining));
-                                if (!valid()) return;
-                                working = ["queued", "running"].includes(result.status);
-                                resultLabel = working ? 'Still working' :
-                                    ['failed', 'interrupted'].includes(result.status) ? 'Task stopped' :
-                                    result.status === 'not_found' ? 'Answer unavailable' : 'Status unavailable';
-                                if (["ready", "failed", "interrupted"].includes(result.status) &&
-                                    (result.result != null || result.status === "ready")) {
-                                    const delivery = await verifyDeliveryReply(result.result, task.requestId);
+                                const delayed = run.delayed.get(task.requestId);
+                                if (delayed) {
+                                    savedText = delayed.finalAnswer;
+                                    failed = false;
+                                    attention = false;
+                                    copyable = true;
+                                    working = false;
+                                    resultLabel = 'Delayed final answer';
+                                    clearPendingRequest(task.requestId);
+                                } else {
+                                    const result = await fetchChatJson(`/chat/result/${encodeURIComponent(task.requestId)}`,
+                                        {cache: "no-store", headers: recoveryHeaders()}, Math.min(CHAT_REQUEST_TIMEOUT_MS, remaining));
                                     if (!valid()) return;
-                                    savedText = !delivery.valid
-                                        ? "This saved answer failed delivery integrity verification."
-                                        : result.status === "ready" ? savedAnswerText(result) : result.result.reply;
-                                    if (!delivery.valid) resultLabel = 'Verification failed';
-                                    if (delivery.valid) {
-                                        clearPendingRequest(task.requestId);
-                                        copyable = result.status === 'ready' && typeof result.result.reply === 'string' && result.result.reply.trim().length > 0;
-                                        attention = !copyable || ['superseded', 'unavailable'].includes(result.freshness?.status);
-                                        if (result.status === 'ready') resultLabel = !copyable ? 'No answer text' :
-                                            result.freshness?.status === 'superseded' ? 'Facts changed' :
-                                            result.freshness?.status === 'unavailable' ? 'Freshness unchecked' : 'Saved answer';
+                                    working = ["queued", "running"].includes(result.status);
+                                    resultLabel = working ? 'Still working' :
+                                        ['failed', 'interrupted'].includes(result.status) ? 'Task stopped' :
+                                        result.status === 'not_found' ? 'Answer unavailable' : 'Status unavailable';
+                                    if (["ready", "failed", "interrupted"].includes(result.status) &&
+                                        (result.result != null || result.status === "ready")) {
+                                        const delivery = await verifyDeliveryReply(result.result, task.requestId);
+                                        if (!valid()) return;
+                                        savedText = !delivery.valid
+                                            ? "This saved answer failed delivery integrity verification."
+                                            : result.status === "ready" ? savedAnswerText(result) : result.result.reply;
+                                        if (!delivery.valid) resultLabel = 'Verification failed';
+                                        if (delivery.valid) {
+                                            clearPendingRequest(task.requestId);
+                                            copyable = result.status === 'ready' && typeof result.result.reply === 'string' && result.result.reply.trim().length > 0;
+                                            attention = !copyable || ['superseded', 'unavailable'].includes(result.freshness?.status);
+                                            if (result.status === 'ready') resultLabel = !copyable ? 'No answer text' :
+                                                result.freshness?.status === 'superseded' ? 'Facts changed' :
+                                                result.freshness?.status === 'unavailable' ? 'Freshness unchecked' : 'Saved answer';
+                                        }
                                     }
+                                    savedText = savedText ||
+                                        (["failed", "interrupted"].includes(result.status) ? "This task stopped before completion. Please review before starting it again." :
+                                         result.status === "not_found" ? "This answer is unavailable in this browser." :
+                                         ["queued", "running"].includes(result.status) ? "L is working on this saved task." : "The status of this saved task is unavailable.");
                                 }
-                                savedText = savedText ||
-                                    (["failed", "interrupted"].includes(result.status) ? "This task stopped before completion. Please review before starting it again." :
-                                     result.status === "not_found" ? "This answer is unavailable in this browser." :
-                                     ["queued", "running"].includes(result.status) ? "L is working on this saved task." : "The status of this saved task is unavailable.");
                             } catch (_) {
                                 if (!valid()) return;
                                 failed = true; copyable = false; working = false; attention = true; resultLabel = 'Check unavailable';
@@ -1212,7 +1259,7 @@
                                 text: (String(task.message || '') + '\n' + String(savedText || '') + '\n' + resultLabel).toLocaleLowerCase()});
                             applyFilter();
                             run.checked += 1;
-                            progress.textContent = count() + '. Newest first; 20 per batch, using the tasks saved in this browser when the review opened.';
+                            progress.textContent = count() + '. Newest first; 20 per batch, combining browser-saved tasks with verified delayed Concierge answers.';
                         }
                         if (valid() && recent.length) progress.textContent = (run.checked < run.total ? 'Batch finished — ' : 'Review finished — ') + count() + '. See each result below; checked does not mean completed.';
                     } catch (_) {
