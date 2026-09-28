@@ -11,6 +11,7 @@ from services.foundation_companion_service import (
     foundation_account_owner,
     foundation_connection_status,
     foundation_fleet_status,
+    list_delayed_completion_history,
     safe_connection_result,
 )
 
@@ -57,6 +58,26 @@ def routes(db) -> APIRouter:
             raise
         except Exception as exc:
             raise HTTPException(503, "Concierge specialist status is temporarily unavailable.") from exc
+
+    @router.get("/completions/history")
+    def completion_history(
+        request: Request,
+        limit: int = 100,
+    ) -> dict:
+        try:
+            return list_delayed_completion_history(
+                db,
+                owner_id(request),
+                limit=limit,
+            )
+        except HTTPException:
+            raise
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from exc
+        except Exception as exc:
+            raise HTTPException(
+                503, "Delayed Concierge answer history is temporarily unavailable."
+            ) from exc
 
     @router.post("/completions/claim")
     def claim_completion(request: Request) -> dict:
