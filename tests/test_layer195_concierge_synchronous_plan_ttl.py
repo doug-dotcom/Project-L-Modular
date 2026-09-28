@@ -4,6 +4,7 @@ from services.concierge_execution_service import execute_concierge_route
 from services.foundation_companion_service import (
     _safe_foundation_retirement,
     cancel_foundation_concierge_request_as_user,
+    set_pending_concierge_job_status,
 )
 
 
@@ -349,3 +350,23 @@ def test_cancel_ui_accepts_retired_terminal_outcome():
     assert "cancelled.status === 'retired'" in index
     assert "had already expired" in index
     assert 'concierge-completions.js?v=195' in index
+
+
+
+def test_late_status_update_cannot_overwrite_retired_local_job():
+    db = FakeDb()
+    db.tables["companion_foundation_pending_jobs"].append({
+        "job_id": REQUEST,
+        "user_id": USER,
+        "status": "retired",
+    })
+
+    changed = set_pending_concierge_job_status(
+        db,
+        user_id=USER,
+        job_id=REQUEST,
+        status="completed",
+    )
+
+    assert changed is False
+    assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "retired"
