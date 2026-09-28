@@ -14,6 +14,17 @@
         return document.documentElement.dataset.account === 'ready';
     }
 
+    function activeConversationId() {
+        try {
+            const value = typeof window.currentConversationId === 'function'
+                ? window.currentConversationId()
+                : '';
+            return UUID.test(value) ? value : '';
+        } catch (_) {
+            return '';
+        }
+    }
+
     function seenIds() {
         try {
             const value = JSON.parse(localStorage.getItem(SEEN_KEY) || '[]');
@@ -69,10 +80,93 @@
         }
     }
 
-    async function verifiedAnswer(event) {
+    async function verifyCompletionReceipt(receipt, expected) {
+        if (!receipt || typeof receipt !== 'object' || Array.isArray(receipt)) {
+            throw new Error('completion-receipt-invalid');
+        }
+        const fields = [
+            'version',
+            'status',
+            'request_id',
+            'source_conversation_id',
+            'source_message_id',
+            'answer_generated_at',
+            'final_answer_sha256',
+            'result_packet_sha256',
+            'receipt_sha256',
+        ];
+        if (
+            Object.keys(receipt).length !== fields.length
+            || !fields.every(field => Object.hasOwn(receipt, field) && typeof receipt[field] === 'string')
+            || receipt.version !== '1.0'
+            || receipt.status !== 'sealed'
+            || !UUID.test(receipt.request_id)
+            || !SHA256.test(receipt.final_answer_sha256)
+            || !SHA256.test(receipt.result_packet_sha256)
+            || !SHA256.test(receipt.receipt_sha256)
+            || !Number.isFinite(Date.parse(receipt.answer_generated_at))
+        ) {
+            throw new Error('completion-receipt-invalid');
+        }
+
+        for (const [field, value] of Object.entries(expected || {})) {
+            if (value != null && String(receipt[field] || '') !== String(value)) {
+                throw new Error('completion-receipt-binding-mismatch');
+            }
+        }
+
+        if (typeof window.sha256HexText !== 'function') {
+            throw new Error('completion-hash-verifier-unavailable');
+        }
+        const body = Object.fromEntries(
+            fields
+                .filter(field => field !== 'receipt_sha256')
+                .sort()
+                .map(field => [field, receipt[field]])
+        );
+        const actual = await window.sha256HexText(JSON.stringify(body));
+        if (actual !== receipt.receipt_sha256) {
+            throw new Error('completion-receipt-integrity-mismatch');
+        }
+        return receipt;
+    }
+
+    function pointInTimeText(answer, freshness, generatedAt) {
+        const parsed = new Date(generatedAt);
+        const when = Number.isFinite(parsed.getTime())
+            ? parsed.toLocaleString('en-AU', {dateStyle: 'medium', timeStyle: 'short'})
+            : generatedAt;
+        const status = String(freshness?.status || 'unavailable');
+        let note;
+        if (status === 'superseded') {
+            note = `Delayed final answer — generated ${when}. Relevant tracked facts have since changed, so this is the original point-in-time answer, not a current answer.`;
+        } else if (status === 'unchanged') {
+            note = `Delayed final answer — generated ${when}. Its tracked temporal facts were rechecked and are unchanged.`;
+        } else if (status === 'not_tracked') {
+            note = `Delayed final answer — generated ${when}. This is a point-in-time answer; no temporal-fact freshness check applied.`;
+        } else {
+            note = `Delayed final answer — generated ${when}. I could not verify whether its tracked facts have changed.`;
+        }
+        return note + '\n\n' + answer;
+    }
+
+    async function verifiedAnswer(event, expectedConversationId) {
         const answer = typeof event.finalAnswer === 'string' ? event.finalAnswer.trim() : '';
         const declared = String(event.finalAnswerSha256 || '');
-        if (!answer || answer.length > 50000 || !SHA256.test(declared)) {
+        const packetSha = String(event.resultPacketSha256 || '');
+        const generatedAt = String(event.finalAnswerGeneratedAt || '');
+        const requestId = String(event.requestId || '');
+        const sourceConversationId = String(event.sourceConversationId || '');
+        const sourceMessageId = String(event.sourceMessageId || '');
+        if (
+            !answer
+            || answer.length > 50000
+            || !SHA256.test(declared)
+            || !SHA256.test(packetSha)
+            || !UUID.test(requestId)
+            || !Number.isFinite(Date.parse(generatedAt))
+            || sourceConversationId !== expectedConversationId
+        ) {
             throw new Error('completion-answer-invalid');
         }
         if (typeof window.sha256HexText !== 'function') {
@@ -82,7 +176,24 @@
         if (actual !== declared) {
             throw new Error('completion-answer-integrity-mismatch');
         }
-        return answer;
+        const receipt = await verifyCompletionReceipt(event.completionReceipt, {
+            request_id: requestId,
+            source_conversation_id: sourceConversationId,
+            source_message_id: sourceMessageId,
+            answer_generated_at: generatedAt,
+            final_answer_sha256: declared,
+            result_packet_sha256: packetSha,
+        });
+        return {
+            answer,
+            receipt,
+            freshness: event.freshness || {status: 'unavailable'},
+            displayText: pointInTimeText(
+                answer,
+                event.freshness,
+                receipt.answer_generated_at,
+            ),
+        };
     }
 
     function render(eventId, eventType, text) {
@@ -111,7 +222,7 @@
         );
         if (
             data.status !== 'ok'
-            || data.version !== '1.0'
+            || data.version !== '2.0'
             || !Array.isArray(data.items)
             || data.items.length > bounded
         ) {
@@ -150,14 +261,40 @@
             if (actual !== answerSha) {
                 continue;
             }
+            const sourceConversationId = String(item.source_conversation_id || '');
+            const sourceMessageId = String(item.source_message_id || '');
+            const generatedAt = String(item.answer_generated_at || '');
+            if (!Number.isFinite(Date.parse(generatedAt))) {
+                continue;
+            }
+            let receipt;
+            try {
+                receipt = await verifyCompletionReceipt(item.completion_receipt, {
+                    request_id: requestId,
+                    source_conversation_id: sourceConversationId,
+                    source_message_id: sourceMessageId,
+                    answer_generated_at: generatedAt,
+                    final_answer_sha256: answerSha,
+                    result_packet_sha256: packetSha,
+                });
+            } catch (_) {
+                continue;
+            }
+            const freshness = (
+                item.freshness && typeof item.freshness === 'object' && !Array.isArray(item.freshness)
+            ) ? item.freshness : {status: 'unavailable'};
             verified.push({
                 requestId,
-                sourceConversationId: String(item.source_conversation_id || ''),
-                sourceMessageId: String(item.source_message_id || ''),
+                sourceConversationId,
+                sourceMessageId,
                 requestText,
                 finalAnswer: answer,
+                displayAnswer: pointInTimeText(answer, freshness, generatedAt),
                 finalAnswerSha256: answerSha,
                 resultPacketSha256: packetSha,
+                answerGeneratedAt: generatedAt,
+                completionReceipt: receipt,
+                freshness,
                 completedAt: item.completed_at || null,
                 updatedAt: item.updated_at || null,
             });
@@ -168,10 +305,13 @@
     async function consumeOne() {
         if (!accountReady() || document.visibilityState === 'hidden') return false;
 
+        const conversationId = activeConversationId();
+        if (!conversationId) return false;
+
         const event = await requestJson('/foundation/completions/claim', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: '{}',
+            body: JSON.stringify({conversation_id: conversationId}),
         });
         if (event.available !== true) return false;
 
@@ -183,13 +323,16 @@
         }
 
         if (eventType === 'retry-completed') {
-            const answer = await verifiedAnswer(event);
-            render(eventId, eventType, answer);
+            const verified = await verifiedAnswer(event, conversationId);
+            render(eventId, eventType, verified.displayText);
             const sourceMessageId = String(event.sourceMessageId || event.requestId || '');
             if (UUID.test(sourceMessageId) && typeof window.clearPendingRequest === 'function') {
                 try { window.clearPendingRequest(sourceMessageId); } catch (_) {}
             }
         } else if (eventType === 'retry-abandoned') {
+            if (String(event.sourceConversationId || '') !== conversationId) {
+                throw new Error('completion-conversation-binding-mismatch');
+            }
             render(
                 eventId,
                 eventType,
