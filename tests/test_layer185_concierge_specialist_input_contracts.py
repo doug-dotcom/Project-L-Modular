@@ -20,7 +20,7 @@ def test_all_live_foundation_specialists_compile_to_their_declared_shapes():
             "Shine Dive: give me a dive brief for Tulamben with Advanced Open Water and Nitrox",
             {
                 "destination": "Tulamben",
-                "certifications": ["Advanced Open Water", "Open Water", "Enriched Air Nitrox"],
+                "certifications": ["Advanced Open Water", "Enriched Air Nitrox"],
             },
         ),
         "fish.destination_brief": (
@@ -76,7 +76,7 @@ def test_missing_required_fields_are_reported_not_guessed():
         'Shine Translate: translate "Hello" to Japanese',
     )
     assert translation["status"] == "needs_input"
-    assert translation["missing_fields"] == ["sourceLanguage", "targetLanguage"]
+    assert translation["missing_fields"] == ["sourceLanguage"]
     assert "input_data" not in translation
 
 
