@@ -59,11 +59,9 @@ class MemoryRetrieveResponse(BaseModel):
     receipt: dict[str, object]
 
 
-def _configured_owner(service_token: str) -> str:
+def _authenticate_service_token(service_token: str) -> None:
     expected_token = os.getenv("SHINE_AI_MEMORY_TOKEN", "").strip()
-    owner_id = os.getenv("PROJECT_L_OWNER_ID", "").strip()
-
-    if not expected_token or not owner_id:
+    if not expected_token:
         raise HTTPException(
             status_code=503,
             detail="Project L's Shine-AI memory bridge is disabled.",
@@ -75,22 +73,43 @@ def _configured_owner(service_token: str) -> str:
         )
     if not service_token or not secrets.compare_digest(service_token, expected_token):
         raise HTTPException(status_code=401, detail="Invalid service credentials.")
+
+
+def _bound_owner() -> str:
     try:
-        return str(UUID(owner_id))
+        rows = (
+            _database()
+            .table("l_account_config")
+            .select("user_id")
+            .eq("singleton", True)
+            .limit(2)
+            .execute()
+            .data
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Project L's account owner binding is temporarily unavailable.",
+        ) from exc
+    if not isinstance(rows, list) or len(rows) != 1:
+        raise HTTPException(
+            status_code=503,
+            detail="Project L requires exactly one provisioned account owner.",
+        )
+    try:
+        return str(UUID(str((rows[0] or {}).get("user_id") or "")))
     except (TypeError, ValueError, AttributeError) as exc:
         raise HTTPException(
             status_code=503,
-            detail="Project L's memory owner binding is invalid.",
+            detail="Project L's account owner binding is invalid.",
         ) from exc
 
 
 def _validate_access(request: MemoryRetrieveRequest, owner_id: str) -> frozenset[str]:
-    try:
-        request_owner = str(UUID(request.user_id))
-    except (TypeError, ValueError, AttributeError):
-        raise HTTPException(status_code=403, detail="Memory owner mismatch.") from None
-    if request_owner != owner_id:
-        raise HTTPException(status_code=403, detail="Memory owner mismatch.")
+    # The caller-supplied user_id is deliberately not an authority input.
+    # Project L is owner-specific and binds every service memory read to its
+    # own provisioned account owner after service authentication.
+    _ = owner_id
 
     allowed_scopes = _APP_SCOPE_POLICY.get(request.app)
     if allowed_scopes is None:
@@ -245,7 +264,8 @@ def retrieve_memory(
     request: MemoryRetrieveRequest,
     x_shine_service_token: str = Header(default=""),
 ) -> MemoryRetrieveResponse:
-    owner_id = _configured_owner(x_shine_service_token)
+    _authenticate_service_token(x_shine_service_token)
+    owner_id = _bound_owner()
     requested_scopes = _validate_access(request, owner_id)
     context = _owner_context(owner_id, request.query, request.limit)
     records = _records(context, requested_scopes, request.limit)
@@ -273,6 +293,8 @@ def retrieve_memory(
             "unavailable_scopes": unavailable_scopes,
             "records_returned": len(records),
             "owner_bound": scope_receipt.get("ownerBound") is True,
+            "owner_binding_source": "project_l_account",
+            "caller_user_id_authoritative": False,
             "permission_scoped": True,
             "quarantine_excluded": scope_receipt.get("quarantineExcluded") is True,
             "corrections_preferred": scope_receipt.get("correctionsPreferred") is True,
