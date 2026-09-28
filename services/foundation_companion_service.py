@@ -1486,7 +1486,8 @@ def set_pending_concierge_job_status(
     user_id: str,
     job_id: str,
     status: str,
-) -> None:
+) -> bool:
+    """Move local retry state without ever overwriting explicit cancellation."""
     if status not in {"ready", "completed", "failed", "cancelled"}:
         raise ValueError("invalid pending concierge job status")
     now = _utc_now()
@@ -1495,13 +1496,21 @@ def set_pending_concierge_job_status(
         "updated_at": now,
         "completed_at": now if status in {"completed", "failed", "cancelled"} else None,
     }
-    (
+    query = (
         db.table("companion_foundation_pending_jobs")
         .update(values)
         .eq("job_id", job_id)
         .eq("user_id", user_id)
-        .execute()
     )
+    if status != "cancelled":
+        query = query.neq("status", "cancelled")
+    result = query.execute()
+    rows = getattr(result, "data", None)
+    if isinstance(rows, list):
+        return len(rows) == 1
+    # Some legacy/synthetic clients do not return updated rows. Production
+    # PostgREST does, but preserve compatibility without claiming rejection.
+    return True
 
 
 def invoke_foundation_orchestration(
