@@ -21,7 +21,9 @@ KEY_ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 SIGNATURE_B64_RE = re.compile(r"^[A-Za-z0-9+/]{86}==$")
 VERIFICATION_VERSION = "shine-ai/decision-trace-verification-v1"
 AUTHENTICITY_VERSION = "shine-ai/decision-trace-authenticity-v1"
+CONTINUITY_VERSION = "shine-ai/decision-trace-keyset-continuity-v1"
 SIGNATURE_DOMAIN = "shine-ai:decision-trace:v1"
+TRANSITION_DOMAIN = "shine-ai:decision-trace-keyset-transition:v1"
 
 
 def _digest(material: dict[str, Any]) -> str:
@@ -524,11 +526,178 @@ def verify_decision_trace_authenticity(
     }
 
 
+def verify_keyset_transition(
+    previous_keyset: Any,
+    next_keyset: Any,
+    transition: Any,
+) -> dict[str, Any]:
+    """Verify one monotonic signing-keyset generation handoff."""
+    if not isinstance(previous_keyset, dict) or not isinstance(next_keyset, dict):
+        return {
+            "version": CONTINUITY_VERSION,
+            "status": "invalid",
+            "verified": False,
+            "reason_code": "keyset-transition-keyset-invalid",
+        }
+    previous_generation = previous_keyset.get("generation")
+    next_generation = next_keyset.get("generation")
+    if (
+        not isinstance(previous_generation, int)
+        or previous_generation < 1
+        or not isinstance(next_generation, int)
+        or next_generation != previous_generation + 1
+    ):
+        return {
+            "version": CONTINUITY_VERSION,
+            "status": "invalid",
+            "verified": False,
+            "reason_code": "keyset-transition-generation-invalid",
+        }
+
+    previous_digest = digest_verification_keyset(previous_keyset)
+    next_digest = digest_verification_keyset(next_keyset)
+    if previous_digest is None or next_digest is None:
+        return {
+            "version": CONTINUITY_VERSION,
+            "status": "invalid",
+            "verified": False,
+            "reason_code": "keyset-transition-fingerprint-invalid",
+        }
+
+    if not isinstance(transition, dict):
+        return {
+            "version": CONTINUITY_VERSION,
+            "status": "invalid",
+            "verified": False,
+            "reason_code": "keyset-transition-certificate-missing",
+        }
+    projected = {
+        key: transition.get(key)
+        for key in (
+            "version",
+            "algorithm",
+            "domain",
+            "from_generation",
+            "to_generation",
+            "from_keyset_sha256",
+            "to_keyset_sha256",
+            "authorization_key_id",
+            "authorization_public_key_sha256",
+            "signature_b64",
+        )
+    }
+    if (
+        projected["version"] != 1
+        or projected["algorithm"] != "ed25519"
+        or projected["domain"] != TRANSITION_DOMAIN
+        or projected["from_generation"] != previous_generation
+        or projected["to_generation"] != next_generation
+        or projected["from_keyset_sha256"] != previous_digest
+        or projected["to_keyset_sha256"] != next_digest
+        or not isinstance(projected["authorization_key_id"], str)
+        or KEY_ID_RE.fullmatch(projected["authorization_key_id"]) is None
+        or not isinstance(projected["authorization_public_key_sha256"], str)
+        or SHA256_RE.fullmatch(projected["authorization_public_key_sha256"]) is None
+        or not isinstance(projected["signature_b64"], str)
+        or SIGNATURE_B64_RE.fullmatch(projected["signature_b64"]) is None
+    ):
+        return {
+            "version": CONTINUITY_VERSION,
+            "status": "invalid",
+            "verified": False,
+            "reason_code": "keyset-transition-certificate-invalid",
+        }
+
+    previous_keys = previous_keyset.get("verification_keys")
+    authorization_key = (
+        previous_keys.get(projected["authorization_key_id"])
+        if isinstance(previous_keys, dict)
+        else None
+    )
+    if not isinstance(authorization_key, dict):
+        return {
+            "version": CONTINUITY_VERSION,
+            "status": "invalid",
+            "verified": False,
+            "reason_code": "keyset-transition-authorizer-not-previously-trusted",
+        }
+    if (
+        authorization_key.get("public_key_sha256")
+        != projected["authorization_public_key_sha256"]
+    ):
+        return {
+            "version": CONTINUITY_VERSION,
+            "status": "invalid",
+            "verified": False,
+            "reason_code": "keyset-transition-authorizer-fingerprint-mismatch",
+        }
+
+    try:
+        public_bytes = base64.b64decode(
+            str(authorization_key.get("public_key_b64") or "").strip(),
+            validate=True,
+        )
+        signature_bytes = base64.b64decode(
+            projected["signature_b64"],
+            validate=True,
+        )
+        if len(public_bytes) != 32 or len(signature_bytes) != 64:
+            raise ValueError("invalid-ed25519-length")
+        if (
+            hashlib.sha256(public_bytes).hexdigest()
+            != projected["authorization_public_key_sha256"]
+        ):
+            raise ValueError("public-key-fingerprint-mismatch")
+        message = (
+            projected["domain"]
+            + "\n"
+            + str(projected["from_generation"])
+            + "\n"
+            + str(projected["to_generation"])
+            + "\n"
+            + projected["from_keyset_sha256"]
+            + "\n"
+            + projected["to_keyset_sha256"]
+            + "\n"
+            + projected["authorization_key_id"]
+            + "\n"
+            + projected["authorization_public_key_sha256"]
+        ).encode("utf-8")
+        Ed25519PublicKey.from_public_bytes(public_bytes).verify(
+            signature_bytes,
+            message,
+        )
+    except Exception:
+        return {
+            "version": CONTINUITY_VERSION,
+            "status": "invalid",
+            "verified": False,
+            "reason_code": "keyset-transition-signature-verification-failed",
+        }
+
+    return {
+        "version": CONTINUITY_VERSION,
+        "status": "verified",
+        "verified": True,
+        "from_generation": previous_generation,
+        "to_generation": next_generation,
+        "from_keyset_sha256": previous_digest,
+        "to_keyset_sha256": next_digest,
+        "authorization_key_id": projected["authorization_key_id"],
+        "authorization_public_key_sha256": projected[
+            "authorization_public_key_sha256"
+        ],
+        "certificate_sha256": _digest(projected),
+    }
+
+
 __all__ = [
     "AUTHENTICITY_VERSION",
+    "CONTINUITY_VERSION",
     "VERIFICATION_VERSION",
     "digest_verification_keyset",
     "recompute_decision_trace",
     "verify_decision_trace",
     "verify_decision_trace_authenticity",
+    "verify_keyset_transition",
 ]
