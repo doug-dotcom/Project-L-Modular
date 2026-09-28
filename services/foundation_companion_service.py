@@ -1999,7 +1999,7 @@ def set_pending_concierge_job_status(
     job_id: str,
     status: str,
 ) -> bool:
-    """Move local retry state without ever overwriting explicit cancellation."""
+    """Move local retry state without overwriting cancellation or retirement."""
     if status not in {"ready", "completed", "failed", "cancelled"}:
         raise ValueError("invalid pending concierge job status")
     now = _utc_now()
@@ -2014,6 +2014,7 @@ def set_pending_concierge_job_status(
         .eq("job_id", job_id)
         .eq("user_id", user_id)
     )
+    query = query.neq("status", "retired")
     if status != "cancelled":
         query = (
             query
