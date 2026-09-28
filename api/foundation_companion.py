@@ -14,6 +14,7 @@ from services.foundation_companion_service import (
     foundation_connection_status,
     foundation_fleet_status,
     list_delayed_completion_history,
+    list_pending_concierge_jobs,
     safe_connection_result,
 )
 
@@ -64,6 +65,26 @@ def routes(db) -> APIRouter:
             raise
         except Exception as exc:
             raise HTTPException(503, "Concierge specialist status is temporarily unavailable.") from exc
+
+    @router.get("/completions/pending")
+    def pending_completions(
+        request: Request,
+        limit: int = 100,
+    ) -> dict:
+        try:
+            return list_pending_concierge_jobs(
+                db,
+                owner_id(request),
+                limit=limit,
+            )
+        except HTTPException:
+            raise
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from exc
+        except Exception as exc:
+            raise HTTPException(
+                503, "Pending Concierge jobs are temporarily unavailable."
+            ) from exc
 
     @router.get("/completions/history")
     def completion_history(
