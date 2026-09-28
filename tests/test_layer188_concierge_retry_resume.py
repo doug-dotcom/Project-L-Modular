@@ -8,6 +8,7 @@ REQUEST = "22222222-2222-4222-8222-222222222222"
 RETRY_JOB = "33333333-3333-4333-8333-333333333333"
 CLAIM = "44444444-4444-4444-8444-444444444444"
 LINK = "55555555-5555-4555-8555-555555555555"
+NEXT_RETRY = "66666666-6666-4666-8666-666666666666"
 
 
 class Result:
@@ -203,7 +204,10 @@ def test_partial_resume_closes_old_claim_because_foundation_already_requeues():
                 "status": "partial",
                 "reasonCode": "concierge-execution-partial",
                 "results": [],
-                "retry": {"queued": True},
+                "retry": {
+                    "queued": True,
+                    "retryJobId": NEXT_RETRY,
+                },
                 "synthesisReady": True,
                 "synthesisMustDisclosePartial": True,
             })
@@ -348,3 +352,57 @@ def test_foundation_api_exposes_leased_completion_claim_and_ack():
     assert '@router.post("/completions/{event_id}/ack")' in source
     assert "companion_claim_completion_event_v2" in source
     assert "companion_ack_completion_event_v2" in source
+
+
+
+def test_retry_already_pending_is_current_claim_not_a_new_attempt():
+    outcomes = []
+
+    def post(url, *, json, **kwargs):
+        if url.endswith("/retry/claim"):
+            return Response(200, claim_payload())
+        if url.endswith("/concierge/resume"):
+            return Response(200, {
+                "status": "partial",
+                "reasonCode": "concierge-execution-partial",
+                "results": [],
+                "retry": {
+                    "queued": False,
+                    "reasonCode": "retry-already-pending",
+                    "retryJobId": RETRY_JOB,
+                },
+                "synthesisReady": True,
+                "synthesisMustDisclosePartial": True,
+            })
+        if url.endswith("/retry/finish"):
+            outcomes.append(json["outcome"])
+            return Response(200, {
+                "status": "ok",
+                "reasonCode": "retry-finished",
+                "retry": {
+                    "status": "requeued",
+                    "retryJobId": NEXT_RETRY,
+                },
+            })
+        raise AssertionError(url)
+
+    db = FakeDb()
+    result = run_concierge_retry_once(db, post_impl=post)
+    assert result["status"] == "partial"
+    assert outcomes == ["retry"]
+    assert result["next_retry_scheduled"] is True
+    assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "ready"
+
+
+def test_claim_transport_accepts_foundation_legacy_batch_up_to_twenty():
+    from services.concierge_retry_service import claim_foundation_retry
+
+    capabilities = [f"legacy.capability_{index}" for index in range(1, 21)]
+
+    def post(url, **kwargs):
+        assert url.endswith("/retry/claim")
+        return Response(200, claim_payload(capabilities))
+
+    result = claim_foundation_retry(FakeDb(), post_impl=post)
+    assert result["status"] == "claimed"
+    assert result["capability_ids"] == capabilities
