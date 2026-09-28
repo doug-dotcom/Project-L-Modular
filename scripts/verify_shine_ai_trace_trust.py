@@ -109,9 +109,6 @@ def main() -> None:
         or quorum.get(
             "external_roster_transition_evidence_chain_witness_status"
         ) != "verified"
-        or quorum.get(
-            "external_roster_transition_evidence_chain_witness_mode"
-        ) not in {"created", "existing"}
         or int(
             quorum.get(
                 "external_roster_transition_evidence_chain_witness_generation"
