@@ -30,7 +30,7 @@ from services.shine_ai_trace_verifier import (
 )
 
 RUNTIME_VERSION = "shine/runtime-v1"
-RUNTIME_TRACE_VERSION = "shine/runtime-trace-v2"
+RUNTIME_TRACE_VERSION = "shine/runtime-trace-v3"
 HUMAN_STATUS_VERSION = "shine/human-status-v2"
 RECOVERY_VERSION = "shine/runtime-recovery-v1"
 SHINE_AI_PATH = "/v1/respond"
@@ -642,6 +642,14 @@ def _runtime_component_trace_projection(name: str, value: Any) -> dict:
                     "mismatch_count",
                 ),
             ),
+            "decision_trace_authenticity": _project(
+                item.get("decision_trace_authenticity", {}),
+                (
+                    "version", "status", "authenticated", "reason_code",
+                    "key_id", "public_key_sha256", "keyset_sha256",
+                    "service_version", "service_release", "lineage_sha256",
+                ),
+            ),
         }
 
     return _project(item, ("status", "reason_code"))
@@ -810,6 +818,12 @@ def build_runtime_recovery(
         else {}
     )
     verification_status = str(verification.get("status") or "")
+    authenticity = (
+        shine_ai.get("decision_trace_authenticity")
+        if isinstance(shine_ai.get("decision_trace_authenticity"), dict)
+        else {}
+    )
+    authenticity_status = str(authenticity.get("status") or "")
 
     if str(source.get("status") or "") == "degraded" or component_degraded:
         if mode == "none":
@@ -821,6 +835,11 @@ def build_runtime_recovery(
         mode = "degraded"
         stage = "attestation"
         reasons.append("attestation-degraded")
+
+    if authenticity_status in {"invalid", "unavailable"}:
+        mode = "degraded"
+        stage = "authenticity"
+        reasons.append("authenticity-degraded")
 
     execution_status = str(execution_item.get("status") or "")
     timed_out = execution_item.get("observation_timed_out") is True
@@ -1068,6 +1087,22 @@ def preflight_shine_request(
     ):
         runtime["warnings"].append(
             f"shine-ai-trace:{ai_verification.get('status')}"
+        )
+
+    ai_authenticity = (
+        (runtime["components"].get("shine_ai") or {}).get(
+            "decision_trace_authenticity",
+            {},
+        )
+        if isinstance(runtime["components"].get("shine_ai"), dict)
+        else {}
+    )
+    if (
+        isinstance(ai_authenticity, dict)
+        and ai_authenticity.get("status") in {"invalid", "unavailable"}
+    ):
+        runtime["warnings"].append(
+            f"shine-ai-authenticity:{ai_authenticity.get('status')}"
         )
 
     runtime["status"] = "ready" if not runtime["warnings"] else "degraded"
