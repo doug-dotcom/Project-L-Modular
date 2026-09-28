@@ -106,6 +106,33 @@ def main() -> None:
         ) != 1
         or quorum.get("external_roster_transition_evidence_chain_tag")
             is not None
+        or quorum.get(
+            "external_roster_transition_evidence_chain_witness_status"
+        ) != "verified"
+        or quorum.get(
+            "external_roster_transition_evidence_chain_witness_mode"
+        ) not in {"created", "existing"}
+        or int(
+            quorum.get(
+                "external_roster_transition_evidence_chain_witness_generation"
+            )
+            or 0
+        ) != 1
+        or quorum.get(
+            "external_roster_transition_evidence_chain_witness_rows"
+        ) != 0
+        or quorum.get(
+            "external_roster_transition_evidence_chain_witness_tag"
+        ) is not None
+        or quorum.get(
+            "external_roster_transition_evidence_chain_witness_evidence_sha256"
+        ) is not None
+        or not quorum.get(
+            "external_roster_transition_evidence_chain_witness_auth_key_id"
+        )
+        or quorum.get(
+            "external_roster_transition_evidence_chain_witness_storage"
+        ) != "railway-redis-volume"
         or quorum.get("external_roster_head_verified") is not True
         or int(quorum.get("external_roster_head_sequence") or 0) != 1
         or int(quorum.get("external_roster_head_generation") or 0) != 1
@@ -235,6 +262,9 @@ def main() -> None:
         f"roster_checkpoint={quorum.get('external_roster_storage_checkpoint_retention')} "
         f"roster_evidence_chain={quorum.get('external_roster_transition_evidence_chain_status')}-g"
         f"{quorum.get('external_roster_transition_evidence_chain_generation')} "
+        f"roster_evidence_chain_witness="
+        f"{quorum.get('external_roster_transition_evidence_chain_witness_storage')}-g"
+        f"{quorum.get('external_roster_transition_evidence_chain_witness_generation')} "
         f"roster_head_witness={quorum.get('external_roster_head_witness_id')} "
         f"foundation_chain=verified "
         f"chain_checkpoint=verified "
