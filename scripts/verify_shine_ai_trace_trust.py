@@ -66,6 +66,10 @@ def main() -> None:
         or int(quorum.get("verified_witness_count") or 0) != 2
         or quorum.get("witness_ids")
         != ["foundation-project-l", "redis-project-l"]
+        or quorum.get("policy_storage_authenticated") is not True
+        or quorum.get("policy_storage_checkpoint_independent") is not True
+        or not quorum.get("policy_storage_auth_key_id")
+        or not quorum.get("policy_storage_state_sha256")
     ):
         raise SystemExit(
             "Project L Shine-AI trace trust smoke: FAIL "
@@ -82,7 +86,9 @@ def main() -> None:
         f"checkpoint={storage.get('independent_retention')} "
         f"quorum={quorum.get('verified_witness_count')}/"
         f"{quorum.get('minimum_witnesses')} "
-        f"policy=persisted-g{quorum.get('policy_trust_generation')}"
+        f"policy=persisted-g{quorum.get('policy_trust_generation')} "
+        f"policy_storage={quorum.get('policy_storage_auth_key_id')} "
+        f"policy_checkpoint={quorum.get('policy_storage_checkpoint_retention')}"
     )
 
 
