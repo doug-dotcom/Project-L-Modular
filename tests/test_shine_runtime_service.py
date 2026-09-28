@@ -3394,3 +3394,48 @@ def test_cached_trust_rejects_authenticated_roster_drift(monkeypatch):
     assert trusted is None
     assert error == "trust-witness-quorum-policy-cache-mismatch"
     assert trust["status"] == "invalid"
+
+
+
+def test_runtime_trace_binds_off_device_roster_head_without_witness_hmac():
+    packet = runtime_for_human_status()
+    packet["components"]["shine_ai"]["decision_trace_trust"] = {
+        "status": "trusted",
+        "witness_quorum": {
+            "status": "verified",
+            "external_roster_head_verified": True,
+            "external_roster_head_sequence": 1,
+            "external_roster_head_checkpoint_sha256": "8" * 64,
+            "external_roster_head_sha256": "9" * 64,
+            "external_roster_head_generation": 1,
+            "external_roster_head_policy_sha256": "a" * 64,
+            "external_roster_head_state_sha256": "b" * 64,
+            "external_roster_head_witness_verified": True,
+            "external_roster_head_witness_id":
+                "foundation-project-l-roster-head",
+            "external_roster_head_witness_auth_key_id":
+                "foundation-roster-head-witness-v1",
+            "external_roster_head_witness_independent_retention":
+                "foundation-supabase-vault-hmac",
+            "external_roster_head_witness_auth_tag":
+                "PRIVATE-ROSTER-HEAD-WITNESS-HMAC",
+        },
+    }
+
+    first = runtime.build_runtime_trace(
+        packet,
+        {"status": "not_required"},
+    )
+    changed = json.loads(json.dumps(packet))
+    changed["components"]["shine_ai"]["decision_trace_trust"][
+        "witness_quorum"
+    ]["external_roster_head_sha256"] = "c" * 64
+    second = runtime.build_runtime_trace(
+        changed,
+        {"status": "not_required"},
+    )
+
+    rendered = json.dumps(first)
+    assert first["version"] == "shine/runtime-trace-v14"
+    assert first["lineage_sha256"] != second["lineage_sha256"]
+    assert "PRIVATE-ROSTER-HEAD-WITNESS-HMAC" not in rendered
