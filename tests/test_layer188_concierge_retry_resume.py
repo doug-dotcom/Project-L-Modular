@@ -399,6 +399,9 @@ def test_server_lifecycle_starts_and_stops_retry_runner():
     assert "concierge_retry_runner.stop()" in source
     assert "source_conversation_id=conversation_scope" in source
     assert "source_message_id=request_id" in source
+    assert "request_text=user_message" in source
+    assert "synthesise_delayed_concierge_completion" in source
+    assert "synthesise=lambda original_request, result_packet" in source
 
 
 def test_foundation_api_exposes_leased_completion_claim_and_ack():
