@@ -1296,3 +1296,71 @@ def test_future_persisted_policy_loads_from_authenticated_storage_without_repin(
     assert value["policy_trust_generation"] == 2
     assert value["policy_storage_authenticated"] is True
     assert value["policy_storage_checkpoint_independent"] is True
+
+
+
+def test_layer204_generation_one_snapshot_falls_back_to_v2(monkeypatch):
+    class Call:
+        def __init__(self, data=None, error=None):
+            self.data = data
+            self.error = error
+
+        def execute(self):
+            if self.error is not None:
+                raise self.error
+            return type("Result", (), {"data": self.data})()
+
+    class DB:
+        def __init__(self):
+            self.calls = []
+
+        def rpc(self, name, _params):
+            self.calls.append(name)
+            if name == "shine_ai_witness_quorum_policy_snapshot_v3":
+                return Call(error=RuntimeError("v3 not installed"))
+            if name == "shine_ai_witness_quorum_policy_snapshot_v2":
+                return Call({
+                    "status": "trusted",
+                    "trust_state": {
+                        "trustStateVersion": 1,
+                        "trustStateType": QUORUM_POLICY_TYPE,
+                        "generation": 1,
+                        "minimumWitnesses": 2,
+                        "acceptedWitnessIds": [
+                            "foundation-project-l",
+                            "redis-project-l",
+                        ],
+                        "previousPolicySha256": None,
+                        "policySha256":
+                            CERTIFIED_GENESIS_POLICY_SHA256,
+                    },
+                    "storage": {
+                        "authenticated": True,
+                        "authKeyId": "policy-store-2026-09-a",
+                        "stateSha256": "a" * 64,
+                    },
+                })
+            raise AssertionError(name)
+
+    db = DB()
+    monkeypatch.setattr(
+        quorum,
+        "_verify_or_rotate_policy_storage",
+        lambda *_args, **_kwargs: {
+            "authenticated": True,
+            "auth_key_id": "policy-store-2026-09-a",
+            "state_sha256": "a" * 64,
+            "checkpoint_independent": True,
+            "checkpoint_retention": "railway-redis-volume",
+            "rotation": None,
+        },
+    )
+    monkeypatch.setattr(
+        quorum,
+        "_deployment_quorum_policy_candidate",
+        lambda: None,
+    )
+
+    result = quorum.load_persisted_quorum_policy(DB())
+
+    assert result["generation"] == 1
