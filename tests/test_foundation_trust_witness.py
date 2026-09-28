@@ -51,6 +51,13 @@ def head(sequence=1, generation=1, suffix="a"):
 
 
 def witness_payload(local_head, *, replayed=False):
+    sequence = local_head["sequence"]
+    previous_chain_tag = (
+        "0" * 64
+        if sequence == 1
+        else f"{(sequence + 4) % 16:x}" * 64
+    )
+    chain_tag = f"{(sequence + 5) % 16:x}" * 64
     return {
         "status": "witnessed",
         "replayed": replayed,
@@ -62,12 +69,15 @@ def witness_payload(local_head, *, replayed=False):
         "witnessId": "foundation-project-l",
         "authKeyId": "foundation-witness-v1",
         "headVersion": 1,
-        "sequence": local_head["sequence"],
+        "sequence": sequence,
         "headSha256": local_head["headSha256"],
         "generation": local_head["generation"],
         "keyset_sha256": local_head["keyset_sha256"],
         "stateSha256": local_head["stateSha256"],
         "authTag": "9" * 64,
+        "chainVersion": 1,
+        "previousChainTag": previous_chain_tag,
+        "chainTag": chain_tag,
     }
 
 
@@ -107,6 +117,10 @@ def test_empty_foundation_witness_records_local_genesis(monkeypatch):
     assert result["mode"] == "created"
     assert result["sequence"] == 1
     assert result["independent_retention"] == "foundation-supabase"
+    assert result["history_status"] == "verified"
+    assert result["chain_version"] == 1
+    assert result["previous_chain_tag"] == "0" * 64
+    assert len(result["chain_tag"]) == 64
     assert "authTag" not in result
     assert len(post_calls) == 1
 
@@ -137,6 +151,8 @@ def test_existing_external_witness_is_idempotent(monkeypatch):
     assert result["status"] == "verified"
     assert result["mode"] == "existing-witness"
     assert result["head_sha256"] == local_head["headSha256"]
+    assert result["history_status"] == "verified"
+    assert result["chain_version"] == 1
 
 
 def test_external_witness_advances_exactly_one_sequence(monkeypatch):
@@ -167,6 +183,7 @@ def test_external_witness_advances_exactly_one_sequence(monkeypatch):
     assert result["mode"] == "advanced"
     assert result["sequence"] == 2
     assert result["generation"] == 2
+    assert result["previous_chain_tag"] == witness_payload(previous)["chainTag"]
 
 
 def test_external_witness_ahead_is_rollback_evidence(monkeypatch):
@@ -248,4 +265,103 @@ def test_external_sequence_gap_fails_before_post(monkeypatch):
             post_impl=lambda *args, **kwargs: (_ for _ in ()).throw(
                 AssertionError("gap must fail before network write")
             ),
+        )
+
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("chainVersion", None),
+        ("chainVersion", 2),
+        ("previousChainTag", "bad"),
+        ("chainTag", "bad"),
+    ],
+)
+def test_foundation_witness_requires_verified_chain_head(
+    monkeypatch,
+    field,
+    value,
+):
+    local_head = head()
+    payload = witness_payload(local_head)
+    if value is None:
+        payload.pop(field)
+    else:
+        payload[field] = value
+
+    monkeypatch.setattr(
+        witness,
+        "prepare_monotonic_head",
+        lambda *args, **kwargs: {
+            "status": "ready",
+            "mode": "existing-head",
+            "head": local_head,
+        },
+    )
+
+    with pytest.raises(
+        witness.FoundationWitnessError,
+        match="foundation-witness-response-invalid",
+    ):
+        witness.ensure_foundation_trust_witness(
+            FakeDB(),
+            {},
+            get_impl=lambda *args, **kwargs: FakeResponse(payload),
+        )
+
+
+def test_foundation_genesis_requires_zero_chain_predecessor(monkeypatch):
+    local_head = head()
+    payload = witness_payload(local_head)
+    payload["previousChainTag"] = "1" * 64
+
+    monkeypatch.setattr(
+        witness,
+        "prepare_monotonic_head",
+        lambda *args, **kwargs: {
+            "status": "ready",
+            "mode": "existing-head",
+            "head": local_head,
+        },
+    )
+
+    with pytest.raises(
+        witness.FoundationWitnessError,
+        match="foundation-witness-response-invalid",
+    ):
+        witness.ensure_foundation_trust_witness(
+            FakeDB(),
+            {},
+            get_impl=lambda *args, **kwargs: FakeResponse(payload),
+        )
+
+
+def test_foundation_advance_requires_observed_chain_continuity(monkeypatch):
+    previous = head(sequence=1, generation=1, suffix="a")
+    current = head(sequence=2, generation=2, suffix="c")
+    current_payload = witness_payload(current)
+    current_payload["previousChainTag"] = "f" * 64
+
+    monkeypatch.setattr(
+        witness,
+        "prepare_monotonic_head",
+        lambda *args, **kwargs: {
+            "status": "ready",
+            "mode": "advanced",
+            "head": current,
+        },
+    )
+
+    with pytest.raises(
+        witness.FoundationWitnessError,
+        match="foundation-witness-chain-continuity-mismatch",
+    ):
+        witness.ensure_foundation_trust_witness(
+            FakeDB(),
+            {},
+            get_impl=lambda *args, **kwargs: FakeResponse(
+                witness_payload(previous)
+            ),
+            post_impl=lambda *args, **kwargs: FakeResponse(current_payload),
         )
