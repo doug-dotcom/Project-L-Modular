@@ -239,7 +239,7 @@ def _emit_completion_event(
 
 
 def _local_inputs_for_claim(job: dict, claim: dict) -> dict | None:
-    if str(job.get("status") or "") != "ready":
+    if str(job.get("status") or "") not in {"ready", "completed"}:
         return None
     local_capabilities = [str(item) for item in list(job.get("capability_ids") or [])]
     claimed = claim["capability_ids"]
@@ -346,6 +346,14 @@ def _retry_after_from_resume(resume: dict) -> str | None:
     return min(values) if values else None
 
 
+def _resume_has_distinct_queued_retry(resume: dict, claim: dict) -> bool:
+    retry = resume.get("retry")
+    if not isinstance(retry, dict) or retry.get("queued") is not True:
+        return False
+    retry_job_id = str(retry.get("retryJobId") or "")
+    return bool(retry_job_id and retry_job_id != claim["retry_job_id"])
+
+
 def run_concierge_retry_once(
     db,
     *,
@@ -404,6 +412,21 @@ def run_concierge_retry_once(
     status = resume.get("status")
 
     if status == "completed":
+        # Specialist completion is already Foundation checkpoint truth. Persist
+        # that user-facing truth before releasing the retry lease; if the finish
+        # acknowledgement is lost, a reclaimed job can safely replay checkpoints.
+        set_pending_concierge_job_status(
+            db,
+            user_id=claim["owner_shine_id"],
+            job_id=claim["request_id"],
+            status="completed",
+        )
+        _emit_completion_event(
+            db,
+            job=job,
+            event_type="retry-completed",
+            reason_code="concierge-resume-completed",
+        )
         finish = _finish_remote_retry(
             db,
             claim,
@@ -412,19 +435,6 @@ def run_concierge_retry_once(
             foundation_url=foundation_url,
             post_impl=post_impl,
         )
-        if finish.get("status") == "ok":
-            set_pending_concierge_job_status(
-                db,
-                user_id=claim["owner_shine_id"],
-                job_id=claim["request_id"],
-                status="completed",
-            )
-            _emit_completion_event(
-                db,
-                job=job,
-                event_type="retry-completed",
-                reason_code="concierge-resume-completed",
-            )
         return {
             "status": "completed",
             "reason_code": "concierge-resume-completed",
@@ -436,18 +446,21 @@ def run_concierge_retry_once(
         }
 
     if status == "partial":
-        next_retry_scheduled = isinstance(resume.get("retry"), dict)
-        # A normal partial resume queues its own next subset. If that queue write
-        # failed, requeue the claimed job instead of silently losing unfinished work.
+        distinct_retry = _resume_has_distinct_queued_retry(resume, claim)
+        # During resume, Foundation's execution queue normally sees this very
+        # claim as "already pending". That is not a next attempt. Only a distinct
+        # newly queued retry lets us close the old lease as completed; otherwise
+        # finish(outcome=retry) atomically creates the next attempt.
         finish = _finish_remote_retry(
             db,
             claim,
-            outcome="completed" if next_retry_scheduled else "retry",
+            outcome="completed" if distinct_retry else "retry",
             reason_code=(
                 "concierge-resume-partial-requeued"
-                if next_retry_scheduled
-                else "concierge-resume-partial-retry-queue-missing"
+                if distinct_retry
+                else "concierge-resume-partial-next-attempt"
             ),
+            retry_after=None if distinct_retry else _retry_after_from_resume(resume),
             foundation_url=foundation_url,
             post_impl=post_impl,
         )
@@ -455,12 +468,12 @@ def run_concierge_retry_once(
             "status": "partial",
             "reason_code": (
                 "concierge-resume-partial-requeued"
-                if next_retry_scheduled
-                else "concierge-resume-partial-retry-queue-missing"
+                if distinct_retry
+                else "concierge-resume-partial-next-attempt"
             ),
             "finish_status": finish.get("status"),
-            "next_retry_scheduled": next_retry_scheduled or (
-                finish.get("status") == "ok"
+            "next_retry_scheduled": (
+                distinct_retry or finish.get("status") == "ok"
             ),
             "reused_count": sum(
                 1 for row in resume.get("results") or []
@@ -469,12 +482,13 @@ def run_concierge_retry_once(
         }
 
     if status in {"network-uncertain", "unavailable", "authority-unavailable"}:
+        distinct_retry = _resume_has_distinct_queued_retry(resume, claim)
         finish = _finish_remote_retry(
             db,
             claim,
-            outcome="retry",
+            outcome="completed" if distinct_retry else "retry",
             reason_code=str(resume.get("reason_code") or "concierge-resume-retry"),
-            retry_after=_retry_after_from_resume(resume),
+            retry_after=None if distinct_retry else _retry_after_from_resume(resume),
             foundation_url=foundation_url,
             post_impl=post_impl,
         )
@@ -482,8 +496,25 @@ def run_concierge_retry_once(
             "status": "retry",
             "reason_code": str(resume.get("reason_code") or "concierge-resume-retry"),
             "finish_status": finish.get("status"),
+            "next_retry_scheduled": (
+                distinct_retry or finish.get("status") == "ok"
+            ),
         }
 
+    set_pending_concierge_job_status(
+        db,
+        user_id=claim["owner_shine_id"],
+        job_id=claim["request_id"],
+        status="failed",
+    )
+    _emit_completion_event(
+        db,
+        job=job,
+        event_type="retry-abandoned",
+        reason_code=str(
+            resume.get("reason_code") or "concierge-resume-terminal-failure"
+        ),
+    )
     finish = _finish_remote_retry(
         db,
         claim,
@@ -492,21 +523,6 @@ def run_concierge_retry_once(
         foundation_url=foundation_url,
         post_impl=post_impl,
     )
-    if finish.get("status") == "ok":
-        set_pending_concierge_job_status(
-            db,
-            user_id=claim["owner_shine_id"],
-            job_id=claim["request_id"],
-            status="failed",
-        )
-        _emit_completion_event(
-            db,
-            job=job,
-            event_type="retry-abandoned",
-            reason_code=str(
-                resume.get("reason_code") or "concierge-resume-terminal-failure"
-            ),
-        )
     return {
         "status": "abandoned",
         "reason_code": str(
