@@ -134,16 +134,26 @@ def bind_concierge_execution(route: dict, execution: dict) -> dict:
         for row in evidence["results"]:
             if not isinstance(row, dict):
                 continue
+            result = row.get("result")
+            preview = ""
+            if isinstance(result, dict):
+                preview = json.dumps(
+                    result,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                    default=str,
+                )[:2200]
             compact_results.append({
                 "capability_id": row.get("capability_id"),
                 "app_name": row.get("app_name"),
                 "display_name": row.get("display_name"),
                 "status": row.get("status"),
                 "reason_code": row.get("reason_code"),
-                "result_omitted": True,
+                "result_preview": preview,
+                "result_truncated": bool(preview),
             })
         evidence["results"] = compact_results
-        evidence["result_payloads_omitted_for_context_budget"] = True
+        evidence["result_payloads_truncated_for_context_budget"] = True
         encoded = json.dumps(
             evidence,
             ensure_ascii=False,
@@ -151,6 +161,18 @@ def bind_concierge_execution(route: dict, execution: dict) -> dict:
             default=str,
         )
 
+    if len(encoded) > MAX_SYNTHESIS_EVIDENCE_CHARS:
+        bound["handled"] = False
+        bound["reply"] = ""
+        bound["status"] = "unavailable"
+        bound["foundation_execution"] = {
+            **execution,
+            "status": "unavailable",
+            "reason_code": "concierge-synthesis-evidence-too-large",
+            "synthesis_ready": False,
+        }
+        return bound
+
     bound["handled"] = True
-    bound["reply"] = encoded[:MAX_SYNTHESIS_EVIDENCE_CHARS]
+    bound["reply"] = encoded
     return bound
