@@ -77,6 +77,60 @@ Deno.serve(async (request: Request) => {
 
     if (request.method === 'POST') {
       const body = await readJson(request);
+      const operation = String(body.operation || '').trim();
+
+      if (operation === 'policy-transition-authorize') {
+        const previousPolicy = body.previousPolicy;
+        const nextPolicy = body.nextPolicy;
+        const rows = await runAsGateway((tx) =>
+          tx`select foundation.project_l_policy_transition_authorize_v1(
+            ${token},
+            ${JSON.stringify(previousPolicy)}::jsonb,
+            ${JSON.stringify(nextPolicy)}::jsonb
+          ) as result`
+        );
+        const result = rows?.[0]?.result;
+        if (!result || typeof result !== 'object') {
+          return json(
+            { status: 'unavailable', reasonCode: 'witness-result-invalid' },
+            503,
+          );
+        }
+        const status =
+          result.status === 'denied' ? 401 :
+          result.status === 'invalid' ? 400 :
+          result.status === 'unavailable' ? 503 :
+          200;
+        return json(result, status);
+      }
+
+      if (operation === 'policy-transition-verify') {
+        const previousPolicy = body.previousPolicy;
+        const nextPolicy = body.nextPolicy;
+        const authorization = body.authorization;
+        const rows = await runAsGateway((tx) =>
+          tx`select foundation.project_l_policy_transition_verify_v1(
+            ${token},
+            ${JSON.stringify(previousPolicy)}::jsonb,
+            ${JSON.stringify(nextPolicy)}::jsonb,
+            ${JSON.stringify(authorization)}::jsonb
+          ) as result`
+        );
+        const result = rows?.[0]?.result;
+        if (!result || typeof result !== 'object') {
+          return json(
+            { status: 'unavailable', reasonCode: 'witness-result-invalid' },
+            503,
+          );
+        }
+        const status =
+          result.status === 'denied' ? 401 :
+          result.status === 'invalid' ? 400 :
+          result.status === 'unavailable' ? 503 :
+          200;
+        return json(result, status);
+      }
+
       const witnessId = String(body.witnessId || WITNESS_ID);
       const sequence = Number(body.sequence);
       const headSha256 = String(body.headSha256 || '');

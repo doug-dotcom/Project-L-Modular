@@ -365,3 +365,129 @@ def test_foundation_advance_requires_observed_chain_continuity(monkeypatch):
             ),
             post_impl=lambda *args, **kwargs: FakeResponse(current_payload),
         )
+
+
+
+def test_foundation_policy_transition_authorize_then_verify():
+    previous = {
+        "policyVersion": 1,
+        "policyType":
+            "decision_trace_trust_state_witness_quorum_policy",
+        "generation": 1,
+        "minimumWitnesses": 2,
+        "acceptedWitnessIds": [
+            "foundation-project-l",
+            "redis-project-l",
+        ],
+        "previousPolicySha256": None,
+        "policySha256": "a" * 64,
+    }
+    next_policy = {
+        "policyVersion": 1,
+        "policyType":
+            "decision_trace_trust_state_witness_quorum_policy",
+        "generation": 2,
+        "minimumWitnesses": 2,
+        "acceptedWitnessIds": [
+            "backup-project-l",
+            "foundation-project-l",
+            "redis-project-l",
+        ],
+        "previousPolicySha256": "a" * 64,
+        "policySha256": "b" * 64,
+    }
+    authorization = {
+        "status": "authorized",
+        "authorizationVersion": 1,
+        "authorizationType":
+            "decision_trace_trust_state_witness_quorum_policy_transition",
+        "authAlgorithm": "HMAC-SHA-256",
+        "witnessId": "foundation-project-l",
+        "authKeyId": "foundation-witness-v1",
+        "fromGeneration": 1,
+        "toGeneration": 2,
+        "fromPolicySha256": "a" * 64,
+        "toPolicySha256": "b" * 64,
+        "authTag": "c" * 64,
+    }
+    calls = []
+
+    def fake_post(url, **kwargs):
+        calls.append((url, kwargs["json"]))
+        if kwargs["json"]["operation"] == "policy-transition-authorize":
+            return FakeResponse(authorization)
+        assert kwargs["json"]["operation"] == "policy-transition-verify"
+        assert kwargs["json"]["authorization"]["authTag"] == "c" * 64
+        return FakeResponse({
+            "status": "verified",
+            "witnessId": "foundation-project-l",
+            "authKeyId": "foundation-witness-v1",
+            "fromGeneration": 1,
+            "toGeneration": 2,
+            "fromPolicySha256": "a" * 64,
+            "toPolicySha256": "b" * 64,
+        })
+
+    result = witness.ensure_foundation_policy_transition_authorization(
+        FakeDB(),
+        previous,
+        next_policy,
+        post_impl=fake_post,
+    )
+
+    assert result["witnessId"] == "foundation-project-l"
+    assert result["verification_status"] == "foundation-verified"
+    assert result["authTag"] == "c" * 64
+    assert [payload["operation"] for _url, payload in calls] == [
+        "policy-transition-authorize",
+        "policy-transition-verify",
+    ]
+
+
+def test_foundation_policy_transition_fails_if_verify_disagrees():
+    previous = {
+        "generation": 1,
+        "policySha256": "a" * 64,
+    }
+    next_policy = {
+        "generation": 2,
+        "policySha256": "b" * 64,
+    }
+    authorization = {
+        "status": "authorized",
+        "authorizationVersion": 1,
+        "authorizationType":
+            "decision_trace_trust_state_witness_quorum_policy_transition",
+        "authAlgorithm": "HMAC-SHA-256",
+        "witnessId": "foundation-project-l",
+        "authKeyId": "foundation-witness-v1",
+        "fromGeneration": 1,
+        "toGeneration": 2,
+        "fromPolicySha256": "a" * 64,
+        "toPolicySha256": "b" * 64,
+        "authTag": "c" * 64,
+    }
+
+    def fake_post(_url, **kwargs):
+        if kwargs["json"]["operation"] == "policy-transition-authorize":
+            return FakeResponse(authorization)
+        return FakeResponse({
+            "status": "verified",
+            "witnessId": "foundation-project-l",
+            "authKeyId": "foundation-witness-v1",
+            "fromGeneration": 1,
+            "toGeneration": 2,
+            "fromPolicySha256": "a" * 64,
+            "toPolicySha256": "d" * 64,
+        })
+
+    with pytest.raises(
+        witness.FoundationWitnessError,
+        match="foundation-policy-transition-verification-failed",
+    ):
+        witness.ensure_foundation_policy_transition_authorization(
+            FakeDB(),
+            previous,
+            next_policy,
+            post_impl=fake_post,
+        )
