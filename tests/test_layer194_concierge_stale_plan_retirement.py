@@ -152,3 +152,58 @@ def test_retired_history_never_exposes_cancel_control():
     cancel_case = index.index("taskCentreJob?.status === 'cancelled'", retired_case)
     window = index[retired_case:cancel_case]
     assert "Cancel delayed work" not in window
+
+
+
+class RpcResult:
+    def __init__(self, data):
+        self.data = data
+
+
+class RpcCall:
+    def __init__(self, data):
+        self.data = data
+
+    def execute(self):
+        return RpcResult(self.data)
+
+
+class ReconcileDb:
+    def __init__(self):
+        self.calls = []
+
+    def rpc(self, name, params=None):
+        self.calls.append((name, params or {}))
+        if name == "companion_mark_local_concierge_retired_v1":
+            return RpcCall({
+                "status": "retired",
+                "requestId": REQUEST,
+            })
+        raise AssertionError(name)
+
+
+def test_verified_foundation_retirement_reconciles_local_pending_snapshot():
+    db = ReconcileDb()
+
+    def get(*args, **kwargs):
+        return Response(200, retired_payload())
+
+    result = foundation_concierge_jobs_as_user(
+        db,
+        USER,
+        authorization="Bearer " + "u" * 64,
+        get_impl=get,
+    )
+
+    assert result["items"][0]["local_retirement_reconciliation"] == "retired"
+    name, params = db.calls[0]
+    assert name == "companion_mark_local_concierge_retired_v1"
+    assert params["p_request_id"] == REQUEST
+    assert params["p_reason_code"] == "unused-plan-expired"
+    assert params["p_receipt_sha256"] == "a" * 64
+
+
+def test_terminal_task_centre_status_clears_pending_overlay():
+    index = Path("ui/index.html").read_text(encoding="utf-8")
+    assert "['cancelled', 'retired', 'completed', 'failed'].includes(item.status)" in index
+    assert "run.pendingConcierge.delete(item.requestId)" in index
