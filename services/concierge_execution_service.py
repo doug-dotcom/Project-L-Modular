@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import json
 
-from services.foundation_companion_service import invoke_foundation_orchestration
+from services.foundation_companion_service import (
+    invoke_foundation_orchestration,
+    set_pending_concierge_job_status,
+)
 
 
 MAX_SYNTHESIS_EVIDENCE_CHARS = 12000
@@ -68,6 +71,8 @@ def execute_concierge_route(
     route: dict,
     foundation_url: str | None = None,
     post_impl=None,
+    source_conversation_id: str | None = None,
+    source_message_id: str | None = None,
 ) -> dict:
     """Execute a single- or multi-specialist route only through Foundation."""
     plan = _plan_from_route(route)
@@ -79,7 +84,7 @@ def execute_concierge_route(
             "synthesis_ready": False,
             "results": [],
         }
-    return invoke_foundation_orchestration(
+    execution = invoke_foundation_orchestration(
         db,
         user_id,
         request_id=request_id,
@@ -87,7 +92,40 @@ def execute_concierge_route(
         foundation_url=foundation_url,
         timeout_seconds=FOUNDATION_SYNC_TIMEOUT_SECONDS,
         post_impl=post_impl,
+        source_conversation_id=source_conversation_id,
+        source_message_id=source_message_id,
     )
+
+    local_state = "unchanged"
+    try:
+        status = str(execution.get("status") or "")
+        if status == "completed":
+            set_pending_concierge_job_status(
+                db, user_id=user_id, job_id=request_id, status="completed"
+            )
+            local_state = "completed"
+        elif status == "partial":
+            next_state = "ready" if execution.get("retry_scheduled") is True else "failed"
+            set_pending_concierge_job_status(
+                db, user_id=user_id, job_id=request_id, status=next_state
+            )
+            local_state = next_state
+        elif status in {"blocked", "denied", "failed", "invalid"}:
+            set_pending_concierge_job_status(
+                db, user_id=user_id, job_id=request_id, status="failed"
+            )
+            local_state = "failed"
+        elif status == "unavailable" and execution.get("execution_performed") is False:
+            local_state = "not-created-or-unchanged"
+        elif status == "unavailable":
+            # Network uncertainty after execute may mean Foundation committed work
+            # and queued a retry. Preserve the exact local inputs until the
+            # Foundation retry queue proves the terminal outcome.
+            local_state = "ready-uncertain"
+    except Exception:
+        local_state = "update-failed"
+
+    return {**execution, "local_retry_state": local_state}
 
 
 def _execution_summary(execution: dict) -> dict:
