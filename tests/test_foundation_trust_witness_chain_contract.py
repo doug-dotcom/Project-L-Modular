@@ -34,7 +34,7 @@ def test_existing_history_is_authenticated_before_backfill():
 def test_chain_backfill_requires_contiguous_predecessors():
     sql = source()
 
-    assert "where e.sequence=v_event.sequence-1" in sql
+    assert "e.sequence=v_event.sequence-1" in sql
     assert "witness-chain-backfill-gap" in sql
     assert "repeat('0',64)" in sql
 
