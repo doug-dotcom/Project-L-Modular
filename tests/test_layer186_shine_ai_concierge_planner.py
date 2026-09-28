@@ -206,3 +206,18 @@ def test_server_wires_rhee_context_and_active_model_into_concierge_planner():
     assert "model_adapter=active_model_adapter" in window
     assert "l_context=rhee_context" in window
     assert "concierge_plan=concierge_plan" in source
+
+
+
+def test_multi_domain_shine_request_never_falls_through_when_planner_is_unavailable():
+    route = route_capability(
+        "Plan a trip to Vanuatu and give me a dive brief for Vanuatu",
+        foundation_fleet=None,
+        concierge_plan=None,
+    )
+    assert route["capability"] == "foundation_orchestration"
+    assert route["status"] == "unavailable"
+    assert (
+        route["foundation_orchestration"]["reason_code"]
+        == "concierge-planning-unavailable"
+    )
