@@ -433,10 +433,13 @@ def normalise_request_id(value):
 def normalise_conversation_id(value):
     if value is None or str(value).strip() == "":
         return None
+    text = str(value).strip()
     try:
-        return str(UUID(str(value)))
+        return str(UUID(text))
     except (TypeError, ValueError, AttributeError):
-        return ""
+        # Preserve established internal/test thread identifiers while rejecting
+        # whitespace/control-heavy or unbounded conversation labels.
+        return text if re.fullmatch(r"[A-Za-z0-9._:-]{1,100}", text) else ""
 
 
 def store_chat_result(request_id, status, payload=None):
