@@ -134,6 +134,11 @@ def test_work_fingerprint_is_exact_and_conversation_bound():
     }
     same = _concierge_work_fingerprint(CONVERSATION, capabilities, inputs)
     assert same == _concierge_work_fingerprint(CONVERSATION, capabilities, inputs)
+    assert same == _concierge_work_fingerprint(
+        CONVERSATION,
+        list(reversed(capabilities)),
+        inputs,
+    )
     assert same != _concierge_work_fingerprint(NEW, capabilities, inputs)
     assert same != _concierge_work_fingerprint(
         CONVERSATION,
@@ -268,3 +273,36 @@ def test_ui_exposes_pending_jobs_and_cancel_only_for_delayed_work():
 
     assert '@router.get("/completions/pending")' in api
     assert '@router.post("/completions/{request_id}/cancel")' in api
+
+
+
+def test_remote_already_cancelled_for_other_reason_is_not_relabelled_as_superseded():
+    row = pending_row()
+    db = FakeDb([row])
+
+    def post(url, **kwargs):
+        return Response(200, {
+            "status": "already-superseded",
+            "reasonCode": "user-cancelled",
+        })
+
+    try:
+        _supersede_previous_concierge_jobs(
+            db,
+            user_id=USER,
+            new_request_id=NEW,
+            source_conversation_id=CONVERSATION,
+            capability_ids=row["capability_ids"],
+            inputs=row["inputs"],
+            client_token="c" * 128,
+            delegation_token="d" * 128,
+            foundation_url="https://foundation.example",
+            timeout_seconds=12,
+            post_impl=post,
+        )
+    except RuntimeError as exc:
+        assert "user-cancelled" in str(exc)
+    else:
+        raise AssertionError("non-supersession cancellation reason must fail closed")
+
+    assert db.tables["companion_foundation_pending_jobs"][0]["status"] == "ready"
