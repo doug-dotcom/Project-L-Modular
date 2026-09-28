@@ -54,6 +54,7 @@ jobs:
           core/cognition/memory_governance.py
           core/cognition/orchestrator.py
           core/cognition/rike.py
+          core/cognition/shine_ai_bridge.py
           governance/cognitive_guardrails.py
           services/__init__.py
           services/capability_router_service.py
@@ -94,6 +95,7 @@ jobs:
           tests/test_durable_tasks.py
           tests/test_durable_ui.py
           tests/test_shine_ai_memory_bridge.py
+          tests/test_shine_ai_bridge.py
           tests/test_shine_me_context.py
           tests/test_shine_me_service.py
           tests/test_shine_me_api.py
