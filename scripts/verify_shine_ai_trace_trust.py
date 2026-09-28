@@ -42,6 +42,12 @@ def main() -> None:
 
     _reset_cache()
     keyset, error, trust = runtime._shine_ai_verification_keyset(db)
+    quorum = (
+        trust.get("witness_quorum")
+        if isinstance(trust, dict)
+        and isinstance(trust.get("witness_quorum"), dict)
+        else {}
+    )
     if (
         error is not None
         or not isinstance(keyset, dict)
@@ -49,6 +55,14 @@ def main() -> None:
         or trust.get("status") != "trusted"
         or trust.get("storage_authenticated") is not True
         or trust.get("checkpoint_independent") is not True
+        or quorum.get("status") != "verified"
+        or quorum.get("policy_generation") != 1
+        or quorum.get("minimum_witnesses") != 2
+        or quorum.get("verified_count") != 2
+        or quorum.get("verified_witness_ids") != [
+            "foundation-project-l",
+            "project-l-redis",
+        ]
     ):
         raise SystemExit(
             "Project L Shine-AI trace trust smoke: FAIL "
@@ -62,7 +76,10 @@ def main() -> None:
         f"keys={len(keyset.get('verification_keys') or {})} "
         f"mode={trust.get('acceptance_mode')} "
         f"storage=authenticated "
-        f"checkpoint={storage.get('independent_retention')}"
+        f"checkpoint={storage.get('independent_retention')} "
+        f"quorum={quorum.get('verified_count')}/"
+        f"{quorum.get('minimum_witnesses')} "
+        f"policy_generation={quorum.get('policy_generation')}"
     )
 
 
