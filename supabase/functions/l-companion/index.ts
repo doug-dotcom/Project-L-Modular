@@ -1,7 +1,7 @@
 // Repository snapshot derived from deployed Supabase l-companion v27.
 // Layer 295 adds runtime lease enforcement; Layer 296 adds served-outcome
-// capture; Layer 297 guards lease renewal against positive expiry ratcheting.
-// Deployment remains gated on the required database migration stack.
+// capture; Layer 297 guards renewal timing; Layer 298 requires independent
+// privacy-safe query cohorts before evidence can drive a lease transition.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
@@ -1308,13 +1308,18 @@ Deno.serve(async(req:Request)=>{
       };
       const servedAt=new Date().toISOString();
 
+      const servedQueryFingerprint=await sha256(
+        "layer298-query-v1|"+norm(query)
+      );
+
       const outcomeRecord=await db.rpc(
-        "project_l_record_served_outcome_v1",
+        "project_l_record_served_outcome_bound_v1",
         {
           p_user:u.user.id,
           p_request_id:requestId,
           p_intent:retrievalIntent,
           p_mode:selectedRetrievalMode,
+          p_query_fingerprint:servedQueryFingerprint,
           p_payload:{
             returned_count:matches.length,
             safe_assertion_count:reconciliationSummary.safeForFactualAssertion,
