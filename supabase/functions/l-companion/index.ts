@@ -1,7 +1,7 @@
 // Repository snapshot derived from deployed Supabase l-companion v27.
-// Layer 295 adds runtime lease enforcement; Layer 296 adds served-outcome
-// capture; Layer 297 guards renewal timing; Layer 298 requires independent
-// privacy-safe query cohorts before evidence can drive a lease transition.
+// Layers 295-298 govern runtime retrieval, served outcomes, renewal timing
+// and exact-query independence. Layer 299 adds keyed HMAC fingerprints plus
+// lexical-cohort independence without persisting raw query or cohort text.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
@@ -33,6 +33,65 @@ const str=(...vals:unknown[])=>{for(const v of vals){if(typeof v==="string"&&v.t
 const sha256=async(s:string)=>{
   const bytes=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));
   return Array.from(new Uint8Array(bytes)).map(b=>b.toString(16).padStart(2,"0")).join("");
+};
+
+const hmacKeyPromise=crypto.subtle.importKey(
+  "raw",
+  new TextEncoder().encode(SERVICE),
+  {name:"HMAC",hash:"SHA-256"},
+  false,
+  ["sign"]
+);
+const hmacSha256=async(s:string)=>{
+  const key=await hmacKeyPromise;
+  const bytes=await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(s)
+  );
+  return Array.from(new Uint8Array(bytes))
+    .map(b=>b.toString(16).padStart(2,"0"))
+    .join("");
+};
+
+const QUERY_COHORT_STOP=new Set([
+  "what","when","where","why","how","who","which",
+  "tell","show","explain","describe","about","please",
+  "could","would","should","can","may","might",
+  "me","my","mine","our","ours","your","yours",
+  "the","a","an","is","are","was","were","be","been","being",
+  "do","does","did","of","to","for","in","on","at","with","from",
+  "and","or","but","this","that","these","those","it","its",
+  "i","we","you","want","know","give","find","look","think","maybe"
+]);
+const cohortStem=(token:string)=>{
+  let out=token;
+  if(out.length>6&&out.endsWith("ies")){
+    out=out.slice(0,-3)+"y";
+  }else if(out.length>6&&out.endsWith("ing")){
+    out=out.slice(0,-3);
+    if(/([bcdfghjklmnpqrstvwxyz])\\1$/.test(out)) out=out.slice(0,-1);
+  }else if(out.length>5&&out.endsWith("ed")){
+    out=out.slice(0,-2);
+    if(/([bcdfghjklmnpqrstvwxyz])\\1$/.test(out)) out=out.slice(0,-1);
+  }else if(out.length>5&&out.endsWith("es")){
+    out=out.slice(0,-2);
+  }else if(
+    out.length>4&&out.endsWith("s")&&
+    !out.endsWith("ss")&&!out.endsWith("us")&&!out.endsWith("is")
+  ){
+    out=out.slice(0,-1);
+  }
+  return out;
+};
+const queryCohortCanonical=(s:string)=>{
+  const base=norm(s).split(" ").filter(Boolean);
+  const content=base
+    .filter(token=>token.length>=3&&!QUERY_COHORT_STOP.has(token))
+    .map(cohortStem);
+  const preferred=[...new Set(content)].sort();
+  const fallback=[...new Set(base.map(cohortStem))].sort();
+  return (preferred.length?preferred:fallback).slice(0,12).join(" ");
 };
 
 function env(operation:string,requestId:string,status:string,capability:string,result:Record<string,unknown>){
@@ -1308,18 +1367,24 @@ Deno.serve(async(req:Request)=>{
       };
       const servedAt=new Date().toISOString();
 
-      const servedQueryFingerprint=await sha256(
-        "layer298-query-v1|"+norm(query)
-      );
+      const queryCohort=queryCohortCanonical(query);
+      const [
+        servedQueryFingerprint,
+        servedQueryCohortFingerprint
+      ]=await Promise.all([
+        hmacSha256("layer299-exact-v1|"+norm(query)),
+        hmacSha256("layer299-cohort-v1|"+queryCohort)
+      ]);
 
       const outcomeRecord=await db.rpc(
-        "project_l_record_served_outcome_bound_v1",
+        "project_l_record_served_outcome_cohort_bound_v1",
         {
           p_user:u.user.id,
           p_request_id:requestId,
           p_intent:retrievalIntent,
           p_mode:selectedRetrievalMode,
           p_query_fingerprint:servedQueryFingerprint,
+          p_query_cohort_fingerprint:servedQueryCohortFingerprint,
           p_payload:{
             returned_count:matches.length,
             safe_assertion_count:reconciliationSummary.safeForFactualAssertion,
