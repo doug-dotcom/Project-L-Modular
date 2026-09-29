@@ -1,8 +1,8 @@
 // Repository snapshot derived from deployed Supabase l-companion v27.
 // Layers 295-299 govern adaptive retrieval, evidence, renewal and keyed
-// independence. Memory Layer 300 adds the master fail-closed activation gate:
-// learned strategy influence is shadow-only until the full stack is healthy
-// and explicitly activated.
+// independence. Memory Layer 300 adds the master fail-closed activation gate;
+// Layer 301 requires a current-generation shadow burn-in certificate before
+// learned strategy influence can become active.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
@@ -1427,6 +1427,10 @@ Deno.serve(async(req:Request)=>{
         available:false,
         reason:"renewal_feed_unavailable"
       };
+      let adaptiveShadowObservation:Record<string,unknown>={
+        available:false,
+        reason:"shadow_observation_unavailable"
+      };
       const servedAt=new Date().toISOString();
 
       const queryCohort=queryCohortCanonical(query);
@@ -1479,6 +1483,50 @@ Deno.serve(async(req:Request)=>{
           available:true,
           ...(outcomeRecord.data as Record<string,unknown>)
         };
+
+        const proposedModeRaw=String(
+          shadowProposedRetrievalDecision.effectiveMode??runtimeDefaultMode
+        );
+        const proposedMode=["lexical","semantic","hybrid"].includes(proposedModeRaw)
+          ?proposedModeRaw
+          :runtimeDefaultMode;
+
+        const shadowObservationResult=await db.rpc(
+          "project_l_record_adaptive_shadow_observation_v1",
+          {
+            p_user:u.user.id,
+            p_request_id:requestId,
+            p_intent:retrievalIntent,
+            p_query_fingerprint:servedQueryFingerprint,
+            p_query_cohort_fingerprint:servedQueryCohortFingerprint,
+            p_actual_mode:selectedRetrievalMode,
+            p_proposed_mode:proposedMode,
+            p_proposal_source:String(
+              shadowProposedRetrievalDecision.source??"runtime_default"
+            ),
+            p_proposal_reason:String(
+              shadowProposedRetrievalDecision.reason??"shadow_proposal_unavailable"
+            ),
+            p_explicit_mode_used:explicitRetrievalModeRaw.length>0,
+            p_observed_at:servedAt
+          }
+        );
+
+        if(
+          !shadowObservationResult.error &&
+          shadowObservationResult.data &&
+          typeof shadowObservationResult.data==="object"
+        ){
+          adaptiveShadowObservation={
+            available:true,
+            ...(shadowObservationResult.data as Record<string,unknown>)
+          };
+        }else if(shadowObservationResult.error){
+          console.error(
+            "Project L adaptive shadow observation unavailable",
+            shadowObservationResult.error.code
+          );
+        }
 
         const renewalFeed=await db.rpc(
           "project_l_governed_lease_evaluation_v1",
@@ -1646,6 +1694,13 @@ Deno.serve(async(req:Request)=>{
           served_outcome_renewal_eligible:servedOutcome.renewalEligible===true,
           lease_feed_available:strategyLeaseEvaluation.available===true,
           lease_feed_status:String(strategyLeaseEvaluation.status??"unavailable"),
+          adaptive_shadow_observation_available:adaptiveShadowObservation.available===true,
+          adaptive_shadow_observation_recorded:
+            adaptiveShadowObservation.recorded===true,
+          adaptive_shadow_observation_status:String(
+            adaptiveShadowObservation.status??"unavailable"
+          ),
+          adaptive_shadow_certified:adaptiveMemoryActivation.shadowCertified===true,
           semantic_query_cache_hit:semanticQueryCacheHit,
           semantic_embedding_ms:semanticEmbeddingMs,
           semantic_context_ms:semanticContextMs
@@ -1673,7 +1728,8 @@ Deno.serve(async(req:Request)=>{
         retrievalDiversity,
         retrievalLearning:{
           servedOutcome,
-          strategyLeaseEvaluation
+          strategyLeaseEvaluation,
+          adaptiveShadowObservation
         },
         semanticRetrieval:{
           ...semanticGate,
