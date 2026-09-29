@@ -4,9 +4,6 @@
   "pass": 1,
   "scope": "core",
   "dispatch_group": "project-l",
-  "components": [
-    "L",
-    "Me"
-  ],
+  "components": ["L", "Me"],
   "note": "One governed Shine Universe core pass from Chat Control."
 }
