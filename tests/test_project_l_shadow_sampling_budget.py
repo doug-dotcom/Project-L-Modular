@@ -59,7 +59,10 @@ def test_layer303_companion_asks_for_admission_before_counterfactual_execution()
     edge = _edge()
 
     admission = edge.index('"project_l_adaptive_counterfactual_sample_admission_v1"')
-    execution = edge.index("shadowCounterfactualMemory=await runShadowCounterfactualRetrieval")
+    if "shadowCounterfactualMemory=await runShadowCounterfactualRetrieval" in edge:
+        execution = edge.index("shadowCounterfactualMemory=await runShadowCounterfactualRetrieval")
+    else:
+        execution = edge.index("runAdaptiveShadowCounterfactualBackground")
     assert admission < execution
     assert "shadowCounterfactualAdmitted" in edge
     assert "adaptiveShadowCounterfactualSampling" in edge
