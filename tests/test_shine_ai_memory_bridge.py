@@ -17,6 +17,7 @@ def configure(monkeypatch):
     monkeypatch.setenv("PROJECT_L_OWNER_ID", OWNER)
     bridge._db_client = None
     bridge._db_transport = None
+    bridge._rpc_circuit_open_until = 0.0
 
 
 def owner_context():
@@ -285,3 +286,113 @@ def test_safe_rpc_error_redacts_credential_like_values():
     assert "super-secret" not in summary
     assert "Bearer-thing" not in summary
     assert "[redacted]" in summary
+
+
+def test_owner_context_retries_pgrst002_once_then_recovers(monkeypatch):
+    configure(monkeypatch)
+    calls = {"count": 0}
+    sleeps = []
+
+    class SchemaCacheUnavailable(Exception):
+        code = "PGRST002"
+        message = "Could not query the database for the schema cache"
+
+    class Result:
+        data = owner_context()
+
+    class Rpc:
+        def execute(self):
+            calls["count"] += 1
+            if calls["count"] == 1:
+                raise SchemaCacheUnavailable()
+            return Result()
+
+    class Database:
+        def rpc(self, name, payload):
+            assert name == "project_l_memory_context_service_v1"
+            return Rpc()
+
+    monkeypatch.setattr(bridge, "_database", lambda: Database())
+    monkeypatch.setattr(bridge.time, "sleep", lambda delay: sleeps.append(delay))
+
+    result = bridge._owner_context(OWNER, "What diving qualifications have I completed?", 4)
+
+    assert result["status"] == "ok"
+    assert calls["count"] == 2
+    assert sleeps == [0.4]
+    assert bridge._rpc_circuit_open_until == 0.0
+
+
+def test_pgrst002_exhaustion_opens_short_circuit(monkeypatch):
+    configure(monkeypatch)
+    calls = {"count": 0}
+    now = {"value": 100.0}
+
+    class SchemaCacheUnavailable(Exception):
+        code = "PGRST002"
+        message = "Could not query the database for the schema cache"
+
+    class Rpc:
+        def execute(self):
+            calls["count"] += 1
+            raise SchemaCacheUnavailable()
+
+    class Database:
+        def rpc(self, name, payload):
+            return Rpc()
+
+    monkeypatch.setattr(bridge, "_database", lambda: Database())
+    monkeypatch.setattr(bridge.time, "sleep", lambda delay: None)
+    monkeypatch.setattr(bridge.time, "monotonic", lambda: now["value"])
+
+    try:
+        bridge._owner_context(OWNER, "Dive history", 4)
+        assert False, "expected HTTPException"
+    except Exception as exc:
+        assert getattr(exc, "status_code", None) == 503
+        assert getattr(exc, "headers", {})["Retry-After"] == "4"
+
+    assert calls["count"] == 2
+
+    try:
+        bridge._owner_context(OWNER, "Dive history", 4)
+        assert False, "expected circuit HTTPException"
+    except Exception as exc:
+        assert getattr(exc, "status_code", None) == 503
+        assert getattr(exc, "headers", {})["Retry-After"] == "4"
+
+    assert calls["count"] == 2
+
+
+def test_statement_timeout_retries_once_without_opening_schema_circuit(monkeypatch):
+    configure(monkeypatch)
+    calls = {"count": 0}
+    sleeps = []
+
+    class StatementTimeout(Exception):
+        code = "57014"
+        message = "canceling statement due to statement timeout"
+
+    class Result:
+        data = owner_context()
+
+    class Rpc:
+        def execute(self):
+            calls["count"] += 1
+            if calls["count"] == 1:
+                raise StatementTimeout()
+            return Result()
+
+    class Database:
+        def rpc(self, name, payload):
+            return Rpc()
+
+    monkeypatch.setattr(bridge, "_database", lambda: Database())
+    monkeypatch.setattr(bridge.time, "sleep", lambda delay: sleeps.append(delay))
+
+    result = bridge._owner_context(OWNER, "Dive history", 4)
+
+    assert result["status"] == "ok"
+    assert calls["count"] == 2
+    assert sleeps == [0.2]
+    assert bridge._rpc_circuit_open_until == 0.0
