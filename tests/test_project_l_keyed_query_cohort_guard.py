@@ -55,8 +55,10 @@ def test_layer299_edge_uses_keyed_hmac_not_plain_query_sha():
     assert 'const hmacKeyPromise=crypto.subtle.importKey(' in edge
     assert '"HMAC"' in edge
     assert "SERVICE" in edge
-    assert "servedQueryFingerprint=await hmacSha256(" in edge
-    assert "servedQueryCohortFingerprint=await hmacSha256(" in edge
+    assert "servedQueryFingerprint" in edge
+    assert "servedQueryCohortFingerprint" in edge
+    assert 'hmacSha256("layer299-exact-v1|"+norm(query))' in edge
+    assert 'hmacSha256("layer299-cohort-v1|"+queryCohort)' in edge
     assert 'sha256("layer298-query-v1|"+norm(query))' not in edge
 
 
