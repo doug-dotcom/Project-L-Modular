@@ -55,6 +55,7 @@ grant select, insert on table public.project_l_adaptive_memory_counterfactual_sa
   to service_role;
 
 create or replace function public.project_l_adaptive_counterfactual_sampling_status_v1(
+  p_user uuid,
   p_generation bigint default null,
   p_now timestamptz default now()
 )
@@ -74,6 +75,10 @@ declare
   v_quality jsonb;
   v_quality_certified boolean := false;
 begin
+  if p_user is null then
+    raise exception 'PROJECT_L_LAYER303_USER_REQUIRED';
+  end if;
+
   select *
   into v_cfg
   from public.project_l_adaptive_memory_activation
@@ -107,7 +112,7 @@ begin
   select count(*)
   into v_daily
   from public.project_l_adaptive_memory_counterfactual_sampling
-  where user_id is not null
+  where user_id=p_user
     and activation_generation=v_generation
     and utc_day=v_day
     and admitted=true;
@@ -115,7 +120,7 @@ begin
   select count(*)
   into v_generation_total
   from public.project_l_adaptive_memory_counterfactual_sampling
-  where user_id is not null
+  where user_id=p_user
     and activation_generation=v_generation
     and admitted=true;
 
@@ -152,11 +157,11 @@ end;
 $$;
 
 revoke all on function public.project_l_adaptive_counterfactual_sampling_status_v1(
-  bigint,timestamptz
+  uuid,bigint,timestamptz
 ) from public, anon, authenticated;
 
 grant execute on function public.project_l_adaptive_counterfactual_sampling_status_v1(
-  bigint,timestamptz
+  uuid,bigint,timestamptz
 ) to service_role;
 
 create or replace function public.project_l_adaptive_counterfactual_sample_admission_v1(
@@ -441,7 +446,7 @@ declare
   v_303_admission boolean :=
     to_regprocedure('public.project_l_adaptive_counterfactual_sample_admission_v1(uuid,text,text,text,text,text,text,boolean,timestamptz)') is not null;
   v_303_status boolean :=
-    to_regprocedure('public.project_l_adaptive_counterfactual_sampling_status_v1(bigint,timestamptz)') is not null;
+    to_regprocedure('public.project_l_adaptive_counterfactual_sampling_status_v1(uuid,bigint,timestamptz)') is not null;
 
   v_adaptation_table boolean := to_regclass('public.project_l_retrieval_adaptation_events') is not null;
   v_lease_table boolean := to_regclass('public.project_l_retrieval_strategy_leases') is not null;
@@ -878,7 +883,7 @@ comment on table public.project_l_adaptive_memory_counterfactual_sampling is
   'Layer 303 append-only durable admission ledger for bounded shadow counterfactual execution. An admission is a budget reservation even if later retrieval fails.';
 
 comment on function public.project_l_adaptive_counterfactual_sampling_status_v1(
-  bigint,timestamptz
+  uuid,bigint,timestamptz
 ) is
   'Layer 303 read-only sampling budget status: max 4/day, max 28/generation, and stop after Layer 302 certification.';
 
