@@ -1,8 +1,8 @@
 // Repository snapshot derived from deployed Supabase l-companion v27.
 // Layers 295-299 govern adaptive retrieval, evidence, renewal and keyed
-// independence. Memory Layer 300 adds the master fail-closed activation gate;
-// Layer 301 requires a current-generation shadow burn-in certificate before
-// learned strategy influence can become active.
+// independence. Layer 300 adds the master activation gate; Layer 301 requires
+// burn-in; Layer 302 requires counterfactual shadow quality proving unused
+// mode-changing proposals repeatedly outperform the retrieval path actually served.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
@@ -1287,6 +1287,33 @@ Deno.serve(async(req:Request)=>{
         p_char_budget:10000
       });
 
+      const runShadowCounterfactualRetrieval=async(mode:string)=>{
+        if(mode==="lexical"){
+          return await lexicalMemory();
+        }
+        if(
+          mode==="semantic" &&
+          semanticGate.productionSemanticEnabled===true
+        ){
+          const embedding=await semanticModel.run(query,{
+            mean_pool:true,
+            normalize:true
+          });
+          return await db.rpc("project_l_edge_memory_context_semantic_v1",{
+            p_user:u.user.id,
+            p_embedding:embedding,
+            p_terms:tokens,
+            p_limit:8,
+            p_identity_limit:4,
+            p_char_budget:10000
+          });
+        }
+        return {
+          data:null,
+          error:{code:"shadow_counterfactual_mode_unavailable"}
+        };
+      };
+
       if(
         selectedRetrievalMode==="semantic" &&
         semanticGate.productionSemanticEnabled===true
@@ -1417,6 +1444,32 @@ Deno.serve(async(req:Request)=>{
         return acc;
       },{safeForFactualAssertion:0,independentlyCorroborated:0,needsCorroboration:0});
 
+      const counterfactualRetrievalMetrics=(
+        data:Record<string,unknown>,
+        retrievalFallbackUsed=false
+      )=>{
+        const cfMatches=Array.isArray(data.matches)
+          ? data.matches as Record<string,unknown>[]
+          : [];
+        const cfDiversity=safe(data.retrievalDiversity);
+        const cfReconciliation=cfMatches.reduce((acc:any,item:any)=>{
+          const r=safe(item.reconciliation);
+          if(r.safeForFactualAssertion===true) acc.safeForFactualAssertion+=1;
+          if(r.claimHasIndependentCorroboration===true) acc.independentlyCorroborated+=1;
+          if(r.requiresCorroborationBeforeAssertion===true) acc.needsCorroboration+=1;
+          return acc;
+        },{safeForFactualAssertion:0,independentlyCorroborated:0,needsCorroboration:0});
+        return {
+          returned_count:cfMatches.length,
+          safe_assertion_count:cfReconciliation.safeForFactualAssertion,
+          corroborated_count:cfReconciliation.independentlyCorroborated,
+          needs_corroboration_count:cfReconciliation.needsCorroboration,
+          unique_subject_count:Number(cfDiversity.uniqueSubjects??0),
+          diversity_fallback_used:cfDiversity.fallbackUsed===true,
+          retrieval_fallback_used:retrievalFallbackUsed
+        };
+      };
+
       // Layer 296 — capture content-free served retrieval outcomes and feed
       // only genuine active-lease service into Layer 294 renewal evaluation.
       let servedOutcome:Record<string,unknown>={
@@ -1431,6 +1484,13 @@ Deno.serve(async(req:Request)=>{
         available:false,
         reason:"shadow_observation_unavailable"
       };
+      let adaptiveShadowCounterfactual:Record<string,unknown>={
+        available:false,
+        reason:"shadow_counterfactual_not_run"
+      };
+      let shadowCounterfactualMemory:any=null;
+      let shadowCounterfactualData:Record<string,unknown>={};
+      const shadowCounterfactualInfluencedResponse=false;
       const servedAt=new Date().toISOString();
 
       const queryCohort=queryCohortCanonical(query);
@@ -1441,6 +1501,95 @@ Deno.serve(async(req:Request)=>{
         hmacSha256("layer299-exact-v1|"+norm(query)),
         hmacSha256("layer299-cohort-v1|"+queryCohort)
       ]);
+
+      const proposedCounterfactualMode=String(
+        shadowProposedRetrievalDecision.effectiveMode??runtimeDefaultMode
+      );
+      const shadowCounterfactualEligible=
+        adaptiveMemoryActivation.effectiveMode==="shadow_only" &&
+        adaptiveMemoryActivation.stackReady===true &&
+        adaptiveMemoryActivation.shadowEvaluationEnabled===true &&
+        explicitRetrievalModeRaw.length===0 &&
+        ["lexical","semantic"].includes(proposedCounterfactualMode) &&
+        proposedCounterfactualMode!==selectedRetrievalMode;
+
+      if(shadowCounterfactualEligible){
+        try{
+          shadowCounterfactualMemory=await runShadowCounterfactualRetrieval(
+            proposedCounterfactualMode
+          );
+          if(
+            !shadowCounterfactualMemory.error &&
+            shadowCounterfactualMemory.data &&
+            typeof shadowCounterfactualMemory.data==="object"
+          ){
+            shadowCounterfactualData=safe(shadowCounterfactualMemory.data);
+
+            const counterfactualRecord=await db.rpc(
+              "project_l_record_adaptive_shadow_counterfactual_v1",
+              {
+                p_user:u.user.id,
+                p_request_id:requestId,
+                p_intent:retrievalIntent,
+                p_query_fingerprint:servedQueryFingerprint,
+                p_query_cohort_fingerprint:servedQueryCohortFingerprint,
+                p_actual_mode:selectedRetrievalMode,
+                p_proposed_mode:proposedCounterfactualMode,
+                p_proposal_source:String(
+                  shadowProposedRetrievalDecision.source??"runtime_default"
+                ),
+                p_proposal_reason:String(
+                  shadowProposedRetrievalDecision.reason??"shadow_proposal_unavailable"
+                ),
+                p_actual_metrics:counterfactualRetrievalMetrics(
+                  memoryData,
+                  liveRetrievalMethod.includes("fallback")
+                ),
+                p_proposed_metrics:counterfactualRetrievalMetrics(
+                  shadowCounterfactualData,
+                  false
+                ),
+                p_explicit_mode_used:false,
+                p_observed_at:servedAt
+              }
+            );
+
+            if(
+              !counterfactualRecord.error &&
+              counterfactualRecord.data &&
+              typeof counterfactualRecord.data==="object"
+            ){
+              adaptiveShadowCounterfactual={
+                available:true,
+                ...(counterfactualRecord.data as Record<string,unknown>)
+              };
+            }else if(counterfactualRecord.error){
+              console.error(
+                "Project L shadow counterfactual record unavailable",
+                counterfactualRecord.error.code
+              );
+            }
+          }else if(shadowCounterfactualMemory.error){
+            console.error(
+              "Project L shadow counterfactual retrieval unavailable",
+              shadowCounterfactualMemory.error.code
+            );
+            adaptiveShadowCounterfactual={
+              available:false,
+              reason:"shadow_counterfactual_retrieval_unavailable"
+            };
+          }
+        }catch(err){
+          console.error(
+            "Project L shadow counterfactual retrieval failed",
+            err instanceof Error ? err.message : String(err)
+          );
+          adaptiveShadowCounterfactual={
+            available:false,
+            reason:"shadow_counterfactual_runtime_error"
+          };
+        }
+      }
 
       const outcomeRecord=await db.rpc(
         "project_l_record_served_outcome_cohort_bound_v1",
@@ -1701,6 +1850,19 @@ Deno.serve(async(req:Request)=>{
             adaptiveShadowObservation.status??"unavailable"
           ),
           adaptive_shadow_certified:adaptiveMemoryActivation.shadowCertified===true,
+          adaptive_counterfactual_certified:
+            adaptiveMemoryActivation.counterfactualCertified===true,
+          adaptive_shadow_counterfactual_eligible:shadowCounterfactualEligible,
+          adaptive_shadow_counterfactual_available:
+            adaptiveShadowCounterfactual.available===true,
+          adaptive_shadow_counterfactual_advantage:
+            typeof adaptiveShadowCounterfactual.advantage==="number"
+              ? adaptiveShadowCounterfactual.advantage
+              : null,
+          adaptive_shadow_counterfactual_won:
+            adaptiveShadowCounterfactual.proposedWon===true,
+          adaptive_shadow_counterfactual_influenced_response:
+            shadowCounterfactualInfluencedResponse,
           semantic_query_cache_hit:semanticQueryCacheHit,
           semantic_embedding_ms:semanticEmbeddingMs,
           semantic_context_ms:semanticContextMs
@@ -1729,7 +1891,13 @@ Deno.serve(async(req:Request)=>{
         retrievalLearning:{
           servedOutcome,
           strategyLeaseEvaluation,
-          adaptiveShadowObservation
+          adaptiveShadowObservation,
+          adaptiveShadowCounterfactual:{
+            ...adaptiveShadowCounterfactual,
+            eligible:shadowCounterfactualEligible,
+            proposedMode:proposedCounterfactualMode,
+            shadowCounterfactualInfluencedResponse
+          }
         },
         semanticRetrieval:{
           ...semanticGate,
