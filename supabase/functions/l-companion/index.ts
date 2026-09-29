@@ -1,8 +1,8 @@
 // Repository snapshot derived from deployed Supabase l-companion v27.
 // Layers 295-299 govern adaptive retrieval, evidence, renewal and keyed
-// independence. Layer 300 adds the master activation gate; Layer 301 requires
-// burn-in; Layer 302 requires counterfactual shadow quality proving unused
-// mode-changing proposals repeatedly outperform the retrieval path actually served.
+// independence. Layer 300 adds activation; Layer 301 adds burn-in; Layer 302
+// proves counterfactual quality; Layer 303 bounds that unused alternate work
+// with durable per-user/day/cohort/generation sampling reservations.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
@@ -1488,6 +1488,12 @@ Deno.serve(async(req:Request)=>{
         available:false,
         reason:"shadow_counterfactual_not_run"
       };
+      let adaptiveShadowCounterfactualSampling:Record<string,unknown>={
+        available:false,
+        admitted:false,
+        reason:"shadow_counterfactual_sampling_not_evaluated"
+      };
+      let shadowCounterfactualAdmitted=false;
       let shadowCounterfactualMemory:any=null;
       let shadowCounterfactualData:Record<string,unknown>={};
       const shadowCounterfactualInfluencedResponse=false;
@@ -1514,6 +1520,41 @@ Deno.serve(async(req:Request)=>{
         proposedCounterfactualMode!==selectedRetrievalMode;
 
       if(shadowCounterfactualEligible){
+        const samplingAdmission=await db.rpc(
+          "project_l_adaptive_counterfactual_sample_admission_v1",
+          {
+            p_user:u.user.id,
+            p_request_id:requestId,
+            p_intent:retrievalIntent,
+            p_query_fingerprint:servedQueryFingerprint,
+            p_query_cohort_fingerprint:servedQueryCohortFingerprint,
+            p_actual_mode:selectedRetrievalMode,
+            p_proposed_mode:proposedCounterfactualMode,
+            p_explicit_mode_used:false,
+            p_now:servedAt
+          }
+        );
+
+        if(
+          !samplingAdmission.error &&
+          samplingAdmission.data &&
+          typeof samplingAdmission.data==="object"
+        ){
+          adaptiveShadowCounterfactualSampling={
+            available:true,
+            ...(samplingAdmission.data as Record<string,unknown>)
+          };
+          shadowCounterfactualAdmitted=
+            samplingAdmission.data.admitted===true;
+        }else if(samplingAdmission.error){
+          console.error(
+            "Project L shadow counterfactual sampling admission unavailable",
+            samplingAdmission.error.code
+          );
+        }
+      }
+
+      if(shadowCounterfactualAdmitted){
         try{
           shadowCounterfactualMemory=await runShadowCounterfactualRetrieval(
             proposedCounterfactualMode
@@ -1853,6 +1894,16 @@ Deno.serve(async(req:Request)=>{
           adaptive_counterfactual_certified:
             adaptiveMemoryActivation.counterfactualCertified===true,
           adaptive_shadow_counterfactual_eligible:shadowCounterfactualEligible,
+          adaptive_shadow_counterfactual_admitted:shadowCounterfactualAdmitted,
+          adaptive_shadow_counterfactual_sampling_available:
+            adaptiveShadowCounterfactualSampling.available===true,
+          adaptive_shadow_counterfactual_sampling_reason:String(
+            adaptiveShadowCounterfactualSampling.reason??"unavailable"
+          ),
+          adaptive_shadow_counterfactual_daily_admitted_before:
+            Number(adaptiveShadowCounterfactualSampling.dailyAdmittedBefore??0),
+          adaptive_shadow_counterfactual_generation_admitted_before:
+            Number(adaptiveShadowCounterfactualSampling.generationAdmittedBefore??0),
           adaptive_shadow_counterfactual_available:
             adaptiveShadowCounterfactual.available===true,
           adaptive_shadow_counterfactual_advantage:
@@ -1895,6 +1946,8 @@ Deno.serve(async(req:Request)=>{
           adaptiveShadowCounterfactual:{
             ...adaptiveShadowCounterfactual,
             eligible:shadowCounterfactualEligible,
+            admitted:shadowCounterfactualAdmitted,
+            sampling:adaptiveShadowCounterfactualSampling,
             proposedMode:proposedCounterfactualMode,
             shadowCounterfactualInfluencedResponse
           }
