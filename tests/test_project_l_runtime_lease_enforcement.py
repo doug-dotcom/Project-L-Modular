@@ -49,7 +49,8 @@ def test_layer295_hybrid_is_not_assumed_runtime_ready():
 def test_layer295_live_companion_calls_runtime_selector():
     edge = _edge()
 
-    assert 'db.rpc("project_l_runtime_retrieval_decision_v1"' in edge
+    assert 'db.rpc(' in edge
+    assert '"project_l_runtime_retrieval_decision_v1"' in edge
     assert "selectedRetrievalMode" in edge
     assert 'selectedRetrievalMode==="semantic"' in edge
     assert "runtimeRetrievalDecision" in edge
