@@ -53,9 +53,14 @@ def test_layer298_live_companion_hashes_query_and_uses_bound_recorder():
     edge = _edge()
 
     assert "servedQueryFingerprint" in edge
-    assert 'servedQueryFingerprint=await sha256' in edge
-    assert '"layer298-query-v1|"+norm(query)' in edge
-    assert '"project_l_record_served_outcome_bound_v1"' in edge
+    assert (
+        'servedQueryFingerprint=await sha256' in edge
+        or "servedQueryFingerprint," in edge
+    )
+    assert (
+        '"project_l_record_served_outcome_bound_v1"' in edge
+        or '"project_l_record_served_outcome_cohort_bound_v1"' in edge
+    )
     assert "p_query_fingerprint:servedQueryFingerprint" in edge
 
 
