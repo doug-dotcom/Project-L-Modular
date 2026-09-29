@@ -68,7 +68,8 @@ def test_layer302_companion_executes_unused_shadow_alternative():
 
     assert "runShadowCounterfactualRetrieval" in edge
     assert "shadowCounterfactualMemory" in edge
-    assert "shadowCounterfactualMetrics" in edge
+    assert "shadowCounterfactualData" in edge
+    assert "counterfactualRetrievalMetrics" in edge
     assert "shadowCounterfactualInfluencedResponse=false" in edge
     assert '"project_l_record_adaptive_shadow_counterfactual_v1"' in edge
 
@@ -86,7 +87,9 @@ def test_layer302_companion_sends_content_free_quality_metrics_only():
     edge = _edge()
 
     assert "counterfactualRetrievalMetrics" in edge
-    assert "p_actual_metrics:counterfactualRetrievalMetrics(memoryData" in edge
-    assert "p_proposed_metrics:counterfactualRetrievalMetrics(shadowCounterfactualData" in edge
+    assert "p_actual_metrics:counterfactualRetrievalMetrics(" in edge
+    assert "memoryData," in edge
+    assert "p_proposed_metrics:counterfactualRetrievalMetrics(" in edge
+    assert "shadowCounterfactualData," in edge
     assert "p_query_fingerprint:servedQueryFingerprint" in edge
     assert "p_query_cohort_fingerprint:servedQueryCohortFingerprint" in edge
