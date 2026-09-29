@@ -1,7 +1,7 @@
 // Repository snapshot derived from deployed Supabase l-companion v27.
 // Layer 295 adds runtime lease enforcement; Layer 296 adds served-outcome
-// capture and automatic lease-renewal feed. Deployment remains gated on the
-// required database migration stack being available and verified.
+// capture; Layer 297 guards lease renewal against positive expiry ratcheting.
+// Deployment remains gated on the required database migration stack.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
@@ -1349,10 +1349,11 @@ Deno.serve(async(req:Request)=>{
         };
 
         const renewalFeed=await db.rpc(
-          "project_l_auto_renewal_feed_v1",
+          "project_l_governed_lease_evaluation_v1",
           {
             p_user:u.user.id,
             p_intent:retrievalIntent,
+            p_request_id:requestId,
             p_now:servedAt
           }
         );
@@ -1368,7 +1369,7 @@ Deno.serve(async(req:Request)=>{
           };
         }else if(renewalFeed.error){
           console.error(
-            "Project L strategy lease renewal feed unavailable",
+            "Project L governed lease evaluation unavailable",
             renewalFeed.error.code
           );
         }
