@@ -1,6 +1,9 @@
+import math
 import os
 import re
 import secrets
+import threading
+import time
 
 import httpx
 from typing import Literal
@@ -39,6 +42,47 @@ _STOP_TERMS = {
 Priority = Literal["high", "normal", "low"]
 _db_client = None
 _db_transport = None
+
+# These are the two transient failures observed in production:
+# - PGRST002: PostgREST could not build/query its schema cache.
+# - 57014: Postgres cancelled one retrieval at the statement timeout.
+# Keep retries deliberately narrow so auth, permission and contract failures
+# are never retried. PGRST002 also opens a short process-local circuit after a
+# failed retry to stop concurrent callers from hammering a recovering Data API.
+_TRANSIENT_RPC_RETRY_DELAYS: dict[str, tuple[float, ...]] = {
+    "PGRST002": (0.4,),
+    "57014": (0.2,),
+}
+_PGRST002_CIRCUIT_SECONDS = 4.0
+_rpc_circuit_lock = threading.Lock()
+_rpc_circuit_open_until = 0.0
+
+
+def _rpc_error_code(exc: Exception) -> str:
+    code = str(getattr(exc, "code", "") or "").strip().upper()
+    if code:
+        return code[:80]
+
+    message = str(getattr(exc, "message", "") or str(exc) or "").upper()
+    for candidate in _TRANSIENT_RPC_RETRY_DELAYS:
+        if candidate in message:
+            return candidate
+    return ""
+
+
+def _rpc_circuit_retry_after() -> int:
+    with _rpc_circuit_lock:
+        remaining = _rpc_circuit_open_until - time.monotonic()
+    return max(1, math.ceil(remaining)) if remaining > 0 else 0
+
+
+def _open_rpc_circuit(seconds: float) -> None:
+    global _rpc_circuit_open_until
+    with _rpc_circuit_lock:
+        _rpc_circuit_open_until = max(
+            _rpc_circuit_open_until,
+            time.monotonic() + max(0.0, seconds),
+        )
 
 
 def _safe_rpc_error(exc: Exception) -> str:
@@ -197,22 +241,63 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
             "returnedCount": 0,
             "scope": {"ownerBound": True},
         }
-    try:
-        result = _database().rpc(
-            "project_l_memory_context_service_v1",
-            {
-                "p_user": owner_id,
-                "p_terms": terms,
-                "p_limit": min(max(int(limit), 1), 6),
-                "p_char_budget": min(12000, max(2400, int(limit) * 1800)),
-            },
-        ).execute()
-    except Exception as exc:
-        print("SHINE_AI_MEMORY_RPC_ERROR " + _safe_rpc_error(exc), flush=True)
+
+    retry_after = _rpc_circuit_retry_after()
+    if retry_after:
         raise HTTPException(
             status_code=503,
             detail="Project L owner-scoped retrieval is temporarily unavailable.",
-        ) from exc
+            headers={"Retry-After": str(retry_after)},
+        )
+
+    rpc_payload = {
+        "p_user": owner_id,
+        "p_terms": terms,
+        "p_limit": min(max(int(limit), 1), 6),
+        "p_char_budget": min(12000, max(2400, int(limit) * 1800)),
+    }
+    retry_index = 0
+
+    while True:
+        try:
+            result = _database().rpc(
+                "project_l_memory_context_service_v1",
+                rpc_payload,
+            ).execute()
+            break
+        except Exception as exc:
+            code = _rpc_error_code(exc)
+            delays = _TRANSIENT_RPC_RETRY_DELAYS.get(code, ())
+            if retry_index < len(delays):
+                delay = delays[retry_index]
+                retry_index += 1
+                print(
+                    "SHINE_AI_MEMORY_RPC_RETRY "
+                    f"code={code} attempt={retry_index} delay={delay:.2f}s",
+                    flush=True,
+                )
+                time.sleep(delay)
+                continue
+
+            if code == "PGRST002":
+                _open_rpc_circuit(_PGRST002_CIRCUIT_SECONDS)
+
+            print("SHINE_AI_MEMORY_RPC_ERROR " + _safe_rpc_error(exc), flush=True)
+            response_retry_after = (
+                _rpc_circuit_retry_after()
+                if code == "PGRST002"
+                else 1 if code == "57014"
+                else 0
+            )
+            raise HTTPException(
+                status_code=503,
+                detail="Project L owner-scoped retrieval is temporarily unavailable.",
+                headers=(
+                    {"Retry-After": str(response_retry_after)}
+                    if response_retry_after
+                    else None
+                ),
+            ) from exc
 
     data = result.data
     if isinstance(data, list) and len(data) == 1 and isinstance(data[0], dict):
