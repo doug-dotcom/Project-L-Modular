@@ -97,6 +97,7 @@ jobs:
           tests/test_project_l_adaptive_strategy_drift_guard.py
           tests/test_project_l_strategy_lease_renewal.py
           tests/test_project_l_runtime_lease_enforcement.py
+          tests/test_project_l_served_outcome_renewal_feed.py
           tests/test_cognitive_core.py
           tests/test_evidence_evaluation.py
           tests/test_durable_tasks.py
