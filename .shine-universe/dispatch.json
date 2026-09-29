@@ -1,9 +1,12 @@
 {
   "schema_version": 1,
-  "request_id": "universe-go-0002",
+  "request_id": "universe-go-0003",
   "pass": 1,
   "scope": "core",
   "dispatch_group": "project-l",
-  "components": ["L", "Me"],
+  "components": [
+    "L",
+    "Me"
+  ],
   "note": "One governed Shine Universe core pass from Chat Control."
 }
