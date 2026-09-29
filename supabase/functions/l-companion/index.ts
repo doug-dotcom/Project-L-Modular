@@ -1,7 +1,8 @@
 // Repository snapshot derived from deployed Supabase l-companion v27.
-// Layers 295-298 govern runtime retrieval, served outcomes, renewal timing
-// and exact-query independence. Layer 299 adds keyed HMAC fingerprints plus
-// lexical-cohort independence without persisting raw query or cohort text.
+// Layers 295-299 govern adaptive retrieval, evidence, renewal and keyed
+// independence. Memory Layer 300 adds the master fail-closed activation gate:
+// learned strategy influence is shadow-only until the full stack is healthy
+// and explicitly activated.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
@@ -1165,9 +1166,44 @@ Deno.serve(async(req:Request)=>{
       const runtimeDefaultMode=
         semanticGate.productionSemanticEnabled===true?"semantic":"lexical";
 
-      let runtimeRetrievalDecision:Record<string,unknown>={
+      // Memory Layer 300 — master adaptive activation gate.
+      // Missing/unhealthy gate state is shadow-only. Explicit caller mode
+      // choices remain outside the adaptive kill switch.
+      let adaptiveMemoryActivation:Record<string,unknown>={
         available:false,
-        status:"default",
+        configuredMode:"shadow_only",
+        effectiveMode:"shadow_only",
+        runtimeInfluenceEnabled:false,
+        shadowEvaluationEnabled:true,
+        stackReady:false,
+        reason:"activation_gate_unavailable"
+      };
+
+      const activationGateResult=await db.rpc(
+        "project_l_adaptive_memory_activation_status_v1"
+      );
+
+      if(
+        !activationGateResult.error &&
+        activationGateResult.data &&
+        typeof activationGateResult.data==="object"
+      ){
+        adaptiveMemoryActivation={
+          available:true,
+          ...(activationGateResult.data as Record<string,unknown>)
+        };
+      }else if(activationGateResult.error){
+        console.error(
+          "Project L adaptive activation gate unavailable",
+          activationGateResult.error.code
+        );
+      }
+
+      const adaptiveRuntimeInfluenceEnabled=
+        adaptiveMemoryActivation.runtimeInfluenceEnabled===true;
+
+      let shadowProposedRetrievalDecision:Record<string,unknown>={
+        available:false,
         effectiveMode:runtimeDefaultMode,
         source:"runtime_default",
         reason:"runtime_retrieval_decision_unavailable",
@@ -1192,7 +1228,7 @@ Deno.serve(async(req:Request)=>{
         runtimeDecisionResult.data &&
         typeof runtimeDecisionResult.data==="object"
       ){
-        runtimeRetrievalDecision={
+        shadowProposedRetrievalDecision={
           available:true,
           ...(runtimeDecisionResult.data as Record<string,unknown>)
         };
@@ -1201,6 +1237,32 @@ Deno.serve(async(req:Request)=>{
           "Project L runtime retrieval decision unavailable",
           runtimeDecisionResult.error.code
         );
+      }
+
+      let runtimeRetrievalDecision:Record<string,unknown>;
+
+      if(explicitRetrievalModeRaw.length>0){
+        runtimeRetrievalDecision={
+          ...shadowProposedRetrievalDecision,
+          source:"explicit_request",
+          reason:"explicit_request_preserved_by_activation_gate",
+          leaseApplied:false
+        };
+      }else if(adaptiveRuntimeInfluenceEnabled){
+        runtimeRetrievalDecision=shadowProposedRetrievalDecision;
+      }else{
+        runtimeRetrievalDecision={
+          available:adaptiveMemoryActivation.available===true,
+          status:"shadow_only",
+          effectiveMode:runtimeDefaultMode,
+          source:"adaptive_activation_gate",
+          reason:"adaptive_activation_gate_shadow_only",
+          leaseApplied:false,
+          shadowProposedMode:String(
+            shadowProposedRetrievalDecision.effectiveMode??runtimeDefaultMode
+          ),
+          shadowProposal:shadowProposedRetrievalDecision
+        };
       }
 
       const selectedRetrievalMode=
@@ -1558,6 +1620,17 @@ Deno.serve(async(req:Request)=>{
               ? semanticCoverage.unitCoverage
               : null,
           semantic_runtime_path_ready:semanticGate.runtimePathReady===true,
+          adaptive_memory_gate_available:adaptiveMemoryActivation.available===true,
+          adaptive_memory_configured_mode:String(
+            adaptiveMemoryActivation.configuredMode??"shadow_only"
+          ),
+          adaptive_memory_effective_mode:String(
+            adaptiveMemoryActivation.effectiveMode??"shadow_only"
+          ),
+          adaptive_memory_stack_ready:adaptiveMemoryActivation.stackReady===true,
+          adaptive_memory_runtime_influence_enabled:adaptiveRuntimeInfluenceEnabled,
+          adaptive_memory_shadow_evaluation_enabled:
+            adaptiveMemoryActivation.shadowEvaluationEnabled===true,
           runtime_strategy_available:runtimeRetrievalDecision.available===true,
           runtime_strategy_source:String(runtimeRetrievalDecision.source??"runtime_default"),
           runtime_strategy_effective_mode:selectedRetrievalMode,
@@ -1604,6 +1677,8 @@ Deno.serve(async(req:Request)=>{
         },
         semanticRetrieval:{
           ...semanticGate,
+          adaptiveMemoryActivation,
+          shadowProposedRetrievalDecision,
           runtimeRetrievalDecision,
           selectedRetrievalMode,
           liveRetrievalMethod,
