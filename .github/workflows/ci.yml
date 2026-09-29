@@ -103,6 +103,7 @@ jobs:
           tests/test_project_l_keyed_query_cohort_guard.py
           tests/test_project_l_adaptive_memory_activation_gate.py
           tests/test_project_l_shadow_burn_in_certification.py
+          tests/test_project_l_counterfactual_shadow_quality.py
           tests/test_cognitive_core.py
           tests/test_evidence_evaluation.py
           tests/test_durable_tasks.py
