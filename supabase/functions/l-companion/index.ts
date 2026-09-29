@@ -1,6 +1,7 @@
 // Repository snapshot derived from deployed Supabase l-companion v27.
-// Layer 295 adds runtime lease enforcement. Deployment remains gated on the
-// Layer 293-295 database migration stack being available and verified.
+// Layer 295 adds runtime lease enforcement; Layer 296 adds served-outcome
+// capture and automatic lease-renewal feed. Deployment remains gated on the
+// required database migration stack being available and verified.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
@@ -1295,6 +1296,89 @@ Deno.serve(async(req:Request)=>{
         return acc;
       },{safeForFactualAssertion:0,independentlyCorroborated:0,needsCorroboration:0});
 
+      // Layer 296 — capture content-free served retrieval outcomes and feed
+      // only genuine active-lease service into Layer 294 renewal evaluation.
+      let servedOutcome:Record<string,unknown>={
+        available:false,
+        reason:"served_outcome_capture_unavailable"
+      };
+      let strategyLeaseEvaluation:Record<string,unknown>={
+        available:false,
+        reason:"renewal_feed_unavailable"
+      };
+      const servedAt=new Date().toISOString();
+
+      const outcomeRecord=await db.rpc(
+        "project_l_record_served_outcome_v1",
+        {
+          p_user:u.user.id,
+          p_request_id:requestId,
+          p_intent:retrievalIntent,
+          p_mode:selectedRetrievalMode,
+          p_payload:{
+            returned_count:matches.length,
+            safe_assertion_count:reconciliationSummary.safeForFactualAssertion,
+            corroborated_count:reconciliationSummary.independentlyCorroborated,
+            needs_corroboration_count:reconciliationSummary.needsCorroboration,
+            unique_domain_count:Number(retrievalDiversity.uniqueDomains??0),
+            unique_subject_count:Number(retrievalDiversity.uniqueSubjects??0),
+            diversity_fallback_used:retrievalDiversity.fallbackUsed===true,
+            retrieval_fallback_used:liveRetrievalMethod.includes("fallback"),
+            cache_hit:semanticQueryCacheHit,
+            runtime_strategy_source:String(
+              runtimeRetrievalDecision.source??"runtime_default"
+            ),
+            runtime_strategy_reason:String(
+              runtimeRetrievalDecision.reason??"runtime_retrieval_decision_unavailable"
+            ),
+            lease_applied:runtimeRetrievalDecision.leaseApplied===true,
+            explicit_mode_used:explicitRetrievalModeRaw.length>0
+          },
+          p_served_at:servedAt
+        }
+      );
+
+      if(
+        !outcomeRecord.error &&
+        outcomeRecord.data &&
+        typeof outcomeRecord.data==="object"
+      ){
+        servedOutcome={
+          available:true,
+          ...(outcomeRecord.data as Record<string,unknown>)
+        };
+
+        const renewalFeed=await db.rpc(
+          "project_l_auto_renewal_feed_v1",
+          {
+            p_user:u.user.id,
+            p_intent:retrievalIntent,
+            p_now:servedAt
+          }
+        );
+
+        if(
+          !renewalFeed.error &&
+          renewalFeed.data &&
+          typeof renewalFeed.data==="object"
+        ){
+          strategyLeaseEvaluation={
+            available:true,
+            ...(renewalFeed.data as Record<string,unknown>)
+          };
+        }else if(renewalFeed.error){
+          console.error(
+            "Project L strategy lease renewal feed unavailable",
+            renewalFeed.error.code
+          );
+        }
+      }else if(outcomeRecord.error){
+        console.error(
+          "Project L served outcome capture unavailable",
+          outcomeRecord.error.code
+        );
+      }
+
       let temporalContext:Record<string,unknown>={
         available:false,
         reason:"no_specific_temporal_terms"
@@ -1410,6 +1494,14 @@ Deno.serve(async(req:Request)=>{
             runtimeRetrievalDecision.reason??"runtime_retrieval_decision_unavailable"
           ),
           runtime_strategy_lease_applied:runtimeRetrievalDecision.leaseApplied===true,
+          served_outcome_captured:servedOutcome.available===true,
+          served_outcome_quality_score:
+            typeof servedOutcome.qualityScore==="number"
+              ? servedOutcome.qualityScore
+              : null,
+          served_outcome_renewal_eligible:servedOutcome.renewalEligible===true,
+          lease_feed_available:strategyLeaseEvaluation.available===true,
+          lease_feed_status:String(strategyLeaseEvaluation.status??"unavailable"),
           semantic_query_cache_hit:semanticQueryCacheHit,
           semantic_embedding_ms:semanticEmbeddingMs,
           semantic_context_ms:semanticContextMs
@@ -1435,6 +1527,10 @@ Deno.serve(async(req:Request)=>{
         reconciliationPolicy:memoryData.reconciliationPolicy??{},
         identityInjection,
         retrievalDiversity,
+        retrievalLearning:{
+          servedOutcome,
+          strategyLeaseEvaluation
+        },
         semanticRetrieval:{
           ...semanticGate,
           runtimeRetrievalDecision,
