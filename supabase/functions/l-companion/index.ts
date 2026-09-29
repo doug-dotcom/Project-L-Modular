@@ -1,8 +1,8 @@
 // Repository snapshot derived from deployed Supabase l-companion v27.
 // Layers 295-299 govern adaptive retrieval, evidence, renewal and keyed
-// independence. Layer 300 adds activation; Layer 301 adds burn-in; Layer 302
-// proves counterfactual quality; Layer 303 bounds that unused alternate work
-// with durable per-user/day/cohort/generation sampling reservations.
+// independence. Layers 300-303 gate activation, burn-in, quality and sampling;
+// Layer 304 moves admitted alternate retrieval off the response path and adds
+// terminal execution reliability receipts with a bounded evidence deadline.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
@@ -11,6 +11,7 @@ const ANON=Deno.env.get("SUPABASE_ANON_KEY")!;
 const SERVICE=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ID="shine.l";
 const DEPLOYMENT_ID=Deno.env.get("DENO_DEPLOYMENT_ID")??"";
+const SHADOW_COUNTERFACTUAL_EVIDENCE_DEADLINE_MS=1200;
 const semanticModel=new Supabase.ai.Session("gte-small");
 const TABLES=["memory_family","memory_general","memory_health","memory_identity","memory_project_l","memory_recovery","memory_relationships","memory_sport","memory_work"];
 const SUPPORTED=["memory_context","context_freshness","memory_ambiguity","identity_transition","correction_review","temporal_fact_discovery","temporal_fact_proposal","temporal_fact_review_packet","temporal_reconciliation_readiness","temporal_reconcile","temporal_transition","temporal_assert_or_observe","temporal_reconfirm","temporal_prompt_control"];
@@ -1494,8 +1495,6 @@ Deno.serve(async(req:Request)=>{
         reason:"shadow_counterfactual_sampling_not_evaluated"
       };
       let shadowCounterfactualAdmitted=false;
-      let shadowCounterfactualMemory:any=null;
-      let shadowCounterfactualData:Record<string,unknown>={};
       const shadowCounterfactualInfluencedResponse=false;
       const servedAt=new Date().toISOString();
 
@@ -1554,82 +1553,133 @@ Deno.serve(async(req:Request)=>{
         }
       }
 
-      if(shadowCounterfactualAdmitted){
+      const withCounterfactualEvidenceDeadline=async<T>(work:Promise<T>)=>{
+        let timer:number|undefined;
         try{
-          shadowCounterfactualMemory=await runShadowCounterfactualRetrieval(
-            proposedCounterfactualMode
-          );
-          if(
-            !shadowCounterfactualMemory.error &&
-            shadowCounterfactualMemory.data &&
-            typeof shadowCounterfactualMemory.data==="object"
-          ){
-            shadowCounterfactualData=safe(shadowCounterfactualMemory.data);
-
-            const counterfactualRecord=await db.rpc(
-              "project_l_record_adaptive_shadow_counterfactual_v1",
-              {
-                p_user:u.user.id,
-                p_request_id:requestId,
-                p_intent:retrievalIntent,
-                p_query_fingerprint:servedQueryFingerprint,
-                p_query_cohort_fingerprint:servedQueryCohortFingerprint,
-                p_actual_mode:selectedRetrievalMode,
-                p_proposed_mode:proposedCounterfactualMode,
-                p_proposal_source:String(
-                  shadowProposedRetrievalDecision.source??"runtime_default"
-                ),
-                p_proposal_reason:String(
-                  shadowProposedRetrievalDecision.reason??"shadow_proposal_unavailable"
-                ),
-                p_actual_metrics:counterfactualRetrievalMetrics(
-                  memoryData,
-                  liveRetrievalMethod.includes("fallback")
-                ),
-                p_proposed_metrics:counterfactualRetrievalMetrics(
-                  shadowCounterfactualData,
-                  false
-                ),
-                p_explicit_mode_used:false,
-                p_observed_at:servedAt
-              }
-            );
-
-            if(
-              !counterfactualRecord.error &&
-              counterfactualRecord.data &&
-              typeof counterfactualRecord.data==="object"
-            ){
-              adaptiveShadowCounterfactual={
-                available:true,
-                ...(counterfactualRecord.data as Record<string,unknown>)
-              };
-            }else if(counterfactualRecord.error){
-              console.error(
-                "Project L shadow counterfactual record unavailable",
-                counterfactualRecord.error.code
+          return await Promise.race([
+            work,
+            new Promise<never>((_,reject)=>{
+              timer=setTimeout(
+                ()=>reject(new Error("shadow_counterfactual_deadline")),
+                SHADOW_COUNTERFACTUAL_EVIDENCE_DEADLINE_MS
               );
-            }
-          }else if(shadowCounterfactualMemory.error){
-            console.error(
-              "Project L shadow counterfactual retrieval unavailable",
-              shadowCounterfactualMemory.error.code
-            );
-            adaptiveShadowCounterfactual={
-              available:false,
-              reason:"shadow_counterfactual_retrieval_unavailable"
-            };
-          }
-        }catch(err){
-          console.error(
-            "Project L shadow counterfactual retrieval failed",
-            err instanceof Error ? err.message : String(err)
-          );
-          adaptiveShadowCounterfactual={
-            available:false,
-            reason:"shadow_counterfactual_runtime_error"
-          };
+            })
+          ]);
+        }finally{
+          if(timer!==undefined) clearTimeout(timer);
         }
+      };
+
+      const runAdaptiveShadowCounterfactualBackground=async()=>{
+        const started=performance.now();
+        const recordExecution=async(
+          terminalStatus:"completed"|"timed_out"|"failed",
+          errorCode:string|null
+        )=>{
+          const durationMs=Math.round((performance.now()-started)*1000)/1000;
+          const executionReceipt=await db.rpc(
+            "project_l_record_adaptive_counterfactual_execution_v1",
+            {
+              p_user:u.user.id,
+              p_request_id:requestId,
+              p_status:terminalStatus,
+              p_duration_ms:durationMs,
+              p_error_code:errorCode,
+              p_observed_at:new Date().toISOString()
+            }
+          );
+          if(executionReceipt.error){
+            console.error(
+              "Project L shadow counterfactual execution receipt unavailable",
+              executionReceipt.error.code
+            );
+          }
+        };
+
+        try{
+          let shadowCounterfactualMemory:any=null;
+          let shadowCounterfactualData:Record<string,unknown>={};
+
+          shadowCounterfactualMemory=await withCounterfactualEvidenceDeadline(
+            runShadowCounterfactualRetrieval(proposedCounterfactualMode)
+          );
+
+          if(
+            shadowCounterfactualMemory.error ||
+            !shadowCounterfactualMemory.data ||
+            typeof shadowCounterfactualMemory.data!=="object"
+          ){
+            await recordExecution(
+              "failed",
+              String(
+                shadowCounterfactualMemory.error?.code??
+                "shadow_counterfactual_retrieval_unavailable"
+              ).slice(0,120)
+            );
+            return;
+          }
+
+          shadowCounterfactualData=safe(shadowCounterfactualMemory.data);
+
+          const counterfactualRecord=await db.rpc(
+            "project_l_record_adaptive_shadow_counterfactual_v1",
+            {
+              p_user:u.user.id,
+              p_request_id:requestId,
+              p_intent:retrievalIntent,
+              p_query_fingerprint:servedQueryFingerprint,
+              p_query_cohort_fingerprint:servedQueryCohortFingerprint,
+              p_actual_mode:selectedRetrievalMode,
+              p_proposed_mode:proposedCounterfactualMode,
+              p_proposal_source:String(
+                shadowProposedRetrievalDecision.source??"runtime_default"
+              ),
+              p_proposal_reason:String(
+                shadowProposedRetrievalDecision.reason??"shadow_proposal_unavailable"
+              ),
+              p_actual_metrics:counterfactualRetrievalMetrics(
+                memoryData,
+                liveRetrievalMethod.includes("fallback")
+              ),
+              p_proposed_metrics:counterfactualRetrievalMetrics(
+                shadowCounterfactualData,
+                false
+              ),
+              p_explicit_mode_used:false,
+              p_observed_at:servedAt
+            }
+          );
+
+          if(counterfactualRecord.error){
+            await recordExecution(
+              "failed",
+              String(counterfactualRecord.error.code??"quality_record_failed").slice(0,120)
+            );
+            return;
+          }
+
+          await recordExecution("completed",null);
+        }catch(err){
+          const message=err instanceof Error ? err.message : String(err);
+          const timedOut=message==="shadow_counterfactual_deadline";
+          await recordExecution(
+            timedOut?"timed_out":"failed",
+            timedOut
+              ?"shadow_counterfactual_deadline"
+              : message.slice(0,120)
+          );
+        }
+      };
+
+      if(shadowCounterfactualAdmitted){
+        adaptiveShadowCounterfactual={
+          available:true,
+          status:"scheduled_background",
+          reason:"layer304_background_isolation"
+        };
+        EdgeRuntime.waitUntil(
+          runAdaptiveShadowCounterfactualBackground()
+        );
       }
 
       const outcomeRecord=await db.rpc(
@@ -1893,6 +1943,8 @@ Deno.serve(async(req:Request)=>{
           adaptive_shadow_certified:adaptiveMemoryActivation.shadowCertified===true,
           adaptive_counterfactual_certified:
             adaptiveMemoryActivation.counterfactualCertified===true,
+          adaptive_counterfactual_reliability_certified:
+            adaptiveMemoryActivation.counterfactualReliabilityCertified===true,
           adaptive_shadow_counterfactual_eligible:shadowCounterfactualEligible,
           adaptive_shadow_counterfactual_admitted:shadowCounterfactualAdmitted,
           adaptive_shadow_counterfactual_sampling_available:
