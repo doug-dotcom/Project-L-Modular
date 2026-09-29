@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "request_id": "dispatcher-bootstrap-live-1",
+  "pass": 1,
+  "scope": "core",
+  "dispatch_group": "project-l",
+  "components": [
+    "L",
+    "Me"
+  ],
+  "note": "Bootstrap live test of one-room Shine Universe Chat Control."
+}
