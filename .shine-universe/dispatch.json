@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "request_id": "dispatcher-bootstrap-live-1",
+  "request_id": "universe-go-0002",
   "pass": 1,
   "scope": "core",
   "dispatch_group": "project-l",
@@ -8,5 +8,5 @@
     "L",
     "Me"
   ],
-  "note": "Bootstrap live test of one-room Shine Universe Chat Control."
+  "note": "One governed Shine Universe core pass from Chat Control."
 }
