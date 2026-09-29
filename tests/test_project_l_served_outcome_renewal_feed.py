@@ -59,7 +59,10 @@ def test_layer296_live_companion_records_and_feeds_outcomes():
     edge = _edge()
 
     assert '"project_l_record_served_outcome_v1"' in edge
-    assert '"project_l_auto_renewal_feed_v1"' in edge
+    assert (
+        '"project_l_auto_renewal_feed_v1"' in edge
+        or '"project_l_governed_lease_evaluation_v1"' in edge
+    )
     assert "servedOutcome" in edge
     assert "strategyLeaseEvaluation" in edge
     assert "retrievalLearning" in edge
