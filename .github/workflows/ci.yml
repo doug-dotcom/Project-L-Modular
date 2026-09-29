@@ -1,6 +1,17 @@
 name: Project L CI
+run-name: "Project L + Me • ${{ inputs.orchestration_id || github.sha }}"
 
 on:
+  workflow_dispatch:
+    inputs:
+      orchestration_id:
+        description: Shine Universe orchestration ID
+        required: false
+        type: string
+      pass:
+        description: Shine Universe pass number
+        required: false
+        type: string
   pull_request:
     branches: [main]
   push:
