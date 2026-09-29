@@ -84,5 +84,5 @@ def test_layer304_completed_background_work_records_quality_before_completion_re
     edge = _edge()
 
     quality = edge.index('"project_l_record_adaptive_shadow_counterfactual_v1"')
-    completion = edge.index('"project_l_record_adaptive_counterfactual_execution_v1"')
-    assert quality < completion
+    completed_receipt = edge.index('await recordExecution("completed",null)')
+    assert quality < completed_receipt
