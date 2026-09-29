@@ -158,7 +158,7 @@ begin
 
   assert has_function_privilege(
     'service_role',
-    'public.project_l_adaptive_counterfactual_sampling_status_v1(bigint,timestamptz)',
+    'public.project_l_adaptive_counterfactual_sampling_status_v1(uuid,bigint,timestamptz)',
     'execute'
   ), 'service_role cannot inspect sampling budget';
 end;
