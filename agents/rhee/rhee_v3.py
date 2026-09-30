@@ -1635,10 +1635,16 @@ def format_memory_packet(query, packet, evidence_out=None):
                 if evidence_out is not None and memory.get("_table") and memory.get("id") is not None:
                     evidence_out.append({
                         "source": f"{memory['_table']}:{memory['id']}",
-                        "quote_source": excerpt, "role": memory_source_role(memory),
+                        "quote_source": excerpt,
+                        "role": memory_source_role(memory),
                         "created_at": safe_text(memory.get("created_at")),
-                        "raw_id": memory.get("raw_id"), "excerpt_offset": offset,
+                        "raw_id": memory.get("raw_id"),
+                        "excerpt_offset": offset,
                         "truncated": len(excerpt) < len(content),
+                        "provenance": memory.get("_provenance_evidence", "unlinked"),
+                        "authority": memory.get("_owner_scoped_authority"),
+                        "freshness": memory.get("_owner_scoped_freshness"),
+                        "owner_bound": memory.get("_provenance_evidence") == "owner_scoped_v2",
                     })
         lines.append("")
 

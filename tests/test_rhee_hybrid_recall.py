@@ -841,3 +841,53 @@ def test_recall_origin_guard_is_request_local_and_idempotent():
 
     assert fake._project_l_internal_recall_pass is first
     assert first.get() is False
+
+
+def test_owner_scoped_evidence_preserves_governance_metadata():
+    memory = {
+        "id": "42",
+        "_table": "memory_sport",
+        "raw_id": 5685,
+        "content": "Doug completed his Bali diving qualifications.",
+        "created_at": "2026-09-13T13:09:09Z",
+        "_source_role": "user",
+        "_provenance_evidence": "owner_scoped_v2",
+        "_owner_scoped_authority": {
+            "class": "direct_user_promoted_memory",
+            "precedence": 70,
+        },
+        "_owner_scoped_freshness": {
+            "class": "non_temporal_memory",
+            "temporalCurrentnessHandledSeparately": True,
+        },
+    }
+    evidence = []
+
+    rhee.format_memory_packet("Recall diving Bali", [memory], evidence_out=evidence)
+
+    assert len(evidence) == 1
+    item = evidence[0]
+    assert item["source"] == "memory_sport:42"
+    assert item["raw_id"] == 5685
+    assert item["provenance"] == "owner_scoped_v2"
+    assert item["owner_bound"] is True
+    assert item["authority"]["class"] == "direct_user_promoted_memory"
+    assert item["authority"]["precedence"] == 70
+    assert item["freshness"]["class"] == "non_temporal_memory"
+
+
+def test_unlinked_evidence_does_not_claim_owner_binding():
+    memory = {
+        "id": "local-1",
+        "_table": "local_family",
+        "content": "Local compatibility memory.",
+        "_source_role": "user",
+    }
+    evidence = []
+
+    rhee.format_memory_packet("Recall family", [memory], evidence_out=evidence)
+
+    assert len(evidence) == 1
+    assert evidence[0]["provenance"] == "unlinked"
+    assert evidence[0]["owner_bound"] is False
+    assert evidence[0]["authority"] is None
