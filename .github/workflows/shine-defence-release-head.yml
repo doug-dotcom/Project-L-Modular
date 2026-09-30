@@ -11,13 +11,17 @@ permissions:
   contents: read
   id-token: write
 
+defaults:
+  run:
+    shell: bash --noprofile --norc -euo pipefail {0}
+
 concurrency:
   group: shine-defence-release-head
   cancel-in-progress: true
 
 jobs:
   attest:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
       SHINE_DEFENCE_TARGET_ID: railway:project-l
