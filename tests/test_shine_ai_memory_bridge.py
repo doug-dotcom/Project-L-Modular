@@ -274,6 +274,10 @@ def test_database_client_uses_bounded_http1_transport(monkeypatch):
     assert seen["options"].persist_session is False
     assert seen["options"].auto_refresh_token is False
     assert bridge._db_transport is not None
+    assert bridge._db_transport.timeout.read == bridge._MEMORY_RPC_TIMEOUT_SECONDS
+    assert bridge._db_transport.timeout.write == bridge._MEMORY_RPC_TIMEOUT_SECONDS
+    assert bridge._db_transport.timeout.connect == bridge._MEMORY_RPC_CONNECT_SECONDS
+    assert bridge._db_transport.timeout.pool == bridge._MEMORY_RPC_POOL_SECONDS
 
 
 def test_safe_rpc_error_redacts_credential_like_values():
