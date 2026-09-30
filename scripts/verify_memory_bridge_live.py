@@ -57,6 +57,42 @@ def _health(client: TestClient, token: str) -> dict:
     return body
 
 
+def _observability(client: TestClient, token: str) -> dict:
+    response = client.get(
+        "/internal/shine-ai/memory/observability",
+        headers={"X-Shine-Service-Token": token},
+    )
+    if response.status_code != 200:
+        raise SystemExit(
+            "Project L memory bridge live smoke: FAIL observability-unavailable"
+        )
+    body = response.json()
+    durable = body.get("durable") if isinstance(body.get("durable"), dict) else {}
+    runtime = (
+        durable.get("runtime")
+        if isinstance(durable.get("runtime"), dict)
+        else {}
+    )
+    deployment = (
+        durable.get("deployment")
+        if isinstance(durable.get("deployment"), dict)
+        else {}
+    )
+    if (
+        body.get("source") != "project-l"
+        or body.get("component") != "memory-bridge-observability"
+        or body.get("database_touched") is not False
+        or body.get("memory_content_included") is not False
+        or str(durable.get("storage") or "") != "railway-redis-volume"
+        or deployment.get("status") not in {"warming", "met", "missed"}
+        or runtime.get("status") not in {"warming", "met", "missed"}
+    ):
+        raise SystemExit(
+            "Project L memory bridge live smoke: FAIL observability-contract-invalid"
+        )
+    return body
+
+
 def _retrieve(client: TestClient, token: str, owner_id: str) -> dict:
     response = client.post(
         "/internal/shine-ai/memory/retrieve",
@@ -344,12 +380,19 @@ def _run_success_path() -> tuple[dict, dict, dict, dict]:
             "Project L memory bridge live smoke: FAIL runtime-rollup-unavailable"
         )
 
-    return after, after_metrics, receipt, runtime_rollup
+    observability = _observability(client, token)
+    return after, after_metrics, receipt, runtime_rollup, observability
 
 
 def main() -> None:
     try:
-        after, after_metrics, receipt, runtime_rollup = _run_success_path()
+        (
+            after,
+            after_metrics,
+            receipt,
+            runtime_rollup,
+            observability,
+        ) = _run_success_path()
     except BaseException as exc:
         if isinstance(exc, (KeyboardInterrupt, GeneratorExit)):
             raise
@@ -390,7 +433,23 @@ def main() -> None:
         }
     )
     durable = _durable_slo_summary()
-    runtime_durable = _durable_runtime_slo_summary()
+    durable_api = (
+        observability.get("durable")
+        if isinstance(observability.get("durable"), dict)
+        else {}
+    )
+    api_deploy = (
+        durable_api.get("deployment")
+        if isinstance(durable_api.get("deployment"), dict)
+        else {}
+    )
+    api_runtime = (
+        durable_api.get("runtime")
+        if isinstance(durable_api.get("runtime"), dict)
+        else {}
+    )
+    durable = api_deploy or _durable_slo_summary()
+    runtime_durable = api_runtime or _durable_runtime_slo_summary()
 
     print(
         "Project L memory bridge live smoke: PASS "
@@ -419,7 +478,8 @@ def main() -> None:
         f"runtime_mean_latency_ms={runtime_durable.get('mean_latency_ms')} "
         f"runtime_periodic_rollups={runtime_durable.get('periodic_rollups')} "
         f"runtime_shutdown_rollups={runtime_durable.get('shutdown_rollups')} "
-        f"runtime_canary_rollups={runtime_durable.get('canary_rollups')}"
+        f"runtime_canary_rollups={runtime_durable.get('canary_rollups')} "
+        f"observability_api=verified"
     )
 
 
