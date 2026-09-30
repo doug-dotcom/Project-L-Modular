@@ -1081,3 +1081,72 @@ def test_authority_review_orders_governed_items_by_precedence():
         "memory_general:direct",
         "memory_general:derived",
     ]
+
+
+
+def test_recall_confidence_downgrades_unresolved_same_fact_conflict():
+    from types import SimpleNamespace
+    from layers.layer10_recall_confidence import install
+
+    evidence = [{"source": f"memory_general:{i}", "raw_id": i} for i in range(12)]
+    base = {
+        "context": "base",
+        "evidence": evidence,
+        "recall_plan": {
+            "status": "checked",
+            "authority_review": "applied",
+            "conflict_policy": "preserve_primary_conflicts_and_prefer_explicit_user_corrections",
+            "unresolved_conflict": True,
+        },
+        "evidence_independence": {
+            "independent_lineages": 8,
+            "governed_evidence_items": 12,
+            "governance_metadata_complete": True,
+        },
+    }
+    fake = SimpleNamespace(
+        build_context_packet=lambda query: dict(base),
+        safe_text=lambda value: "" if value is None else str(value),
+    )
+    install(fake)
+
+    result = fake.build_context_packet("Recall")
+    confidence = result["recall_confidence"]
+
+    assert confidence["state"] == "conflicted_retrieval"
+    assert confidence["confidence"] == "moderate"
+    assert confidence["unresolved_conflict"] is True
+    assert result["recall_plan"]["recall_conflict_state"] == "unresolved"
+
+
+def test_recall_confidence_preserves_high_support_when_no_conflict_reported():
+    from types import SimpleNamespace
+    from layers.layer10_recall_confidence import install
+
+    evidence = [{"source": f"memory_general:{i}", "raw_id": i} for i in range(12)]
+    base = {
+        "context": "base",
+        "evidence": evidence,
+        "recall_plan": {
+            "status": "checked",
+            "authority_review": "applied",
+            "conflict_policy": "preserve_primary_conflicts_and_prefer_explicit_user_corrections",
+        },
+        "evidence_independence": {
+            "independent_lineages": 8,
+            "governed_evidence_items": 12,
+            "governance_metadata_complete": True,
+        },
+    }
+    fake = SimpleNamespace(
+        build_context_packet=lambda query: dict(base),
+        safe_text=lambda value: "" if value is None else str(value),
+    )
+    install(fake)
+
+    result = fake.build_context_packet("Recall")
+    confidence = result["recall_confidence"]
+
+    assert confidence["state"] == "supported_retrieval"
+    assert confidence["confidence"] == "high"
+    assert confidence["unresolved_conflict"] is False

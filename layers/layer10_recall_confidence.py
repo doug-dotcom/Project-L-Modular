@@ -29,6 +29,9 @@ def install(rhee):
         governed_count = int(independence.get("governed_evidence_items") or 0)
         escalated = receipt.get("retrieval_escalation") == "performed"
         coverage = receipt.get("coverage_check")
+        conflict_policy = receipt.get("conflict_policy")
+        authority_reviewed = receipt.get("authority_review") == "applied"
+        unresolved_conflict = receipt.get("unresolved_conflict") is True
         budget_exceeded = receipt.get("status") == "budget_exceeded"
 
         if budget_exceeded:
@@ -47,6 +50,10 @@ def install(rhee):
             state = "partial_coverage"
             confidence = "moderate"
             wording = "Substantial evidence was retrieved, but expected memory neighbourhoods remain uncovered. State which parts are supported and which were not retrieved."
+        elif unresolved_conflict:
+            state = "conflicted_retrieval"
+            confidence = "moderate"
+            wording = "Substantial evidence was retrieved, but a genuine same-fact conflict remains unresolved. Surface the disagreement and do not collapse it into a single confident narrative."
         else:
             state = "supported_retrieval"
             if governance_complete and governed_count == count and independent_lineages >= 3:
@@ -67,6 +74,8 @@ EVIDENCE SOURCES: {count}
 INDEPENDENT LINEAGES: {independent_lineages}
 GOVERNED EVIDENCE: {governed_count}
 GOVERNANCE COMPLETE: {str(governance_complete).lower()}
+AUTHORITY REVIEWED: {str(authority_reviewed).lower()}
+UNRESOLVED CONFLICT: {str(unresolved_conflict).lower()}
 CONFIDENCE: {confidence}
 RETRIEVAL ESCALATED: {str(escalated).lower()}
 GUIDANCE: {wording}
@@ -86,12 +95,16 @@ ABSENCE RULE: Never say or imply 'I do not have this memory', 'it is not in my r
             "independent_lineages": independent_lineages,
             "governed_evidence_sources": governed_count,
             "governance_metadata_complete": governance_complete,
+            "authority_reviewed": authority_reviewed,
+            "conflict_policy": conflict_policy,
+            "unresolved_conflict": unresolved_conflict,
             "retrieval_escalated": escalated,
             "storage_absence_verified": False,
         }
         receipt.update({
             "recall_confidence_state": state,
             "recall_confidence": confidence,
+            "recall_conflict_state": "unresolved" if unresolved_conflict else "none_reported",
             "storage_absence_verified": False,
             "absence_semantics": "retrieval_miss_is_not_storage_absence",
         })
