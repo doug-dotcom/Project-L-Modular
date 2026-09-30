@@ -1567,7 +1567,7 @@
         const activeDays=rows.filter(x=>activityFor(x.entry)>0).length;
         const maxActivity=Math.max(1,...rows.map(x=>activityFor(x.entry)));
         const moodFaces=['☹','◔','•','◡','☺'];
-        const hasAny=rows.some(x=>x.entry);
+        const hasAny=rows.some(x=>activityFor(x.entry)>0);
         body.innerHTML=`
           <div class="sheet-section">
             <div class="progress-stats">
@@ -1594,7 +1594,7 @@
           <div class="sheet-section">
             <h3>Recent detail</h3>
             <div class="history-list">
-              ${rows.slice().reverse().filter(x=>x.entry).map(({day,entry})=>`<div class="history-row"><time>${day.date.toLocaleDateString(undefined,{day:'numeric',month:'short'})}</time><span>${Number.isInteger(entry.mood)?('Mood '+moodFaces[entry.mood]+' · '):''}${entry.goalCompleted||0} goal · ${entry.routineCompleted||0} routine</span><strong>${activityFor(entry)} tracked</strong></div>`).join('')||'<div class="progress-empty">No saved history yet.</div>'}
+              ${rows.slice().reverse().filter(x=>activityFor(x.entry)>0).map(({day,entry})=>`<div class="history-row"><time>${day.date.toLocaleDateString(undefined,{day:'numeric',month:'short'})}</time><span>${Number.isInteger(entry.mood)?('Mood '+moodFaces[entry.mood]+' · '):''}${entry.goalCompleted||0} goal · ${entry.routineCompleted||0} routine</span><strong>${activityFor(entry)} tracked</strong></div>`).join('')||'<div class="progress-empty">No saved history yet.</div>'}
             </div>
           </div>`;
       }
@@ -1654,7 +1654,6 @@
           : 'No tracked activity yet';
 
       }
-      recordToday();
       syncDashboard();
       try { localStorage.setItem(storageKey,JSON.stringify(state)); } catch (_) {}
     })();
