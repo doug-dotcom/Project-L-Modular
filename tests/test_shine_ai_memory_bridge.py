@@ -558,3 +558,82 @@ def test_repeated_schema_failures_expand_circuit_backoff(monkeypatch):
     bridge._close_rpc_circuit()
     assert bridge._rpc_circuit_retry_after() == 0
     assert bridge._rpc_failure_streak == 0
+
+
+
+def test_half_open_bridge_allows_only_one_recovery_probe(monkeypatch):
+    configure(monkeypatch)
+    now = {"value": 200.0}
+    bridge._rpc_failure_streak = 2
+    bridge._rpc_circuit_open_until = 199.0
+
+    class ProbeBusy:
+        def acquire(self, blocking=False):
+            assert blocking is False
+            return False
+
+        def release(self):
+            raise AssertionError("busy probe must not be released")
+
+    called = {"database": 0}
+
+    def should_not_run():
+        called["database"] += 1
+        raise AssertionError("database must not be touched while recovery probe is busy")
+
+    monkeypatch.setattr(bridge.time, "monotonic", lambda: now["value"])
+    monkeypatch.setattr(bridge, "_rpc_half_open_probe", ProbeBusy())
+    monkeypatch.setattr(bridge, "_database", should_not_run)
+
+    try:
+        bridge._owner_context(OWNER, "Dive history", 4)
+        assert False, "expected HTTPException"
+    except Exception as exc:
+        assert getattr(exc, "status_code", None) == 503
+        assert getattr(exc, "headers", {})["Retry-After"] == "1"
+        assert "recovery probe" in str(getattr(exc, "detail", "")).lower()
+
+    assert called["database"] == 0
+
+
+def test_successful_half_open_probe_resets_breaker(monkeypatch):
+    configure(monkeypatch)
+    now = {"value": 300.0}
+    bridge._rpc_failure_streak = 3
+    bridge._rpc_circuit_open_until = 299.0
+    state = {"probe_acquires": 0, "probe_releases": 0}
+    query = "Dive history"
+
+    class Probe:
+        def acquire(self, blocking=False):
+            state["probe_acquires"] += 1
+            return True
+
+        def release(self):
+            state["probe_releases"] += 1
+
+    class Result:
+        data = {
+            **owner_context(),
+            "queryKey": bridge._query_key(bridge._query_terms(query)),
+        }
+
+    class Rpc:
+        def execute(self):
+            return Result()
+
+    class Database:
+        def rpc(self, name, payload):
+            assert name == "project_l_memory_context_service_v2"
+            return Rpc()
+
+    monkeypatch.setattr(bridge.time, "monotonic", lambda: now["value"])
+    monkeypatch.setattr(bridge, "_rpc_half_open_probe", Probe())
+    monkeypatch.setattr(bridge, "_database", lambda: Database())
+
+    result = bridge._owner_context(OWNER, query, 4)
+
+    assert result["status"] == "ok"
+    assert state == {"probe_acquires": 1, "probe_releases": 1}
+    assert bridge._rpc_failure_streak == 0
+    assert bridge._rpc_circuit_open_until == 0.0
