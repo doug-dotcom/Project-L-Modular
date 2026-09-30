@@ -10,13 +10,23 @@ privacy=(root/"core/cognition/memory_privacy.py").read_text()
 governance=(root/"core/cognition/memory_governance.py").read_text()
 provenance=(root/"memory/retrieval/provenance.py").read_text()
 security=(root/"core/cognition/production_security_gate.py").read_text()
+wellness_context=(root/"api/wellness_context.py").read_text()
 checks=[
  ("REGISTRY",registry.get("registry")=="shine-defence/canonical-registry-v1" and registry.get("version")==profile["canonical"]["registryVersion"] and profile["canonical"]["registryBlobSha"]=="d45e5da601d9d5958f61536cfda43a1389a46242" and memory_policy is not None and memory_policy["version"]==profile["canonical"]["policyVersion"] and memory_policy["blobSha"]==profile["canonical"]["policyBlobSha"]),
  ("POLICY",profile["canonical"]["policyVersion"]=="1.0.0" and profile["canonical"]["policyBlobSha"]=="109e3e1aacb88671266c72748ad2657d6d5f9df4"),
  ("PRIVACY","uninvited_high_intimacy_surface_blocked" in privacy and "minimum_necessary_disclosure" in privacy and "can_upgrade_prior_permission" in privacy),
  ("PROMOTION",'evidence_quality = 100 if carol_packet.get("source", {}).get("role") == "user" else 0' in governance and '"approved": bool(promotion.get("promote")) and evidence_quality == 100' in governance),
  ("PROVENANCE",'TRUST_RANK' in provenance and '"user": 3' in provenance and '"assistant": 1' in provenance),
- ("SECURITY",'production_security_gate' in security and '"private_memory_used": False' in security and 'production_security_report_secret_leak' in security)
+ ("SECURITY",'production_security_gate' in security and '"private_memory_used": False' in security and 'production_security_report_secret_leak' in security),
+ ("WELLNESS_CONTEXT",
+  'WELLNESS_CONTEXT_SERVICE_TOKEN' in wellness_context
+  and 'authority="context_only"' in wellness_context
+  and 'health_truth_authority=False' in wellness_context
+  and 'source_table != "memory_health"' in wellness_context
+  and 'writes_performed": False' in wellness_context
+  and '_BROAD_RECALL_RE.search' in wellness_context
+  and 'permission_decision_id' in wellness_context
+  and 'canonical_record_ids' in wellness_context)
 ]
 for name,ok in checks: print(("PASS " if ok else "FAIL ")+name)
 if not all(ok for _,ok in checks): raise SystemExit(1)
