@@ -149,6 +149,15 @@ def main() -> None:
         },
     )
 
+    history_snapshot = OBSERVABILITY_LIEUTENANT.build_runtime_snapshot()
+    history_events = int(
+        (
+            history_snapshot.get("event_type_counts")
+            if isinstance(history_snapshot.get("event_type_counts"), dict)
+            else {}
+        ).get("memory_bridge_deploy_slo", 0)
+    )
+
     print(
         "Project L memory bridge live smoke: PASS "
         f"circuit={after.get('circuit_state')} "
@@ -160,7 +169,8 @@ def main() -> None:
         f"success_rate={after_metrics.get('success_rate')} "
         f"latency_ms={after_metrics.get('last_latency_ms')} "
         f"slo={after_metrics.get('slo_status')} "
-        f"history={history.get('storage')}"
+        f"history={history.get('storage')} "
+        f"history_events={history_events}"
     )
 
 
