@@ -838,6 +838,49 @@
       .sheet-backdrop[data-open="true"] .sheet { transform:translateY(0) scale(1); opacity:1; }
     }
 
+  
+    /* shine-me-progress-engine-v1 */
+    .progress-card[data-panel] { cursor:pointer; transition:transform .18s ease, box-shadow .18s ease; }
+    .progress-card[data-panel]:active { transform:scale(.992); }
+    .progress-card[data-panel]:focus-visible { outline:2px solid rgba(244,207,131,.72); outline-offset:3px; }
+    .progress-meta { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:5px; }
+    .progress-meta span { color:#7b8797; font-size:10px; }
+    .progress-meta strong { color:#3d516a; font-size:10px; font-weight:750; }
+    .progress-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .progress-stat {
+      min-height:84px; padding:12px 10px; border-radius:16px;
+      border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.04);
+    }
+    .progress-stat small { display:block; color:#8595a9; font-size:8px; letter-spacing:.09em; text-transform:uppercase; }
+    .progress-stat strong { display:block; margin-top:8px; color:#eef4fa; font-size:19px; line-height:1; }
+    .progress-stat em { display:block; margin-top:5px; color:#8293a8; font-size:9px; font-style:normal; line-height:1.3; }
+    .week-strip { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; align-items:end; margin-top:4px; }
+    .day-cell { display:grid; justify-items:center; gap:6px; min-width:0; }
+    .day-bar-wrap { height:78px; width:100%; display:flex; align-items:end; justify-content:center; }
+    .day-bar {
+      width:min(24px,72%); min-height:5px; border-radius:10px 10px 4px 4px;
+      background:linear-gradient(180deg,#e9cb83,#7998c4);
+      box-shadow:0 6px 15px rgba(85,111,153,.18);
+      opacity:.88;
+    }
+    .day-bar[data-empty="true"] { height:5px !important; background:rgba(255,255,255,.09); box-shadow:none; }
+    .day-label { color:#8292a6; font-size:8px; text-transform:uppercase; }
+    .day-mood { height:14px; color:#d7c085; font-size:11px; line-height:1; }
+    .history-list { display:grid; gap:8px; }
+    .history-row {
+      display:grid; grid-template-columns:64px 1fr auto; gap:10px; align-items:center;
+      min-height:45px; padding:9px 11px; border-radius:13px;
+      border:1px solid rgba(255,255,255,.075); background:rgba(255,255,255,.035);
+    }
+    .history-row time { color:#8797aa; font-size:9px; }
+    .history-row span { color:#dce5ef; font-size:10px; }
+    .history-row strong { color:#f0d18b; font-size:10px; font-weight:700; }
+    .progress-empty {
+      padding:20px 14px; border-radius:16px; text-align:center;
+      border:1px dashed rgba(255,255,255,.12); color:#8fa0b4; background:rgba(255,255,255,.025);
+      font-size:11px;
+    }
+
   </style>
 </head>
 <body>
@@ -942,19 +985,20 @@
       </article>
     </section>
 
-    <section class="progress-card" aria-labelledby="progressHeading">
+    <section class="progress-card" data-panel="progress" tabindex="0" role="button" aria-label="Open Your Progress" aria-labelledby="progressHeading">
       <div class="progress-top">
         <div class="progress-title">
           <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19V11M10 19V5M15 19v-7M20 19V8"/></svg></span>
-          <div><h2 id="progressHeading">Your Progress</h2><p>You’re growing. Keep shining.</p></div>
+          <div><h2 id="progressHeading">Your Progress</h2><p id="progressSubtitle">Your recent Shine activity.</p></div>
         </div>
         <span class="status-pill" id="connectionPill" data-state="checking">Checking Shine</span>
       </div>
-      <svg class="chart" viewBox="0 0 420 82" role="img" aria-label="Decorative progress trend">
+      <svg class="chart" id="progressChart" viewBox="0 0 420 82" role="img" aria-label="Seven-day tracked activity">
         <defs><linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#86a9dd" stop-opacity=".45"/><stop offset="100%" stop-color="#86a9dd" stop-opacity="0"/></linearGradient></defs>
-        <path class="area" d="M4 67 C42 50,65 61,92 48 S145 62,176 47 S230 56,264 40 S321 52,361 27 S397 19,416 11 L416 82 L4 82 Z"/>
-        <path d="M4 67 C42 50,65 61,92 48 S145 62,176 47 S230 56,264 40 S321 52,361 27 S397 19,416 11"/>
+        <path class="area" id="progressArea" d="M4 72 L416 72 L416 82 L4 82 Z"/>
+        <path id="progressLine" d="M4 72 L416 72"/>
       </svg>
+      <div class="progress-meta"><span id="progressMeta">No tracked activity yet</span><strong>Tap for 7-day detail ›</strong></div>
       <p id="connectionStatus" role="status" aria-live="polite">Sign in to check your memory access.</p>
       <button id="retryConnection" type="button" hidden>Check connection again</button>
     </section>
@@ -1287,10 +1331,40 @@
   <script>
     (() => {
       const storageKey='shine-me-dashboard-state-v1';
-      const defaults={mood:null,moodNote:'',goals:[],routines:[]};
+      const todayKey=()=>{
+        const d=new Date(), y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+        return y+'-'+m+'-'+day;
+      };
+      const defaults={mood:null,moodNote:'',goals:[],routines:[],history:{},lastDay:todayKey()};
       let state={...defaults};
       try { state={...defaults,...JSON.parse(localStorage.getItem(storageKey)||'{}')}; } catch (_) {}
-      const save=()=>{ try { localStorage.setItem(storageKey,JSON.stringify(state)); } catch (_) {} };
+      if(!state.history||typeof state.history!=='object'||Array.isArray(state.history)) state.history={};
+      if(state.lastDay!==todayKey()){
+        state.mood=null;
+        state.moodNote='';
+        state.routines=(Array.isArray(state.routines)?state.routines:[]).map(item=>({...item,done:false,completedOn:null}));
+        state.lastDay=todayKey();
+      }
+      const recordToday=()=>{
+        const key=todayKey();
+        const goals=Array.isArray(state.goals)?state.goals:[];
+        const routines=Array.isArray(state.routines)?state.routines:[];
+        state.history[key]={
+          mood:Number.isInteger(state.mood)?state.mood:null,
+          goalCompleted:goals.filter(x=>x.completedOn===key).length,
+          goalDoneTotal:goals.filter(x=>x.done).length,
+          goalTotal:goals.length,
+          routineCompleted:routines.filter(x=>x.completedOn===key).length,
+          routineTotal:routines.length,
+          touchedAt:new Date().toISOString()
+        };
+        const keys=Object.keys(state.history).sort();
+        while(keys.length>30){ const oldest=keys.shift(); delete state.history[oldest]; }
+      };
+      const save=()=>{
+        recordToday();
+        try { localStorage.setItem(storageKey,JSON.stringify(state)); } catch (_) {}
+      };
       const backdrop=document.getElementById('dashboardSheet');
       const sheet=backdrop?.querySelector('.sheet');
       const title=document.getElementById('sheetTitle');
@@ -1309,7 +1383,7 @@
       const escapeHtml=s=>String(s||'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
       function openSheet(kind,trigger){
         previousFocus=trigger||document.activeElement;
-        const renderers={mood:renderMood,health:renderHealth,goals:renderGoals,routines:renderRoutines};
+        const renderers={mood:renderMood,health:renderHealth,goals:renderGoals,routines:renderRoutines,progress:renderProgress};
         if(!renderers[kind]||!backdrop) return;
         icon.innerHTML=icons[kind]||'';
         renderers[kind]();
@@ -1330,9 +1404,9 @@
       document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&backdrop?.dataset.open==='true') closeSheet(); });
       sheet?.addEventListener('click',e=>e.stopPropagation());
 
-      document.querySelectorAll('.dash-card[data-panel]').forEach(card=>{
+      document.querySelectorAll('.dash-card[data-panel], .progress-card[data-panel]').forEach(card=>{
         card.addEventListener('click',e=>{
-          if(e.target.closest('.mood')) return;
+          if(e.target.closest('.mood')||e.target.closest('button')) return;
           openSheet(card.dataset.panel,card);
         });
         card.addEventListener('keydown',e=>{
@@ -1444,7 +1518,12 @@
               <button class="remove-item" type="button" data-remove="${i}" aria-label="Remove">×</button>
             </div>`).join(''):'<p class="sheet-copy">Nothing here yet — add the first one when it matters.</p>';
           list.querySelectorAll('[data-check]').forEach(el=>el.addEventListener('change',()=>{
-            const i=Number(el.dataset.check); if(state[plural][i]) state[plural][i].done=el.checked; save(); syncDashboard();
+            const i=Number(el.dataset.check);
+            if(state[plural][i]){
+              state[plural][i].done=el.checked;
+              state[plural][i].completedOn=el.checked?todayKey():null;
+            }
+            save(); syncDashboard();
           }));
           list.querySelectorAll('[data-remove]').forEach(el=>el.addEventListener('click',()=>{
             state[plural].splice(Number(el.dataset.remove),1); save(); paint(); syncDashboard();
@@ -1453,11 +1532,71 @@
         const addItem=()=>{
           const text=(input?.value||'').trim(); if(!text)return;
           if(!Array.isArray(state[plural]))state[plural]=[];
-          state[plural].push({text,done:false}); save(); input.value=''; paint(); syncDashboard();
+          state[plural].push({text,done:false,completedOn:null}); save(); input.value=''; paint(); syncDashboard();
         };
         add?.addEventListener('click',addItem);
         input?.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();addItem();} });
         paint();
+      }
+
+
+      function lastDays(count=7){
+        const out=[];
+        const d=new Date();
+        d.setHours(12,0,0,0);
+        for(let i=count-1;i>=0;i--){
+          const x=new Date(d);
+          x.setDate(d.getDate()-i);
+          const key=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+          out.push({key,date:x,label:x.toLocaleDateString(undefined,{weekday:'short'}).slice(0,2)});
+        }
+        return out;
+      }
+      function activityFor(entry){
+        if(!entry) return 0;
+        return (Number.isInteger(entry.mood)?1:0)+(Number(entry.goalCompleted)||0)+(Number(entry.routineCompleted)||0);
+      }
+      function renderProgress(){
+        title.textContent='Your Progress';
+        kicker.textContent='A factual view of what you’ve actually tracked.';
+        const days=lastDays(7);
+        const rows=days.map(day=>({day,entry:state.history?.[day.key]||null}));
+        const checkins=rows.filter(x=>Number.isInteger(x.entry?.mood)).length;
+        const goals=rows.reduce((sum,x)=>sum+(Number(x.entry?.goalCompleted)||0),0);
+        const routines=rows.reduce((sum,x)=>sum+(Number(x.entry?.routineCompleted)||0),0);
+        const activeDays=rows.filter(x=>activityFor(x.entry)>0).length;
+        const maxActivity=Math.max(1,...rows.map(x=>activityFor(x.entry)));
+        const moodFaces=['☹','◔','•','◡','☺'];
+        const hasAny=rows.some(x=>x.entry);
+        body.innerHTML=`
+          <div class="sheet-section">
+            <div class="progress-stats">
+              <div class="progress-stat"><small>Check-in days</small><strong>${checkins}</strong><em>of the last 7 days</em></div>
+              <div class="progress-stat"><small>Goals finished</small><strong>${goals}</strong><em>completed this week</em></div>
+              <div class="progress-stat"><small>Routines done</small><strong>${routines}</strong><em>tracked completions</em></div>
+            </div>
+          </div>
+          <div class="sheet-section">
+            <h3>Last 7 days</h3>
+            ${hasAny?`<div class="week-strip">
+              ${rows.map(({day,entry})=>{
+                const activity=activityFor(entry);
+                const height=activity?Math.max(14,Math.round(activity/maxActivity*74)):5;
+                const mood=Number.isInteger(entry?.mood)?moodFaces[entry.mood]:'';
+                return `<div class="day-cell"><div class="day-mood">${mood}</div><div class="day-bar-wrap"><div class="day-bar" data-empty="${activity===0}" style="height:${height}px"></div></div><div class="day-label">${day.label}</div></div>`;
+              }).join('')}
+            </div>`:'<div class="progress-empty">Your seven-day view will build from check-ins and completions — nothing is guessed or scored.</div>'}
+          </div>
+          <div class="sheet-section">
+            <h3>What this means</h3>
+            <p class="sheet-copy">${activeDays?('You recorded activity on '+activeDays+' of the last 7 days. This is a record of what you tracked, not a judgement of how well you are doing.'):'There is not enough tracked activity yet to describe a pattern. That is completely fine — Shine only shows what is actually here.'}</p>
+          </div>
+          <div class="sheet-section">
+            <h3>Recent detail</h3>
+            <div class="history-list">
+              ${rows.slice().reverse().filter(x=>x.entry).map(({day,entry})=>`<div class="history-row"><time>${day.date.toLocaleDateString(undefined,{day:'numeric',month:'short'})}</time><span>${Number.isInteger(entry.mood)?('Mood '+moodFaces[entry.mood]+' · '):''}${entry.goalCompleted||0} goal · ${entry.routineCompleted||0} routine</span><strong>${activityFor(entry)} tracked</strong></div>`).join('')||'<div class="progress-empty">No saved history yet.</div>'}
+            </div>
+          </div>`;
       }
 
       function syncDashboard(){
@@ -1486,8 +1625,38 @@
         if(routineMetric&&routineRows.length) routineMetric.innerHTML='<span>Today</span><strong>'+routineDone+' of '+routineRows.length+'</strong>';
         const routineBar=routineCard?.querySelector('.progress-track span');
         if(routineBar&&routineRows.length) routineBar.style.width=Math.round(routineDone/routineRows.length*100)+'%';
+
+        const days=lastDays(7);
+        const activity=days.map(day=>activityFor(state.history?.[day.key]||null));
+        const checkins=days.filter(day=>Number.isInteger(state.history?.[day.key]?.mood)).length;
+        const weeklyGoals=days.reduce((sum,day)=>sum+(Number(state.history?.[day.key]?.goalCompleted)||0),0);
+        const weeklyRoutines=days.reduce((sum,day)=>sum+(Number(state.history?.[day.key]?.routineCompleted)||0),0);
+        const max=Math.max(1,...activity);
+        const points=activity.map((value,i)=>{
+          const x=4+(412/(activity.length-1))*i;
+          const y=value?72-(value/max)*56:72;
+          return [Number(x.toFixed(1)),Number(y.toFixed(1))];
+        });
+        const line=points.map((p,i)=>(i?'L':'M')+p[0]+' '+p[1]).join(' ');
+        const area=line+' L416 82 L4 82 Z';
+        const lineEl=document.getElementById('progressLine');
+        const areaEl=document.getElementById('progressArea');
+        if(lineEl) lineEl.setAttribute('d',line||'M4 72 L416 72');
+        if(areaEl) areaEl.setAttribute('d',area||'M4 72 L416 72 L416 82 L4 82 Z');
+        const subtitle=document.getElementById('progressSubtitle');
+        const meta=document.getElementById('progressMeta');
+        const activeDays=activity.filter(Boolean).length;
+        if(subtitle) subtitle.textContent=activeDays
+          ? activeDays+' active day'+(activeDays===1?'':'s')+' in the last 7'
+          : 'Your recent Shine activity.';
+        if(meta) meta.textContent=(checkins||weeklyGoals||weeklyRoutines)
+          ? checkins+' check-in'+(checkins===1?'':'s')+' · '+weeklyGoals+' goal'+(weeklyGoals===1?'':'s')+' · '+weeklyRoutines+' routine'+(weeklyRoutines===1?'':'s')
+          : 'No tracked activity yet';
+
       }
+      recordToday();
       syncDashboard();
+      try { localStorage.setItem(storageKey,JSON.stringify(state)); } catch (_) {}
     })();
   </script>
 
