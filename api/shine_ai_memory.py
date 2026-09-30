@@ -56,8 +56,14 @@ _TRANSIENT_RPC_RETRY_DELAYS: dict[str, tuple[float, ...]] = {
     "57014": (0.2,),
 }
 _DATA_API_CIRCUIT_SECONDS = 8.0
+_DATA_API_CIRCUIT_MAX_SECONDS = 60.0
+_MAX_CONCURRENT_MEMORY_RPCS = 2
+_RPC_BULKHEAD_WAIT_SECONDS = 0.25
+
 _rpc_circuit_lock = threading.Lock()
 _rpc_circuit_open_until = 0.0
+_rpc_failure_streak = 0
+_rpc_bulkhead = threading.BoundedSemaphore(_MAX_CONCURRENT_MEMORY_RPCS)
 
 
 def _rpc_error_code(exc: Exception) -> str:
@@ -87,10 +93,27 @@ def _open_rpc_circuit(seconds: float) -> None:
         )
 
 
+def _escalate_rpc_circuit() -> int:
+    """Increase outage backoff only after a transient RPC has fully failed."""
+    global _rpc_circuit_open_until, _rpc_failure_streak
+    with _rpc_circuit_lock:
+        _rpc_failure_streak += 1
+        seconds = min(
+            _DATA_API_CIRCUIT_MAX_SECONDS,
+            _DATA_API_CIRCUIT_SECONDS * (2 ** (_rpc_failure_streak - 1)),
+        )
+        _rpc_circuit_open_until = max(
+            _rpc_circuit_open_until,
+            time.monotonic() + seconds,
+        )
+    return int(seconds)
+
+
 def _close_rpc_circuit() -> None:
-    global _rpc_circuit_open_until
+    global _rpc_circuit_open_until, _rpc_failure_streak
     with _rpc_circuit_lock:
         _rpc_circuit_open_until = 0.0
+        _rpc_failure_streak = 0
 
 
 def _rpc_function_missing(exc: Exception) -> bool:
@@ -282,61 +305,74 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
     retry_index = 0
     binding_mode = "server-verified"
 
-    while True:
-        try:
+    acquired = _rpc_bulkhead.acquire(timeout=_RPC_BULKHEAD_WAIT_SECONDS)
+    if not acquired:
+        raise HTTPException(
+            status_code=503,
+            detail="Project L owner-scoped retrieval is temporarily saturated.",
+            headers={"Retry-After": "1"},
+        )
+
+    try:
+        while True:
             try:
-                result = _database().rpc(
-                    "project_l_memory_context_service_v2",
-                    {**common_payload, "p_query_key": query_key},
-                ).execute()
-                binding_mode = "server-verified"
+                try:
+                    result = _database().rpc(
+                        "project_l_memory_context_service_v2",
+                        {**common_payload, "p_query_key": query_key},
+                    ).execute()
+                    binding_mode = "server-verified"
+                except Exception as exc:
+                    if not _rpc_function_missing(exc):
+                        raise
+                    # Safe deployment-order compatibility only. Once the v2 RPC is
+                    # present, every successful response is server-bound to the exact
+                    # term cohort. Never use this fallback for transient Data API errors.
+                    result = _database().rpc(
+                        "project_l_memory_context_service_v1",
+                        common_payload,
+                    ).execute()
+                    binding_mode = "legacy-unverified"
+                break
             except Exception as exc:
-                if not _rpc_function_missing(exc):
-                    raise
-                # Safe deployment-order compatibility only. Once the v2 RPC is
-                # present, every successful response is server-bound to the exact
-                # term cohort. Never use this fallback for transient Data API errors.
-                result = _database().rpc(
-                    "project_l_memory_context_service_v1",
-                    common_payload,
-                ).execute()
-                binding_mode = "legacy-unverified"
-            break
-        except Exception as exc:
-            code = _rpc_error_code(exc)
-            delays = _TRANSIENT_RPC_RETRY_DELAYS.get(code, ())
-            if retry_index < len(delays):
-                delay = delays[retry_index]
-                retry_index += 1
+                code = _rpc_error_code(exc)
+                delays = _TRANSIENT_RPC_RETRY_DELAYS.get(code, ())
+                if retry_index < len(delays):
+                    delay = delays[retry_index]
+                    retry_index += 1
+                    if code in {"PGRST002", "PGRST003"}:
+                        # Close the door to concurrent callers while this request
+                        # performs its single bounded retry.
+                        _open_rpc_circuit(_DATA_API_CIRCUIT_SECONDS)
+                    print(
+                        "SHINE_AI_MEMORY_RPC_RETRY "
+                        f"code={code} attempt={retry_index} delay={delay:.2f}s",
+                        flush=True,
+                    )
+                    time.sleep(delay)
+                    continue
+
                 if code in {"PGRST002", "PGRST003"}:
-                    _open_rpc_circuit(_DATA_API_CIRCUIT_SECONDS)
-                print(
-                    "SHINE_AI_MEMORY_RPC_RETRY "
-                    f"code={code} attempt={retry_index} delay={delay:.2f}s",
-                    flush=True,
+                    _escalate_rpc_circuit()
+
+                print("SHINE_AI_MEMORY_RPC_ERROR " + _safe_rpc_error(exc), flush=True)
+                response_retry_after = (
+                    _rpc_circuit_retry_after()
+                    if code in {"PGRST002", "PGRST003"}
+                    else 1 if code == "57014"
+                    else 0
                 )
-                time.sleep(delay)
-                continue
-
-            if code in {"PGRST002", "PGRST003"}:
-                _open_rpc_circuit(_DATA_API_CIRCUIT_SECONDS)
-
-            print("SHINE_AI_MEMORY_RPC_ERROR " + _safe_rpc_error(exc), flush=True)
-            response_retry_after = (
-                _rpc_circuit_retry_after()
-                if code in {"PGRST002", "PGRST003"}
-                else 1 if code == "57014"
-                else 0
-            )
-            raise HTTPException(
-                status_code=503,
-                detail="Project L owner-scoped retrieval is temporarily unavailable.",
-                headers=(
-                    {"Retry-After": str(response_retry_after)}
-                    if response_retry_after
-                    else None
-                ),
-            ) from exc
+                raise HTTPException(
+                    status_code=503,
+                    detail="Project L owner-scoped retrieval is temporarily unavailable.",
+                    headers=(
+                        {"Retry-After": str(response_retry_after)}
+                        if response_retry_after
+                        else None
+                    ),
+                ) from exc
+    finally:
+        _rpc_bulkhead.release()
 
     data = result.data
     if isinstance(data, list) and len(data) == 1 and isinstance(data[0], dict):
