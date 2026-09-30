@@ -18,6 +18,7 @@ def configure(monkeypatch):
     bridge._db_client = None
     bridge._db_transport = None
     bridge._rpc_circuit_open_until = 0.0
+    bridge._rpc_failure_streak = 0
 
 
 def owner_context():
@@ -461,3 +462,99 @@ def test_owner_context_rejects_mismatched_server_query_key(monkeypatch):
     except Exception as exc:
         assert getattr(exc, "status_code", None) == 503
         assert "query binding" in str(getattr(exc, "detail", "")).lower()
+
+
+
+def test_memory_bridge_bulkhead_fails_closed_before_database_query(monkeypatch):
+    configure(monkeypatch)
+    called = {"database": 0}
+
+    class BusyBulkhead:
+        def acquire(self, timeout):
+            assert timeout == bridge._RPC_BULKHEAD_WAIT_SECONDS
+            return False
+
+        def release(self):
+            raise AssertionError("unacquired bulkhead must not be released")
+
+    def should_not_run():
+        called["database"] += 1
+        raise AssertionError("database must not be touched when bulkhead is full")
+
+    monkeypatch.setattr(bridge, "_rpc_bulkhead", BusyBulkhead())
+    monkeypatch.setattr(bridge, "_database", should_not_run)
+
+    try:
+        bridge._owner_context(OWNER, "Dive history", 4)
+        assert False, "expected HTTPException"
+    except Exception as exc:
+        assert getattr(exc, "status_code", None) == 503
+        assert getattr(exc, "headers", {})["Retry-After"] == "1"
+        assert "saturated" in str(getattr(exc, "detail", "")).lower()
+
+    assert called["database"] == 0
+
+
+def test_memory_bridge_bulkhead_releases_slot_after_rpc_error(monkeypatch):
+    configure(monkeypatch)
+    state = {"acquires": 0, "releases": 0}
+
+    class Bulkhead:
+        def acquire(self, timeout):
+            state["acquires"] += 1
+            return True
+
+        def release(self):
+            state["releases"] += 1
+
+    class PermissionFailure(Exception):
+        code = "42501"
+        message = "permission denied"
+
+    class Rpc:
+        def execute(self):
+            raise PermissionFailure()
+
+    class Database:
+        def rpc(self, name, payload):
+            return Rpc()
+
+    monkeypatch.setattr(bridge, "_rpc_bulkhead", Bulkhead())
+    monkeypatch.setattr(bridge, "_database", lambda: Database())
+
+    try:
+        bridge._owner_context(OWNER, "Dive history", 4)
+        assert False, "expected HTTPException"
+    except Exception as exc:
+        assert getattr(exc, "status_code", None) == 503
+
+    assert state == {"acquires": 1, "releases": 1}
+
+
+def test_repeated_schema_failures_expand_circuit_backoff(monkeypatch):
+    configure(monkeypatch)
+    now = {"value": 100.0}
+    monkeypatch.setattr(bridge.time, "monotonic", lambda: now["value"])
+
+    assert bridge._escalate_rpc_circuit() == 8
+    assert bridge._rpc_circuit_retry_after() == 8
+    assert bridge._rpc_failure_streak == 1
+
+    now["value"] = 109.0
+    assert bridge._escalate_rpc_circuit() == 16
+    assert bridge._rpc_circuit_retry_after() == 16
+    assert bridge._rpc_failure_streak == 2
+
+    now["value"] = 126.0
+    assert bridge._escalate_rpc_circuit() == 32
+    assert bridge._rpc_circuit_retry_after() == 32
+    assert bridge._rpc_failure_streak == 3
+
+    now["value"] = 159.0
+    assert bridge._escalate_rpc_circuit() == 60
+    assert bridge._rpc_circuit_retry_after() == 60
+    assert bridge._rpc_failure_streak == 4
+
+    bridge._close_rpc_circuit()
+    assert bridge._rpc_circuit_retry_after() == 0
+    assert bridge._rpc_failure_streak == 0
