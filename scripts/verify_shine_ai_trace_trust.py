@@ -2,9 +2,13 @@
 
 import os
 
+import httpx
 from supabase import create_client
+from supabase.lib.client_options import SyncClientOptions
 
 from services import shine_runtime_service as runtime
+
+SMOKE_DB_TIMEOUT_SECONDS = 5.0
 
 
 def _database():
@@ -17,7 +21,28 @@ def _database():
         raise SystemExit(
             "Project L Shine-AI trace trust smoke: FAIL database-unavailable"
         )
-    return create_client(url, key)
+    transport = httpx.Client(
+        http2=False,
+        timeout=httpx.Timeout(
+            SMOKE_DB_TIMEOUT_SECONDS,
+            connect=3.0,
+            pool=3.0,
+        ),
+        limits=httpx.Limits(
+            max_connections=2,
+            max_keepalive_connections=1,
+            keepalive_expiry=2.0,
+        ),
+    )
+    return create_client(
+        url,
+        key,
+        options=SyncClientOptions(
+            httpx_client=transport,
+            auto_refresh_token=False,
+            persist_session=False,
+        ),
+    )
 
 
 def _reset_cache() -> None:
