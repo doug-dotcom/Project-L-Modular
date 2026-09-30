@@ -881,6 +881,127 @@
       font-size:11px;
     }
 
+  
+    /* shine-me-nav-surfaces-v1 */
+    .nav-surface {
+      position:fixed;
+      z-index:44;
+      left:50%;
+      top:0;
+      bottom:0;
+      width:min(100%,520px);
+      transform:translate(-50%,105%);
+      display:flex;
+      flex-direction:column;
+      padding:calc(18px + env(safe-area-inset-top)) 18px 104px;
+      color:#eef4fa;
+      background:
+        radial-gradient(circle at 82% 7%,rgba(244,207,131,.1),transparent 22rem),
+        linear-gradient(180deg,#142238 0%,#08111e 100%);
+      opacity:.98;
+      visibility:hidden;
+      transition:transform .3s cubic-bezier(.2,.8,.2,1),visibility .3s;
+      overflow:hidden;
+    }
+    .nav-surface[data-open="true"] { transform:translate(-50%,0); visibility:visible; }
+    .nav-surface-head {
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      min-height:50px; flex:0 0 auto;
+    }
+    .nav-surface-head button {
+      width:38px; height:38px; min-height:0; margin:0; padding:0;
+      display:grid; place-items:center;
+      border:1px solid rgba(255,255,255,.11); border-radius:50%;
+      color:#dce5ef; background:rgba(255,255,255,.055); cursor:pointer; font-size:21px;
+    }
+    .nav-surface-head h2 {
+      margin:0; font:500 28px/1 Georgia,"Times New Roman",serif; letter-spacing:-.03em;
+    }
+    .nav-surface-head .surface-mark {
+      width:38px; height:38px; display:grid; place-items:center; color:var(--gold);
+    }
+    .nav-surface-head .surface-mark svg {
+      width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.8;
+      stroke-linecap:round; stroke-linejoin:round;
+    }
+    .nav-surface-scroll { flex:1 1 auto; min-height:0; overflow:auto; overscroll-behavior:contain; padding:14px 1px 26px; }
+    .surface-intro { margin:0 0 18px; color:#9dacbd; font-size:12px; line-height:1.5; }
+    .surface-card {
+      padding:17px; margin-top:11px; border-radius:20px;
+      border:1px solid rgba(255,255,255,.09);
+      background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.03));
+    }
+    .surface-card h3 { margin:0 0 5px; font-size:14px; }
+    .surface-card p { margin:0; color:#91a0b2; font-size:11px; line-height:1.45; }
+    .surface-card label { margin-top:12px; }
+    .surface-card textarea { min-height:78px; }
+    .surface-card .surface-action {
+      width:100%; min-height:44px; margin-top:12px; border-radius:14px;
+      border:1px solid rgba(255,232,174,.4); color:#142033;
+      background:linear-gradient(135deg,#fff6da,#efc66c); cursor:pointer; font-weight:750;
+    }
+    .surface-card .surface-action.secondary {
+      border-color:rgba(255,255,255,.11); color:#dce6f1; background:rgba(255,255,255,.055);
+    }
+    .journal-entry {
+      padding:14px; margin-top:9px; border-radius:16px;
+      border:1px solid rgba(255,255,255,.075); background:rgba(255,255,255,.035);
+    }
+    .journal-entry time { display:block; color:#d9bf7f; font-size:9px; letter-spacing:.08em; text-transform:uppercase; }
+    .journal-entry p { margin:7px 0 0; color:#c7d1dd; font-size:11px; white-space:pre-wrap; }
+    .journal-entry small { display:block; margin-top:7px; color:#7f91a6; font-size:9px; }
+    .pathway-grid { display:grid; gap:10px; }
+    .pathway {
+      width:100%; min-height:88px; margin:0; padding:14px;
+      display:grid; grid-template-columns:42px 1fr auto; align-items:center; gap:12px;
+      text-align:left; border:1px solid rgba(255,255,255,.09); border-radius:18px;
+      color:#e9eff5; background:rgba(255,255,255,.04); cursor:pointer;
+    }
+    .pathway:hover { border-color:rgba(244,207,131,.3); background:rgba(255,255,255,.06); }
+    .pathway-icon {
+      width:42px; height:42px; display:grid; place-items:center; border-radius:14px;
+      color:#edcd84; background:rgba(244,207,131,.08);
+    }
+    .pathway-icon svg { width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .pathway strong { display:block; font-size:12px; }
+    .pathway small { display:block; margin-top:3px; color:#8d9caf; font-size:9px; line-height:1.35; }
+    .pathway > span:last-child { color:#8090a4; font-size:20px; }
+    .you-hero {
+      padding:20px; border-radius:22px; text-align:center;
+      border:1px solid rgba(255,255,255,.1);
+      background:radial-gradient(circle at 50% 0%,rgba(244,207,131,.12),transparent 12rem),rgba(255,255,255,.035);
+    }
+    .you-avatar {
+      width:64px; height:64px; margin:0 auto 11px; display:grid; place-items:center;
+      border-radius:50%; color:#182234; background:linear-gradient(145deg,#fff5d7,#dcb25b);
+      font:500 27px/1 Georgia,"Times New Roman",serif; box-shadow:0 12px 28px rgba(0,0,0,.2);
+    }
+    .you-hero h3 { margin:0; font:500 24px/1.1 Georgia,"Times New Roman",serif; }
+    .you-hero p { margin:6px 0 0; color:#8ea0b5; font-size:10px; }
+    .you-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:11px; }
+    .you-stat { padding:12px 8px; border-radius:15px; text-align:center; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); }
+    .you-stat strong { display:block; font-size:18px; color:#eef4fa; }
+    .you-stat span { display:block; margin-top:3px; color:#8293a7; font-size:8px; text-transform:uppercase; letter-spacing:.07em; }
+    .data-row {
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:13px 0; border-bottom:1px solid rgba(255,255,255,.065);
+    }
+    .data-row:last-child { border-bottom:0; }
+    .data-row strong { display:block; font-size:11px; }
+    .data-row small { display:block; margin-top:3px; color:#7f91a6; font-size:9px; }
+    .data-state { flex:0 0 auto; color:#dabe7d; font-size:9px; }
+    .danger-action {
+      width:100%; min-height:44px; margin-top:12px; border-radius:14px;
+      border:1px solid rgba(223,102,112,.25); color:#e5a0a7; background:rgba(175,69,79,.09); cursor:pointer;
+    }
+    .surface-status { min-height:16px; margin:8px 1px 0; color:#8aa0b5; font-size:9px; }
+    .nav-surface-open { overflow:hidden; }
+    @media (min-width:700px) {
+      .nav-surface {
+        top:30px; bottom:30px; border:1px solid rgba(255,255,255,.13); border-radius:42px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -1068,6 +1189,16 @@
         <div id="sheetBody"></div>
       </section>
     </div>
+
+
+    <section class="nav-surface" id="navSurface" data-open="false" aria-hidden="true">
+      <header class="nav-surface-head">
+        <button id="navSurfaceBack" type="button" aria-label="Back to Home">‹</button>
+        <h2 id="navSurfaceTitle">Journal</h2>
+        <span class="surface-mark" id="navSurfaceMark" aria-hidden="true"></span>
+      </header>
+      <div class="nav-surface-scroll" id="navSurfaceBody"></div>
+    </section>
 
     <nav class="bottom-nav" aria-label="Primary">
       <a href="#home" data-section="home" data-active="true"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7v9h-6v-6h-4v6H4Z"/></svg></span><span>Home</span></a>
@@ -1335,10 +1466,11 @@
         const d=new Date(), y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
         return y+'-'+m+'-'+day;
       };
-      const defaults={mood:null,moodNote:'',goals:[],routines:[],history:{},lastDay:todayKey()};
+      const defaults={mood:null,moodNote:'',goals:[],routines:[],history:{},journal:[],lastDay:todayKey()};
       let state={...defaults};
       try { state={...defaults,...JSON.parse(localStorage.getItem(storageKey)||'{}')}; } catch (_) {}
       if(!state.history||typeof state.history!=='object'||Array.isArray(state.history)) state.history={};
+      if(!Array.isArray(state.journal)) state.journal=[];
       if(state.lastDay!==todayKey()){
         state.mood=null;
         state.moodNote='';
@@ -1373,6 +1505,19 @@
       const body=document.getElementById('sheetBody');
       const close=document.getElementById('sheetClose');
       let previousFocus=null;
+
+      const navSurface=document.getElementById('navSurface');
+      const navSurfaceBody=document.getElementById('navSurfaceBody');
+      const navSurfaceTitle=document.getElementById('navSurfaceTitle');
+      const navSurfaceMark=document.getElementById('navSurfaceMark');
+      const navSurfaceBack=document.getElementById('navSurfaceBack');
+      const bottomNavLinks=Array.from(document.querySelectorAll('.bottom-nav a[data-section]'));
+      const navIcons={
+        journal:'<svg viewBox="0 0 24 24"><path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2Z"/><path d="M8 8h7M8 12h6"/></svg>',
+        discover:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4M11 8v6M8 11h6"/></svg>',
+        you:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M6 20c.7-4 2.7-6 6-6s5.3 2 6 6"/></svg>'
+      };
+
 
       const icons={
         mood:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 10h.01M15 10h.01M8.8 14.2c1.8 2 4.6 2 6.4 0"/></svg>',
@@ -1423,6 +1568,174 @@
           try { if(navigator.vibrate) navigator.vibrate(8); } catch (_) {}
         });
       });
+
+
+      function setNavActive(section){
+        bottomNavLinks.forEach(link=>link.dataset.active=String(link.dataset.section===section));
+      }
+      function closeNavSurface(){
+        if(!navSurface)return;
+        navSurface.dataset.open='false';
+        navSurface.setAttribute('aria-hidden','true');
+        document.body.classList.remove('nav-surface-open');
+        setNavActive('home');
+      }
+      function openNavSurface(kind){
+        if(!navSurface||!navSurfaceBody)return;
+        closeSheet();
+        const renderers={journal:renderJournalSurface,discover:renderDiscoverSurface,you:renderYouSurface};
+        if(!renderers[kind])return;
+        navSurfaceTitle.textContent=kind==='journal'?'Journal':kind==='discover'?'Discover':'You';
+        navSurfaceMark.innerHTML=navIcons[kind]||'';
+        renderers[kind]();
+        navSurface.dataset.open='true';
+        navSurface.setAttribute('aria-hidden','false');
+        document.body.classList.add('nav-surface-open');
+        setNavActive(kind);
+        navSurfaceBody.scrollTop=0;
+      }
+      navSurfaceBack?.addEventListener('click',closeNavSurface);
+
+      function renderJournalSurface(){
+        const entries=Array.isArray(state.journal)?state.journal:[];
+        navSurfaceBody.innerHTML=`
+          <p class="surface-intro">A quiet place to put the day into words. Journal entries in this layer stay on this device unless you explicitly choose to bring one into Shine Me.</p>
+          <section class="surface-card">
+            <h3>Today</h3>
+            <p>Write what happened, what mattered, or what you want to remember.</p>
+            <label for="journalReflection">Reflection</label>
+            <textarea id="journalReflection" maxlength="1500" placeholder="What’s on your mind?"></textarea>
+            <label for="journalGratitude">Something I’m grateful for</label>
+            <textarea id="journalGratitude" maxlength="600" placeholder="Optional…"></textarea>
+            <label for="journalNext">What matters next</label>
+            <textarea id="journalNext" maxlength="600" placeholder="Optional…"></textarea>
+            <button class="surface-action" id="saveJournalEntry" type="button">Save to my journal</button>
+            <p class="surface-status" id="journalSurfaceStatus"></p>
+          </section>
+          <section class="surface-card">
+            <h3>Recent entries</h3>
+            <div id="journalEntryList">
+              ${entries.length?entries.slice(0,10).map((entry,index)=>`
+                <article class="journal-entry">
+                  <time>${new Date(entry.createdAt).toLocaleString(undefined,{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}</time>
+                  <p>${escapeHtml(entry.reflection||'')}</p>
+                  ${entry.gratitude?`<small>Grateful: ${escapeHtml(entry.gratitude)}</small>`:''}
+                  ${entry.next?`<small>Next: ${escapeHtml(entry.next)}</small>`:''}
+                  <button class="surface-action secondary" type="button" data-journal-ask="${index}">Ask Shine about this</button>
+                </article>`).join(''):'<div class="progress-empty">No journal entries yet.</div>'}
+            </div>
+          </section>`;
+        navSurfaceBody.querySelector('#saveJournalEntry')?.addEventListener('click',()=>{
+          const reflection=navSurfaceBody.querySelector('#journalReflection')?.value.trim()||'';
+          const gratitude=navSurfaceBody.querySelector('#journalGratitude')?.value.trim()||'';
+          const next=navSurfaceBody.querySelector('#journalNext')?.value.trim()||'';
+          const status=navSurfaceBody.querySelector('#journalSurfaceStatus');
+          if(!reflection&&!gratitude&&!next){ if(status)status.textContent='Add something first.'; return; }
+          state.journal.unshift({createdAt:new Date().toISOString(),reflection,gratitude,next});
+          state.journal=state.journal.slice(0,30);
+          save();
+          renderJournalSurface();
+          const newStatus=navSurfaceBody.querySelector('#journalSurfaceStatus');
+          if(newStatus)newStatus.textContent='Saved on this device ✓';
+        });
+        navSurfaceBody.querySelectorAll('[data-journal-ask]').forEach(button=>button.addEventListener('click',()=>{
+          const entry=(state.journal||[])[Number(button.dataset.journalAsk)];
+          if(!entry)return;
+          const text=[entry.reflection,entry.gratitude?('Grateful for: '+entry.gratitude):'',entry.next?('What matters next: '+entry.next):''].filter(Boolean).join('\n');
+          closeNavSurface();
+          setTimeout(()=>{
+            document.getElementById('journal')?.scrollIntoView({behavior:'smooth'});
+            const q=document.getElementById('question');
+            if(q){ q.value='Help me reflect on this journal entry:\n\n'+text; q.focus(); }
+          },240);
+        }));
+      }
+
+      function renderDiscoverSurface(){
+        navSurfaceBody.innerHTML=`
+          <p class="surface-intro">Start from what you need, not from a menu of technology.</p>
+          <div class="pathway-grid">
+            <button class="pathway" type="button" data-pathway="reflect"><span class="pathway-icon"><svg viewBox="0 0 24 24"><path d="M7 18a5 5 0 0 1-.7-9.95A6 6 0 0 1 17.8 9.7 4.2 4.2 0 0 1 17 18Z"/></svg></span><span><strong>Clear my head</strong><small>Bring a thought to Shine and work through it.</small></span><span>›</span></button>
+            <button class="pathway" type="button" data-pathway="health"><span class="pathway-icon"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.7A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg></span><span><strong>Understand my health</strong><small>Open the health view and connect the wider context.</small></span><span>›</span></button>
+            <button class="pathway" type="button" data-pathway="goals"><span class="pathway-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></span><span><strong>Move something forward</strong><small>Review goals and choose the next useful step.</small></span><span>›</span></button>
+            <button class="pathway" type="button" data-pathway="progress"><span class="pathway-icon"><svg viewBox="0 0 24 24"><path d="M5 19V11M10 19V5M15 19v-7M20 19V8"/></svg></span><span><strong>See what I’ve actually done</strong><small>Open your factual seven-day progress view.</small></span><span>›</span></button>
+          </div>`;
+        navSurfaceBody.querySelectorAll('[data-pathway]').forEach(button=>button.addEventListener('click',()=>{
+          const action=button.dataset.pathway;
+          if(action==='health'||action==='goals'||action==='progress'){
+            closeNavSurface();
+            setTimeout(()=>openSheet(action,document.querySelector('[data-panel="'+action+'"]')),220);
+            return;
+          }
+          closeNavSurface();
+          setTimeout(()=>{
+            document.getElementById('journal')?.scrollIntoView({behavior:'smooth'});
+            const q=document.getElementById('question');
+            if(q){ q.value='Help me clear my head about something that is on my mind.'; q.focus(); }
+          },220);
+        }));
+      }
+
+      function renderYouSurface(){
+        const goals=Array.isArray(state.goals)?state.goals:[];
+        const routines=Array.isArray(state.routines)?state.routines:[];
+        const journal=Array.isArray(state.journal)?state.journal:[];
+        const account=(document.getElementById('accountLabel')?.textContent||'').trim();
+        const connectionText=(document.getElementById('connectionStatus')?.textContent||'').trim();
+        navSurfaceBody.innerHTML=`
+          <div class="you-hero">
+            <div class="you-avatar">D</div>
+            <h3>Doug</h3>
+            <p>${escapeHtml(account||'Your Shine space')}</p>
+          </div>
+          <div class="you-stats">
+            <div class="you-stat"><strong>${goals.length}</strong><span>Goals</span></div>
+            <div class="you-stat"><strong>${routines.length}</strong><span>Routines</span></div>
+            <div class="you-stat"><strong>${journal.length}</strong><span>Journal</span></div>
+          </div>
+          <section class="surface-card">
+            <h3>Your Shine Me data</h3>
+            <div class="data-row"><span><strong>Approved memory</strong><small>Grounded through Project L when you ask Shine Me.</small></span><span class="data-state">${escapeHtml(connectionText||'Checking')}</span></div>
+            <div class="data-row"><span><strong>Dashboard activity</strong><small>Mood, goals, routines and progress history.</small></span><span class="data-state">On this device</span></div>
+            <div class="data-row"><span><strong>Journal</strong><small>Your local reflections are not sent anywhere automatically.</small></span><span class="data-state">On this device</span></div>
+          </section>
+          <section class="surface-card">
+            <h3>Local data controls</h3>
+            <p>This clears only the Shine Me dashboard and journal data stored in this browser. It does not delete Project L memory or your account.</p>
+            <button class="danger-action" id="clearLocalShineMe" type="button">Clear local Shine Me activity</button>
+            <p class="surface-status" id="clearLocalStatus"></p>
+          </section>`;
+        navSurfaceBody.querySelector('#clearLocalShineMe')?.addEventListener('click',()=>{
+          if(!window.confirm('Clear local Shine Me mood, goals, routines, progress and journal data from this browser?'))return;
+          state.mood=null; state.moodNote=''; state.goals=[]; state.routines=[]; state.history={}; state.journal=[]; state.lastDay=todayKey();
+          try { localStorage.setItem(storageKey,JSON.stringify(state)); } catch (_) {}
+          syncDashboard();
+          renderYouSurface();
+          const status=navSurfaceBody.querySelector('#clearLocalStatus');
+          if(status)status.textContent='Local Shine Me activity cleared.';
+        });
+      }
+
+      bottomNavLinks.forEach(link=>link.addEventListener('click',event=>{
+        const section=link.dataset.section;
+        if(link.classList.contains('shine-nav')){
+          event.preventDefault();
+          closeNavSurface();
+          document.getElementById('journal')?.scrollIntoView({behavior:'smooth'});
+          setTimeout(()=>document.getElementById('question')?.focus(),260);
+          return;
+        }
+        if(section==='home'){
+          event.preventDefault();
+          closeNavSurface();
+          document.getElementById('home')?.scrollIntoView({behavior:'smooth'});
+          return;
+        }
+        if(section==='journal'||section==='discover'||section==='you'){
+          event.preventDefault();
+          openNavSurface(section);
+        }
+      }));
 
       function renderMood(){
         title.textContent='Mood Check-in';
