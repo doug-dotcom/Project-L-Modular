@@ -2000,9 +2000,21 @@
           handoffToShine('You','What do you remember about me? Please separate approved memory from inference and tell me where the important details come from.');
         });
         navSurfaceBody.querySelector('#clearLocalShineMe')?.addEventListener('click',()=>{
+          if(syncInFlight){
+            const status=navSurfaceBody.querySelector('#clearLocalStatus');
+            if(status)status.textContent='Account sync is in progress. Try again after it finishes.';
+            return;
+          }
           if(!window.confirm('Clear local Shine Me mood, goals, routines, progress and journal data from this browser?'))return;
-          state.mood=null; state.moodNote=''; state.goals=[]; state.routines=[]; state.history={}; state.journal=[]; state.lastDay=todayKey();
-          try { localStorage.setItem(storageKey,JSON.stringify(state)); } catch (_) {}
+          if(syncTimer)clearTimeout(syncTimer);
+          syncTimer=null;
+          state=normaliseState({});
+          syncMeta.dirty=false;
+          syncMeta.conflict=false;
+          syncMeta.status=accountSyncReady?'synced':'local';
+          try { localStorage.removeItem(conflictKey); } catch (_) {}
+          persistState();
+          persistSync();
           syncDashboard();
           renderYouSurface();
           const status=navSurfaceBody.querySelector('#clearLocalStatus');
@@ -2304,7 +2316,12 @@
 
       }
       syncDashboard();
-      try { localStorage.setItem(storageKey,JSON.stringify(state)); } catch (_) {}
+      persistState();
+      persistSync();
+      refreshSyncLabels();
+      if((document.getElementById('connectionStatus')?.textContent||'').includes('Owner binding ready')){
+        setTimeout(initialiseAccountSync,0);
+      }
     })();
   </script>
 
