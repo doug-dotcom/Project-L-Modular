@@ -63,6 +63,7 @@ _RPC_BULKHEAD_WAIT_SECONDS = 0.25
 _MEMORY_RPC_TIMEOUT_SECONDS = 6.0
 _MEMORY_RPC_CONNECT_SECONDS = 3.0
 _MEMORY_RPC_POOL_SECONDS = 1.0
+_QUERY_CONTRACT_VERSION = "2"
 
 _rpc_circuit_lock = threading.Lock()
 _rpc_circuit_open_until = 0.0
@@ -459,6 +460,11 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
             status_code=503,
             detail="Project L owner-scoped retrieval failed its query binding check.",
         )
+    if str(data.get("queryContractVersion") or "") != _QUERY_CONTRACT_VERSION:
+        raise HTTPException(
+            status_code=503,
+            detail="Project L owner-scoped retrieval failed its query contract check.",
+        )
     if data.get("status") == "no_scope":
         raise HTTPException(
             status_code=503,
@@ -466,7 +472,11 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
         )
     _close_rpc_circuit()
     data = dict(data)
-    data["_queryBinding"] = {"mode": "server-verified", "queryKey": query_key}
+    data["_queryBinding"] = {
+        "mode": "server-verified",
+        "queryKey": query_key,
+        "queryContractVersion": _QUERY_CONTRACT_VERSION,
+    }
     return data
 
 
@@ -606,5 +616,8 @@ def retrieve_memory(
             "legacy_rpc_fallback_used": False,
             "query_binding": str(query_binding.get("mode") or "unknown"),
             "query_key": str(query_binding.get("queryKey") or ""),
+            "query_contract_version": str(
+                query_binding.get("queryContractVersion") or ""
+            ),
         },
     )
