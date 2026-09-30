@@ -69,7 +69,7 @@ _rpc_circuit_lock = threading.Lock()
 _rpc_circuit_open_until = 0.0
 _rpc_failure_streak = 0
 _rpc_bulkhead = threading.BoundedSemaphore(_MAX_CONCURRENT_MEMORY_RPCS)
-# Only one caller may test database recovery after an opened circuit cools down.
+# Exactly one caller may test database recovery after an opened circuit cools down.
 _rpc_half_open_probe = threading.Lock()
 
 
