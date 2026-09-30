@@ -486,7 +486,85 @@
       .card-icon { width: 34px; height: 34px; }
       .discover-strip { grid-template-columns: 1fr; }
     }
-    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+
+    .sr-only {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0,0,0,0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+    .profile-orb {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 38px;
+      border-radius: 50%;
+      color: #172238;
+      background:
+        radial-gradient(circle at 36% 28%, rgba(255,255,255,.9), transparent 21%),
+        linear-gradient(145deg, #f8e0a8, #cda55d);
+      border: 1px solid rgba(255,241,202,.7);
+      box-shadow: 0 0 0 3px rgba(244,207,131,.08), 0 8px 22px rgba(0,0,0,.28);
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 700;
+    }
+    .profile-orb span { transform: translateY(-1px); }
+    .hero-sun {
+      position: absolute;
+      z-index: 1;
+      width: 78px;
+      height: 78px;
+      right: 26px;
+      top: 31px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fffce9 0 12%, #ffe4a4 20%, rgba(255,213,132,.36) 42%, transparent 70%);
+      filter: blur(.2px);
+      box-shadow: 0 0 45px rgba(255,223,151,.46);
+    }
+    .hero-ridge {
+      position: absolute;
+      z-index: 1;
+      left: -8%;
+      right: -8%;
+      bottom: -2px;
+      pointer-events: none;
+      transform-origin: bottom;
+    }
+    .hero-ridge-one {
+      height: 54%;
+      opacity: .92;
+      background: linear-gradient(180deg, #526d79, #243c4b);
+      clip-path: polygon(0 100%,0 72%,10% 58%,20% 68%,31% 41%,42% 61%,53% 32%,66% 64%,76% 46%,87% 66%,100% 48%,100% 100%);
+    }
+    .hero-ridge-two {
+      height: 43%;
+      opacity: .95;
+      background: linear-gradient(180deg, #364f5e, #192f3b);
+      clip-path: polygon(0 100%,0 78%,13% 60%,24% 76%,39% 49%,49% 72%,63% 44%,74% 70%,86% 52%,100% 72%,100% 100%);
+    }
+    .hero-copy { z-index: 4; }
+    .hero-arrow { z-index: 5; }
+    .mood-status {
+      margin: 9px 0 0 !important;
+      color: #8a94a1 !important;
+      font-size: 9px !important;
+      text-align: center;
+      letter-spacing: .02em;
+    }
+    main.app-shell {
+      padding-top: max(18px, env(safe-area-inset-top));
+      padding-bottom: max(112px, calc(94px + env(safe-area-inset-bottom)));
+    }
+    .bottom-nav {
+      bottom: max(12px, env(safe-area-inset-bottom));
+    }
+\n    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
   </style>
 </head>
 <body>
@@ -831,18 +909,26 @@
 
   <script>
     (() => {
+      const greeting = document.getElementById('welcomeTitle');
+      if (greeting) {
+        const hour = new Date().getHours();
+        const daypart = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+        greeting.textContent = 'Good ' + daypart + ', Doug';
+      }
       const moods = Array.from(document.querySelectorAll('.mood'));
+      const moodStatus = document.getElementById('moodStatus');
+      const moodWords = ['A rough one', 'A bit low', 'Steady', 'Feeling good', 'Feeling great'];
       moods.forEach((button, index) => {
         button.addEventListener('click', () => {
           moods.forEach(item => item.style.boxShadow = '');
           button.style.boxShadow = '0 0 0 3px rgba(244,207,131,.55), 0 6px 18px rgba(0,0,0,.18)';
-          try { localStorage.setItem('shine-me-mood', String(index)); } catch (_) {}
+          if (moodStatus) moodStatus.textContent = moodWords[index] + ' · saved on this device';\n          try { localStorage.setItem('shine-me-mood', String(index)); } catch (_) {}
         });
       });
       try {
         const saved = Number(localStorage.getItem('shine-me-mood'));
         if (Number.isInteger(saved) && moods[saved]) {
-          moods[saved].style.boxShadow = '0 0 0 3px rgba(244,207,131,.55), 0 6px 18px rgba(0,0,0,.18)';
+          moods[saved].style.boxShadow = '0 0 0 3px rgba(244,207,131,.55), 0 6px 18px rgba(0,0,0,.18)';\n          if (moodStatus) moodStatus.textContent = moodWords[saved] + ' · saved on this device';
         }
       } catch (_) {}
     })();
