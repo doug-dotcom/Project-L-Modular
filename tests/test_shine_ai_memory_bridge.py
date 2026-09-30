@@ -106,6 +106,7 @@ def test_retrieval_is_service_authenticated_owner_scoped_and_bounded(monkeypatch
     assert body["receipt"]["owner_bound"] is True
     assert body["receipt"]["permission_scoped"] is True
     assert body["receipt"]["legacy_global_search_used"] is False
+    assert body["receipt"]["legacy_rpc_fallback_used"] is False
     assert body["receipt"]["unavailable_scopes"] == ["episodic"]
     assert body["receipt"]["read_only"] is True
     assert body["receipt"]["bounded"] is True
@@ -413,7 +414,7 @@ def test_statement_timeout_retries_once_without_opening_schema_circuit(monkeypat
 
 
 
-def test_owner_context_falls_back_to_v1_only_when_v2_function_is_missing(monkeypatch):
+def test_owner_context_fails_closed_when_v2_function_is_missing(monkeypatch):
     configure(monkeypatch)
     calls = []
 
@@ -425,23 +426,20 @@ def test_owner_context_falls_back_to_v1_only_when_v2_function_is_missing(monkeyp
         def execute(self):
             raise FunctionMissing()
 
-    class LegacyRpc:
-        def execute(self):
-            return type("Result", (), {"data": owner_context()})()
-
     class Database:
         def rpc(self, name, payload):
             calls.append(name)
-            return MissingRpc() if name.endswith("_v2") else LegacyRpc()
+            return MissingRpc()
 
     monkeypatch.setattr(bridge, "_database", lambda: Database())
-    result = bridge._owner_context(OWNER, "Dive history", 4)
 
-    assert calls == [
-        "project_l_memory_context_service_v2",
-        "project_l_memory_context_service_v1",
-    ]
-    assert result["_queryBinding"]["mode"] == "legacy-unverified"
+    try:
+        bridge._owner_context(OWNER, "Dive history", 4)
+        assert False, "expected HTTPException"
+    except Exception as exc:
+        assert getattr(exc, "status_code", None) == 503
+
+    assert calls == ["project_l_memory_context_service_v2"]
 
 
 def test_owner_context_rejects_mismatched_server_query_key(monkeypatch):
