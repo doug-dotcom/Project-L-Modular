@@ -9,27 +9,87 @@ from __future__ import annotations
 
 import contextlib
 import io
+import time
 
 from agents.rhee import rhee_v3 as rhee
 
 
 QUERY = "Recall diving Bali"
+TRANSIENT_RETRIEVAL_CODES = frozenset({
+    "PGRST002",
+    "PGRST003",
+    "57014",
+    "HTTP_TIMEOUT",
+})
+MAX_TRANSIENT_REPLAYS = 1
+MAX_RETRY_DELAY_SECONDS = 10.0
 
 
 def _fail(reason: str) -> None:
     raise SystemExit(f"Project L Rhee retrieval smoke: FAIL {reason}")
 
 
-def main() -> None:
+def _capture_packet() -> dict:
     sink = io.StringIO()
     try:
         with contextlib.redirect_stdout(sink):
             packet = rhee.build_context_packet(QUERY)
     except Exception as exc:
         _fail(type(exc).__name__.lower()[:80] or "unexpected-error")
-
     if not isinstance(packet, dict):
         _fail("packet-invalid")
+    return packet
+
+
+def _plan(packet: dict) -> dict:
+    value = packet.get("recall_plan")
+    return value if isinstance(value, dict) else {}
+
+
+def _transient_retry_delay(plan: dict) -> float | None:
+    code = str(plan.get("retrieval_error_code") or "").strip().upper()
+    if code not in TRANSIENT_RETRIEVAL_CODES:
+        return None
+
+    delays = []
+    for candidate in (
+        plan.get("retrieval_retry_after"),
+        rhee.recall_rpc_retry_after(),
+    ):
+        try:
+            value = float(candidate)
+        except (TypeError, ValueError):
+            continue
+        if value >= 0:
+            delays.append(value)
+
+    delay = max(delays) if delays else 1.0
+    return min(max(delay, 1.0), MAX_RETRY_DELAY_SECONDS) + 0.25
+
+
+def _packet_with_bounded_transient_replay() -> tuple[dict, int]:
+    packet = _capture_packet()
+    plan = _plan(packet)
+    if plan.get("retrieval_status") == "checked":
+        return packet, 0
+
+    replays = 0
+    while replays < MAX_TRANSIENT_REPLAYS:
+        delay = _transient_retry_delay(plan)
+        if delay is None:
+            break
+        time.sleep(delay)
+        replays += 1
+        packet = _capture_packet()
+        plan = _plan(packet)
+        if plan.get("retrieval_status") == "checked":
+            break
+
+    return packet, replays
+
+
+def main() -> None:
+    packet, transient_replays = _packet_with_bounded_transient_replay()
 
     plan = (
         packet.get("recall_plan")
@@ -152,7 +212,8 @@ def main() -> None:
         f"binding={plan.get('retrieval_query_binding')} "
         f"contract={plan.get('retrieval_query_contract_version')} "
         f"confidence={confidence.get('state')} "
-        f"latency_ms={plan.get('latency_ms')}"
+        f"latency_ms={plan.get('latency_ms')} "
+        f"transient_replays={transient_replays}"
     )
 
 
