@@ -686,6 +686,16 @@ class MemoryBridgeHealthResponse(BaseModel):
     metrics: dict[str, object]
 
 
+class MemoryBridgeObservabilityResponse(BaseModel):
+    source: Literal["project-l"]
+    component: Literal["memory-bridge-observability"]
+    version: str
+    database_touched: Literal[False]
+    memory_content_included: Literal[False]
+    process_metrics: dict[str, object]
+    durable: dict[str, object]
+
+
 def _configured_owner(service_token: str) -> str:
     expected_token = os.getenv("SHINE_AI_MEMORY_TOKEN", "").strip()
     owner_id = (
@@ -1041,6 +1051,40 @@ def memory_bridge_health(
         read_only=True,
         fail_closed=True,
         metrics=_rpc_metrics_snapshot(),
+    )
+
+
+@router.get(
+    "/memory/observability",
+    response_model=MemoryBridgeObservabilityResponse,
+)
+def memory_bridge_observability(
+    x_shine_service_token: str = Header(default=""),
+) -> MemoryBridgeObservabilityResponse:
+    # Deliberately separate from /memory/health. This endpoint may read
+    # aggregate Redis observability history, but it never touches Supabase or
+    # returns owner/query/memory content.
+    _configured_owner(x_shine_service_token)
+    try:
+        from orchestration.lieutenants.observability_lieutenant import (
+            OBSERVABILITY_LIEUTENANT,
+        )
+
+        durable = OBSERVABILITY_LIEUTENANT.memory_bridge_slo_snapshot()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Project L memory observability is temporarily unavailable.",
+        ) from exc
+
+    return MemoryBridgeObservabilityResponse(
+        source="project-l",
+        component="memory-bridge-observability",
+        version="1.0",
+        database_touched=False,
+        memory_content_included=False,
+        process_metrics=_rpc_metrics_snapshot(),
+        durable=durable,
     )
 
 
