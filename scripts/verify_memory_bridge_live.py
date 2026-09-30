@@ -102,7 +102,111 @@ def _retrieve(client: TestClient, token: str, owner_id: str) -> dict:
     return body
 
 
-def main() -> None:
+SLO_MIN_SAMPLES = 20
+SLO_AVAILABILITY_TARGET = 0.99
+SLO_EWMA_LATENCY_TARGET_MS = 3000.0
+SLO_HISTORY_LIMIT = 100
+
+
+def _failure_stage(exc: BaseException) -> str:
+    if isinstance(exc, SystemExit):
+        message = str(exc)
+        prefix = "Project L memory bridge live smoke: FAIL "
+        if message.startswith(prefix):
+            candidate = message[len(prefix):].strip().lower()
+            if candidate and all(
+                ch.isalnum() or ch in {"-", "_"} for ch in candidate
+            ):
+                return candidate[:80]
+    return type(exc).__name__.lower()[:80] or "unknown"
+
+
+def _record_history(payload: dict) -> dict:
+    try:
+        return OBSERVABILITY_LIEUTENANT.record_event(
+            "memory_bridge_deploy_slo",
+            payload,
+        )
+    except Exception:
+        return {
+            "recorded": False,
+            "event_type": "memory_bridge_deploy_slo",
+            "storage": "none",
+        }
+
+
+def _durable_slo_summary() -> dict:
+    try:
+        events = OBSERVABILITY_LIEUTENANT.load_events()
+    except Exception:
+        events = []
+
+    relevant = [
+        item
+        for item in events
+        if isinstance(item, dict)
+        and item.get("event_type") == "memory_bridge_deploy_slo"
+        and isinstance(item.get("payload"), dict)
+    ][-SLO_HISTORY_LIMIT:]
+
+    success_count = 0
+    failure_count = 0
+    ewma_latency_ms = 0.0
+    latency_samples = 0
+
+    for item in relevant:
+        payload = item["payload"]
+        outcome = str(payload.get("outcome") or "success").strip().lower()
+        if outcome == "success":
+            success_count += 1
+            try:
+                latency_ms = float(payload.get("latency_ms"))
+            except (TypeError, ValueError):
+                latency_ms = -1.0
+            if latency_ms >= 0:
+                ewma_latency_ms = (
+                    latency_ms
+                    if latency_samples == 0
+                    else ewma_latency_ms * 0.8 + latency_ms * 0.2
+                )
+                latency_samples += 1
+        else:
+            failure_count += 1
+
+    samples = success_count + failure_count
+    availability = success_count / samples if samples else None
+
+    if samples < SLO_MIN_SAMPLES:
+        status = "warming"
+    elif (
+        availability is not None
+        and availability >= SLO_AVAILABILITY_TARGET
+        and latency_samples > 0
+        and ewma_latency_ms <= SLO_EWMA_LATENCY_TARGET_MS
+    ):
+        status = "met"
+    else:
+        status = "missed"
+
+    return {
+        "status": status,
+        "samples": samples,
+        "successes": success_count,
+        "failures": failure_count,
+        "availability": (
+            round(availability, 6) if availability is not None else None
+        ),
+        "ewma_latency_ms": (
+            round(ewma_latency_ms, 1) if latency_samples else None
+        ),
+        "history_limit": SLO_HISTORY_LIMIT,
+        "min_samples": SLO_MIN_SAMPLES,
+        "availability_target": SLO_AVAILABILITY_TARGET,
+        "ewma_latency_target_ms": SLO_EWMA_LATENCY_TARGET_MS,
+    }
+
+
+def _run_success_path() -> tuple[dict, dict, dict]:
     token = _required_env("SHINE_AI_MEMORY_TOKEN")
     owner_id = _required_env("L_MEMORY_OWNER_ID", "PROJECT_L_OWNER_ID")
 
@@ -136,9 +240,42 @@ def main() -> None:
             "Project L memory bridge live smoke: FAIL telemetry-unverified"
         )
 
-    history = OBSERVABILITY_LIEUTENANT.record_event(
-        "memory_bridge_deploy_slo",
+    return after, after_metrics, receipt
+
+
+def main() -> None:
+    try:
+        after, after_metrics, receipt = _run_success_path()
+    except BaseException as exc:
+        if isinstance(exc, (KeyboardInterrupt, GeneratorExit)):
+            raise
+
+        history = _record_history(
+            {
+                "outcome": "failure",
+                "failure_stage": _failure_stage(exc),
+                "records": 0,
+                "success_rate": 0.0,
+            }
+        )
+        durable = _durable_slo_summary()
+        print(
+            "Project L memory bridge live smoke history: RECORDED "
+            f"outcome=failure "
+            f"history={history.get('storage')} "
+            f"durable_slo={durable.get('status')} "
+            f"durable_samples={durable.get('samples')} "
+            f"durable_availability={durable.get('availability')}"
+        )
+        if isinstance(exc, SystemExit):
+            raise
+        raise SystemExit(
+            "Project L memory bridge live smoke: FAIL unexpected-error"
+        ) from exc
+
+    history = _record_history(
         {
+            "outcome": "success",
             "circuit_state": after.get("circuit_state"),
             "records": receipt.get("records_returned"),
             "contract_version": receipt.get("query_contract_version"),
@@ -146,17 +283,9 @@ def main() -> None:
             "success_rate": after_metrics.get("success_rate"),
             "latency_ms": after_metrics.get("last_latency_ms"),
             "slo_status": after_metrics.get("slo_status"),
-        },
+        }
     )
-
-    history_snapshot = OBSERVABILITY_LIEUTENANT.build_runtime_snapshot()
-    history_events = int(
-        (
-            history_snapshot.get("event_type_counts")
-            if isinstance(history_snapshot.get("event_type_counts"), dict)
-            else {}
-        ).get("memory_bridge_deploy_slo", 0)
-    )
+    durable = _durable_slo_summary()
 
     print(
         "Project L memory bridge live smoke: PASS "
@@ -170,7 +299,12 @@ def main() -> None:
         f"latency_ms={after_metrics.get('last_latency_ms')} "
         f"slo={after_metrics.get('slo_status')} "
         f"history={history.get('storage')} "
-        f"history_events={history_events}"
+        f"durable_slo={durable.get('status')} "
+        f"durable_samples={durable.get('samples')} "
+        f"durable_successes={durable.get('successes')} "
+        f"durable_failures={durable.get('failures')} "
+        f"durable_availability={durable.get('availability')} "
+        f"durable_ewma_latency_ms={durable.get('ewma_latency_ms')}"
     )
 
 
