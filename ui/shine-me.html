@@ -565,6 +565,154 @@
       bottom: max(12px, env(safe-area-inset-bottom));
     }
 \n    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+  
+    /* Premium fidelity layer v2 */
+    .app-shell::before {
+      content:"";
+      position:absolute;
+      z-index:-1;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(255,239,197,.08), transparent 26rem),
+        linear-gradient(115deg, transparent 0 43%, rgba(255,255,255,.018) 44% 45%, transparent 46% 100%);
+    }
+    .brand { text-decoration:none; }
+    .brand-word { text-shadow:0 8px 30px rgba(0,0,0,.3); }
+    .greeting { position:relative; }
+    .greeting::after {
+      content:"";
+      position:absolute;
+      left:50%;
+      bottom:2px;
+      width:42px;
+      height:1px;
+      transform:translateX(-50%);
+      background:linear-gradient(90deg,transparent,var(--gold),transparent);
+      opacity:.75;
+    }
+    .hero-card { transform:translateZ(0); }
+    .hero-art {
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      pointer-events:none;
+      opacity:.98;
+    }
+    .hero-copy { padding-top:32px; }
+    .hero-copy .script {
+      filter:drop-shadow(0 4px 14px rgba(0,0,0,.2));
+    }
+    .dash-card::after {
+      content:"";
+      position:absolute;
+      width:90px;
+      height:90px;
+      right:-35px;
+      top:-35px;
+      border-radius:50%;
+      background:radial-gradient(circle,rgba(255,255,255,.8),rgba(255,255,255,0) 68%);
+      opacity:.42;
+      pointer-events:none;
+    }
+    .card-icon {
+      position:relative;
+      overflow:hidden;
+    }
+    .card-icon svg, .nav-icon svg, .discover-tile svg {
+      width:20px;
+      height:20px;
+      stroke:currentColor;
+      stroke-width:1.8;
+      fill:none;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+    .progress-title .card-icon svg { width:19px; height:19px; }
+    .mood {
+      color:#5e6977;
+      font-weight:700;
+    }
+    .mood[data-selected="true"] {
+      transform:translateY(-2px) scale(1.08);
+      box-shadow:0 0 0 3px rgba(244,207,131,.55),0 6px 18px rgba(0,0,0,.18);
+      background:#f7cd63;
+      color:#34260a;
+    }
+    .metric-line strong { letter-spacing:-.01em; }
+    .status-pill {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      white-space:nowrap;
+    }
+    .status-pill::before {
+      content:"";
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:#51aa90;
+      box-shadow:0 0 0 4px rgba(81,170,144,.11);
+    }
+    .status-pill[data-state="checking"]::before { background:#d3a646; box-shadow:0 0 0 4px rgba(211,166,70,.11); }
+    .status-pill[data-state="offline"]::before { background:#c76b74; box-shadow:0 0 0 4px rgba(199,107,116,.11); }
+    .memory-card::before {
+      content:"";
+      position:absolute;
+      width:190px;
+      height:190px;
+      right:-75px;
+      top:-90px;
+      border-radius:50%;
+      background:radial-gradient(circle,rgba(244,207,131,.16),transparent 70%);
+      pointer-events:none;
+    }
+    .memory-card form, .memory-card > * { position:relative; z-index:1; }
+    .secure-row {
+      display:flex;
+      align-items:center;
+      gap:7px;
+      margin-top:10px;
+      color:#8292a6;
+      font-size:9px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .secure-row svg { width:12px; height:12px; stroke:var(--gold); fill:none; stroke-width:1.7; }
+    .discover-tile {
+      transition:transform .2s ease,border-color .2s ease,background .2s ease;
+    }
+    .discover-tile:hover {
+      transform:translateY(-2px);
+      border-color:rgba(244,207,131,.32);
+      background:linear-gradient(155deg,rgba(255,255,255,.13),rgba(255,255,255,.045));
+    }
+    .discover-tile svg { color:var(--gold); width:22px; height:22px; }
+    .bottom-nav a { transition:color .2s ease, transform .2s ease; }
+    .bottom-nav a[data-active="true"] { color:#fff; }
+    .bottom-nav a[data-active="true"]:not(.shine-nav) { transform:translateY(-1px); }
+    .nav-icon {
+      width:22px;
+      height:22px;
+      display:grid;
+      place-items:center;
+    }
+    .shine-nav { color:#fff3cd !important; }
+    .shine-button {
+      position:relative;
+      overflow:hidden;
+    }
+    .shine-button::after {
+      content:"";
+      position:absolute;
+      inset:-45%;
+      background:conic-gradient(from 90deg,transparent,rgba(255,255,255,.22),transparent 30%);
+      animation:shineSweep 7s linear infinite;
+    }
+    @keyframes shineSweep { to { transform:rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .shine-button::after { animation:none; } }
+
   </style>
 </head>
 <body>
@@ -588,6 +736,33 @@
     </section>
 
     <section class="hero-card" aria-label="Daily inspiration">
+      <svg class="hero-art" viewBox="0 0 520 196" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="skyGlow" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#7897b8" stop-opacity=".18"/>
+            <stop offset=".56" stop-color="#f8deb0" stop-opacity=".26"/>
+            <stop offset="1" stop-color="#182b3b" stop-opacity=".12"/>
+          </linearGradient>
+          <linearGradient id="ridgeA" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#344f61"/>
+            <stop offset="1" stop-color="#132532"/>
+          </linearGradient>
+          <linearGradient id="ridgeB" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ced8d2" stop-opacity=".8"/>
+            <stop offset="1" stop-color="#7f908c" stop-opacity=".72"/>
+          </linearGradient>
+          <radialGradient id="sunGlow">
+            <stop offset="0" stop-color="#fff8df" stop-opacity=".95"/>
+            <stop offset=".24" stop-color="#ffdd9a" stop-opacity=".78"/>
+            <stop offset="1" stop-color="#ffdd9a" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <rect width="520" height="196" fill="url(#skyGlow)"/>
+        <circle cx="408" cy="47" r="58" fill="url(#sunGlow)"/>
+        <path d="M-20 172 L78 82 L120 125 L183 48 L238 119 L292 78 L345 136 L385 109 L448 154 L540 106 L540 210 L-20 210 Z" fill="url(#ridgeA)" opacity=".72"/>
+        <path d="M-20 182 C80 140 118 151 189 137 C265 122 332 130 390 117 C443 106 487 108 540 88 L540 210 L-20 210 Z" fill="url(#ridgeB)" opacity=".47"/>
+        <path d="M-10 182 C100 165 170 170 248 158 C337 145 410 150 535 128" stroke="#f6f2df" stroke-opacity=".24" stroke-width="2" fill="none"/>
+      </svg>
       <div class="hero-copy">
         <span class="script">Small steps,<br>brighter tomorrows.</span>
         <span class="hero-sub">Keep shining</span>
@@ -598,7 +773,7 @@
     <section class="dashboard-grid" aria-label="Your day">
       <article class="dash-card mood-card">
         <div class="card-head">
-          <span class="card-icon" aria-hidden="true">☺</span>
+          <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 10h.01M15 10h.01M8.8 14.2c1.8 2 4.6 2 6.4 0"/></svg></span>
           <div><h2>Mood Check-in</h2><p>How are you feeling today?</p></div>
         </div>
         <div class="moods" aria-label="Mood choices">
@@ -612,7 +787,7 @@
 
       <article class="dash-card health-card" id="you">
         <div class="card-head">
-          <span class="card-icon" aria-hidden="true">♥</span>
+          <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.7A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg></span>
           <div><h2>Health</h2><p>Move · Fuel · Rest<br>Feel your best.</p></div>
         </div>
         <div class="mini-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
@@ -621,7 +796,7 @@
 
       <article class="dash-card goals-card">
         <div class="card-head">
-          <span class="card-icon" aria-hidden="true">◎</span>
+          <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v2M20 12h-2M12 20v-2M4 12h2"/></svg></span>
           <div><h2>Goals</h2><p>Bigger tomorrows<br>start here.</p></div>
         </div>
         <div class="metric-line"><span>Your direction</span><strong>Growing</strong></div>
@@ -630,7 +805,7 @@
 
       <article class="dash-card routine-card">
         <div class="card-head">
-          <span class="card-icon" aria-hidden="true">☀</span>
+          <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
           <div><h2>Routines</h2><p>Small habits.<br>Big change.</p></div>
         </div>
         <div class="metric-line"><span>Today</span><strong>Keep going</strong></div>
@@ -641,10 +816,10 @@
     <section class="progress-card" aria-labelledby="progressHeading">
       <div class="progress-top">
         <div class="progress-title">
-          <span class="card-icon" aria-hidden="true">▥</span>
+          <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19V11M10 19V5M15 19v-7M20 19V8"/></svg></span>
           <div><h2 id="progressHeading">Your Progress</h2><p>You’re growing. Keep shining.</p></div>
         </div>
-        <span class="status-pill">Shine connected</span>
+        <span class="status-pill" id="connectionPill" data-state="checking">Checking Shine</span>
       </div>
       <svg class="chart" viewBox="0 0 420 82" role="img" aria-label="Decorative progress trend">
         <defs><linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#86a9dd" stop-opacity=".45"/><stop offset="100%" stop-color="#86a9dd" stop-opacity="0"/></linearGradient></defs>
@@ -660,6 +835,10 @@
         <span class="eyebrow">Your Shine companion</span>
         <h2>Ask Shine Me</h2>
         <p class="muted">Ask about something you’ve told Shine. Answers remain grounded in approved memory and show their source.</p>
+        <div class="secure-row" aria-label="Trusted personal context">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          <span>Private · sourced · reviewable</span>
+        </div>
         <form id="askForm">
           <label for="question">What’s on your mind?</label>
           <textarea id="question" required maxlength="2000" placeholder="What do you remember about…?"></textarea>
@@ -695,19 +874,19 @@
     </section>
 
     <section class="discover-strip" id="discover" aria-label="A brighter you">
-      <div class="discover-tile"><span>☁</span><div><strong>A calmer mind</strong><br><small>Reflection & memory</small></div></div>
-      <div class="discover-tile"><span>♡</span><div><strong>A healthier you</strong><br><small>Wellness in context</small></div></div>
-      <div class="discover-tile"><span>↗</span><div><strong>A brighter tomorrow</strong><br><small>Goals & growth</small></div></div>
+      <div class="discover-tile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a5 5 0 0 1-.7-9.95A6 6 0 0 1 17.8 9.7 4.2 4.2 0 0 1 17 18Z"/></svg><div><strong>A calmer mind</strong><br><small>Reflection & memory</small></div></div>
+      <div class="discover-tile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.7A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg><div><strong>A healthier you</strong><br><small>Wellness in context</small></div></div>
+      <div class="discover-tile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18 18 5M10 5h8v8"/></svg><div><strong>A brighter tomorrow</strong><br><small>Goals & growth</small></div></div>
     </section>
 
     <p class="footer-note">Real people · Brighter lives</p>
 
     <nav class="bottom-nav" aria-label="Primary">
-      <a href="#home"><span class="nav-icon">⌂</span><span>Home</span></a>
-      <a href="#journal"><span class="nav-icon">▧</span><span>Journal</span></a>
-      <a href="#journal" aria-label="Shine Me"><span class="shine-button">✦</span><span>Shine</span></a>
-      <a href="#discover"><span class="nav-icon">⌕</span><span>Discover</span></a>
-      <a href="#you"><span class="nav-icon">♙</span><span>You</span></a>
+      <a href="#home" data-section="home" data-active="true"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7v9h-6v-6h-4v6H4Z"/></svg></span><span>Home</span></a>
+      <a href="#journal" data-section="journal"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2Z"/><path d="M8 8h7M8 12h6"/></svg></span><span>Journal</span></a>
+      <a class="shine-nav" href="#journal" data-section="journal" aria-label="Shine Me"><span class="shine-button">✦</span><span>Shine</span></a>
+      <a href="#discover" data-section="discover"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4M11 8v6M8 11h6"/></svg></span><span>Discover</span></a>
+      <a href="#you" data-section="you"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M6 20c.7-4 2.7-6 6-6s5.3 2 6 6"/></svg></span><span>You</span></a>
     </nav>
   </main>
   <script>
@@ -933,5 +1112,59 @@
       } catch (_) {}
     })();
   </script>
+
+  <script>
+    (() => {
+      const welcome = document.getElementById('welcomeTitle');
+      const accountLabel = document.getElementById('accountLabel');
+      const connection = document.getElementById('connectionStatus');
+      const pill = document.getElementById('connectionPill');
+      const navLinks = Array.from(document.querySelectorAll('.bottom-nav a[data-section]'));
+
+      function preferredFirstName() {
+        const raw = (accountLabel?.textContent || '').trim();
+        if (!raw) return 'Doug';
+        const emailLocal = raw.includes('@') ? raw.split('@')[0] : raw;
+        const cleaned = emailLocal.replace(/[._-]+/g, ' ').trim();
+        const first = cleaned.split(/\s+/)[0];
+        if (!first || /account|signed|owner/i.test(first)) return 'Doug';
+        return first.charAt(0).toUpperCase() + first.slice(1);
+      }
+      function syncGreeting() {
+        if (!welcome) return;
+        const h = new Date().getHours();
+        const time = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+        welcome.textContent = time + ', ' + preferredFirstName();
+      }
+      syncGreeting();
+      if (accountLabel) new MutationObserver(syncGreeting).observe(accountLabel,{childList:true,subtree:true,characterData:true});
+
+      function syncConnectionPill() {
+        if (!pill || !connection) return;
+        const t=(connection.textContent||'').toLowerCase();
+        if (t.includes('ready') || t.includes('availability')) {
+          pill.textContent='Memory connected';
+          pill.dataset.state='ready';
+        } else if (t.includes('unavailable') || t.includes('cannot') || t.includes('could not')) {
+          pill.textContent='Connection issue';
+          pill.dataset.state='offline';
+        } else {
+          pill.textContent='Checking Shine';
+          pill.dataset.state='checking';
+        }
+      }
+      syncConnectionPill();
+      if (connection) new MutationObserver(syncConnectionPill).observe(connection,{childList:true,subtree:true,characterData:true});
+
+      const sections=['home','journal','discover','you'].map(id=>document.getElementById(id)).filter(Boolean);
+      const observer = new IntersectionObserver(entries => {
+        const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+        if(!visible) return;
+        navLinks.forEach(link=>link.dataset.active=String(link.dataset.section===visible.target.id));
+      },{rootMargin:'-25% 0px -55% 0px',threshold:[0,.2,.5]});
+      sections.forEach(section=>observer.observe(section));
+    })();
+  </script>
+
 </body>
 </html>
