@@ -42,6 +42,11 @@ def packet():
             "shared_lineages": 0,
             "duplicate_representations": 0,
             "confidence_counts_lineages_not_copies": True,
+            "governed_evidence_items": 1,
+            "owner_bound_governed_items": 1,
+            "governance_metadata_complete": True,
+            "authority_classes": {"direct_user_promoted_memory": 1},
+            "freshness_classes": {"non_temporal_memory": 1},
         },
         "recall_confidence": {
             "state": "sparse_retrieval",
@@ -80,6 +85,9 @@ def test_rhee_live_smoke_prints_receipt_not_memory_content(monkeypatch, capsys):
     assert "contract=2" in output
     assert "evidence=1" in output
     assert "governed=1" in output
+    assert "governance_complete=true" in output
+    assert "authority_classes=1" in output
+    assert "freshness_classes=1" in output
     assert "lineages=1" in output
     assert "SECRET MEMORY TEXT" not in output
     assert "SECRET CONTEXT TEXT" not in output
@@ -154,3 +162,20 @@ def test_rhee_live_smoke_fails_closed_when_owner_binding_is_lost(monkeypatch):
         assert False, "expected SystemExit"
     except SystemExit as exc:
         assert "owner-binding-lost" in str(exc)
+
+
+
+def test_rhee_live_smoke_fails_closed_on_governance_receipt_mismatch(monkeypatch):
+    smoke = load_module()
+    bad = packet()
+    bad["evidence_independence"] = {
+        **bad["evidence_independence"],
+        "governed_evidence_items": 0,
+    }
+    monkeypatch.setattr(smoke.rhee, "build_context_packet", lambda query: bad)
+
+    try:
+        smoke.main()
+        assert False, "expected SystemExit"
+    except SystemExit as exc:
+        assert "governance-receipt-count-mismatch" in str(exc)
