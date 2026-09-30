@@ -379,6 +379,31 @@ class ObservabilityLieutenant:
             recovery_successes += successes
             recovery_samples += successes
 
+        qualified_recovery_successes = 0
+        qualified_recovery_samples = 0
+        for item in reversed(runtime_events):
+            payload = item["payload"]
+            kind = str(payload.get("rollup_kind") or "")
+            if kind == "canary":
+                continue
+            if kind not in {"periodic", "shutdown"}:
+                continue
+            failures = int(payload.get("failures", 0) or 0)
+            successes = int(payload.get("successes", 0) or 0)
+            if failures > 0:
+                break
+            try:
+                recovery_latency_ms = float(payload.get("mean_latency_ms"))
+            except (TypeError, ValueError):
+                recovery_latency_ms = -1.0
+            if (
+                recovery_latency_ms < 0
+                or recovery_latency_ms > MEMORY_SLO_LATENCY_TARGET_MS
+            ):
+                break
+            qualified_recovery_successes += successes
+            qualified_recovery_samples += successes
+
         runtime_samples = runtime_successes + runtime_failures
         runtime_availability = (
             runtime_successes / runtime_samples if runtime_samples else None
@@ -387,6 +412,31 @@ class ObservabilityLieutenant:
             round(runtime_latency_sum_ms / runtime_latency_completed, 1)
             if runtime_latency_completed
             else None
+        )
+        runtime_status = self._memory_slo_status(
+            samples=runtime_samples,
+            availability=runtime_availability,
+            latency_ms=runtime_mean_latency_ms,
+        )
+        recovery_state = (
+            "healthy_streak"
+            if qualified_recovery_samples >= 3
+            else "recovering"
+            if qualified_recovery_samples > 0
+            else "latency_degraded"
+            if recovery_samples > 0
+            else "no_clean_runtime_samples"
+        )
+        operational_state = (
+            "healthy"
+            if runtime_status == "met"
+            else "warming"
+            if runtime_status == "warming"
+            else "recovered_observing"
+            if recovery_state == "healthy_streak"
+            else "recovering"
+            if recovery_state == "recovering"
+            else "degraded"
         )
 
         return {
@@ -414,11 +464,7 @@ class ObservabilityLieutenant:
                 "ewma_latency_ms": deploy_latency,
             },
             "runtime": {
-                "status": self._memory_slo_status(
-                    samples=runtime_samples,
-                    availability=runtime_availability,
-                    latency_ms=runtime_mean_latency_ms,
-                ),
+                "status": runtime_status,
                 "samples": runtime_samples,
                 "successes": runtime_successes,
                 "failures": runtime_failures,
@@ -433,13 +479,10 @@ class ObservabilityLieutenant:
                 "canary_rollups": canary_rollups,
                 "recovery_successes_since_last_failure": recovery_successes,
                 "recovery_samples_since_last_failure": recovery_samples,
-                "recovery_state": (
-                    "healthy_streak"
-                    if recovery_samples >= 3
-                    else "recovering"
-                    if recovery_samples > 0
-                    else "no_clean_runtime_samples"
-                ),
+                "qualified_recovery_successes": qualified_recovery_successes,
+                "qualified_recovery_samples": qualified_recovery_samples,
+                "recovery_state": recovery_state,
+                "operational_state": operational_state,
             },
         }
 

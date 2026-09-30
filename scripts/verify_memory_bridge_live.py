@@ -86,6 +86,21 @@ def _observability(client: TestClient, token: str) -> dict:
         or str(durable.get("storage") or "") != "railway-redis-volume"
         or deployment.get("status") not in {"warming", "met", "missed"}
         or runtime.get("status") not in {"warming", "met", "missed"}
+        or runtime.get("recovery_state")
+            not in {
+                "healthy_streak",
+                "recovering",
+                "latency_degraded",
+                "no_clean_runtime_samples",
+            }
+        or runtime.get("operational_state")
+            not in {
+                "healthy",
+                "warming",
+                "recovered_observing",
+                "recovering",
+                "degraded",
+            }
     ):
         raise SystemExit(
             "Project L memory bridge live smoke: FAIL observability-contract-invalid"
@@ -294,6 +309,25 @@ def _durable_runtime_slo_summary() -> dict:
         recovery_successes += item_successes
         recovery_samples += item_successes
 
+    qualified_recovery_successes = 0
+    qualified_recovery_samples = 0
+    for item in reversed(runtime):
+        item_failures = int(item.get("failures", 0) or 0)
+        item_successes = int(item.get("successes", 0) or 0)
+        if item_failures > 0:
+            break
+        try:
+            recovery_latency_ms = float(item.get("mean_latency_ms"))
+        except (TypeError, ValueError):
+            recovery_latency_ms = -1.0
+        if (
+            recovery_latency_ms < 0
+            or recovery_latency_ms > SLO_EWMA_LATENCY_TARGET_MS
+        ):
+            break
+        qualified_recovery_successes += item_successes
+        qualified_recovery_samples += item_successes
+
     latency_sum_ms = 0.0
     latency_completed = 0
     for item in runtime:
@@ -326,6 +360,27 @@ def _durable_runtime_slo_summary() -> dict:
     else:
         status = "missed"
 
+    recovery_state = (
+        "healthy_streak"
+        if qualified_recovery_samples >= 3
+        else "recovering"
+        if qualified_recovery_samples > 0
+        else "latency_degraded"
+        if recovery_samples > 0
+        else "no_clean_runtime_samples"
+    )
+    operational_state = (
+        "healthy"
+        if status == "met"
+        else "warming"
+        if status == "warming"
+        else "recovered_observing"
+        if recovery_state == "healthy_streak"
+        else "recovering"
+        if recovery_state == "recovering"
+        else "degraded"
+    )
+
     return {
         "status": status,
         "samples": completed,
@@ -343,13 +398,10 @@ def _durable_runtime_slo_summary() -> dict:
         "canary_rollups": canary_rollups,
         "recovery_successes_since_last_failure": recovery_successes,
         "recovery_samples_since_last_failure": recovery_samples,
-        "recovery_state": (
-            "healthy_streak"
-            if recovery_samples >= 3
-            else "recovering"
-            if recovery_samples > 0
-            else "no_clean_runtime_samples"
-        ),
+        "qualified_recovery_successes": qualified_recovery_successes,
+        "qualified_recovery_samples": qualified_recovery_samples,
+        "recovery_state": recovery_state,
+        "operational_state": operational_state,
     }
 
 
@@ -502,6 +554,8 @@ def main() -> None:
         f"runtime_canary_rollups={runtime_durable.get('canary_rollups')} "
         f"runtime_recovery_state={runtime_durable.get('recovery_state')} "
         f"runtime_recovery_successes={runtime_durable.get('recovery_successes_since_last_failure')} "
+        f"runtime_qualified_recovery_successes={runtime_durable.get('qualified_recovery_successes')} "
+        f"runtime_operational_state={runtime_durable.get('operational_state')} "
         f"observability_api=verified"
     )
 
