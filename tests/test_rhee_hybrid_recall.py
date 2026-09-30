@@ -1264,3 +1264,62 @@ def test_final_deep_recall_conflict_reconciliation_does_not_infer_from_cue_words
     assert result["recall_plan"]["deep_recall_final_conflict_cue_sources"] == ["memory_general:1"]
     assert result["recall_plan"]["conflict_state"] == "none_reported"
     assert result["recall_plan"]["unresolved_conflict"] is False
+
+
+
+def test_reviewed_conflict_state_requires_explicit_reviewer_and_allowed_state():
+    from types import SimpleNamespace
+    from layers.layer9_authority_conflict import install
+
+    fake = SimpleNamespace(
+        build_context_packet=lambda query: {
+            "context": "base",
+            "evidence": [{"source": "memory_general:1", "role": "user"}],
+            "recall_plan": {"status": "checked"},
+        },
+        safe_text=lambda value: "" if value is None else str(value).strip(),
+    )
+    install(fake)
+
+    plan = {"status": "checked"}
+    fake.set_reviewed_conflict_state(
+        plan,
+        "temporal_transition",
+        reviewer="layer60_event_identity",
+        basis="different reviewed event stages",
+    )
+
+    assert plan["conflict_state"] == "temporal_transition"
+    assert plan["unresolved_conflict"] is False
+    assert plan["conflict_state_reviewed"] is True
+    assert plan["conflict_state_reviewer"] == "layer60_event_identity"
+
+    try:
+        fake.set_reviewed_conflict_state(plan, "keyword_guess", reviewer="test")
+        assert False, "expected ValueError"
+    except ValueError:
+        pass
+
+
+def test_authority_review_does_not_trust_unreviewed_conflict_state():
+    from types import SimpleNamespace
+    from layers.layer9_authority_conflict import install
+
+    fake = SimpleNamespace(
+        build_context_packet=lambda query: {
+            "context": "base",
+            "evidence": [{"source": "memory_general:1", "role": "user"}],
+            "recall_plan": {
+                "status": "checked",
+                "conflict_state": "unresolved",
+                "conflict_state_reviewed": False,
+            },
+        },
+        safe_text=lambda value: "" if value is None else str(value).strip(),
+    )
+    install(fake)
+
+    result = fake.build_context_packet("Recall")
+
+    assert result["recall_plan"]["conflict_state"] == "none_reported"
+    assert result["recall_plan"]["unresolved_conflict"] is False
