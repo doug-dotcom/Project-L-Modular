@@ -220,24 +220,35 @@ def _durable_runtime_slo_summary() -> dict:
         and isinstance(item.get("payload"), dict)
     ][-SLO_HISTORY_LIMIT:]
 
-    periodic = [
+    runtime = [
         item["payload"]
         for item in rollups
-        if str(item["payload"].get("rollup_kind") or "") == "periodic"
+        if str(item["payload"].get("rollup_kind") or "")
+        in {"periodic", "shutdown"}
     ]
+    periodic_rollups = sum(
+        1
+        for item in rollups
+        if str(item["payload"].get("rollup_kind") or "") == "periodic"
+    )
+    shutdown_rollups = sum(
+        1
+        for item in rollups
+        if str(item["payload"].get("rollup_kind") or "") == "shutdown"
+    )
     canary_rollups = sum(
         1
         for item in rollups
         if str(item["payload"].get("rollup_kind") or "") == "canary"
     )
 
-    successes = sum(int(item.get("successes", 0) or 0) for item in periodic)
-    failures = sum(int(item.get("failures", 0) or 0) for item in periodic)
+    successes = sum(int(item.get("successes", 0) or 0) for item in runtime)
+    failures = sum(int(item.get("failures", 0) or 0) for item in runtime)
     completed = successes + failures
 
     latency_sum_ms = 0.0
     latency_completed = 0
-    for item in periodic:
+    for item in runtime:
         item_completed = (
             int(item.get("successes", 0) or 0)
             + int(item.get("failures", 0) or 0)
@@ -279,7 +290,8 @@ def _durable_runtime_slo_summary() -> dict:
             round(mean_latency_ms, 1) if mean_latency_ms is not None else None
         ),
         "rollup_events": len(rollups),
-        "periodic_rollups": len(periodic),
+        "periodic_rollups": periodic_rollups,
+        "shutdown_rollups": shutdown_rollups,
         "canary_rollups": canary_rollups,
     }
 
@@ -406,6 +418,7 @@ def main() -> None:
         f"runtime_availability={runtime_durable.get('availability')} "
         f"runtime_mean_latency_ms={runtime_durable.get('mean_latency_ms')} "
         f"runtime_periodic_rollups={runtime_durable.get('periodic_rollups')} "
+        f"runtime_shutdown_rollups={runtime_durable.get('shutdown_rollups')} "
         f"runtime_canary_rollups={runtime_durable.get('canary_rollups')}"
     )
 
