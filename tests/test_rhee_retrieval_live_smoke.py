@@ -179,3 +179,47 @@ def test_rhee_live_smoke_fails_closed_on_governance_receipt_mismatch(monkeypatch
         assert False, "expected SystemExit"
     except SystemExit as exc:
         assert "governance-receipt-count-mismatch" in str(exc)
+
+
+
+def test_rhee_live_smoke_accepts_reviewed_conflicted_retrieval(monkeypatch, capsys):
+    smoke = load_module()
+    good = packet()
+    good["recall_confidence"] = {
+        **good["recall_confidence"],
+        "state": "conflicted_retrieval",
+        "unresolved_conflict": True,
+    }
+    good["recall_plan"] = {
+        **good["recall_plan"],
+        "conflict_state": "unresolved",
+        "conflict_state_reviewed": True,
+        "conflict_state_reviewer": "test_reconciliation",
+    }
+    monkeypatch.setattr(smoke.rhee, "build_context_packet", lambda query: good)
+
+    smoke.main()
+
+    assert "confidence=conflicted_retrieval" in capsys.readouterr().out
+
+
+def test_rhee_live_smoke_rejects_unreviewed_conflicted_retrieval(monkeypatch):
+    smoke = load_module()
+    bad = packet()
+    bad["recall_confidence"] = {
+        **bad["recall_confidence"],
+        "state": "conflicted_retrieval",
+        "unresolved_conflict": True,
+    }
+    bad["recall_plan"] = {
+        **bad["recall_plan"],
+        "conflict_state": "unresolved",
+        "conflict_state_reviewed": False,
+    }
+    monkeypatch.setattr(smoke.rhee, "build_context_packet", lambda query: bad)
+
+    try:
+        smoke.main()
+        assert False, "expected SystemExit"
+    except SystemExit as exc:
+        assert "conflicted-confidence-unreviewed" in str(exc)
