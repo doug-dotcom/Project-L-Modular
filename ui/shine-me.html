@@ -1496,16 +1496,65 @@
         return y+'-'+m+'-'+day;
       };
       const defaults={mood:null,moodNote:'',goals:[],routines:[],history:{},journal:[],lastDay:todayKey()};
-      let state={...defaults};
-      try { state={...defaults,...JSON.parse(localStorage.getItem(storageKey)||'{}')}; } catch (_) {}
-      if(!state.history||typeof state.history!=='object'||Array.isArray(state.history)) state.history={};
-      if(!Array.isArray(state.journal)) state.journal=[];
-      if(state.lastDay!==todayKey()){
-        state.mood=null;
-        state.moodNote='';
-        state.routines=(Array.isArray(state.routines)?state.routines:[]).map(item=>({...item,done:false,completedOn:null}));
-        state.lastDay=todayKey();
-      }
+      const syncKey='shine-me-dashboard-sync-v1';
+      const conflictKey='shine-me-dashboard-conflict-v1';
+      const normaliseState=input=>{
+        const next={...defaults,...(input&&typeof input==='object'?input:{})};
+        if(!next.history||typeof next.history!=='object'||Array.isArray(next.history))next.history={};
+        if(!Array.isArray(next.goals))next.goals=[];
+        if(!Array.isArray(next.routines))next.routines=[];
+        if(!Array.isArray(next.journal))next.journal=[];
+        if(next.lastDay!==todayKey()){
+          next.mood=null;
+          next.moodNote='';
+          next.routines=next.routines.map(item=>({...item,done:false,completedOn:null}));
+          next.lastDay=todayKey();
+        }
+        return next;
+      };
+      let state=normaliseState({});
+      try { state=normaliseState(JSON.parse(localStorage.getItem(storageKey)||'{}')); } catch (_) {}
+      let syncMeta={revision:0,dirty:false,lastSyncedAt:null,status:'local',conflict:false};
+      try { syncMeta={...syncMeta,...JSON.parse(localStorage.getItem(syncKey)||'{}')}; } catch (_) {}
+      let accountSyncReady=false;
+      let syncTimer=null;
+      let syncInFlight=false;
+
+      const stateSnapshot=()=>({
+        mood:state.mood,
+        moodNote:state.moodNote||'',
+        goals:Array.isArray(state.goals)?state.goals:[],
+        routines:Array.isArray(state.routines)?state.routines:[],
+        history:state.history&&typeof state.history==='object'?state.history:{},
+        journal:Array.isArray(state.journal)?state.journal:[],
+        lastDay:state.lastDay||todayKey()
+      });
+      const hasMeaningfulState=source=>{
+        const s=source||state;
+        return Number.isInteger(s.mood)
+          || Boolean((s.moodNote||'').trim())
+          || Boolean(s.goals?.length)
+          || Boolean(s.routines?.length)
+          || Boolean(s.journal?.length)
+          || Object.values(s.history||{}).some(entry=>
+            Number.isInteger(entry?.mood)
+            || Number(entry?.goalCompleted||0)>0
+            || Number(entry?.routineCompleted||0)>0
+          );
+      };
+      const persistState=()=>{ try { localStorage.setItem(storageKey,JSON.stringify(stateSnapshot())); } catch (_) {} };
+      const persistSync=()=>{ try { localStorage.setItem(syncKey,JSON.stringify(syncMeta)); } catch (_) {} };
+      const syncStateLabel=()=>{
+        if(syncMeta.conflict)return 'Needs review';
+        if(syncMeta.status==='syncing')return 'Syncing…';
+        if(syncMeta.status==='synced')return 'Account synced';
+        if(syncMeta.status==='error')return 'Sync unavailable';
+        if(syncMeta.dirty&&accountSyncReady)return 'Waiting to sync';
+        return accountSyncReady?'Account ready':'On this device';
+      };
+      const refreshSyncLabels=()=>{
+        document.querySelectorAll('[data-sync-state]').forEach(node=>node.textContent=syncStateLabel());
+      };
       const recordToday=()=>{
         const key=todayKey();
         const goals=Array.isArray(state.goals)?state.goals:[];
@@ -1524,7 +1573,12 @@
       };
       const save=()=>{
         recordToday();
-        try { localStorage.setItem(storageKey,JSON.stringify(state)); } catch (_) {}
+        persistState();
+        syncMeta.dirty=true;
+        syncMeta.status=accountSyncReady?'pending':'local';
+        persistSync();
+        refreshSyncLabels();
+        scheduleAccountSync();
       };
       const backdrop=document.getElementById('dashboardSheet');
       const sheet=backdrop?.querySelector('.sheet');
