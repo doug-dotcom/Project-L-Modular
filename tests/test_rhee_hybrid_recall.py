@@ -718,6 +718,60 @@ def test_evidence_independence_counts_lineages_not_representations():
     assert receipt["duplicate_representations"] == 2
     assert receipt["confidence_counts_lineages_not_copies"] is True
 
+    assert receipt["governed_evidence_items"] == 0
+    assert receipt["owner_bound_governed_items"] == 0
+    assert receipt["governance_metadata_complete"] is False
+    assert receipt["authority_classes"] == {}
+    assert receipt["freshness_classes"] == {}
+
+
+def test_evidence_independence_reports_governed_authority_and_freshness():
+    receipt = rhee.evidence_independence_receipt([
+        {
+            "source": "memory_sport:7",
+            "raw_id": 44,
+            "provenance": "owner_scoped_v2",
+            "owner_bound": True,
+            "authority": {"class": "direct_user_promoted_memory", "precedence": 70},
+            "freshness": {"class": "non_temporal_memory"},
+        },
+        {
+            "source": "memory_general:8",
+            "raw_id": 99,
+            "provenance": "owner_scoped_v2",
+            "owner_bound": True,
+            "authority": {"class": "assistant_derived_promoted_memory", "precedence": 45},
+            "freshness": {"class": "non_temporal_memory"},
+        },
+    ])
+
+    assert receipt["governed_evidence_items"] == 2
+    assert receipt["owner_bound_governed_items"] == 2
+    assert receipt["governance_metadata_complete"] is True
+    assert receipt["authority_classes"] == {
+        "direct_user_promoted_memory": 1,
+        "assistant_derived_promoted_memory": 1,
+    }
+    assert receipt["freshness_classes"] == {"non_temporal_memory": 2}
+
+
+def test_evidence_independence_marks_incomplete_governance_metadata():
+    receipt = rhee.evidence_independence_receipt([
+        {
+            "source": "memory_sport:7",
+            "raw_id": 44,
+            "provenance": "owner_scoped_v2",
+            "owner_bound": False,
+            "authority": None,
+            "freshness": {"class": "non_temporal_memory"},
+        },
+    ])
+
+    assert receipt["governed_evidence_items"] == 1
+    assert receipt["owner_bound_governed_items"] == 0
+    assert receipt["governance_metadata_complete"] is False
+    assert receipt["authority_classes"] == {"unknown": 1}
+
 
 
 def test_indexed_search_rejects_wrong_query_contract_version(monkeypatch):
