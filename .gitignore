@@ -50,3 +50,14 @@ OpenAI Key.txt
 .env
 
 .env.local
+
+# HISTORICAL ARCHIVES
+# Preserved on archive-full-tree-20260930 and in Git history; keep production main lean.
+FULL_BACKUPS/
+_FULL_BACKUPS/
+_LOCKED_RELEASE/
+LOCKED_RELEASES/
+MANTLE/
+backups/
+_smart_backups/
+api/Backups/
