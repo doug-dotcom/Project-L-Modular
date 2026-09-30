@@ -18,7 +18,6 @@ def test_runtime_and_ci_dependencies_are_exactly_pinned():
 
 
 def test_railway_context_excludes_historical_archives_and_secrets():
-    patterns = set((ROOT / ".dockerignore").read_text(encoding="utf-8").splitlines())
     required = {
         "FULL_BACKUPS",
         "_FULL_BACKUPS",
@@ -30,6 +29,23 @@ def test_railway_context_excludes_historical_archives_and_secrets():
         "api/Backups",
         ".env",
         ".env.*",
+    }
+    for filename in (".dockerignore", ".railwayignore"):
+        patterns = set((ROOT / filename).read_text(encoding="utf-8").splitlines())
+        assert required <= patterns
+
+
+def test_production_tree_rejects_archive_reintroduction():
+    patterns = set((ROOT / ".gitignore").read_text(encoding="utf-8").splitlines())
+    required = {
+        "FULL_BACKUPS/",
+        "_FULL_BACKUPS/",
+        "_LOCKED_RELEASE/",
+        "LOCKED_RELEASES/",
+        "MANTLE/",
+        "backups/",
+        "_smart_backups/",
+        "api/Backups/",
     }
     assert required <= patterns
 
