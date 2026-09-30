@@ -36,6 +36,12 @@ def configure(monkeypatch):
             "last_success_at": 0.0,
             "last_failure_at": 0.0,
         })
+    with bridge._runtime_rollup_lock:
+        bridge._runtime_rollup_accumulator = (
+            bridge._empty_runtime_rollup_accumulator()
+        )
+        bridge._runtime_rollup_inflight = False
+        bridge._runtime_rollup_last_emit_at = bridge.time.monotonic()
 
 
 def owner_context():
@@ -973,3 +979,178 @@ def test_memory_bridge_slo_reports_missed_for_availability_or_latency(monkeypatc
         bridge._rpc_metrics["ewma_latency_ms"] = 3500.0
 
     assert bridge._rpc_metrics_snapshot()["slo_status"] == "missed"
+
+
+
+def test_runtime_rollup_waits_for_interval_and_flushes_aggregate(monkeypatch):
+    configure(monkeypatch)
+    now = {"value": 1000.0}
+    recorded = []
+
+    monkeypatch.setattr(bridge.time, "monotonic", lambda: now["value"])
+
+    with bridge._runtime_rollup_lock:
+        bridge._runtime_rollup_last_emit_at = 1000.0
+
+    bridge._metric_increment("requests_total")
+    with bridge._runtime_rollup_lock:
+        bridge._runtime_rollup_accumulator["successes"] = 1
+        bridge._runtime_rollup_accumulator["latency_sum_ms"] = 750.0
+        bridge._runtime_rollup_accumulator["latency_max_ms"] = 750.0
+
+    monkeypatch.setattr(
+        bridge,
+        "_persist_runtime_rollup",
+        lambda snapshot: recorded.append(dict(snapshot)) or {
+            "recorded": True,
+            "storage": "railway-redis-volume",
+        },
+    )
+
+    before_due = bridge._flush_runtime_rollup(
+        force=False,
+        synchronous=True,
+    )
+    assert before_due["scheduled"] is False
+    assert recorded == []
+
+    now["value"] = 1301.0
+    due = bridge._flush_runtime_rollup(
+        force=False,
+        synchronous=True,
+    )
+    assert due["scheduled"] is True
+    assert due["recorded"] is True
+    assert len(recorded) == 1
+    assert recorded[0]["requests"] == 1
+    assert recorded[0]["successes"] == 1
+    assert recorded[0]["failures"] == 0
+    assert recorded[0]["latency_sum_ms"] == 750.0
+    assert recorded[0]["rollup_kind"] == "periodic"
+
+
+def test_runtime_rollup_background_path_does_not_persist_on_request_thread(monkeypatch):
+    configure(monkeypatch)
+    now = {"value": 2000.0}
+    calls = []
+
+    monkeypatch.setattr(bridge.time, "monotonic", lambda: now["value"])
+    with bridge._runtime_rollup_lock:
+        bridge._runtime_rollup_last_emit_at = 1600.0
+        bridge._runtime_rollup_accumulator["requests"] = 1
+        bridge._runtime_rollup_accumulator["successes"] = 1
+        bridge._runtime_rollup_accumulator["latency_sum_ms"] = 50.0
+        bridge._runtime_rollup_accumulator["latency_max_ms"] = 50.0
+
+    class FakeThread:
+        def __init__(self, *, target, args, name, daemon):
+            calls.append({
+                "target": target,
+                "args": args,
+                "name": name,
+                "daemon": daemon,
+            })
+
+        def start(self):
+            calls[-1]["started"] = True
+
+    monkeypatch.setattr(bridge.threading, "Thread", FakeThread)
+
+    result = bridge._flush_runtime_rollup()
+
+    assert result == {
+        "scheduled": True,
+        "recorded": False,
+        "storage": "background",
+    }
+    assert len(calls) == 1
+    assert calls[0]["target"] is bridge._persist_runtime_rollup
+    assert calls[0]["name"] == "memory-bridge-runtime-rollup"
+    assert calls[0]["daemon"] is True
+    assert calls[0]["started"] is True
+
+
+def test_runtime_rollup_requeues_when_durable_storage_is_unavailable(monkeypatch):
+    configure(monkeypatch)
+
+    class Observability:
+        def record_event(self, event_type, payload):
+            assert event_type == "memory_bridge_runtime_rollup"
+            return {
+                "recorded": True,
+                "event_type": event_type,
+                "storage": "local-file",
+            }
+
+    import orchestration.lieutenants.observability_lieutenant as obs_module
+    monkeypatch.setattr(
+        obs_module,
+        "OBSERVABILITY_LIEUTENANT",
+        Observability(),
+    )
+
+    snapshot = {
+        "requests": 3,
+        "successes": 2,
+        "failures": 1,
+        "latency_sum_ms": 900.0,
+        "latency_max_ms": 500.0,
+        "saturation_rejections": 1,
+        "circuit_rejections": 0,
+        "recovery_probe_rejections": 0,
+        "transient_retries": 1,
+        "breaker_open_events": 0,
+        "http_timeout_failures": 0,
+        "window_seconds": 300.0,
+        "rollup_kind": "periodic",
+    }
+    with bridge._runtime_rollup_lock:
+        bridge._runtime_rollup_inflight = True
+
+    result = bridge._persist_runtime_rollup(snapshot)
+
+    assert result["storage"] == "local-file"
+    with bridge._runtime_rollup_lock:
+        pending = dict(bridge._runtime_rollup_accumulator)
+        assert bridge._runtime_rollup_inflight is False
+
+    assert pending["requests"] == 3
+    assert pending["successes"] == 2
+    assert pending["failures"] == 1
+    assert pending["latency_sum_ms"] == 900.0
+    assert pending["latency_max_ms"] == 500.0
+    assert pending["saturation_rejections"] == 1
+    assert pending["transient_retries"] == 1
+
+
+def test_runtime_rollup_payload_contains_only_aggregate_operational_data():
+    payload = bridge._runtime_rollup_payload({
+        "requests": 4,
+        "successes": 3,
+        "failures": 1,
+        "latency_sum_ms": 1200.0,
+        "latency_max_ms": 600.0,
+        "saturation_rejections": 0,
+        "circuit_rejections": 1,
+        "recovery_probe_rejections": 0,
+        "transient_retries": 2,
+        "breaker_open_events": 1,
+        "http_timeout_failures": 0,
+        "window_seconds": 300.0,
+        "rollup_kind": "periodic",
+    })
+
+    assert payload["availability"] == 0.75
+    assert payload["mean_latency_ms"] == 300.0
+    assert payload["max_latency_ms"] == 600.0
+    assert payload["rollup_kind"] == "periodic"
+    assert all(
+        forbidden not in str(payload).lower()
+        for forbidden in (
+            "query",
+            "owner",
+            "memory text",
+            "token",
+            "secret",
+        )
+    )
