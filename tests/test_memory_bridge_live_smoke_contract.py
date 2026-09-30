@@ -549,3 +549,95 @@ def test_durable_runtime_slo_counts_shutdown_rollups_as_real_traffic(monkeypatch
     assert summary["shutdown_rollups"] == 1
     assert summary["canary_rollups"] == 1
     assert summary["status"] == "warming"
+
+
+
+def test_durable_runtime_slo_reports_recovery_streak_without_erasing_failures(monkeypatch):
+    smoke = load_smoke_module()
+
+    class Observability:
+        def load_events(self):
+            return [
+                {
+                    "event_type": "memory_bridge_runtime_rollup",
+                    "payload": {
+                        "rollup_kind": "periodic",
+                        "successes": 8,
+                        "failures": 2,
+                        "mean_latency_ms": 1000.0,
+                    },
+                },
+                {
+                    "event_type": "memory_bridge_runtime_rollup",
+                    "payload": {
+                        "rollup_kind": "periodic",
+                        "successes": 2,
+                        "failures": 0,
+                        "mean_latency_ms": 900.0,
+                    },
+                },
+                {
+                    "event_type": "memory_bridge_runtime_rollup",
+                    "payload": {
+                        "rollup_kind": "shutdown",
+                        "successes": 2,
+                        "failures": 0,
+                        "mean_latency_ms": 800.0,
+                    },
+                },
+            ]
+
+    monkeypatch.setattr(smoke, "OBSERVABILITY_LIEUTENANT", Observability())
+
+    summary = smoke._durable_runtime_slo_summary()
+
+    assert summary["failures"] == 2
+    assert summary["availability"] == round(12 / 14, 6)
+    assert summary["status"] == "warming"
+    assert summary["recovery_successes_since_last_failure"] == 4
+    assert summary["recovery_samples_since_last_failure"] == 4
+    assert summary["recovery_state"] == "healthy_streak"
+
+
+def test_durable_runtime_slo_recovery_streak_stops_at_latest_failure(monkeypatch):
+    smoke = load_smoke_module()
+
+    class Observability:
+        def load_events(self):
+            return [
+                {
+                    "event_type": "memory_bridge_runtime_rollup",
+                    "payload": {
+                        "rollup_kind": "periodic",
+                        "successes": 10,
+                        "failures": 0,
+                        "mean_latency_ms": 700.0,
+                    },
+                },
+                {
+                    "event_type": "memory_bridge_runtime_rollup",
+                    "payload": {
+                        "rollup_kind": "periodic",
+                        "successes": 1,
+                        "failures": 1,
+                        "mean_latency_ms": 900.0,
+                    },
+                },
+                {
+                    "event_type": "memory_bridge_runtime_rollup",
+                    "payload": {
+                        "rollup_kind": "periodic",
+                        "successes": 2,
+                        "failures": 0,
+                        "mean_latency_ms": 800.0,
+                    },
+                },
+            ]
+
+    monkeypatch.setattr(smoke, "OBSERVABILITY_LIEUTENANT", Observability())
+
+    summary = smoke._durable_runtime_slo_summary()
+
+    assert summary["failures"] == 1
+    assert summary["recovery_successes_since_last_failure"] == 2
+    assert summary["recovery_state"] == "recovering"
