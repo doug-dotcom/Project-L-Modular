@@ -1,0 +1,75 @@
+{
+  "contract": "shine-defence/attestation-workflow-compatibility-v1",
+  "version": "1.1.0",
+  "purpose": "Canonical cross-app boundary for Shine Defence release-attestation workflows so product CI can recognise the narrow OIDC/GitHub-token exception without weakening normal application workflows.",
+  "role": "release-attestation",
+  "required": {
+    "runner": "ubuntu-24.04",
+    "strictShell": "bash --noprofile --norc -euo pipefail {0}",
+    "sourceBranch": {
+      "mode": "explicit",
+      "pattern": "^[A-Za-z0-9._/-]{1,128}$",
+      "mustMatchDeploymentSource": true
+    },
+    "permissions": {
+      "contents": "read",
+      "id-token": "write"
+    },
+    "requiredTriggers": [
+      "schedule",
+      "workflow_dispatch"
+    ],
+    "optionalTriggers": [
+      "push"
+    ],
+    "forbiddenTriggers": [
+      "pull_request",
+      "pull_request_target",
+      "workflow_call",
+      "workflow_run",
+      "repository_dispatch"
+    ]
+  },
+  "boundedExceptions": {
+    "githubToken": {
+      "allowed": true,
+      "expression": "${{ github.token }}",
+      "environmentKey": "GITHUB_TOKEN",
+      "purpose": [
+        "resolve the immutable declared production source head",
+        "verify rollback and canonical source commit existence"
+      ],
+      "mustNotBeUsedFor": [
+        "product CI",
+        "package publishing",
+        "deployment mutation",
+        "repository mutation"
+      ]
+    },
+    "oidc": {
+      "allowedWritePermission": "id-token: write",
+      "issuer": "https://token.actions.githubusercontent.com",
+      "signatureAlgorithm": "RS256",
+      "keyResolution": "JWKS kid",
+      "keyContinuity": "Resolve the current issuer JWKS by kid for every verification. Do not pin a long-lived GitHub signing key in application repositories.",
+      "audiencePrefix": "shine-defence-"
+    },
+    "secretContexts": {
+      "allowed": false
+    }
+  },
+  "compatibility": {
+    "productCiRole": "product-ci",
+    "rule": "Application security scanners must keep product CI fail-closed while recognising this exact release-attestation role as a separate bounded workflow class.",
+    "deploymentBranchRule": "SHINE_DEFENCE_SOURCE_BRANCH is app-specific production truth and must be checked against the deployment provider; main is not assumed.",
+    "unknownOrBroaderPrivilege": "fail_closed"
+  },
+  "invariants": [
+    "Defence attestation authority is isolated from product CI authority.",
+    "Only contents:read and id-token:write are permitted; any broader write permission fails closed.",
+    "The GitHub token exception is read-only and role-bounded, not a general workflow exception.",
+    "The source branch is explicit deployment truth, not an assumed repository default branch.",
+    "OIDC signing-key rotation is tolerated only through issuer JWKS kid verification; static signing-key pinning is forbidden.",
+    "A workflow that does not satisfy this contract must be treated as an ordinary application workflow and receive no Defence exception."
+  ]
+}
