@@ -64,6 +64,9 @@ _MEMORY_RPC_TIMEOUT_SECONDS = 6.0
 _MEMORY_RPC_CONNECT_SECONDS = 3.0
 _MEMORY_RPC_POOL_SECONDS = 1.0
 _QUERY_CONTRACT_VERSION = "2"
+_SLO_MIN_SAMPLES = 20
+_SLO_AVAILABILITY_TARGET = 0.99
+_SLO_EWMA_LATENCY_TARGET_MS = 3000.0
 
 _rpc_circuit_lock = threading.Lock()
 _rpc_circuit_open_until = 0.0
@@ -149,6 +152,17 @@ def _rpc_metrics_snapshot() -> dict[str, object]:
     success_rate = (
         success_total / completed_total if completed_total > 0 else None
     )
+    ewma_latency_ms = round(float(snapshot["ewma_latency_ms"]), 1)
+    if completed_total < _SLO_MIN_SAMPLES:
+        slo_status = "warming"
+    elif (
+        success_rate is not None
+        and success_rate >= _SLO_AVAILABILITY_TARGET
+        and ewma_latency_ms <= _SLO_EWMA_LATENCY_TARGET_MS
+    ):
+        slo_status = "met"
+    else:
+        slo_status = "missed"
 
     last_success_at = float(snapshot["last_success_at"])
     last_failure_at = float(snapshot["last_failure_at"])
@@ -159,6 +173,10 @@ def _rpc_metrics_snapshot() -> dict[str, object]:
         "success_rate": (
             round(success_rate, 6) if success_rate is not None else None
         ),
+        "slo_status": slo_status,
+        "slo_min_samples": _SLO_MIN_SAMPLES,
+        "slo_availability_target": _SLO_AVAILABILITY_TARGET,
+        "slo_ewma_latency_target_ms": _SLO_EWMA_LATENCY_TARGET_MS,
         "saturation_rejections": int(snapshot["saturation_rejections"]),
         "circuit_rejections": int(snapshot["circuit_rejections"]),
         "recovery_probe_rejections": int(
@@ -168,7 +186,7 @@ def _rpc_metrics_snapshot() -> dict[str, object]:
         "breaker_open_events": int(snapshot["breaker_open_events"]),
         "http_timeout_failures": int(snapshot["http_timeout_failures"]),
         "last_latency_ms": round(float(snapshot["last_latency_ms"]), 1),
-        "ewma_latency_ms": round(float(snapshot["ewma_latency_ms"]), 1),
+        "ewma_latency_ms": ewma_latency_ms,
         "max_latency_ms": round(float(snapshot["max_latency_ms"]), 1),
         "seconds_since_last_success": (
             round(max(0.0, now - last_success_at), 1)
