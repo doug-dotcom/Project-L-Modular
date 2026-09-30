@@ -103,6 +103,12 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
                             "periodic_rollups": 1,
                             "shutdown_rollups": 0,
                             "canary_rollups": 1,
+                            "recovery_successes_since_last_failure": 2,
+                            "recovery_samples_since_last_failure": 2,
+                            "qualified_recovery_successes": 2,
+                            "qualified_recovery_samples": 2,
+                            "recovery_state": "recovering",
+                            "operational_state": "warming",
                         },
                     },
                 })
@@ -245,6 +251,10 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
     assert "runtime_periodic_rollups=1" in output
     assert "runtime_shutdown_rollups=0" in output
     assert "runtime_canary_rollups=1" in output
+    assert "runtime_recovery_state=recovering" in output
+    assert "runtime_recovery_successes=2" in output
+    assert "runtime_qualified_recovery_successes=2" in output
+    assert "runtime_operational_state=warming" in output
     assert "observability_api=verified" in output
     assert "SECRET MEMORY CONTENT" not in output
     assert "diving bali" not in output
