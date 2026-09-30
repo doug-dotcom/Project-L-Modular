@@ -301,6 +301,7 @@ def test_indexed_search_fetches_bounded_candidates_in_one_rpc(monkeypatch):
                     "_provenance_evidence": "raw_catchall",
                 }],
                 "queryKey": self.params["p_query_key"],
+                "queryContractVersion": "2",
             }})()
 
     class RpcClient:
@@ -415,6 +416,7 @@ def test_indexed_search_retries_with_safe_bounds_before_full_scan(monkeypatch):
                 "raw": [],
                 "memories": [],
                 "queryKey": self.params["p_query_key"],
+                "queryContractVersion": "2",
             }})()
 
     class RetryClient:
@@ -545,7 +547,7 @@ def test_pauline_report_packet_preserves_long_evidence_excerpt():
 
 
 
-def test_indexed_search_falls_back_to_legacy_only_for_missing_v2(monkeypatch):
+def test_indexed_search_fails_closed_when_v2_function_is_missing(monkeypatch):
     calls = []
     receipt = {}
     rhee._recall_rpc_circuit_open_until = 0.0
@@ -558,21 +560,18 @@ def test_indexed_search_falls_back_to_legacy_only_for_missing_v2(monkeypatch):
         def execute(self):
             raise MissingFunction()
 
-    class LegacyQuery:
-        def execute(self):
-            return type("Response", (), {"data": {"raw": [], "memories": []}})()
-
     class Client:
         def rpc(self, name, params):
             calls.append(name)
-            return MissingQuery() if name.endswith("_v2") else LegacyQuery()
+            return MissingQuery()
 
     monkeypatch.setattr(rhee, "supabase", Client())
     result = rhee.search_database_candidates("Luella braces", receipt_out=receipt)
 
-    assert result == {"raw": [], "memories": []}
-    assert calls == ["search_project_l_memory_v2", "search_project_l_memory"]
-    assert receipt["retrieval_query_binding"] == "legacy-unverified"
+    assert result is None
+    assert calls == ["search_project_l_memory_v2"]
+    assert receipt["retrieval_status"] == "unavailable"
+    assert receipt["retrieval_query_binding"] == "server-verified"
 
 
 def test_indexed_search_rejects_wrong_query_cohort(monkeypatch):
@@ -583,7 +582,12 @@ def test_indexed_search_rejects_wrong_query_cohort(monkeypatch):
     class Query:
         def execute(self):
             return type("Response", (), {
-                "data": {"raw": [], "memories": [], "queryKey": "wrong"}
+                "data": {
+                    "raw": [],
+                    "memories": [],
+                    "queryKey": "wrong",
+                    "queryContractVersion": "2",
+                }
             })()
 
     class Client:
@@ -612,3 +616,38 @@ def test_evidence_independence_counts_lineages_not_representations():
     assert receipt["shared_lineages"] == 1
     assert receipt["duplicate_representations"] == 2
     assert receipt["confidence_counts_lineages_not_copies"] is True
+
+
+
+def test_indexed_search_rejects_wrong_query_contract_version(monkeypatch):
+    receipt = {}
+    rhee._recall_rpc_circuit_open_until = 0.0
+
+    class Query:
+        def __init__(self, params):
+            self.params = params
+
+        def execute(self):
+            return type("Response", (), {
+                "data": {
+                    "raw": [],
+                    "memories": [],
+                    "queryKey": self.params["p_query_key"],
+                    "queryContractVersion": "1",
+                }
+            })()
+
+    class Client:
+        def rpc(self, name, params):
+            assert name == "search_project_l_memory_v2"
+            return Query(params)
+
+    monkeypatch.setattr(rhee, "supabase", Client())
+    result = rhee.search_database_candidates(
+        "Luella braces",
+        receipt_out=receipt,
+    )
+
+    assert result is None
+    assert receipt["retrieval_status"] == "unavailable"
+    assert receipt["retrieval_error_code"] == "non_transient"
