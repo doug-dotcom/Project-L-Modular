@@ -1,8 +1,19 @@
+import pytest
+
 import agents.rhee.rhee_v3 as rhee
 from memory.retrieval.cache_state import (
     cache_generation,
     invalidate_recall_caches,
 )
+
+
+TEST_OWNER_ID = "00000000-0000-4000-8000-000000000001"
+
+
+@pytest.fixture(autouse=True)
+def _configured_project_l_memory_owner(monkeypatch):
+    monkeypatch.setenv("L_MEMORY_OWNER_ID", TEST_OWNER_ID)
+    monkeypatch.delenv("PROJECT_L_OWNER_ID", raising=False)
 
 
 def test_local_domain_library_is_loaded():
@@ -292,14 +303,26 @@ def test_indexed_search_fetches_bounded_candidates_in_one_rpc(monkeypatch):
 
         def execute(self):
             return type("Response", (), {"data": {
-                "raw": [{"id": 7, "role": "user", "content": "Luella braces"}],
-                "memories": [{
-                    "id": 8,
+                "status": "ok",
+                "matches": [{
+                    "id": "8",
+                    "domain": "family",
+                    "subject": "Luella",
                     "content": "Luella got her braces off.",
-                    "_table": "memory_family",
-                    "_source_role": "user",
-                    "_provenance_evidence": "raw_catchall",
+                    "importance": 80,
+                    "salience": 90,
+                    "anchor": False,
+                    "createdAt": "2026-06-16T00:00:00+00:00",
+                    "matchScore": 44.2,
+                    "provenance": {
+                        "sourceTable": "memory_family",
+                        "sourceId": "8",
+                        "rawId": 7,
+                        "sourceRole": "user",
+                    },
                 }],
+                "returnedCount": 1,
+                "scope": {"ownerBound": True, "allowedDomainCount": 9},
                 "queryKey": self.params["p_query_key"],
                 "queryContractVersion": "2",
             }})()
@@ -316,13 +339,18 @@ def test_indexed_search_fetches_bounded_candidates_in_one_rpc(monkeypatch):
     )
 
     assert len(calls) == 1
-    assert calls[0][0] == "search_project_l_memory_v2"
-    assert calls[0][1]["p_raw_limit"] == 200
-    assert calls[0][1]["p_memory_limit"] == 80
+    assert calls[0][0] == "project_l_memory_context_service_v2"
+    assert calls[0][1]["p_user"] == TEST_OWNER_ID
+    assert calls[0][1]["p_limit"] == 6
+    assert calls[0][1]["p_char_budget"] <= 12000
     assert {"luella", "braces"}.issubset(set(calls[0][1]["p_terms"]))
     assert calls[0][1]["p_query_key"] == rhee.recall_query_key(calls[0][1]["p_terms"])
     assert receipt["retrieval_query_binding"] == "server-verified"
-    assert result["raw"][0]["id"] == 7
+    assert receipt["retrieval_owner_bound"] is True
+    assert receipt["retrieval_scope"] == "owner-scoped-v2"
+    assert result["raw"] == []
+    assert result["memories"][0]["raw_id"] == 7
+    assert result["memories"][0]["_table"] == "memory_family"
     assert result["memories"][0]["_source_role"] == "user"
 
 
@@ -400,6 +428,50 @@ def test_historical_question_without_question_mark_is_not_evidence():
     assert rhee.calculate_raw_score({"content": query, "role": "user"}, query) == 0
 
 
+def test_owner_scoped_search_fails_closed_without_owner_binding(monkeypatch):
+    receipt = {}
+
+    class Client:
+        def rpc(self, name, params):
+            raise AssertionError("RPC must not run without an owner binding")
+
+    monkeypatch.delenv("L_MEMORY_OWNER_ID", raising=False)
+    monkeypatch.delenv("PROJECT_L_OWNER_ID", raising=False)
+    monkeypatch.setattr(rhee, "supabase", Client())
+
+    result = rhee.search_database_candidates("Recall diving Bali", receipt_out=receipt)
+
+    assert result is None
+    assert receipt["retrieval_status"] == "unavailable"
+    assert receipt["retrieval_reason"] == "owner_binding_not_configured"
+    assert receipt["retrieval_owner_bound"] is False
+
+
+def test_owner_scoped_candidate_adapter_preserves_provenance():
+    candidate = rhee.owner_scoped_memory_candidate({
+        "id": "5508",
+        "subject": "Doug",
+        "content": "Tulamben, Bali diving memory.",
+        "importance": 90,
+        "salience": 80,
+        "anchor": True,
+        "createdAt": "2026-09-13T13:16:40+00:00",
+        "matchScore": 51.7,
+        "provenance": {
+            "sourceTable": "memory_sport",
+            "sourceId": "5508",
+            "rawId": 5689,
+            "sourceRole": "user",
+        },
+    })
+
+    assert candidate["_table"] == "memory_sport"
+    assert candidate["raw_id"] == 5689
+    assert candidate["_source_role"] == "user"
+    assert candidate["_provenance_evidence"] == "owner_scoped_v2"
+    assert candidate["content"] == "Tulamben, Bali diving memory."
+
+
 def test_indexed_search_failure_preserves_full_scan_fallback(monkeypatch):
     calls = []
     receipt = {}
@@ -438,8 +510,10 @@ def test_indexed_search_retries_with_safe_bounds_before_full_scan(monkeypatch):
             if len(calls) == 1:
                 raise StatementTimeout()
             return type("Response", (), {"data": {
-                "raw": [],
-                "memories": [],
+                "status": "ok",
+                "matches": [],
+                "returnedCount": 0,
+                "scope": {"ownerBound": True, "allowedDomainCount": 9},
                 "queryKey": self.params["p_query_key"],
                 "queryContractVersion": "2",
             }})()
@@ -461,8 +535,8 @@ def test_indexed_search_retries_with_safe_bounds_before_full_scan(monkeypatch):
     assert result == {"raw": [], "memories": []}
     assert len(calls) == 2
     assert calls[0][1]["p_query_key"] == calls[1][1]["p_query_key"]
-    assert calls[1][1]["p_raw_limit"] == 100
-    assert calls[1][1]["p_memory_limit"] == 60
+    assert calls[1][1]["p_limit"] == 4
+    assert calls[1][1]["p_char_budget"] == 7200
     assert sleeps == [0.2]
     assert receipt["retrieval_attempts"] == 2
     assert receipt["retrieval_query_binding"] == "server-verified"
@@ -579,7 +653,7 @@ def test_indexed_search_fails_closed_when_v2_function_is_missing(monkeypatch):
 
     class MissingFunction(Exception):
         code = "PGRST202"
-        message = "Could not find the function public.search_project_l_memory_v2"
+        message = "Could not find the function public.project_l_memory_context_service_v2"
 
     class MissingQuery:
         def execute(self):
@@ -594,7 +668,7 @@ def test_indexed_search_fails_closed_when_v2_function_is_missing(monkeypatch):
     result = rhee.search_database_candidates("Luella braces", receipt_out=receipt)
 
     assert result is None
-    assert calls == ["search_project_l_memory_v2"]
+    assert calls == ["project_l_memory_context_service_v2"]
     assert receipt["retrieval_status"] == "unavailable"
     assert receipt["retrieval_query_binding"] == "server-verified"
 
@@ -608,8 +682,10 @@ def test_indexed_search_rejects_wrong_query_cohort(monkeypatch):
         def execute(self):
             return type("Response", (), {
                 "data": {
-                    "raw": [],
-                    "memories": [],
+                    "status": "ok",
+                    "matches": [],
+                    "returnedCount": 0,
+                    "scope": {"ownerBound": True, "allowedDomainCount": 9},
                     "queryKey": "wrong",
                     "queryContractVersion": "2",
                 }
@@ -624,7 +700,7 @@ def test_indexed_search_rejects_wrong_query_cohort(monkeypatch):
     result = rhee.search_database_candidates("Luella braces", receipt_out=receipt)
 
     assert result is None
-    assert calls == ["search_project_l_memory_v2"]
+    assert calls == ["project_l_memory_context_service_v2"]
     assert receipt["retrieval_error_code"] == "non_transient"
 
 
@@ -655,8 +731,10 @@ def test_indexed_search_rejects_wrong_query_contract_version(monkeypatch):
         def execute(self):
             return type("Response", (), {
                 "data": {
-                    "raw": [],
-                    "memories": [],
+                    "status": "ok",
+                    "matches": [],
+                    "returnedCount": 0,
+                    "scope": {"ownerBound": True, "allowedDomainCount": 9},
                     "queryKey": self.params["p_query_key"],
                     "queryContractVersion": "1",
                 }
@@ -664,7 +742,7 @@ def test_indexed_search_rejects_wrong_query_contract_version(monkeypatch):
 
     class Client:
         def rpc(self, name, params):
-            assert name == "search_project_l_memory_v2"
+            assert name == "project_l_memory_context_service_v2"
             return Query(params)
 
     monkeypatch.setattr(rhee, "supabase", Client())
