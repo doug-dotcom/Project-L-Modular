@@ -1181,7 +1181,12 @@ def test_authority_review_preserves_explicit_upstream_unresolved_conflict():
         build_context_packet=lambda query: {
             "context": "base",
             "evidence": [{"source": "memory_general:1", "role": "user"}],
-            "recall_plan": {"status": "checked", "conflict_state": "unresolved"},
+            "recall_plan": {
+                "status": "checked",
+                "conflict_state": "unresolved",
+                "conflict_state_reviewed": True,
+                "conflict_state_reviewer": "test_reconciliation",
+            },
         },
         safe_text=lambda value: "" if value is None else str(value).strip(),
     )
