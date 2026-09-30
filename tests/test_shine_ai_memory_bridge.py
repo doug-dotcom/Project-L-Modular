@@ -674,3 +674,99 @@ def test_http_timeout_retries_once_then_opens_adaptive_circuit(monkeypatch):
     assert sleeps == [0.25]
     assert bridge._rpc_failure_streak == 1
     assert bridge._rpc_circuit_retry_after() == 8
+
+
+
+def test_memory_bridge_health_is_authenticated_and_zero_database_touch(monkeypatch):
+    configure(monkeypatch)
+    monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "service-role-key")
+    called = {"database": 0}
+
+    def should_not_run():
+        called["database"] += 1
+        raise AssertionError("health endpoint must not touch Supabase")
+
+    monkeypatch.setattr(bridge, "_database", should_not_run)
+
+    response = client().get(
+        "/internal/shine-ai/memory/health",
+        headers={"X-Shine-Service-Token": "x" * 32},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["source"] == "project-l"
+    assert body["component"] == "memory-bridge"
+    assert body["status"] == "ready"
+    assert body["circuit_state"] == "closed"
+    assert body["retry_after"] == 0
+    assert body["failure_streak"] == 0
+    assert body["database_configured"] is True
+    assert body["database_touched"] is False
+    assert body["max_concurrent_rpcs"] == 2
+    assert body["rpc_timeout_seconds"] == 6.0
+    assert body["rpc_connect_seconds"] == 3.0
+    assert body["rpc_pool_seconds"] == 1.0
+    assert body["read_only"] is True
+    assert body["fail_closed"] is True
+    assert called["database"] == 0
+
+    denied = client().get(
+        "/internal/shine-ai/memory/health",
+        headers={"X-Shine-Service-Token": "wrong"},
+    )
+    assert denied.status_code == 401
+    assert called["database"] == 0
+
+
+def test_memory_bridge_health_reports_open_and_half_open_states(monkeypatch):
+    configure(monkeypatch)
+    monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "service-role-key")
+    now = {"value": 500.0}
+    monkeypatch.setattr(bridge.time, "monotonic", lambda: now["value"])
+
+    bridge._rpc_failure_streak = 2
+    bridge._rpc_circuit_open_until = 516.0
+
+    opened = client().get(
+        "/internal/shine-ai/memory/health",
+        headers={"X-Shine-Service-Token": "x" * 32},
+    )
+    assert opened.status_code == 200
+    open_body = opened.json()
+    assert open_body["status"] == "protected"
+    assert open_body["circuit_state"] == "open"
+    assert open_body["retry_after"] == 16
+    assert open_body["failure_streak"] == 2
+
+    now["value"] = 517.0
+    half_open = client().get(
+        "/internal/shine-ai/memory/health",
+        headers={"X-Shine-Service-Token": "x" * 32},
+    )
+    assert half_open.status_code == 200
+    half_body = half_open.json()
+    assert half_body["status"] == "protected"
+    assert half_body["circuit_state"] == "half-open"
+    assert half_body["retry_after"] == 0
+    assert half_body["failure_streak"] == 2
+
+
+def test_memory_bridge_health_reports_degraded_when_database_not_configured(monkeypatch):
+    configure(monkeypatch)
+    monkeypatch.delenv("SUPABASE_URL", raising=False)
+    monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
+    monkeypatch.delenv("SUPABASE_KEY", raising=False)
+
+    response = client().get(
+        "/internal/shine-ai/memory/health",
+        headers={"X-Shine-Service-Token": "x" * 32},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "degraded"
+    assert body["database_configured"] is False
+    assert body["database_touched"] is False
