@@ -365,6 +365,20 @@ class ObservabilityLieutenant:
 
         recovery_successes = 0
         recovery_samples = 0
+        for item in reversed(runtime_events):
+            payload = item["payload"]
+            kind = str(payload.get("rollup_kind") or "")
+            if kind == "canary":
+                continue
+            if kind not in {"periodic", "shutdown"}:
+                continue
+            failures = int(payload.get("failures", 0) or 0)
+            successes = int(payload.get("successes", 0) or 0)
+            if failures > 0:
+                break
+            recovery_successes += successes
+            recovery_samples += successes
+
         qualified_recovery_successes = 0
         qualified_recovery_samples = 0
         for item in reversed(runtime_events):
@@ -378,10 +392,6 @@ class ObservabilityLieutenant:
             successes = int(payload.get("successes", 0) or 0)
             if failures > 0:
                 break
-
-            recovery_successes += successes
-            recovery_samples += successes
-
             try:
                 recovery_latency_ms = float(payload.get("mean_latency_ms"))
             except (TypeError, ValueError):
@@ -391,7 +401,6 @@ class ObservabilityLieutenant:
                 or recovery_latency_ms > MEMORY_SLO_LATENCY_TARGET_MS
             ):
                 break
-
             qualified_recovery_successes += successes
             qualified_recovery_samples += successes
 
