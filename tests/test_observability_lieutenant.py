@@ -166,3 +166,127 @@ def test_observability_runtime_snapshot_counts_event_types(tmp_path):
         "memory_bridge_deploy_slo": 1,
     }
     assert lieutenant.runtime_status()["version"] == "AODS66-v2"
+
+
+
+def test_memory_bridge_slo_snapshot_uses_one_durable_source_and_excludes_canary(tmp_path):
+    redis = FakeRedis()
+    lieutenant = ObservabilityLieutenant(
+        redis_client=redis,
+        events_file=tmp_path / "events.json",
+    )
+
+    lieutenant.record_event(
+        "memory_bridge_deploy_slo",
+        {"latency_ms": 1000.0},
+    )
+    lieutenant.record_event(
+        "memory_bridge_deploy_slo",
+        {
+            "outcome": "failure",
+            "failure_stage": "retrieval-unavailable",
+        },
+    )
+    lieutenant.record_event(
+        "memory_bridge_runtime_rollup",
+        {
+            "rollup_kind": "periodic",
+            "successes": 2,
+            "failures": 0,
+            "mean_latency_ms": 400.0,
+        },
+    )
+    lieutenant.record_event(
+        "memory_bridge_runtime_rollup",
+        {
+            "rollup_kind": "shutdown",
+            "successes": 1,
+            "failures": 1,
+            "mean_latency_ms": 600.0,
+        },
+    )
+    lieutenant.record_event(
+        "memory_bridge_runtime_rollup",
+        {
+            "rollup_kind": "canary",
+            "successes": 50,
+            "failures": 0,
+            "mean_latency_ms": 10.0,
+        },
+    )
+
+    snapshot = lieutenant.memory_bridge_slo_snapshot()
+
+    assert snapshot["storage"] == "railway-redis-volume"
+    assert snapshot["targets"] == {
+        "min_samples": 20,
+        "availability": 0.99,
+        "latency_ms": 3000.0,
+        "history_limit": 100,
+    }
+
+    deploy = snapshot["deployment"]
+    assert deploy["status"] == "warming"
+    assert deploy["samples"] == 2
+    assert deploy["successes"] == 1
+    assert deploy["failures"] == 1
+    assert deploy["availability"] == 0.5
+    assert deploy["ewma_latency_ms"] == 1000.0
+
+    runtime = snapshot["runtime"]
+    assert runtime["status"] == "warming"
+    assert runtime["samples"] == 4
+    assert runtime["successes"] == 3
+    assert runtime["failures"] == 1
+    assert runtime["availability"] == 0.75
+    assert runtime["mean_latency_ms"] == 500.0
+    assert runtime["periodic_rollups"] == 1
+    assert runtime["shutdown_rollups"] == 1
+    assert runtime["canary_rollups"] == 1
+
+
+def test_memory_bridge_slo_snapshot_reports_met_and_missed_after_baseline(tmp_path):
+    redis = FakeRedis()
+    lieutenant = ObservabilityLieutenant(
+        redis_client=redis,
+        events_file=tmp_path / "events.json",
+    )
+
+    lieutenant.record_event(
+        "memory_bridge_runtime_rollup",
+        {
+            "rollup_kind": "periodic",
+            "successes": 20,
+            "failures": 0,
+            "mean_latency_ms": 800.0,
+        },
+    )
+    assert lieutenant.memory_bridge_slo_snapshot()["runtime"]["status"] == "met"
+
+    redis.rows.clear()
+    lieutenant.record_event(
+        "memory_bridge_runtime_rollup",
+        {
+            "rollup_kind": "periodic",
+            "successes": 19,
+            "failures": 1,
+            "mean_latency_ms": 800.0,
+        },
+    )
+    missed_availability = lieutenant.memory_bridge_slo_snapshot()["runtime"]
+    assert missed_availability["status"] == "missed"
+    assert missed_availability["availability"] == 0.95
+
+    redis.rows.clear()
+    lieutenant.record_event(
+        "memory_bridge_runtime_rollup",
+        {
+            "rollup_kind": "shutdown",
+            "successes": 20,
+            "failures": 0,
+            "mean_latency_ms": 3500.0,
+        },
+    )
+    missed_latency = lieutenant.memory_bridge_slo_snapshot()["runtime"]
+    assert missed_latency["status"] == "missed"
+    assert missed_latency["mean_latency_ms"] == 3500.0
