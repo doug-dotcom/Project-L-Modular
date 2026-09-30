@@ -36,38 +36,78 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
             self.success_total = 0
 
         def get(self, path, headers):
-            assert path == "/internal/shine-ai/memory/health"
             assert headers["X-Shine-Service-Token"] == "x" * 32
-            return Response({
-                "source": "project-l",
-                "component": "memory-bridge",
-                "version": "2.2",
-                "status": "ready",
-                "circuit_state": "closed",
-                "retry_after": 0,
-                "failure_streak": 0,
-                "recovery_probe_in_progress": False,
-                "database_configured": True,
-                "database_touched": False,
-                "max_concurrent_rpcs": 2,
-                "rpc_timeout_seconds": 6.0,
-                "rpc_connect_seconds": 3.0,
-                "rpc_pool_seconds": 1.0,
-                "read_only": True,
-                "fail_closed": True,
-                "metrics": {
-                    "requests_total": self.requests_total,
-                    "success_total": self.success_total,
-                    "failure_total": 0,
-                    "success_rate": (
-                        1.0 if self.success_total else None
-                    ),
-                    "last_latency_ms": (
-                        12.5 if self.success_total else 0.0
-                    ),
-                    "slo_status": "warming",
-                },
-            })
+            if path == "/internal/shine-ai/memory/health":
+                return Response({
+                    "source": "project-l",
+                    "component": "memory-bridge",
+                    "version": "2.2",
+                    "status": "ready",
+                    "circuit_state": "closed",
+                    "retry_after": 0,
+                    "failure_streak": 0,
+                    "recovery_probe_in_progress": False,
+                    "database_configured": True,
+                    "database_touched": False,
+                    "max_concurrent_rpcs": 2,
+                    "rpc_timeout_seconds": 6.0,
+                    "rpc_connect_seconds": 3.0,
+                    "rpc_pool_seconds": 1.0,
+                    "read_only": True,
+                    "fail_closed": True,
+                    "metrics": {
+                        "requests_total": self.requests_total,
+                        "success_total": self.success_total,
+                        "failure_total": 0,
+                        "success_rate": (
+                            1.0 if self.success_total else None
+                        ),
+                        "last_latency_ms": (
+                            12.5 if self.success_total else 0.0
+                        ),
+                        "slo_status": "warming",
+                    },
+                })
+
+            if path == "/internal/shine-ai/memory/observability":
+                return Response({
+                    "source": "project-l",
+                    "component": "memory-bridge-observability",
+                    "version": "1.0",
+                    "database_touched": False,
+                    "memory_content_included": False,
+                    "process_metrics": {},
+                    "durable": {
+                        "storage": "railway-redis-volume",
+                        "targets": {
+                            "min_samples": 20,
+                            "availability": 0.99,
+                            "latency_ms": 3000.0,
+                            "history_limit": 100,
+                        },
+                        "deployment": {
+                            "status": "warming",
+                            "samples": 3,
+                            "successes": 3,
+                            "failures": 0,
+                            "availability": 1.0,
+                            "ewma_latency_ms": 21.6,
+                        },
+                        "runtime": {
+                            "status": "warming",
+                            "samples": 2,
+                            "successes": 2,
+                            "failures": 0,
+                            "availability": 1.0,
+                            "mean_latency_ms": 100.0,
+                            "periodic_rollups": 1,
+                            "shutdown_rollups": 0,
+                            "canary_rollups": 1,
+                        },
+                    },
+                })
+
+            raise AssertionError(f"unexpected GET path: {path}")
 
         def post(self, path, headers, json):
             assert path == "/internal/shine-ai/memory/retrieve"
@@ -205,6 +245,7 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
     assert "runtime_periodic_rollups=1" in output
     assert "runtime_shutdown_rollups=0" in output
     assert "runtime_canary_rollups=1" in output
+    assert "observability_api=verified" in output
     assert "SECRET MEMORY CONTENT" not in output
     assert "diving bali" not in output
     assert "11111111-1111-4111-8111-111111111111" not in output
