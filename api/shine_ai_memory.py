@@ -59,6 +59,9 @@ _DATA_API_CIRCUIT_SECONDS = 8.0
 _DATA_API_CIRCUIT_MAX_SECONDS = 60.0
 _MAX_CONCURRENT_MEMORY_RPCS = 2
 _RPC_BULKHEAD_WAIT_SECONDS = 0.25
+_MEMORY_RPC_TIMEOUT_SECONDS = 6.0
+_MEMORY_RPC_CONNECT_SECONDS = 3.0
+_MEMORY_RPC_POOL_SECONDS = 1.0
 
 _rpc_circuit_lock = threading.Lock()
 _rpc_circuit_open_until = 0.0
@@ -249,7 +252,11 @@ def _database():
     # not change memory authority or retry semantics.
     _db_transport = httpx.Client(
         http2=False,
-        timeout=httpx.Timeout(12, connect=5, pool=5),
+        timeout=httpx.Timeout(
+            _MEMORY_RPC_TIMEOUT_SECONDS,
+            connect=_MEMORY_RPC_CONNECT_SECONDS,
+            pool=_MEMORY_RPC_POOL_SECONDS,
+        ),
         limits=httpx.Limits(
             max_connections=4,
             max_keepalive_connections=2,
