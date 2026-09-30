@@ -1120,6 +1120,22 @@
       .today-wide{grid-column:auto;}
     }
 
+  
+    /* shine-me-today-journal-draft-v1 */
+    .journal-draft-banner {
+      margin:0 0 12px; padding:11px 12px; border-radius:14px;
+      border:1px solid rgba(244,207,131,.22);
+      background:rgba(244,207,131,.07);
+      color:#d8e1eb; font-size:10px; line-height:1.4;
+    }
+    .journal-draft-banner strong { color:#f0d18b; }
+    .journal-draft-banner button {
+      margin:8px 0 0; min-height:30px; padding:0 9px; border-radius:9px;
+      border:1px solid rgba(255,255,255,.1); color:#aebccc; background:rgba(255,255,255,.04); cursor:pointer;
+    }
+    .today-actions[data-count="3"] { grid-template-columns:repeat(3,1fr); }
+    @media (max-width:440px){ .today-actions[data-count="3"]{grid-template-columns:1fr;} }
+
   </style>
 </head>
 <body>
@@ -1862,6 +1878,7 @@
       const askQuestion=document.getElementById('question');
       const askStatus=document.getElementById('evidenceStatus');
       let handoffOriginalPrompt='';
+      let journalDraft=null;
 
       const navSurface=document.getElementById('navSurface');
       const navSurfaceBody=document.getElementById('navSurfaceBody');
@@ -1986,19 +2003,21 @@
 
       function renderJournalSurface(){
         const entries=Array.isArray(state.journal)?state.journal:[];
+        const draft=journalDraft||{};
         navSurfaceBody.innerHTML=`
           <p class="surface-intro">A quiet place to put the day into words. Journal entries are stored in Shine Me and sync to your verified owner account when available. They remain separate from Project L memory unless you explicitly bring one into the Shine conversation.</p>
+          ${journalDraft?`<div class="journal-draft-banner"><strong>Draft from Today</strong><br>This has been prefilled from your Daily Check-in but has not been saved or synced.<br><button id="discardJournalDraft" type="button">Discard draft</button></div>`:''}
           <section class="surface-card">
             <h3>Today</h3>
             <p>Write what happened, what mattered, or what you want to remember.</p>
             <label for="journalReflection">Reflection</label>
-            <textarea id="journalReflection" maxlength="1500" placeholder="What’s on your mind?"></textarea>
+            <textarea id="journalReflection" maxlength="1500" placeholder="What’s on your mind?">${escapeHtml(draft.reflection||'')}</textarea>
             <label for="journalGratitude">Something I’m grateful for</label>
-            <textarea id="journalGratitude" maxlength="600" placeholder="Optional…"></textarea>
+            <textarea id="journalGratitude" maxlength="600" placeholder="Optional…">${escapeHtml(draft.gratitude||'')}</textarea>
             <label for="journalNext">What matters next</label>
-            <textarea id="journalNext" maxlength="600" placeholder="Optional…"></textarea>
+            <textarea id="journalNext" maxlength="600" placeholder="Optional…">${escapeHtml(draft.next||'')}</textarea>
             <button class="surface-action" id="saveJournalEntry" type="button">Save to my journal</button>
-            <p class="surface-status" id="journalSurfaceStatus"></p>
+            <p class="surface-status" id="journalSurfaceStatus">${journalDraft?'Draft only — nothing has been saved yet.':''}</p>
           </section>
           <section class="surface-card">
             <h3>Recent entries</h3>
@@ -2013,6 +2032,18 @@
                 </article>`).join(''):'<div class="progress-empty">No journal entries yet.</div>'}
             </div>
           </section>`;
+        navSurfaceBody.querySelector('#discardJournalDraft')?.addEventListener('click',()=>{
+          journalDraft=null;
+          renderJournalSurface();
+        });
+        ['journalReflection','journalGratitude','journalNext'].forEach(id=>{
+          navSurfaceBody.querySelector('#'+id)?.addEventListener('input',()=>{
+            if(!journalDraft)return;
+            journalDraft.reflection=navSurfaceBody.querySelector('#journalReflection')?.value||'';
+            journalDraft.gratitude=navSurfaceBody.querySelector('#journalGratitude')?.value||'';
+            journalDraft.next=navSurfaceBody.querySelector('#journalNext')?.value||'';
+          });
+        });
         navSurfaceBody.querySelector('#saveJournalEntry')?.addEventListener('click',()=>{
           const reflection=navSurfaceBody.querySelector('#journalReflection')?.value.trim()||'';
           const gratitude=navSurfaceBody.querySelector('#journalGratitude')?.value.trim()||'';
@@ -2021,6 +2052,7 @@
           if(!reflection&&!gratitude&&!next){ if(status)status.textContent='Add something first.'; return; }
           state.journal.unshift({createdAt:new Date().toISOString(),reflection,gratitude,next});
           state.journal=state.journal.slice(0,30);
+          journalDraft=null;
           save();
           renderJournalSurface();
           const newStatus=navSurfaceBody.querySelector('#journalSurfaceStatus');
@@ -2589,10 +2621,27 @@
           +'<div class="today-tile"><small>Next routine</small><strong>'+escapeHtml(nextRoutine)+'</strong></div>'
           +'<div class="today-tile"><small>Open goal</small><strong>'+escapeHtml(nextGoal)+'</strong></div>'
           +'</div>'
-          +'<div class="today-actions"><button class="today-action primary" id="todayContinueShine" type="button">Continue with Shine</button>'
+          +'<div class="today-actions" data-count="3"><button class="today-action primary" id="todayContinueShine" type="button">Continue with Shine</button>'
+          +'<button class="today-action" id="todayJournal" type="button">Journal today</button>'
           +'<button class="today-action" id="todayEditCheckin" type="button">Edit check-in</button></div>'
           +'<p class="today-foot">This is a snapshot of what you entered today, not an assessment of how you should feel.</p>';
         root.querySelector('#todayEditCheckin')?.addEventListener('click',()=>openSheet('mood',document.querySelector('.mood-card')));
+        root.querySelector('#todayJournal')?.addEventListener('click',()=>{
+          const reflectionParts=[
+            words!=='No feeling words saved'?'Feeling: '+words:'',
+            'Day score: '+score,
+            'Sleep: '+sleep,
+            checkin.challenge?'Challenge: '+checkin.challenge:'',
+            checkin.note?'Note: '+checkin.note:''
+          ].filter(Boolean);
+          journalDraft={
+            reflection:reflectionParts.join('\n'),
+            gratitude:String(checkin.gratitude||''),
+            next:String(checkin.intention||'')
+          };
+          openNavSurface('journal');
+        });
+
         root.querySelector('#todayContinueShine')?.addEventListener('click',()=>{
           const parts=[
             'My Today snapshot:',
