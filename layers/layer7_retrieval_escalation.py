@@ -41,7 +41,16 @@ def install(rhee):
             + " comprehensive recall history timeline childhood family school education "
               "friends relationships army military career work employment health sport major events"
         )
-        second = previous_packet(broadened)
+        # Mark this recursive call as an internal bounded retrieval pass.
+        # Deep Recall is a user-invoked contract and must never be activated by
+        # wording introduced by an internal rewriter/escalation.
+        origin_guard = getattr(rhee, "_project_l_internal_recall_pass", None)
+        token = origin_guard.set(True) if origin_guard is not None else None
+        try:
+            second = previous_packet(broadened)
+        finally:
+            if origin_guard is not None and token is not None:
+                origin_guard.reset(token)
         merged = []
         seen = set()
         for item in evidence + list(second.get("evidence") or []):
@@ -71,6 +80,7 @@ def install(rhee):
             "second_pass_sources": len(second.get("evidence") or []),
             "merged_sources": len(merged),
             "sparse_recall_threshold": 8,
+            "retrieval_escalation_origin": "internal_bounded_pass",
         })
         result["recall_plan"] = receipt
         return result
