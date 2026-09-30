@@ -223,3 +223,95 @@ def test_rhee_live_smoke_rejects_unreviewed_conflicted_retrieval(monkeypatch):
         assert False, "expected SystemExit"
     except SystemExit as exc:
         assert "conflicted-confidence-unreviewed" in str(exc)
+
+
+def test_rhee_live_smoke_replays_once_after_transient_circuit_cooldown(monkeypatch, capsys):
+    smoke = load_module()
+    calls = []
+    sleeps = []
+
+    unavailable = packet()
+    unavailable["recall_plan"] = {
+        **unavailable["recall_plan"],
+        "retrieval_status": "unavailable",
+        "retrieval_error_code": "HTTP_TIMEOUT",
+        "retrieval_retry_after": 8,
+    }
+    good = packet()
+
+    def build_context_packet(query):
+        calls.append(query)
+        return unavailable if len(calls) == 1 else good
+
+    monkeypatch.setattr(smoke.rhee, "build_context_packet", build_context_packet)
+    monkeypatch.setattr(smoke.rhee, "recall_rpc_retry_after", lambda: 8)
+    monkeypatch.setattr(smoke.time, "sleep", lambda delay: sleeps.append(delay))
+
+    smoke.main()
+
+    output = capsys.readouterr().out
+    assert len(calls) == 2
+    assert sleeps == [8.25]
+    assert "Project L Rhee retrieval smoke: PASS" in output
+    assert "transient_replays=1" in output
+
+
+def test_rhee_live_smoke_does_not_replay_non_transient_unavailable(monkeypatch):
+    smoke = load_module()
+    calls = []
+    sleeps = []
+    bad = packet()
+    bad["recall_plan"] = {
+        **bad["recall_plan"],
+        "retrieval_status": "unavailable",
+        "retrieval_error_code": "401",
+        "retrieval_retry_after": 8,
+    }
+
+    def build_context_packet(query):
+        calls.append(query)
+        return bad
+
+    monkeypatch.setattr(smoke.rhee, "build_context_packet", build_context_packet)
+    monkeypatch.setattr(smoke.rhee, "recall_rpc_retry_after", lambda: 8)
+    monkeypatch.setattr(smoke.time, "sleep", lambda delay: sleeps.append(delay))
+
+    try:
+        smoke.main()
+        assert False, "expected SystemExit"
+    except SystemExit as exc:
+        assert "retrieval-unavailable" in str(exc)
+
+    assert len(calls) == 1
+    assert sleeps == []
+
+
+def test_rhee_live_smoke_fails_closed_after_single_transient_replay(monkeypatch):
+    smoke = load_module()
+    calls = []
+    sleeps = []
+    bad = packet()
+    bad["recall_plan"] = {
+        **bad["recall_plan"],
+        "retrieval_status": "unavailable",
+        "retrieval_error_code": "PGRST003",
+        "retrieval_retry_after": 3,
+    }
+
+    def build_context_packet(query):
+        calls.append(query)
+        return bad
+
+    monkeypatch.setattr(smoke.rhee, "build_context_packet", build_context_packet)
+    monkeypatch.setattr(smoke.rhee, "recall_rpc_retry_after", lambda: 3)
+    monkeypatch.setattr(smoke.time, "sleep", lambda delay: sleeps.append(delay))
+
+    try:
+        smoke.main()
+        assert False, "expected SystemExit"
+    except SystemExit as exc:
+        assert "retrieval-unavailable" in str(exc)
+
+    assert len(calls) == 2
+    assert sleeps == [3.25]
+
