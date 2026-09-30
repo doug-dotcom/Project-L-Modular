@@ -10,6 +10,33 @@ the answer model which evidence may override which and preserves conflicts.
 def install(rhee):
     previous_packet = rhee.build_context_packet
 
+    allowed_conflict_states = {
+        "none_reported", "resolved_by_correction", "temporal_transition", "unresolved"
+    }
+
+    def set_reviewed_conflict_state(plan, state, *, reviewer, basis=None):
+        """Promote conflict state only from an explicit reconciliation decision.
+
+        This helper deliberately performs no text inference. Callers must have
+        already reviewed same-fact identity, chronology and authority.
+        """
+        target = plan if isinstance(plan, dict) else {}
+        normalised = rhee.safe_text(state).lower()
+        reviewer_name = rhee.safe_text(reviewer)
+        if normalised not in allowed_conflict_states:
+            raise ValueError("invalid reviewed conflict state")
+        if not reviewer_name:
+            raise ValueError("reviewer is required for conflict-state promotion")
+        target["conflict_state"] = normalised
+        target["unresolved_conflict"] = normalised == "unresolved"
+        target["conflict_state_reviewed"] = True
+        target["conflict_state_reviewer"] = reviewer_name
+        if basis is not None:
+            target["conflict_state_basis"] = rhee.safe_text(basis)
+        return target
+
+    rhee.set_reviewed_conflict_state = set_reviewed_conflict_state
+
     def authority_rank(item):
         authority = item.get("authority")
         authority = authority if isinstance(authority, dict) else {}
@@ -90,9 +117,12 @@ RHEE EVIDENCE AUTHORITY REVIEW
         # not infer a conflict from wording alone. Later reconciliation layers
         # may promote this state to "unresolved" only after same-fact review.
         existing_conflict_state = rhee.safe_text(receipt.get("conflict_state")).lower()
-        conflict_state = existing_conflict_state if existing_conflict_state in {
-            "none_reported", "resolved_by_correction", "temporal_transition", "unresolved"
-        } else "none_reported"
+        reviewed = receipt.get("conflict_state_reviewed") is True
+        conflict_state = (
+            existing_conflict_state
+            if reviewed and existing_conflict_state in allowed_conflict_states
+            else "none_reported"
+        )
         receipt.update({
             "authority_review": "applied",
             "authority_contract": "owner-scoped-v2-precedence-first",
