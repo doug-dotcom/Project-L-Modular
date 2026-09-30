@@ -58,6 +58,7 @@ _TRANSIENT_RECALL_RPC_DELAYS = {
     "57014": (0.2,),
 }
 _RECALL_DATA_API_CIRCUIT_SECONDS = 8.0
+_RECALL_QUERY_CONTRACT_VERSION = "2"
 _recall_rpc_circuit_lock = threading.Lock()
 _recall_rpc_circuit_open_until = 0.0
 
@@ -134,14 +135,6 @@ def recall_rpc_error_code(exc):
     if "COULD NOT FIND THE FUNCTION" in message:
         return "PGRST202"
     return ""
-
-
-def recall_rpc_function_missing(exc):
-    code = recall_rpc_error_code(exc)
-    if code in {"PGRST202", "42883"}:
-        return True
-    message = safe_text(getattr(exc, "message", "") or exc).lower()
-    return "could not find the function" in message or ("function" in message and "does not exist" in message)
 
 
 def recall_query_key(terms):
@@ -1308,31 +1301,25 @@ def search_database_candidates(query, raw_limit=200, memory_limit=80, receipt_ou
     binding_mode = "server-verified"
 
     def execute(candidate_raw_limit, candidate_memory_limit):
-        nonlocal binding_mode
         common = {
             "p_terms": list(terms),
             "p_raw_limit": min(max(safe_int(candidate_raw_limit, 200), 1), 500),
             "p_memory_limit": min(max(safe_int(candidate_memory_limit, 80), 1), 500),
         }
-        try:
-            response = supabase.rpc(
-                "search_project_l_memory_v2",
-                {**common, "p_query_key": query_key},
-            ).execute()
-            binding_mode = "server-verified"
-        except Exception as exc:
-            if not recall_rpc_function_missing(exc):
-                raise
-            response = supabase.rpc("search_project_l_memory", common).execute()
-            binding_mode = "legacy-unverified"
+        response = supabase.rpc(
+            "search_project_l_memory_v2",
+            {**common, "p_query_key": query_key},
+        ).execute()
 
         payload = response.data or {}
         if isinstance(payload, list) and len(payload) == 1 and isinstance(payload[0], dict):
             payload = payload[0]
         if not isinstance(payload, dict):
             raise ValueError("candidate search returned a non-object payload")
-        if binding_mode == "server-verified" and safe_text(payload.get("queryKey")) != query_key:
+        if safe_text(payload.get("queryKey")) != query_key:
             raise ValueError("candidate search query cohort mismatch")
+        if safe_text(payload.get("queryContractVersion")) != _RECALL_QUERY_CONTRACT_VERSION:
+            raise ValueError("candidate search query contract mismatch")
 
         raw_rows = payload.get("raw", [])
         memory_rows = payload.get("memories", [])
@@ -1351,6 +1338,7 @@ def search_database_candidates(query, raw_limit=200, memory_limit=80, receipt_ou
                     retrieval_status="checked",
                     retrieval_attempts=attempt + 1,
                     retrieval_query_binding=binding_mode,
+                    retrieval_query_contract_version=_RECALL_QUERY_CONTRACT_VERSION,
                 )
             return result
         except Exception as error:
@@ -1377,6 +1365,7 @@ def search_database_candidates(query, raw_limit=200, memory_limit=80, receipt_ou
                     retrieval_attempts=attempt + 1,
                     retrieval_error_code=code or "non_transient",
                     retrieval_query_binding=binding_mode,
+                    retrieval_query_contract_version=_RECALL_QUERY_CONTRACT_VERSION,
                     retrieval_retry_after=recall_rpc_retry_after(),
                 )
             print(f"INDEXED MEMORY SEARCH UNAVAILABLE code={code or 'non_transient'}")
