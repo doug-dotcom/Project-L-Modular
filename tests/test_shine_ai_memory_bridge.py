@@ -924,3 +924,52 @@ def test_memory_bridge_health_exposes_privacy_safe_metrics(monkeypatch):
     assert "query" not in metrics
     assert "owner" not in metrics
     assert "memory" not in metrics
+
+
+
+def test_memory_bridge_slo_stays_warming_until_minimum_sample_count(monkeypatch):
+    configure(monkeypatch)
+    with bridge._rpc_metrics_lock:
+        bridge._rpc_metrics["requests_total"] = 19
+        bridge._rpc_metrics["success_total"] = 19
+        bridge._rpc_metrics["failure_total"] = 0
+        bridge._rpc_metrics["ewma_latency_ms"] = 100.0
+
+    metrics = bridge._rpc_metrics_snapshot()
+
+    assert metrics["slo_status"] == "warming"
+    assert metrics["slo_min_samples"] == 20
+    assert metrics["slo_availability_target"] == 0.99
+    assert metrics["slo_ewma_latency_target_ms"] == 3000.0
+
+
+def test_memory_bridge_slo_reports_met_after_enough_good_samples(monkeypatch):
+    configure(monkeypatch)
+    with bridge._rpc_metrics_lock:
+        bridge._rpc_metrics["requests_total"] = 100
+        bridge._rpc_metrics["success_total"] = 99
+        bridge._rpc_metrics["failure_total"] = 1
+        bridge._rpc_metrics["ewma_latency_ms"] = 750.0
+
+    metrics = bridge._rpc_metrics_snapshot()
+
+    assert metrics["success_rate"] == 0.99
+    assert metrics["slo_status"] == "met"
+
+
+def test_memory_bridge_slo_reports_missed_for_availability_or_latency(monkeypatch):
+    configure(monkeypatch)
+    with bridge._rpc_metrics_lock:
+        bridge._rpc_metrics["requests_total"] = 100
+        bridge._rpc_metrics["success_total"] = 98
+        bridge._rpc_metrics["failure_total"] = 2
+        bridge._rpc_metrics["ewma_latency_ms"] = 500.0
+
+    assert bridge._rpc_metrics_snapshot()["slo_status"] == "missed"
+
+    with bridge._rpc_metrics_lock:
+        bridge._rpc_metrics["success_total"] = 100
+        bridge._rpc_metrics["failure_total"] = 0
+        bridge._rpc_metrics["ewma_latency_ms"] = 3500.0
+
+    assert bridge._rpc_metrics_snapshot()["slo_status"] == "missed"
