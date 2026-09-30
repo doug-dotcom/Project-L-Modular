@@ -1859,7 +1859,7 @@
       function renderJournalSurface(){
         const entries=Array.isArray(state.journal)?state.journal:[];
         navSurfaceBody.innerHTML=`
-          <p class="surface-intro">A quiet place to put the day into words. Journal entries in this layer stay on this device unless you explicitly choose to bring one into Shine Me.</p>
+          <p class="surface-intro">A quiet place to put the day into words. Journal entries are stored in Shine Me and sync to your verified owner account when available. They remain separate from Project L memory unless you explicitly bring one into the Shine conversation.</p>
           <section class="surface-card">
             <h3>Today</h3>
             <p>Write what happened, what mattered, or what you want to remember.</p>
@@ -1896,7 +1896,7 @@
           save();
           renderJournalSurface();
           const newStatus=navSurfaceBody.querySelector('#journalSurfaceStatus');
-          if(newStatus)newStatus.textContent='Saved on this device ✓';
+          if(newStatus)newStatus.textContent='Saved in Shine Me ✓';
         });
         navSurfaceBody.querySelectorAll('[data-journal-ask]').forEach(button=>button.addEventListener('click',()=>{
           const entry=(state.journal||[])[Number(button.dataset.journalAsk)];
@@ -1947,15 +1947,55 @@
           <section class="surface-card">
             <h3>Your Shine Me data</h3>
             <div class="data-row"><span><strong>Approved memory</strong><small>Grounded through Project L when you ask Shine Me.</small></span><span class="data-state">${escapeHtml(connectionText||'Checking')}</span></div>
-            <div class="data-row"><span><strong>Dashboard activity</strong><small>Mood, goals, routines and progress history.</small></span><span class="data-state">On this device</span></div>
-            <div class="data-row"><span><strong>Journal</strong><small>Your local reflections are not sent anywhere automatically.</small></span><span class="data-state">On this device</span></div>
+            <div class="data-row"><span><strong>Dashboard activity</strong><small>Mood, goals, routines and progress history. Local first, owner-account synced when available.</small></span><span class="data-state" data-sync-state>${syncStateLabel()}</span></div>
+            <div class="data-row"><span><strong>Journal</strong><small>Reflections can sync to your Shine Me owner state but are not Project L memory.</small></span><span class="data-state" data-sync-state>${syncStateLabel()}</span></div>
+          </section>
+          <section class="surface-card">
+            <h3>Account continuity</h3>
+            <p>Shine Me saves locally first, then syncs through the verified owner boundary. The synced state is separate from Project L memory.</p>
+            <div class="data-row"><span><strong>Sync status</strong><small>Revision ${Number(syncMeta.revision||0)}${syncMeta.lastSyncedAt?' · last synced '+new Date(syncMeta.lastSyncedAt).toLocaleString():''}</small></span><span class="data-state" data-sync-state>${syncStateLabel()}</span></div>
+            ${syncMeta.conflict?`<div class="context-handoff"><div class="context-handoff-top"><div class="context-handoff-label"><span><strong>Another device changed first</strong></span></div></div><small>Your local copy is preserved. Choose which version should continue.</small><div class="context-action-row"><button class="surface-action secondary" id="useAccountCopy" type="button">Use account version</button><button class="surface-action" id="keepDeviceCopy" type="button">Keep this device version</button></div></div>`:''}
           </section>
           <section class="surface-card">
             <h3>Local data controls</h3>
-            <p>This clears only the Shine Me dashboard and journal data stored in this browser. It does not delete Project L memory or your account.</p>
-            <button class="danger-action" id="clearLocalShineMe" type="button">Clear local Shine Me activity</button>
+            <p>This clears only this browser\'s Shine Me dashboard and journal copy. It does not delete the synced owner-account copy, Project L memory or your account.</p>
+            <button class="danger-action" id="clearLocalShineMe" type="button">Clear this device copy</button>
             <p class="surface-status" id="clearLocalStatus"></p>
           </section>`;
+        navSurfaceBody.querySelector('#useAccountCopy')?.addEventListener('click',()=>{
+          try{
+            const conflict=JSON.parse(localStorage.getItem(conflictKey)||'null');
+            if(!conflict?.remoteState)throw new Error('missing');
+            applyRemoteState({
+              state:conflict.remoteState,
+              revision:Number(conflict.remoteRevision||0),
+              updated_at:new Date().toISOString()
+            });
+            renderYouSurface();
+          }catch(_){
+            const status=navSurfaceBody.querySelector('#clearLocalStatus');
+            if(status)status.textContent='Could not restore the account copy.';
+          }
+        });
+        navSurfaceBody.querySelector('#keepDeviceCopy')?.addEventListener('click',()=>{
+          try{
+            const conflict=JSON.parse(localStorage.getItem(conflictKey)||'null');
+            if(!conflict)throw new Error('missing');
+            syncMeta.revision=Number(conflict.remoteRevision||0);
+            syncMeta.conflict=false;
+            syncMeta.dirty=true;
+            syncMeta.status='pending';
+            localStorage.removeItem(conflictKey);
+            persistSync();
+            refreshSyncLabels();
+            scheduleAccountSync(0);
+            renderYouSurface();
+          }catch(_){
+            const status=navSurfaceBody.querySelector('#clearLocalStatus');
+            if(status)status.textContent='Could not prepare this device copy for sync.';
+          }
+        });
+
         navSurfaceBody.querySelector('#askYouMemory')?.addEventListener('click',()=>{
           handoffToShine('You','What do you remember about me? Please separate approved memory from inference and tell me where the important details come from.');
         });
@@ -1966,7 +2006,7 @@
           syncDashboard();
           renderYouSurface();
           const status=navSurfaceBody.querySelector('#clearLocalStatus');
-          if(status)status.textContent='Local Shine Me activity cleared.';
+          if(status)status.textContent='This device copy was cleared. The account copy is unchanged.';
         });
       }
 
@@ -2011,7 +2051,7 @@
             <button class="sheet-primary" id="saveMood" type="button">Save check-in</button>
             <button class="sheet-secondary" id="talkMood" type="button">Talk to Shine about this</button>
           </div>
-          <p class="sheet-note" id="sheetNote">Saved on this device for now.</p>`;
+          <p class="sheet-note" id="sheetNote">Saved locally first; owner sync follows when available.</p>`;
         let selected=state.mood;
         body.querySelectorAll('#sheetMoodChoices .choice').forEach(btn=>btn.addEventListener('click',()=>{
           selected=Number(btn.dataset.index);
@@ -2060,7 +2100,7 @@
             <div class="inline-add"><input id="goalInput" maxlength="120" placeholder="Add a goal…"><button class="sheet-primary" id="addGoal" type="button">Add</button></div>
           </div>
           <div class="context-action-row"><button class="sheet-secondary" id="askGoals" type="button">Ask Shine for my next step</button></div>
-          <p class="sheet-note">Goals are kept on this device in this UI layer.</p>`;
+          <p class="sheet-note">Goals are stored in Shine Me state and remain separate from Project L memory.</p>`;
         renderList('goal');
         body.querySelector('#askGoals')?.addEventListener('click',()=>{
           const rows=Array.isArray(state.goals)?state.goals:[];
@@ -2080,7 +2120,7 @@
             <div class="inline-add"><input id="routineInput" maxlength="120" placeholder="Add a routine…"><button class="sheet-primary" id="addRoutine" type="button">Add</button></div>
           </div>
           <div class="context-action-row"><button class="sheet-secondary" id="askRoutines" type="button">Ask Shine about today’s routine</button></div>
-          <p class="sheet-note">Tick them off without turning the day into a punishment.</p>`;
+          <p class="sheet-note">Routines sync as Shine Me state when available; they are not promoted into Project L memory.</p>`;
         renderList('routine');
         body.querySelector('#askRoutines')?.addEventListener('click',()=>{
           const rows=Array.isArray(state.routines)?state.routines:[];
