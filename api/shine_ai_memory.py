@@ -173,14 +173,6 @@ def _close_rpc_circuit() -> None:
         _rpc_failure_streak = 0
 
 
-def _rpc_function_missing(exc: Exception) -> bool:
-    code = _rpc_error_code(exc)
-    if code in {"PGRST202", "42883"}:
-        return True
-    message = str(getattr(exc, "message", "") or str(exc) or "").lower()
-    return "could not find the function" in message or "function" in message and "does not exist" in message
-
-
 def _query_key(terms: list[str]) -> str:
     # Deterministic request/response cohort identifier only; not a security token.
     return hashlib.md5("\x1f".join(terms).encode("utf-8")).hexdigest()
@@ -393,7 +385,6 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
         "p_char_budget": min(12000, max(2400, int(limit) * 1800)),
     }
     retry_index = 0
-    binding_mode = "server-verified"
 
     acquired = _rpc_bulkhead.acquire(timeout=_RPC_BULKHEAD_WAIT_SECONDS)
     if not acquired:
@@ -408,23 +399,10 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
     try:
         while True:
             try:
-                try:
-                    result = _database().rpc(
-                        "project_l_memory_context_service_v2",
-                        {**common_payload, "p_query_key": query_key},
-                    ).execute()
-                    binding_mode = "server-verified"
-                except Exception as exc:
-                    if not _rpc_function_missing(exc):
-                        raise
-                    # Safe deployment-order compatibility only. Once the v2 RPC is
-                    # present, every successful response is server-bound to the exact
-                    # term cohort. Never use this fallback for transient Data API errors.
-                    result = _database().rpc(
-                        "project_l_memory_context_service_v1",
-                        common_payload,
-                    ).execute()
-                    binding_mode = "legacy-unverified"
+                result = _database().rpc(
+                    "project_l_memory_context_service_v2",
+                    {**common_payload, "p_query_key": query_key},
+                ).execute()
                 break
             except Exception as exc:
                 code = _rpc_error_code(exc)
@@ -476,12 +454,11 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
             status_code=503,
             detail="Project L owner-scoped retrieval returned an invalid payload.",
         )
-    if binding_mode == "server-verified":
-        if str(data.get("queryKey") or "") != query_key:
-            raise HTTPException(
-                status_code=503,
-                detail="Project L owner-scoped retrieval failed its query binding check.",
-            )
+    if str(data.get("queryKey") or "") != query_key:
+        raise HTTPException(
+            status_code=503,
+            detail="Project L owner-scoped retrieval failed its query binding check.",
+        )
     if data.get("status") == "no_scope":
         raise HTTPException(
             status_code=503,
@@ -489,7 +466,7 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
         )
     _close_rpc_circuit()
     data = dict(data)
-    data["_queryBinding"] = {"mode": binding_mode, "queryKey": query_key}
+    data["_queryBinding"] = {"mode": "server-verified", "queryKey": query_key}
     return data
 
 
@@ -610,7 +587,7 @@ def retrieve_memory(
     return MemoryRetrieveResponse(
         source="project-l",
         engine="project-l-memory-context-v2",
-        version="2.1",
+        version="2.2",
         recall_active=bool(records),
         records=records,
         receipt={
@@ -626,6 +603,7 @@ def retrieve_memory(
             "bounded": True,
             "read_only": True,
             "legacy_global_search_used": False,
+            "legacy_rpc_fallback_used": False,
             "query_binding": str(query_binding.get("mode") or "unknown"),
             "query_key": str(query_binding.get("queryKey") or ""),
         },
