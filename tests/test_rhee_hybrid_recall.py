@@ -340,6 +340,7 @@ def test_recall_is_not_misread_as_all_or_evidence_mode():
 
 
 def test_deep_recall_is_explicit_without_hijacking_full_swot():
+    assert rhee.explicit_deep_recall_requested("Deep recall Leah") is True
     assert rhee.deep_recall_requested("Deep recall Leah") is True
     assert rhee.exhaustive_requested("Deep recall Leah") is True
     assert rhee.evidence_mode_requested("Deep recall Leah") is True
@@ -347,6 +348,30 @@ def test_deep_recall_is_explicit_without_hijacking_full_swot():
     assert rhee.exhaustive_requested("Tell me all about Leah") is False
     assert "deep" not in rhee.database_search_terms("Deep recall Leah")
     assert "leah" in rhee.database_search_terms("Deep recall Leah")
+
+
+def test_semantic_broad_recall_does_not_report_explicit_deep_recall():
+    from types import SimpleNamespace
+    from layers.layer6_semantic_query_rewriter import install
+
+    prompt = "Recall diving Bali"
+    fake = SimpleNamespace(
+        expanded_query_terms=lambda query: [],
+        deep_recall_requested=rhee.explicit_deep_recall_requested,
+        plan_recall=lambda query, today=None: {
+            "mode": "focused",
+            "raw_candidates": 20,
+            "memory_candidates": 20,
+            "evidence_char_budget": 8000,
+            "retrieval_budget_ms": 1000,
+        },
+        safe_text=rhee.safe_text,
+    )
+    install(fake)
+
+    assert fake.deep_recall_requested(prompt) is True
+    assert rhee.explicit_deep_recall_requested(prompt) is False
+
 
 
 def test_month_first_dates_are_detected_and_prioritised_for_breakup_recall():
