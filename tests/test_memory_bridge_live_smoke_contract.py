@@ -113,6 +113,16 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
                 "storage": "railway-redis-volume",
             }
 
+        def build_runtime_snapshot(self):
+            return {
+                "total_events": 7,
+                "latest_events": [],
+                "captain_counts": {},
+                "event_type_counts": {
+                    "memory_bridge_deploy_slo": 3,
+                },
+            }
+
     monkeypatch.setattr(smoke, "_client", lambda: Client())
     monkeypatch.setattr(smoke, "OBSERVABILITY_LIEUTENANT", Observability())
 
@@ -126,6 +136,7 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
     assert "latency_ms=12.5" in output
     assert "slo=warming" in output
     assert "history=railway-redis-volume" in output
+    assert "history_events=3" in output
     assert "SECRET MEMORY CONTENT" not in output
     assert "diving bali" not in output
     assert "11111111-1111-4111-8111-111111111111" not in output
