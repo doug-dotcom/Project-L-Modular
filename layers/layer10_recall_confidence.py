@@ -19,6 +19,14 @@ def install(rhee):
 
         evidence = list(result.get("evidence") or [])
         count = len(evidence)
+        independence = (
+            result.get("evidence_independence")
+            if isinstance(result.get("evidence_independence"), dict)
+            else {}
+        )
+        independent_lineages = int(independence.get("independent_lineages") or 0)
+        governance_complete = independence.get("governance_metadata_complete") is True
+        governed_count = int(independence.get("governed_evidence_items") or 0)
         escalated = receipt.get("retrieval_escalation") == "performed"
         coverage = receipt.get("coverage_check")
         budget_exceeded = receipt.get("status") == "budget_exceeded"
@@ -41,8 +49,12 @@ def install(rhee):
             wording = "Substantial evidence was retrieved, but expected memory neighbourhoods remain uncovered. State which parts are supported and which were not retrieved."
         else:
             state = "supported_retrieval"
-            confidence = "high" if count >= 12 else "moderate_to_high"
-            wording = "Retrieved evidence is sufficient to answer from memory, subject to provenance and conflict guardrails."
+            if governance_complete and governed_count == count and independent_lineages >= 3:
+                confidence = "high" if independent_lineages >= 6 else "moderate_to_high"
+                wording = "Retrieved evidence has governed provenance and independent lineage support sufficient to answer from memory, subject to conflict guardrails."
+            else:
+                confidence = "moderate"
+                wording = "Retrieved evidence is substantial, but governance completeness or independent-lineage support is limited. Answer from the retrieved material without overstating certainty."
 
         # Critical semantic distinction exposed by Doug's schooling tests:
         # retrieval absence != storage absence. Only a dedicated exhaustive
@@ -52,6 +64,9 @@ def install(rhee):
 RHEE RECALL CONFIDENCE REVIEW
 OUTCOME: {state}
 EVIDENCE SOURCES: {count}
+INDEPENDENT LINEAGES: {independent_lineages}
+GOVERNED EVIDENCE: {governed_count}
+GOVERNANCE COMPLETE: {str(governance_complete).lower()}
 CONFIDENCE: {confidence}
 RETRIEVAL ESCALATED: {str(escalated).lower()}
 GUIDANCE: {wording}
@@ -68,6 +83,9 @@ ABSENCE RULE: Never say or imply 'I do not have this memory', 'it is not in my r
             "state": state,
             "confidence": confidence,
             "evidence_sources": count,
+            "independent_lineages": independent_lineages,
+            "governed_evidence_sources": governed_count,
+            "governance_metadata_complete": governance_complete,
             "retrieval_escalated": escalated,
             "storage_absence_verified": False,
         }
