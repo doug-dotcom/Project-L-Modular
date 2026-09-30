@@ -233,6 +233,24 @@ def evidence_independence_receipt(evidence):
             key = "unknown:" + str(len(lineages))
         lineages.setdefault(key, []).append(source or "unknown")
     shared = sum(1 for sources in lineages.values() if len(sources) > 1)
+    governed = [
+        item for item in rows
+        if isinstance(item, dict) and item.get("provenance") == "owner_scoped_v2"
+    ]
+    authority_classes = {}
+    freshness_classes = {}
+    owner_bound_count = 0
+    for item in governed:
+        authority = item.get("authority")
+        authority = authority if isinstance(authority, dict) else {}
+        freshness = item.get("freshness")
+        freshness = freshness if isinstance(freshness, dict) else {}
+        authority_class = safe_text(authority.get("class")) or "unknown"
+        freshness_class = safe_text(freshness.get("class")) or "unknown"
+        authority_classes[authority_class] = authority_classes.get(authority_class, 0) + 1
+        freshness_classes[freshness_class] = freshness_classes.get(freshness_class, 0) + 1
+        if item.get("owner_bound") is True:
+            owner_bound_count += 1
     return {
         "status": "checked",
         "evidence_items": len(rows),
@@ -240,6 +258,16 @@ def evidence_independence_receipt(evidence):
         "shared_lineages": shared,
         "duplicate_representations": max(0, len(rows) - len(lineages)),
         "confidence_counts_lineages_not_copies": True,
+        "governed_evidence_items": len(governed),
+        "owner_bound_governed_items": owner_bound_count,
+        "governance_metadata_complete": (
+            bool(governed)
+            and owner_bound_count == len(governed)
+            and "unknown" not in authority_classes
+            and "unknown" not in freshness_classes
+        ),
+        "authority_classes": authority_classes,
+        "freshness_classes": freshness_classes,
     }
 
 
