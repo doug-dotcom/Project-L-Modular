@@ -1707,12 +1707,7 @@
           const entry=(state.journal||[])[Number(button.dataset.journalAsk)];
           if(!entry)return;
           const text=[entry.reflection,entry.gratitude?('Grateful for: '+entry.gratitude):'',entry.next?('What matters next: '+entry.next):''].filter(Boolean).join('\n');
-          closeNavSurface();
-          setTimeout(()=>{
-            document.getElementById('journal')?.scrollIntoView({behavior:'smooth'});
-            const q=document.getElementById('question');
-            if(q){ q.value='Help me reflect on this journal entry:\n\n'+text; q.focus(); }
-          },240);
+          handoffToShine('Journal','Help me reflect on this journal entry:\n\n'+text);
         }));
       }
 
@@ -1732,12 +1727,7 @@
             setTimeout(()=>openSheet(action,document.querySelector('[data-panel="'+action+'"]')),220);
             return;
           }
-          closeNavSurface();
-          setTimeout(()=>{
-            document.getElementById('journal')?.scrollIntoView({behavior:'smooth'});
-            const q=document.getElementById('question');
-            if(q){ q.value='Help me clear my head about something that is on my mind.'; q.focus(); }
-          },220);
+          handoffToShine('Discover','Help me clear my head about something that is on my mind.');
         }));
       }
 
@@ -1818,7 +1808,10 @@
             <label for="sheetMoodNote">Anything behind that feeling?</label>
             <textarea id="sheetMoodNote" maxlength="500" placeholder="Optional note…">${escapeHtml(state.moodNote)}</textarea>
           </div>
-          <div class="sheet-actions"><button class="sheet-primary" id="saveMood" type="button">Save check-in</button></div>
+          <div class="sheet-actions">
+            <button class="sheet-primary" id="saveMood" type="button">Save check-in</button>
+            <button class="sheet-secondary" id="talkMood" type="button">Talk to Shine about this</button>
+          </div>
           <p class="sheet-note" id="sheetNote">Saved on this device for now.</p>`;
         let selected=state.mood;
         body.querySelectorAll('#sheetMoodChoices .choice').forEach(btn=>btn.addEventListener('click',()=>{
@@ -1831,6 +1824,12 @@
           save(); syncDashboard();
           const n=body.querySelector('#sheetNote'); if(n)n.textContent='Check-in saved on this device ✓';
           setTimeout(closeSheet,350);
+        });
+        body.querySelector('#talkMood')?.addEventListener('click',()=>{
+          const labels=['very low','low','okay','good','great'];
+          const note=body.querySelector('#sheetMoodNote')?.value.trim()||'';
+          const feeling=Number.isInteger(selected)?labels[selected]:'not selected';
+          handoffToShine('Mood Check-in','I am feeling '+feeling+' today.'+(note?' What is behind it: '+note:'')+' Help me think this through.');
         });
       }
       function renderHealth(){
@@ -1849,12 +1848,7 @@
           <div class="sheet-section"><p class="sheet-copy">Health stays part of your wider story rather than becoming a separate silo. This card is a doorway into Shine Wellness, not a diagnosis screen.</p></div>
           <div class="sheet-actions"><button class="sheet-primary" id="askHealth" type="button">Ask Shine Me about my health</button></div>`;
         body.querySelector('#askHealth')?.addEventListener('click',()=>{
-          closeSheet();
-          setTimeout(()=>{
-            document.getElementById('journal')?.scrollIntoView({behavior:'smooth'});
-            const q=document.getElementById('question');
-            if(q){ q.value='What do you remember about my health and wellbeing?'; q.focus(); }
-          },260);
+          handoffToShine('Health','What do you remember about my health and wellbeing?');
         });
       }
       function renderGoals(){
@@ -1866,8 +1860,16 @@
             <div class="editable-list" id="goalList"></div>
             <div class="inline-add"><input id="goalInput" maxlength="120" placeholder="Add a goal…"><button class="sheet-primary" id="addGoal" type="button">Add</button></div>
           </div>
+          <div class="context-action-row"><button class="sheet-secondary" id="askGoals" type="button">Ask Shine for my next step</button></div>
           <p class="sheet-note">Goals are kept on this device in this UI layer.</p>`;
         renderList('goal');
+        body.querySelector('#askGoals')?.addEventListener('click',()=>{
+          const rows=Array.isArray(state.goals)?state.goals:[];
+          const open=rows.filter(x=>!x.done).map(x=>x.text).slice(0,8);
+          handoffToShine('Goals',open.length
+            ? 'These are the goals I am currently working on:\n- '+open.join('\n- ')+'\n\nHelp me choose the most useful next step.'
+            : 'I do not have an unfinished goal listed right now. Help me work out what matters next.');
+        });
       }
       function renderRoutines(){
         title.textContent='Routines';
@@ -1878,8 +1880,20 @@
             <div class="editable-list" id="routineList"></div>
             <div class="inline-add"><input id="routineInput" maxlength="120" placeholder="Add a routine…"><button class="sheet-primary" id="addRoutine" type="button">Add</button></div>
           </div>
+          <div class="context-action-row"><button class="sheet-secondary" id="askRoutines" type="button">Ask Shine about today’s routine</button></div>
           <p class="sheet-note">Tick them off without turning the day into a punishment.</p>`;
         renderList('routine');
+        body.querySelector('#askRoutines')?.addEventListener('click',()=>{
+          const rows=Array.isArray(state.routines)?state.routines:[];
+          const done=rows.filter(x=>x.done).map(x=>x.text);
+          const open=rows.filter(x=>!x.done).map(x=>x.text);
+          const parts=['My routines today:'];
+          if(done.length)parts.push('Done: '+done.join(', '));
+          if(open.length)parts.push('Still open: '+open.join(', '));
+          if(!rows.length)parts.push('I have not added routines yet.');
+          parts.push('Help me decide what is realistic and useful for the rest of today.');
+          handoffToShine('Routines',parts.join('\n'));
+        });
       }
       function renderList(kind){
         const plural=kind==='goal'?'goals':'routines';
