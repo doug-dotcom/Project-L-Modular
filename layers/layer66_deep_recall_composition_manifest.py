@@ -193,3 +193,8 @@ def install(rhee):
         return output
 
     rhee.build_context_packet = packet
+
+    # Install the request-local origin guard last so all earlier recall layers
+    # can consult it at runtime without changing their public call signatures.
+    from layers.layer67_recall_origin_guard import install as install_recall_origin_guard
+    install_recall_origin_guard(rhee)

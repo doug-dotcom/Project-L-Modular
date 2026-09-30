@@ -18,6 +18,12 @@ def install(rhee):
     previous_search = rhee.search_database_candidates
 
     def explicit_deep_recall(query):
+        # Deep Recall is an explicit user-entry contract. Internal bounded
+        # retries/rewrites may broaden wording but can never promote themselves
+        # into a full-corpus scan.
+        origin_guard = getattr(rhee, "_project_l_internal_recall_pass", None)
+        if origin_guard is not None and bool(origin_guard.get(False)):
+            return False
         text = rhee.safe_text(query).lower()
         # Internal targeted coverage passes already have their own bounded
         # search. Do not turn each sub-pass into another corpus-wide scan.
