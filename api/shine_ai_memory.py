@@ -54,6 +54,7 @@ _TRANSIENT_RPC_RETRY_DELAYS: dict[str, tuple[float, ...]] = {
     "PGRST002": (0.4,),
     "PGRST003": (0.25,),
     "57014": (0.2,),
+    "HTTP_TIMEOUT": (0.25,),
 }
 _DATA_API_CIRCUIT_SECONDS = 8.0
 _DATA_API_CIRCUIT_MAX_SECONDS = 60.0
@@ -72,6 +73,12 @@ _rpc_half_open_probe = threading.Lock()
 
 
 def _rpc_error_code(exc: Exception) -> str:
+    if isinstance(
+        exc,
+        (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.PoolTimeout),
+    ):
+        return "HTTP_TIMEOUT"
+
     code = str(getattr(exc, "code", "") or "").strip().upper()
     if code:
         return code[:80]
@@ -369,7 +376,7 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
                 if retry_index < len(delays):
                     delay = delays[retry_index]
                     retry_index += 1
-                    if code in {"PGRST002", "PGRST003"}:
+                    if code in {"PGRST002", "PGRST003", "HTTP_TIMEOUT"}:
                         # Close the door to concurrent callers while this request
                         # performs its single bounded retry.
                         _open_rpc_circuit(_DATA_API_CIRCUIT_SECONDS)
@@ -381,13 +388,13 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
                     time.sleep(delay)
                     continue
 
-                if code in {"PGRST002", "PGRST003"}:
+                if code in {"PGRST002", "PGRST003", "HTTP_TIMEOUT"}:
                     _escalate_rpc_circuit()
 
                 print("SHINE_AI_MEMORY_RPC_ERROR " + _safe_rpc_error(exc), flush=True)
                 response_retry_after = (
                     _rpc_circuit_retry_after()
-                    if code in {"PGRST002", "PGRST003"}
+                    if code in {"PGRST002", "PGRST003", "HTTP_TIMEOUT"}
                     else 1 if code == "57014"
                     else 0
                 )
