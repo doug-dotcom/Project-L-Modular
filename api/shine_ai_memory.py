@@ -67,6 +67,8 @@ _QUERY_CONTRACT_VERSION = "2"
 _SLO_MIN_SAMPLES = 20
 _SLO_AVAILABILITY_TARGET = 0.99
 _SLO_EWMA_LATENCY_TARGET_MS = 3000.0
+_RUNTIME_ROLLUP_INTERVAL_SECONDS = 300.0
+_RUNTIME_ROLLUP_EVENT = "memory_bridge_runtime_rollup"
 
 _rpc_circuit_lock = threading.Lock()
 _rpc_circuit_open_until = 0.0
@@ -93,10 +95,48 @@ _rpc_metrics = {
     "last_failure_at": 0.0,
 }
 
+_runtime_rollup_lock = threading.Lock()
+_runtime_rollup_last_emit_at = time.monotonic()
+_runtime_rollup_inflight = False
+_runtime_rollup_accumulator = {
+    "requests": 0,
+    "successes": 0,
+    "failures": 0,
+    "latency_sum_ms": 0.0,
+    "latency_max_ms": 0.0,
+    "saturation_rejections": 0,
+    "circuit_rejections": 0,
+    "recovery_probe_rejections": 0,
+    "transient_retries": 0,
+    "breaker_open_events": 0,
+    "http_timeout_failures": 0,
+}
+
+_ROLLUP_COUNTER_MAP = {
+    "requests_total": "requests",
+    "saturation_rejections": "saturation_rejections",
+    "circuit_rejections": "circuit_rejections",
+    "recovery_probe_rejections": "recovery_probe_rejections",
+    "transient_retries": "transient_retries",
+    "breaker_open_events": "breaker_open_events",
+    "http_timeout_failures": "http_timeout_failures",
+}
+
+
+def _rollup_increment(name: str, amount: int = 1) -> None:
+    rollup_key = _ROLLUP_COUNTER_MAP.get(name)
+    if rollup_key is None:
+        return
+    with _runtime_rollup_lock:
+        _runtime_rollup_accumulator[rollup_key] = (
+            int(_runtime_rollup_accumulator.get(rollup_key, 0)) + amount
+        )
+
 
 def _metric_increment(name: str, amount: int = 1) -> None:
     with _rpc_metrics_lock:
         _rpc_metrics[name] = int(_rpc_metrics.get(name, 0)) + amount
+    _rollup_increment(name, amount)
 
 
 def _metric_request_started() -> float:
@@ -130,6 +170,20 @@ def _metric_request_finished(
             "last_success_at" if success else "last_failure_at"
         ] = now
 
+    with _runtime_rollup_lock:
+        outcome_key = "successes" if success else "failures"
+        _runtime_rollup_accumulator[outcome_key] = (
+            int(_runtime_rollup_accumulator.get(outcome_key, 0)) + 1
+        )
+        _runtime_rollup_accumulator["latency_sum_ms"] = (
+            float(_runtime_rollup_accumulator.get("latency_sum_ms", 0.0))
+            + latency_ms
+        )
+        _runtime_rollup_accumulator["latency_max_ms"] = max(
+            float(_runtime_rollup_accumulator.get("latency_max_ms", 0.0)),
+            latency_ms,
+        )
+
     outcome = "success" if success else "failure"
     safe_code = (error_code or "-")[:80]
     print(
@@ -138,6 +192,232 @@ def _metric_request_finished(
         f"code={safe_code}",
         flush=True,
     )
+    _flush_runtime_rollup()
+
+
+def _empty_runtime_rollup_accumulator() -> dict[str, object]:
+    return {
+        "requests": 0,
+        "successes": 0,
+        "failures": 0,
+        "latency_sum_ms": 0.0,
+        "latency_max_ms": 0.0,
+        "saturation_rejections": 0,
+        "circuit_rejections": 0,
+        "recovery_probe_rejections": 0,
+        "transient_retries": 0,
+        "breaker_open_events": 0,
+        "http_timeout_failures": 0,
+    }
+
+
+def _take_runtime_rollup(
+    *,
+    force: bool,
+    rollup_kind: str,
+) -> dict[str, object] | None:
+    global _runtime_rollup_accumulator
+    global _runtime_rollup_inflight
+    global _runtime_rollup_last_emit_at
+
+    now = time.monotonic()
+    with _runtime_rollup_lock:
+        completed = (
+            int(_runtime_rollup_accumulator.get("successes", 0))
+            + int(_runtime_rollup_accumulator.get("failures", 0))
+        )
+        elapsed = max(0.0, now - _runtime_rollup_last_emit_at)
+        if completed <= 0 or _runtime_rollup_inflight:
+            return None
+        if not force and elapsed < _RUNTIME_ROLLUP_INTERVAL_SECONDS:
+            return None
+
+        snapshot = dict(_runtime_rollup_accumulator)
+        snapshot["window_seconds"] = elapsed
+        snapshot["rollup_kind"] = rollup_kind[:40]
+        _runtime_rollup_accumulator = _empty_runtime_rollup_accumulator()
+        _runtime_rollup_inflight = True
+        _runtime_rollup_last_emit_at = now
+        return snapshot
+
+
+def _requeue_runtime_rollup(snapshot: dict[str, object]) -> None:
+    with _runtime_rollup_lock:
+        for key in (
+            "requests",
+            "successes",
+            "failures",
+            "saturation_rejections",
+            "circuit_rejections",
+            "recovery_probe_rejections",
+            "transient_retries",
+            "breaker_open_events",
+            "http_timeout_failures",
+        ):
+            _runtime_rollup_accumulator[key] = (
+                int(_runtime_rollup_accumulator.get(key, 0))
+                + int(snapshot.get(key, 0) or 0)
+            )
+        _runtime_rollup_accumulator["latency_sum_ms"] = (
+            float(_runtime_rollup_accumulator.get("latency_sum_ms", 0.0))
+            + float(snapshot.get("latency_sum_ms", 0.0) or 0.0)
+        )
+        _runtime_rollup_accumulator["latency_max_ms"] = max(
+            float(_runtime_rollup_accumulator.get("latency_max_ms", 0.0)),
+            float(snapshot.get("latency_max_ms", 0.0) or 0.0),
+        )
+
+
+def _runtime_rollup_payload(snapshot: dict[str, object]) -> dict[str, object]:
+    successes = int(snapshot.get("successes", 0) or 0)
+    failures = int(snapshot.get("failures", 0) or 0)
+    completed = successes + failures
+    latency_sum_ms = float(snapshot.get("latency_sum_ms", 0.0) or 0.0)
+    return {
+        "rollup_kind": str(snapshot.get("rollup_kind") or "periodic"),
+        "window_seconds": round(
+            float(snapshot.get("window_seconds", 0.0) or 0.0),
+            1,
+        ),
+        "requests": int(snapshot.get("requests", 0) or 0),
+        "successes": successes,
+        "failures": failures,
+        "availability": (
+            round(successes / completed, 6) if completed else None
+        ),
+        "mean_latency_ms": (
+            round(latency_sum_ms / completed, 1) if completed else None
+        ),
+        "max_latency_ms": round(
+            float(snapshot.get("latency_max_ms", 0.0) or 0.0),
+            1,
+        ),
+        "saturation_rejections": int(
+            snapshot.get("saturation_rejections", 0) or 0
+        ),
+        "circuit_rejections": int(
+            snapshot.get("circuit_rejections", 0) or 0
+        ),
+        "recovery_probe_rejections": int(
+            snapshot.get("recovery_probe_rejections", 0) or 0
+        ),
+        "transient_retries": int(
+            snapshot.get("transient_retries", 0) or 0
+        ),
+        "breaker_open_events": int(
+            snapshot.get("breaker_open_events", 0) or 0
+        ),
+        "http_timeout_failures": int(
+            snapshot.get("http_timeout_failures", 0) or 0
+        ),
+    }
+
+
+def _persist_runtime_rollup(snapshot: dict[str, object]) -> dict[str, object]:
+    global _runtime_rollup_inflight
+    payload = _runtime_rollup_payload(snapshot)
+    result: dict[str, object] = {
+        "recorded": False,
+        "storage": "none",
+        "payload": payload,
+    }
+    try:
+        from orchestration.lieutenants.observability_lieutenant import (
+            OBSERVABILITY_LIEUTENANT,
+        )
+
+        recorded = OBSERVABILITY_LIEUTENANT.record_event(
+            _RUNTIME_ROLLUP_EVENT,
+            payload,
+        )
+        if isinstance(recorded, dict):
+            result.update(recorded)
+
+        if (
+            result.get("recorded") is not True
+            or result.get("storage") != "railway-redis-volume"
+        ):
+            _requeue_runtime_rollup(snapshot)
+        else:
+            print(
+                "SHINE_AI_MEMORY_RUNTIME_ROLLUP "
+                f"kind={payload.get('rollup_kind')} "
+                f"requests={payload.get('requests')} "
+                f"successes={payload.get('successes')} "
+                f"failures={payload.get('failures')} "
+                f"availability={payload.get('availability')} "
+                f"mean_latency_ms={payload.get('mean_latency_ms')} "
+                "storage=railway-redis-volume",
+                flush=True,
+            )
+    except Exception:
+        _requeue_runtime_rollup(snapshot)
+        print(
+            "SHINE_AI_MEMORY_RUNTIME_ROLLUP storage=unavailable requeued=true",
+            flush=True,
+        )
+    finally:
+        with _runtime_rollup_lock:
+            _runtime_rollup_inflight = False
+    return result
+
+
+def _flush_runtime_rollup(
+    *,
+    force: bool = False,
+    synchronous: bool = False,
+    rollup_kind: str = "periodic",
+) -> dict[str, object]:
+    snapshot = _take_runtime_rollup(
+        force=force,
+        rollup_kind=rollup_kind,
+    )
+    if snapshot is None:
+        return {
+            "scheduled": False,
+            "recorded": False,
+            "storage": "none",
+        }
+
+    if synchronous:
+        result = _persist_runtime_rollup(snapshot)
+        result["scheduled"] = True
+        return result
+
+    worker = threading.Thread(
+        target=_persist_runtime_rollup,
+        args=(snapshot,),
+        name="memory-bridge-runtime-rollup",
+        daemon=True,
+    )
+    worker.start()
+    return {
+        "scheduled": True,
+        "recorded": False,
+        "storage": "background",
+    }
+
+
+def _runtime_rollup_state_snapshot() -> dict[str, object]:
+    now = time.monotonic()
+    with _runtime_rollup_lock:
+        completed = (
+            int(_runtime_rollup_accumulator.get("successes", 0))
+            + int(_runtime_rollup_accumulator.get("failures", 0))
+        )
+        return {
+            "interval_seconds": _RUNTIME_ROLLUP_INTERVAL_SECONDS,
+            "pending_completed": completed,
+            "inflight": _runtime_rollup_inflight,
+            "seconds_until_due": round(
+                max(
+                    0.0,
+                    _RUNTIME_ROLLUP_INTERVAL_SECONDS
+                    - max(0.0, now - _runtime_rollup_last_emit_at),
+                ),
+                1,
+            ),
+        }
 
 
 def _rpc_metrics_snapshot() -> dict[str, object]:
@@ -198,6 +478,7 @@ def _rpc_metrics_snapshot() -> dict[str, object]:
             if last_failure_at > 0
             else None
         ),
+        "runtime_rollup": _runtime_rollup_state_snapshot(),
     }
 
 
