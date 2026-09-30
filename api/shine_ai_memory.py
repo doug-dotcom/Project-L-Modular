@@ -1,3 +1,4 @@
+import hashlib
 import math
 import os
 import re
@@ -51,9 +52,10 @@ _db_transport = None
 # failed retry to stop concurrent callers from hammering a recovering Data API.
 _TRANSIENT_RPC_RETRY_DELAYS: dict[str, tuple[float, ...]] = {
     "PGRST002": (0.4,),
+    "PGRST003": (0.25,),
     "57014": (0.2,),
 }
-_PGRST002_CIRCUIT_SECONDS = 4.0
+_DATA_API_CIRCUIT_SECONDS = 8.0
 _rpc_circuit_lock = threading.Lock()
 _rpc_circuit_open_until = 0.0
 
@@ -83,6 +85,25 @@ def _open_rpc_circuit(seconds: float) -> None:
             _rpc_circuit_open_until,
             time.monotonic() + max(0.0, seconds),
         )
+
+
+def _close_rpc_circuit() -> None:
+    global _rpc_circuit_open_until
+    with _rpc_circuit_lock:
+        _rpc_circuit_open_until = 0.0
+
+
+def _rpc_function_missing(exc: Exception) -> bool:
+    code = _rpc_error_code(exc)
+    if code in {"PGRST202", "42883"}:
+        return True
+    message = str(getattr(exc, "message", "") or str(exc) or "").lower()
+    return "could not find the function" in message or "function" in message and "does not exist" in message
+
+
+def _query_key(terms: list[str]) -> str:
+    # Deterministic request/response cohort identifier only; not a security token.
+    return hashlib.md5("\x1f".join(terms).encode("utf-8")).hexdigest()
 
 
 def _safe_rpc_error(exc: Exception) -> str:
@@ -240,6 +261,7 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
             "matches": [],
             "returnedCount": 0,
             "scope": {"ownerBound": True},
+            "_queryBinding": {"mode": "empty-query", "queryKey": _query_key([])},
         }
 
     retry_after = _rpc_circuit_retry_after()
@@ -250,20 +272,35 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
             headers={"Retry-After": str(retry_after)},
         )
 
-    rpc_payload = {
+    query_key = _query_key(terms)
+    common_payload = {
         "p_user": owner_id,
         "p_terms": terms,
         "p_limit": min(max(int(limit), 1), 6),
         "p_char_budget": min(12000, max(2400, int(limit) * 1800)),
     }
     retry_index = 0
+    binding_mode = "server-verified"
 
     while True:
         try:
-            result = _database().rpc(
-                "project_l_memory_context_service_v1",
-                rpc_payload,
-            ).execute()
+            try:
+                result = _database().rpc(
+                    "project_l_memory_context_service_v2",
+                    {**common_payload, "p_query_key": query_key},
+                ).execute()
+                binding_mode = "server-verified"
+            except Exception as exc:
+                if not _rpc_function_missing(exc):
+                    raise
+                # Safe deployment-order compatibility only. Once the v2 RPC is
+                # present, every successful response is server-bound to the exact
+                # term cohort. Never use this fallback for transient Data API errors.
+                result = _database().rpc(
+                    "project_l_memory_context_service_v1",
+                    common_payload,
+                ).execute()
+                binding_mode = "legacy-unverified"
             break
         except Exception as exc:
             code = _rpc_error_code(exc)
@@ -271,6 +308,8 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
             if retry_index < len(delays):
                 delay = delays[retry_index]
                 retry_index += 1
+                if code in {"PGRST002", "PGRST003"}:
+                    _open_rpc_circuit(_DATA_API_CIRCUIT_SECONDS)
                 print(
                     "SHINE_AI_MEMORY_RPC_RETRY "
                     f"code={code} attempt={retry_index} delay={delay:.2f}s",
@@ -279,13 +318,13 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
                 time.sleep(delay)
                 continue
 
-            if code == "PGRST002":
-                _open_rpc_circuit(_PGRST002_CIRCUIT_SECONDS)
+            if code in {"PGRST002", "PGRST003"}:
+                _open_rpc_circuit(_DATA_API_CIRCUIT_SECONDS)
 
             print("SHINE_AI_MEMORY_RPC_ERROR " + _safe_rpc_error(exc), flush=True)
             response_retry_after = (
                 _rpc_circuit_retry_after()
-                if code == "PGRST002"
+                if code in {"PGRST002", "PGRST003"}
                 else 1 if code == "57014"
                 else 0
             )
@@ -307,11 +346,20 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
             status_code=503,
             detail="Project L owner-scoped retrieval returned an invalid payload.",
         )
+    if binding_mode == "server-verified":
+        if str(data.get("queryKey") or "") != query_key:
+            raise HTTPException(
+                status_code=503,
+                detail="Project L owner-scoped retrieval failed its query binding check.",
+            )
     if data.get("status") == "no_scope":
         raise HTTPException(
             status_code=503,
             detail="Project L owner-scoped retrieval has no active permission scope.",
         )
+    _close_rpc_circuit()
+    data = dict(data)
+    data["_queryBinding"] = {"mode": binding_mode, "queryKey": query_key}
     return data
 
 
@@ -392,10 +440,16 @@ def retrieve_memory(
         else {}
     )
 
+    query_binding = (
+        context.get("_queryBinding")
+        if isinstance(context.get("_queryBinding"), dict)
+        else {}
+    )
+
     return MemoryRetrieveResponse(
         source="project-l",
         engine="project-l-memory-context-v2",
-        version="2.0",
+        version="2.1",
         recall_active=bool(records),
         records=records,
         receipt={
@@ -411,5 +465,7 @@ def retrieve_memory(
             "bounded": True,
             "read_only": True,
             "legacy_global_search_used": False,
+            "query_binding": str(query_binding.get("mode") or "unknown"),
+            "query_key": str(query_binding.get("queryKey") or ""),
         },
     )
