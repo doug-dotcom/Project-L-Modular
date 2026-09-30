@@ -33,7 +33,7 @@ class OwnerStateRequest(BaseModel):
 
 
 _DAY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-_STATE_KEYS = {"mood", "moodNote", "goals", "routines", "history", "journal", "lastDay"}
+_STATE_KEYS = {"mood", "moodNote", "goals", "routines", "history", "journal", "dailyCheckins", "lastDay"}
 
 
 def _clean_day(value, *, optional=True):
@@ -105,6 +105,49 @@ def _clean_history(value):
     return history
 
 
+def _clean_daily_checkins(value):
+    if value is None:
+        return {}
+    if not isinstance(value, dict) or len(value) > 30:
+        raise ValueError("Invalid Shine-Me daily check-ins.")
+    rows = {}
+    for day, entry in value.items():
+        key = _clean_day(day, optional=False)
+        if not isinstance(entry, dict):
+            raise ValueError("Invalid Shine-Me daily check-in.")
+        score = entry.get("score")
+        sleep = entry.get("sleep")
+        for name, number in (("score", score), ("sleep", sleep)):
+            if number is not None and (
+                not isinstance(number, (int, float))
+                or isinstance(number, bool)
+                or number < 0
+                or number > 10
+            ):
+                raise ValueError(f"Invalid Shine-Me daily {name}.")
+        mood = entry.get("mood")
+        if mood is not None and (not isinstance(mood, int) or isinstance(mood, bool) or not 0 <= mood <= 4):
+            raise ValueError("Invalid Shine-Me daily mood.")
+        updated_at = entry.get("updatedAt")
+        if updated_at is not None and (
+            not isinstance(updated_at, str) or len(updated_at) > 64
+        ):
+            raise ValueError("Invalid Shine-Me daily check-in timestamp.")
+        rows[key] = {
+            "mood": mood,
+            "feeling1": _clean_text(entry.get("feeling1"), 40).strip(),
+            "feeling2": _clean_text(entry.get("feeling2"), 40).strip(),
+            "score": score,
+            "sleep": sleep,
+            "gratitude": _clean_text(entry.get("gratitude"), 500),
+            "challenge": _clean_text(entry.get("challenge"), 500),
+            "intention": _clean_text(entry.get("intention"), 500),
+            "note": _clean_text(entry.get("note"), 1000),
+            "updatedAt": updated_at,
+        }
+    return rows
+
+
 def _clean_journal(value):
     if value is None:
         return []
@@ -139,6 +182,7 @@ def _clean_owner_state(raw):
         "routines": _clean_item_list(raw.get("routines")),
         "history": _clean_history(raw.get("history")),
         "journal": _clean_journal(raw.get("journal")),
+        "dailyCheckins": _clean_daily_checkins(raw.get("dailyCheckins")),
         "lastDay": _clean_day(raw.get("lastDay"), optional=True),
     }
     if len(json.dumps(clean, separators=(",", ":"), ensure_ascii=False)) > 64_000:
