@@ -11,6 +11,9 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from api import shine_ai_memory as bridge
+from orchestration.lieutenants.observability_lieutenant import (
+    OBSERVABILITY_LIEUTENANT,
+)
 
 
 def _required_env(*names: str) -> str:
@@ -133,6 +136,19 @@ def main() -> None:
             "Project L memory bridge live smoke: FAIL telemetry-unverified"
         )
 
+    history = OBSERVABILITY_LIEUTENANT.record_event(
+        "memory_bridge_deploy_slo",
+        {
+            "circuit_state": after.get("circuit_state"),
+            "records": receipt.get("records_returned"),
+            "contract_version": receipt.get("query_contract_version"),
+            "telemetry_requests": after_metrics.get("requests_total"),
+            "success_rate": after_metrics.get("success_rate"),
+            "latency_ms": after_metrics.get("last_latency_ms"),
+            "slo_status": after_metrics.get("slo_status"),
+        },
+    )
+
     print(
         "Project L memory bridge live smoke: PASS "
         f"circuit={after.get('circuit_state')} "
@@ -142,7 +158,9 @@ def main() -> None:
         f"contract={receipt.get('query_contract_version')} "
         f"requests={after_metrics.get('requests_total')} "
         f"success_rate={after_metrics.get('success_rate')} "
-        f"latency_ms={after_metrics.get('last_latency_ms')}"
+        f"latency_ms={after_metrics.get('last_latency_ms')} "
+        f"slo={after_metrics.get('slo_status')} "
+        f"history={history.get('storage')}"
     )
 
 
