@@ -64,6 +64,7 @@ _rpc_circuit_lock = threading.Lock()
 _rpc_circuit_open_until = 0.0
 _rpc_failure_streak = 0
 _rpc_bulkhead = threading.BoundedSemaphore(_MAX_CONCURRENT_MEMORY_RPCS)
+_rpc_half_open_probe = threading.Lock()
 
 
 def _rpc_error_code(exc: Exception) -> str:
@@ -82,6 +83,14 @@ def _rpc_circuit_retry_after() -> int:
     with _rpc_circuit_lock:
         remaining = _rpc_circuit_open_until - time.monotonic()
     return max(1, math.ceil(remaining)) if remaining > 0 else 0
+
+
+def _rpc_requires_half_open_probe() -> bool:
+    with _rpc_circuit_lock:
+        return (
+            _rpc_failure_streak > 0
+            and _rpc_circuit_open_until <= time.monotonic()
+        )
 
 
 def _open_rpc_circuit(seconds: float) -> None:
@@ -295,6 +304,16 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
             headers={"Retry-After": str(retry_after)},
         )
 
+    probe_acquired = False
+    if _rpc_requires_half_open_probe():
+        probe_acquired = _rpc_half_open_probe.acquire(blocking=False)
+        if not probe_acquired:
+            raise HTTPException(
+                status_code=503,
+                detail="Project L owner-scoped retrieval recovery probe is already in progress.",
+                headers={"Retry-After": "1"},
+            )
+
     query_key = _query_key(terms)
     common_payload = {
         "p_user": owner_id,
@@ -307,6 +326,8 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
 
     acquired = _rpc_bulkhead.acquire(timeout=_RPC_BULKHEAD_WAIT_SECONDS)
     if not acquired:
+        if probe_acquired:
+            _rpc_half_open_probe.release()
         raise HTTPException(
             status_code=503,
             detail="Project L owner-scoped retrieval is temporarily saturated.",
@@ -373,6 +394,8 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
                 ) from exc
     finally:
         _rpc_bulkhead.release()
+        if probe_acquired:
+            _rpc_half_open_probe.release()
 
     data = result.data
     if isinstance(data, list) and len(data) == 1 and isinstance(data[0], dict):
