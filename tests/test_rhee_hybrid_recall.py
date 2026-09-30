@@ -1227,6 +1227,7 @@ def test_final_deep_recall_conflict_reconciliation_preserves_reviewed_unresolved
         safe_text=lambda value: "" if value is None else str(value).strip(),
         term_in_text=lambda term, text: term in text,
         load_all_raw_catchall=lambda: [],
+        load_all_memories=lambda: [],
     )
     install(fake)
 
@@ -1254,6 +1255,7 @@ def test_final_deep_recall_conflict_reconciliation_does_not_infer_from_cue_words
         safe_text=lambda value: "" if value is None else str(value).strip(),
         term_in_text=lambda term, text: term in text,
         load_all_raw_catchall=lambda: [],
+        load_all_memories=lambda: [],
     )
     install(fake)
 
