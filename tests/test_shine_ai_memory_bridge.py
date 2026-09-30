@@ -641,3 +641,36 @@ def test_successful_half_open_probe_resets_breaker(monkeypatch):
     assert state == {"probe_acquires": 1, "probe_releases": 1}
     assert bridge._rpc_failure_streak == 0
     assert bridge._rpc_circuit_open_until == 0.0
+
+
+
+def test_http_timeout_retries_once_then_opens_adaptive_circuit(monkeypatch):
+    configure(monkeypatch)
+    calls = {"count": 0}
+    now = {"value": 400.0}
+    sleeps = []
+
+    class Rpc:
+        def execute(self):
+            calls["count"] += 1
+            raise bridge.httpx.ReadTimeout("database read timed out")
+
+    class Database:
+        def rpc(self, name, payload):
+            return Rpc()
+
+    monkeypatch.setattr(bridge, "_database", lambda: Database())
+    monkeypatch.setattr(bridge.time, "sleep", lambda delay: sleeps.append(delay))
+    monkeypatch.setattr(bridge.time, "monotonic", lambda: now["value"])
+
+    try:
+        bridge._owner_context(OWNER, "Dive history", 4)
+        assert False, "expected HTTPException"
+    except Exception as exc:
+        assert getattr(exc, "status_code", None) == 503
+        assert getattr(exc, "headers", {})["Retry-After"] == "8"
+
+    assert calls["count"] == 2
+    assert sleeps == [0.25]
+    assert bridge._rpc_failure_streak == 1
+    assert bridge._rpc_circuit_retry_after() == 8
