@@ -1154,3 +1154,86 @@ def test_runtime_rollup_payload_contains_only_aggregate_operational_data():
             "secret",
         )
     )
+
+
+
+def test_shutdown_flush_persists_pending_runtime_rollup(monkeypatch):
+    configure(monkeypatch)
+    recorded = []
+
+    with bridge._runtime_rollup_lock:
+        bridge._runtime_rollup_accumulator["requests"] = 2
+        bridge._runtime_rollup_accumulator["successes"] = 2
+        bridge._runtime_rollup_accumulator["latency_sum_ms"] = 900.0
+        bridge._runtime_rollup_accumulator["latency_max_ms"] = 500.0
+        bridge._runtime_rollup_inflight = False
+
+    def persist(snapshot):
+        recorded.append(dict(snapshot))
+        with bridge._runtime_rollup_lock:
+            bridge._runtime_rollup_inflight = False
+        return {
+            "recorded": True,
+            "storage": "railway-redis-volume",
+        }
+
+    monkeypatch.setattr(bridge, "_persist_runtime_rollup", persist)
+
+    result = bridge.flush_memory_runtime_rollup_on_shutdown()
+
+    assert result["scheduled"] is True
+    assert result["recorded"] is True
+    assert result["storage"] == "railway-redis-volume"
+    assert len(recorded) == 1
+    assert recorded[0]["rollup_kind"] == "shutdown"
+    assert recorded[0]["requests"] == 2
+    assert recorded[0]["successes"] == 2
+    assert recorded[0]["failures"] == 0
+    assert recorded[0]["latency_sum_ms"] == 900.0
+
+
+def test_shutdown_flush_waits_for_inflight_rollup_then_flushes_requeued_metrics(
+    monkeypatch,
+):
+    configure(monkeypatch)
+    state = {"now": 1000.0, "sleep_calls": 0}
+    recorded = []
+
+    with bridge._runtime_rollup_lock:
+        bridge._runtime_rollup_inflight = True
+
+    def fake_monotonic():
+        return state["now"]
+
+    def fake_sleep(delay):
+        state["sleep_calls"] += 1
+        state["now"] += delay
+        if state["sleep_calls"] == 1:
+            with bridge._runtime_rollup_lock:
+                bridge._runtime_rollup_inflight = False
+                bridge._runtime_rollup_accumulator["requests"] = 1
+                bridge._runtime_rollup_accumulator["failures"] = 1
+                bridge._runtime_rollup_accumulator["latency_sum_ms"] = 250.0
+                bridge._runtime_rollup_accumulator["latency_max_ms"] = 250.0
+
+    def persist(snapshot):
+        recorded.append(dict(snapshot))
+        with bridge._runtime_rollup_lock:
+            bridge._runtime_rollup_inflight = False
+        return {
+            "recorded": True,
+            "storage": "railway-redis-volume",
+        }
+
+    monkeypatch.setattr(bridge.time, "monotonic", fake_monotonic)
+    monkeypatch.setattr(bridge.time, "sleep", fake_sleep)
+    monkeypatch.setattr(bridge, "_persist_runtime_rollup", persist)
+
+    result = bridge.flush_memory_runtime_rollup_on_shutdown()
+
+    assert state["sleep_calls"] >= 1
+    assert result["recorded"] is True
+    assert recorded[0]["rollup_kind"] == "shutdown"
+    assert recorded[0]["requests"] == 1
+    assert recorded[0]["successes"] == 0
+    assert recorded[0]["failures"] == 1
