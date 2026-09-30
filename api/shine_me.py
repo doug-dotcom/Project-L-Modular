@@ -1,7 +1,10 @@
 """Owner-only context endpoint for the native Shine-Me companion."""
 
+import json
 import os
+import re
 from collections.abc import Callable
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
@@ -24,10 +27,132 @@ class CorrectionRequest(BaseModel):
     proposed_correction: str = Field(min_length=1, max_length=2000)
 
 
+class OwnerStateRequest(BaseModel):
+    state: dict
+    expected_revision: int = Field(ge=0, le=2_147_483_647)
+
+
+_DAY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+_STATE_KEYS = {"mood", "moodNote", "goals", "routines", "history", "journal", "lastDay"}
+
+
+def _clean_day(value, *, optional=True):
+    if value is None and optional:
+        return None
+    if not isinstance(value, str) or not _DAY_RE.fullmatch(value):
+        raise ValueError("Invalid Shine-Me state date.")
+    return value
+
+
+def _clean_text(value, maximum):
+    if value is None:
+        return ""
+    if not isinstance(value, str) or len(value) > maximum:
+        raise ValueError("Invalid Shine-Me state text.")
+    return value
+
+
+def _clean_item_list(value, *, maximum=100):
+    if value is None:
+        return []
+    if not isinstance(value, list) or len(value) > maximum:
+        raise ValueError("Invalid Shine-Me state list.")
+    rows = []
+    for item in value:
+        if not isinstance(item, dict):
+            raise ValueError("Invalid Shine-Me state item.")
+        text = _clean_text(item.get("text"), 120).strip()
+        if not text:
+            raise ValueError("Shine-Me state item text cannot be blank.")
+        rows.append({
+            "text": text,
+            "done": bool(item.get("done", False)),
+            "completedOn": _clean_day(item.get("completedOn"), optional=True),
+        })
+    return rows
+
+
+def _clean_history(value):
+    if value is None:
+        return {}
+    if not isinstance(value, dict) or len(value) > 30:
+        raise ValueError("Invalid Shine-Me history.")
+    history = {}
+    for day, entry in value.items():
+        key = _clean_day(day, optional=False)
+        if not isinstance(entry, dict):
+            raise ValueError("Invalid Shine-Me history entry.")
+        mood = entry.get("mood")
+        if mood is not None and (not isinstance(mood, int) or not 0 <= mood <= 4):
+            raise ValueError("Invalid Shine-Me mood history.")
+        def bounded_count(name):
+            count = entry.get(name, 0)
+            if not isinstance(count, int) or not 0 <= count <= 1000:
+                raise ValueError("Invalid Shine-Me history count.")
+            return count
+        touched = entry.get("touchedAt")
+        if touched is not None and (not isinstance(touched, str) or len(touched) > 64):
+            raise ValueError("Invalid Shine-Me history timestamp.")
+        history[key] = {
+            "mood": mood,
+            "goalCompleted": bounded_count("goalCompleted"),
+            "goalDoneTotal": bounded_count("goalDoneTotal"),
+            "goalTotal": bounded_count("goalTotal"),
+            "routineCompleted": bounded_count("routineCompleted"),
+            "routineTotal": bounded_count("routineTotal"),
+            "touchedAt": touched,
+        }
+    return history
+
+
+def _clean_journal(value):
+    if value is None:
+        return []
+    if not isinstance(value, list) or len(value) > 30:
+        raise ValueError("Invalid Shine-Me journal.")
+    rows = []
+    for entry in value:
+        if not isinstance(entry, dict):
+            raise ValueError("Invalid Shine-Me journal entry.")
+        created = entry.get("createdAt")
+        if not isinstance(created, str) or not created or len(created) > 64:
+            raise ValueError("Invalid Shine-Me journal timestamp.")
+        rows.append({
+            "createdAt": created,
+            "reflection": _clean_text(entry.get("reflection"), 1500),
+            "gratitude": _clean_text(entry.get("gratitude"), 600),
+            "next": _clean_text(entry.get("next"), 600),
+        })
+    return rows
+
+
+def _clean_owner_state(raw):
+    if not isinstance(raw, dict) or set(raw) - _STATE_KEYS:
+        raise ValueError("Unsupported Shine-Me state fields.")
+    mood = raw.get("mood")
+    if mood is not None and (not isinstance(mood, int) or not 0 <= mood <= 4):
+        raise ValueError("Invalid Shine-Me mood.")
+    clean = {
+        "mood": mood,
+        "moodNote": _clean_text(raw.get("moodNote"), 500),
+        "goals": _clean_item_list(raw.get("goals")),
+        "routines": _clean_item_list(raw.get("routines")),
+        "history": _clean_history(raw.get("history")),
+        "journal": _clean_journal(raw.get("journal")),
+        "lastDay": _clean_day(raw.get("lastDay"), optional=True),
+    }
+    if len(json.dumps(clean, separators=(",", ":"), ensure_ascii=False)) > 64_000:
+        raise ValueError("Shine-Me state is too large.")
+    return clean
+
+
 def routes(
     retrieve, cognize, check_freshness,
     save_correction: Callable[[dict], object] | None = None,
     list_corrections: Callable[[str], object] | None = None,
+    load_owner_state: Callable[[str], object] | None = None,
+    insert_owner_state: Callable[[dict], object] | None = None,
+    update_owner_state: Callable[[str, int, dict], object] | None = None,
 ) -> APIRouter:
     router = APIRouter(tags=["shine-me"])
 
@@ -64,6 +189,89 @@ def routes(
             raise HTTPException(403, "This account cannot access Shine-Me memory.") from exc
         except RuntimeError as exc:
             raise HTTPException(503, "Shine-Me owner binding is unavailable.") from exc
+
+
+    @router.get("/shine-me/state")
+    def owner_state(request: Request) -> dict:
+        binding(request)
+        if not os.getenv("SUPABASE_SERVICE_ROLE_KEY") or load_owner_state is None:
+            raise HTTPException(503, "Shine-Me account sync is temporarily unavailable.")
+        owner_id = str(os.getenv("PROJECT_L_OWNER_ID") or "").strip()
+        try:
+            result = load_owner_state(owner_id)
+            rows = getattr(result, "data", None)
+            if not isinstance(rows, list):
+                raise RuntimeError("Invalid state result")
+            if not rows:
+                return {"status": "empty", "state": None, "revision": 0, "updated_at": None}
+            if len(rows) != 1 or rows[0].get("owner_id") != owner_id:
+                raise RuntimeError("State owner mismatch")
+            row = rows[0]
+            return {
+                "status": "synced",
+                "state": _clean_owner_state(row.get("state") or {}),
+                "revision": int(row.get("revision") or 0),
+                "updated_at": row.get("updated_at"),
+            }
+        except ValueError as exc:
+            raise HTTPException(503, "Stored Shine-Me state is invalid.") from exc
+        except Exception as exc:
+            raise HTTPException(503, "Shine-Me account state could not be loaded.") from exc
+
+    @router.put("/shine-me/state")
+    def save_owner_state(payload: OwnerStateRequest, request: Request) -> dict:
+        binding(request)
+        if (
+            not os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+            or load_owner_state is None
+            or insert_owner_state is None
+            or update_owner_state is None
+        ):
+            raise HTTPException(503, "Shine-Me account sync is temporarily unavailable.")
+        owner_id = str(os.getenv("PROJECT_L_OWNER_ID") or "").strip()
+        try:
+            clean_state = _clean_owner_state(payload.state)
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from exc
+
+        now = datetime.now(timezone.utc).isoformat()
+        next_revision = payload.expected_revision + 1
+        row = {
+            "owner_id": owner_id,
+            "state": clean_state,
+            "revision": next_revision,
+            "updated_at": now,
+        }
+        try:
+            if payload.expected_revision == 0:
+                current = load_owner_state(owner_id)
+                existing = getattr(current, "data", None)
+                if not isinstance(existing, list):
+                    raise RuntimeError("Invalid state result")
+                if existing:
+                    raise HTTPException(409, "Shine-Me state changed on another device.")
+                saved = insert_owner_state(row)
+            else:
+                saved = update_owner_state(owner_id, payload.expected_revision, row)
+
+            rows = getattr(saved, "data", None)
+            if not isinstance(rows, list) or len(rows) != 1:
+                raise HTTPException(409, "Shine-Me state changed on another device.")
+            stored = rows[0]
+            if (
+                stored.get("owner_id") != owner_id
+                or int(stored.get("revision") or 0) != next_revision
+            ):
+                raise RuntimeError("Invalid state receipt")
+            return {
+                "status": "synced",
+                "revision": next_revision,
+                "updated_at": stored.get("updated_at") or now,
+            }
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise HTTPException(503, "Shine-Me account state could not be saved.") from exc
 
     @router.post("/shine-me/context")
     def context(payload: ContextRequest, request: Request) -> dict:
