@@ -50,6 +50,7 @@ jobs:
           python -m py_compile
           api/server.py
           api/shine_ai_memory.py
+          scripts/verify_memory_bridge_live.py
           api/shine_me.py
           layers/layer11_true_deep_recall.py
           sitecustomize.py
@@ -113,6 +114,7 @@ jobs:
           tests/test_durable_tasks.py
           tests/test_durable_ui.py
           tests/test_shine_ai_memory_bridge.py
+          tests/test_memory_bridge_live_smoke_contract.py
           tests/test_shine_ai_bridge.py
           tests/test_shine_me_context.py
           tests/test_shine_me_service.py
