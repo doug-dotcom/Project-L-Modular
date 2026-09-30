@@ -228,3 +228,67 @@ def test_foundation_startup_retries_promptly_when_lease_timestamp_is_past():
     )
 
     assert delay == 0.5
+
+
+def test_foundation_busy_does_not_consume_transient_failure_budget():
+    threads = []
+    waits = []
+    results = [
+        {"status": "unavailable", "retry_safe": True},
+        {"status": "busy", "retry_after": 1},
+        {"status": "busy", "retry_after": 1},
+        {"status": "active"},
+    ]
+    monitor = FoundationStartupAuthority(
+        owner_resolver=lambda db: "11111111-1111-4111-8111-111111111111",
+        ensure_impl=lambda *args, **kwargs: results.pop(0),
+        retry_delays_seconds=(1.0,),
+        max_busy_outcomes=4,
+        thread_factory=thread_factory_recorder(threads),
+        wait_impl=lambda delay: waits.append(delay) or False,
+    )
+
+    monitor.start("db")
+    threads[0].run()
+
+    # One transient failure is allowed by this tiny test budget. Busy lease
+    # coordination must not spend the remaining failure slot.
+    assert waits == [1.0, 1.0, 1.0]
+    assert monitor.snapshot() == {
+        "status": "active",
+        "attempts": 4,
+        "background_retry": False,
+        "retry_exhausted": False,
+    }
+
+
+def test_foundation_busy_retries_remain_bounded_independently():
+    threads = []
+    calls = []
+    waits = []
+
+    def ensure_impl(*args, **kwargs):
+        calls.append(True)
+        return {"status": "busy", "retry_after": 1}
+
+    monitor = FoundationStartupAuthority(
+        owner_resolver=lambda db: "11111111-1111-4111-8111-111111111111",
+        ensure_impl=ensure_impl,
+        retry_delays_seconds=(1.0,),
+        max_busy_outcomes=2,
+        thread_factory=thread_factory_recorder(threads),
+        wait_impl=lambda delay: waits.append(delay) or False,
+    )
+
+    monitor.start("db")
+    threads[0].run()
+
+    assert len(calls) == 2
+    assert waits == [1.0]
+    assert monitor.snapshot() == {
+        "status": "busy",
+        "attempts": 2,
+        "background_retry": False,
+        "retry_exhausted": True,
+    }
+
