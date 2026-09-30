@@ -641,3 +641,59 @@ def test_durable_runtime_slo_recovery_streak_stops_at_latest_failure(monkeypatch
     assert summary["failures"] == 1
     assert summary["recovery_successes_since_last_failure"] == 2
     assert summary["recovery_state"] == "recovering"
+
+
+
+def test_observability_memory_slo_snapshot_exposes_runtime_recovery_streak(tmp_path, monkeypatch):
+    from orchestration.lieutenants import observability_lieutenant as module
+
+    lieutenant = module.ObservabilityLieutenant()
+    monkeypatch.setattr(
+        lieutenant,
+        "load_events_with_source",
+        lambda: ([
+            {
+                "event_type": "memory_bridge_runtime_rollup",
+                "payload": {
+                    "rollup_kind": "periodic",
+                    "successes": 8,
+                    "failures": 2,
+                    "mean_latency_ms": 1000.0,
+                },
+            },
+            {
+                "event_type": "memory_bridge_runtime_rollup",
+                "payload": {
+                    "rollup_kind": "periodic",
+                    "successes": 2,
+                    "failures": 0,
+                    "mean_latency_ms": 800.0,
+                },
+            },
+            {
+                "event_type": "memory_bridge_runtime_rollup",
+                "payload": {
+                    "rollup_kind": "canary",
+                    "successes": 99,
+                    "failures": 0,
+                    "mean_latency_ms": 50.0,
+                },
+            },
+            {
+                "event_type": "memory_bridge_runtime_rollup",
+                "payload": {
+                    "rollup_kind": "shutdown",
+                    "successes": 2,
+                    "failures": 0,
+                    "mean_latency_ms": 700.0,
+                },
+            },
+        ], "railway-redis-volume"),
+    )
+
+    runtime = lieutenant.memory_bridge_slo_snapshot()["runtime"]
+
+    assert runtime["failures"] == 2
+    assert runtime["recovery_successes_since_last_failure"] == 4
+    assert runtime["recovery_samples_since_last_failure"] == 4
+    assert runtime["recovery_state"] == "healthy_streak"

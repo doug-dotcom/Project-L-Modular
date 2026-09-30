@@ -363,6 +363,22 @@ class ObservabilityLieutenant:
                 runtime_latency_sum_ms += mean_latency_ms * completed
                 runtime_latency_completed += completed
 
+        recovery_successes = 0
+        recovery_samples = 0
+        for item in reversed(runtime_events):
+            payload = item["payload"]
+            kind = str(payload.get("rollup_kind") or "")
+            if kind == "canary":
+                continue
+            if kind not in {"periodic", "shutdown"}:
+                continue
+            failures = int(payload.get("failures", 0) or 0)
+            successes = int(payload.get("successes", 0) or 0)
+            if failures > 0:
+                break
+            recovery_successes += successes
+            recovery_samples += successes
+
         runtime_samples = runtime_successes + runtime_failures
         runtime_availability = (
             runtime_successes / runtime_samples if runtime_samples else None
@@ -415,6 +431,15 @@ class ObservabilityLieutenant:
                 "periodic_rollups": periodic_rollups,
                 "shutdown_rollups": shutdown_rollups,
                 "canary_rollups": canary_rollups,
+                "recovery_successes_since_last_failure": recovery_successes,
+                "recovery_samples_since_last_failure": recovery_samples,
+                "recovery_state": (
+                    "healthy_streak"
+                    if recovery_samples >= 3
+                    else "recovering"
+                    if recovery_samples > 0
+                    else "no_clean_runtime_samples"
+                ),
             },
         }
 
