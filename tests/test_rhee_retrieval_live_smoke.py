@@ -20,7 +20,20 @@ def packet():
         "recall_active": True,
         "deep_recall": False,
         "evidence": [
-            {"source": "memory_sport:1", "quote_source": "SECRET MEMORY TEXT"}
+            {
+                "source": "memory_sport:1",
+                "quote_source": "SECRET MEMORY TEXT",
+                "provenance": "owner_scoped_v2",
+                "owner_bound": True,
+                "authority": {
+                    "class": "direct_user_promoted_memory",
+                    "precedence": 70,
+                },
+                "freshness": {
+                    "class": "non_temporal_memory",
+                    "temporalCurrentnessHandledSeparately": True,
+                },
+            }
         ],
         "evidence_independence": {
             "status": "checked",
@@ -66,6 +79,7 @@ def test_rhee_live_smoke_prints_receipt_not_memory_content(monkeypatch, capsys):
     assert "binding=server-verified" in output
     assert "contract=2" in output
     assert "evidence=1" in output
+    assert "governed=1" in output
     assert "lineages=1" in output
     assert "SECRET MEMORY TEXT" not in output
     assert "SECRET CONTEXT TEXT" not in output
@@ -103,3 +117,40 @@ def test_rhee_live_smoke_fails_closed_on_wrong_contract(monkeypatch):
         assert False, "expected SystemExit"
     except SystemExit as exc:
         assert "query-contract-invalid" in str(exc)
+
+
+
+def test_rhee_live_smoke_fails_closed_when_governance_metadata_is_lost(monkeypatch):
+    smoke = load_module()
+    bad = packet()
+    bad["evidence"] = [
+        {
+            **bad["evidence"][0],
+            "authority": None,
+        }
+    ]
+    monkeypatch.setattr(smoke.rhee, "build_context_packet", lambda query: bad)
+
+    try:
+        smoke.main()
+        assert False, "expected SystemExit"
+    except SystemExit as exc:
+        assert "authority-metadata-lost" in str(exc)
+
+
+def test_rhee_live_smoke_fails_closed_when_owner_binding_is_lost(monkeypatch):
+    smoke = load_module()
+    bad = packet()
+    bad["evidence"] = [
+        {
+            **bad["evidence"][0],
+            "owner_bound": False,
+        }
+    ]
+    monkeypatch.setattr(smoke.rhee, "build_context_packet", lambda query: bad)
+
+    try:
+        smoke.main()
+        assert False, "expected SystemExit"
+    except SystemExit as exc:
+        assert "owner-binding-lost" in str(exc)
