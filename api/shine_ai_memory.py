@@ -72,6 +72,116 @@ _rpc_bulkhead = threading.BoundedSemaphore(_MAX_CONCURRENT_MEMORY_RPCS)
 # Exactly one caller may test database recovery after an opened circuit cools down.
 _rpc_half_open_probe = threading.Lock()
 
+_rpc_metrics_lock = threading.Lock()
+_rpc_metrics = {
+    "requests_total": 0,
+    "success_total": 0,
+    "failure_total": 0,
+    "saturation_rejections": 0,
+    "circuit_rejections": 0,
+    "recovery_probe_rejections": 0,
+    "transient_retries": 0,
+    "breaker_open_events": 0,
+    "http_timeout_failures": 0,
+    "last_latency_ms": 0.0,
+    "ewma_latency_ms": 0.0,
+    "max_latency_ms": 0.0,
+    "last_success_at": 0.0,
+    "last_failure_at": 0.0,
+}
+
+
+def _metric_increment(name: str, amount: int = 1) -> None:
+    with _rpc_metrics_lock:
+        _rpc_metrics[name] = int(_rpc_metrics.get(name, 0)) + amount
+
+
+def _metric_request_started() -> float:
+    _metric_increment("requests_total")
+    return time.monotonic()
+
+
+def _metric_request_finished(
+    started_at: float,
+    *,
+    success: bool,
+    error_code: str = "",
+) -> None:
+    now = time.monotonic()
+    latency_ms = max(0.0, (now - started_at) * 1000.0)
+    with _rpc_metrics_lock:
+        key = "success_total" if success else "failure_total"
+        _rpc_metrics[key] = int(_rpc_metrics.get(key, 0)) + 1
+        previous_ewma = float(_rpc_metrics.get("ewma_latency_ms", 0.0))
+        _rpc_metrics["last_latency_ms"] = latency_ms
+        _rpc_metrics["ewma_latency_ms"] = (
+            latency_ms
+            if previous_ewma <= 0
+            else previous_ewma * 0.8 + latency_ms * 0.2
+        )
+        _rpc_metrics["max_latency_ms"] = max(
+            float(_rpc_metrics.get("max_latency_ms", 0.0)),
+            latency_ms,
+        )
+        _rpc_metrics[
+            "last_success_at" if success else "last_failure_at"
+        ] = now
+
+    outcome = "success" if success else "failure"
+    safe_code = (error_code or "-")[:80]
+    print(
+        "SHINE_AI_MEMORY_SLO "
+        f"outcome={outcome} latency_ms={latency_ms:.1f} "
+        f"code={safe_code}",
+        flush=True,
+    )
+
+
+def _rpc_metrics_snapshot() -> dict[str, object]:
+    now = time.monotonic()
+    with _rpc_metrics_lock:
+        snapshot = dict(_rpc_metrics)
+
+    requests_total = int(snapshot["requests_total"])
+    success_total = int(snapshot["success_total"])
+    failure_total = int(snapshot["failure_total"])
+    completed_total = success_total + failure_total
+    success_rate = (
+        success_total / completed_total if completed_total > 0 else None
+    )
+
+    last_success_at = float(snapshot["last_success_at"])
+    last_failure_at = float(snapshot["last_failure_at"])
+    return {
+        "requests_total": requests_total,
+        "success_total": success_total,
+        "failure_total": failure_total,
+        "success_rate": (
+            round(success_rate, 6) if success_rate is not None else None
+        ),
+        "saturation_rejections": int(snapshot["saturation_rejections"]),
+        "circuit_rejections": int(snapshot["circuit_rejections"]),
+        "recovery_probe_rejections": int(
+            snapshot["recovery_probe_rejections"]
+        ),
+        "transient_retries": int(snapshot["transient_retries"]),
+        "breaker_open_events": int(snapshot["breaker_open_events"]),
+        "http_timeout_failures": int(snapshot["http_timeout_failures"]),
+        "last_latency_ms": round(float(snapshot["last_latency_ms"]), 1),
+        "ewma_latency_ms": round(float(snapshot["ewma_latency_ms"]), 1),
+        "max_latency_ms": round(float(snapshot["max_latency_ms"]), 1),
+        "seconds_since_last_success": (
+            round(max(0.0, now - last_success_at), 1)
+            if last_success_at > 0
+            else None
+        ),
+        "seconds_since_last_failure": (
+            round(max(0.0, now - last_failure_at), 1)
+            if last_failure_at > 0
+            else None
+        ),
+    }
+
 
 def _rpc_error_code(exc: Exception) -> str:
     if isinstance(
@@ -154,6 +264,7 @@ def _open_rpc_circuit(seconds: float) -> None:
 def _escalate_rpc_circuit() -> int:
     """Increase outage backoff only after a transient RPC has fully failed."""
     global _rpc_circuit_open_until, _rpc_failure_streak
+    _metric_increment("breaker_open_events")
     with _rpc_circuit_lock:
         _rpc_failure_streak += 1
         seconds = min(
@@ -229,6 +340,7 @@ class MemoryBridgeHealthResponse(BaseModel):
     rpc_pool_seconds: float
     read_only: Literal[True]
     fail_closed: Literal[True]
+    metrics: dict[str, object]
 
 
 def _configured_owner(service_token: str) -> str:
@@ -349,7 +461,7 @@ def _query_terms(query: str) -> list[str]:
     return terms
 
 
-def _owner_context(owner_id: str, query: str, limit: int) -> dict:
+def _owner_context_impl(owner_id: str, query: str, limit: int) -> dict:
     terms = _query_terms(query)
     if not terms:
         return {
@@ -362,6 +474,7 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
 
     retry_after = _rpc_circuit_retry_after()
     if retry_after:
+        _metric_increment("circuit_rejections")
         raise HTTPException(
             status_code=503,
             detail="Project L owner-scoped retrieval is temporarily unavailable.",
@@ -372,6 +485,7 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
     if _rpc_requires_half_open_probe():
         probe_acquired = _rpc_half_open_probe.acquire(blocking=False)
         if not probe_acquired:
+            _metric_increment("recovery_probe_rejections")
             raise HTTPException(
                 status_code=503,
                 detail="Project L owner-scoped retrieval recovery probe is already in progress.",
@@ -389,6 +503,7 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
 
     acquired = _rpc_bulkhead.acquire(timeout=_RPC_BULKHEAD_WAIT_SECONDS)
     if not acquired:
+        _metric_increment("saturation_rejections")
         if probe_acquired:
             _rpc_half_open_probe.release()
         raise HTTPException(
@@ -411,6 +526,7 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
                 if retry_index < len(delays):
                     delay = delays[retry_index]
                     retry_index += 1
+                    _metric_increment("transient_retries")
                     if code in {"PGRST002", "PGRST003", "HTTP_TIMEOUT"}:
                         # Close the door to concurrent callers while this request
                         # performs its single bounded retry.
@@ -425,6 +541,8 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
 
                 if code in {"PGRST002", "PGRST003", "HTTP_TIMEOUT"}:
                     _escalate_rpc_circuit()
+                if code == "HTTP_TIMEOUT":
+                    _metric_increment("http_timeout_failures")
 
                 print("SHINE_AI_MEMORY_RPC_ERROR " + _safe_rpc_error(exc), flush=True)
                 response_retry_after = (
@@ -477,6 +595,21 @@ def _owner_context(owner_id: str, query: str, limit: int) -> dict:
         "queryKey": query_key,
         "queryContractVersion": _QUERY_CONTRACT_VERSION,
     }
+    return data
+
+
+def _owner_context(owner_id: str, query: str, limit: int) -> dict:
+    started_at = _metric_request_started()
+    try:
+        data = _owner_context_impl(owner_id, query, limit)
+    except Exception as exc:
+        _metric_request_finished(
+            started_at,
+            success=False,
+            error_code=_rpc_error_code(exc),
+        )
+        raise
+    _metric_request_finished(started_at, success=True)
     return data
 
 
@@ -564,6 +697,7 @@ def memory_bridge_health(
         rpc_pool_seconds=_MEMORY_RPC_POOL_SECONDS,
         read_only=True,
         fail_closed=True,
+        metrics=_rpc_metrics_snapshot(),
     )
 
 
