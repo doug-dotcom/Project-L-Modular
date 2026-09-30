@@ -658,10 +658,13 @@ def test_sparse_recall_escalation_never_promotes_itself_to_explicit_deep_recall(
     from types import SimpleNamespace
     from layers.layer7_retrieval_escalation import install
 
+    from contextvars import ContextVar
+
     calls = []
+    origin_guard = ContextVar("test_internal_recall_pass", default=False)
 
     def base_packet(query):
-        calls.append(query)
+        calls.append((query, origin_guard.get()))
         return {
             "evidence": [],
             "context": "",
@@ -673,6 +676,7 @@ def test_sparse_recall_escalation_never_promotes_itself_to_explicit_deep_recall(
     fake = SimpleNamespace(
         build_context_packet=base_packet,
         safe_text=lambda value: "" if value is None else str(value).strip(),
+        _project_l_internal_recall_pass=origin_guard,
     )
 
     install(fake)
@@ -680,6 +684,57 @@ def test_sparse_recall_escalation_never_promotes_itself_to_explicit_deep_recall(
 
     assert result["recall_plan"]["retrieval_escalation"] == "performed"
     assert len(calls) == 2
-    assert calls[0] == "Recall diving Bali"
-    assert "deep recall" not in calls[1].lower()
-    assert "comprehensive recall history" in calls[1].lower()
+    assert calls[0] == ("Recall diving Bali", False)
+    assert calls[1][1] is True
+    assert "deep recall" not in calls[1][0].lower()
+    assert "comprehensive recall history" in calls[1][0].lower()
+    assert origin_guard.get() is False
+
+
+def test_internal_recall_origin_blocks_true_deep_recall_promotion():
+    from contextvars import ContextVar
+    from types import SimpleNamespace
+    from layers.layer11_true_deep_recall import install
+
+    origin_guard = ContextVar("test_true_deep_recall_origin", default=False)
+
+    def base_plan(query, today=None):
+        return {"mode": "focused", "retrieval_budget_ms": 1000}
+
+    def base_search(query, raw_limit=200, memory_limit=80, receipt_out=None):
+        return {"raw": [], "memories": []}
+
+    fake = SimpleNamespace(
+        plan_recall=base_plan,
+        search_database_candidates=base_search,
+        safe_text=lambda value: "" if value is None else str(value).strip(),
+        term_in_text=lambda term, text: term in text,
+        _project_l_internal_recall_pass=origin_guard,
+    )
+    install(fake)
+
+    token = origin_guard.set(True)
+    try:
+        internal = fake.plan_recall("deep recall family history")
+    finally:
+        origin_guard.reset(token)
+
+    user_entry = fake.plan_recall("deep recall family history")
+
+    assert internal["mode"] == "focused"
+    assert "deep_recall_contract" not in internal
+    assert user_entry["mode"] == "investigate"
+    assert user_entry["deep_recall_contract"] == "full_corpus_scan"
+
+
+def test_recall_origin_guard_is_request_local_and_idempotent():
+    from types import SimpleNamespace
+    from layers.layer67_recall_origin_guard import install
+
+    fake = SimpleNamespace()
+    install(fake)
+    first = fake._project_l_internal_recall_pass
+    install(fake)
+
+    assert fake._project_l_internal_recall_pass is first
+    assert first.get() is False
