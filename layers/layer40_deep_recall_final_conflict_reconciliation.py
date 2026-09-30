@@ -56,19 +56,31 @@ def install(rhee):
 
         plan = dict(result.get("recall_plan") or {})
         output = dict(result)
+
+        # Reconciliation owns the final handoff, but it must not infer a
+        # conflict from cue words. It only normalises a reviewed state already
+        # established by an upstream reconciliation/claim stage.
+        reviewed_state = rhee.safe_text(plan.get("conflict_state")).lower()
+        if reviewed_state not in {
+            "none_reported", "resolved_by_correction", "temporal_transition", "unresolved"
+        }:
+            reviewed_state = "none_reported"
         plan.update({
             "deep_recall_final_conflict_reconciliation": "applied",
             "deep_recall_final_conflict_evidence_items": len(evidence),
             "deep_recall_final_conflict_late_items": len(late_items),
             "deep_recall_final_conflict_user_items": len(user_items),
             "deep_recall_final_conflict_cue_sources": correction_cues[:30],
+            "conflict_state": reviewed_state,
+            "unresolved_conflict": reviewed_state == "unresolved",
+            "deep_recall_conflict_state_handoff": "reviewed-state-only",
         })
         output["recall_plan"] = plan
 
         lines = [
             "DEEP RECALL FINAL AUTHORITY / CONFLICT RECONCILIATION",
             "This review applies to the COMPLETE evidence packet after all current late rescue passes.",
-            f"Final evidence items={len(evidence)}; late-rescued items={len(late_items)}; Doug-authored items={len(user_items)}; records with correction/change cues={len(correction_cues)}.",
+            f"Final evidence items={len(evidence)}; late-rescued items={len(late_items)}; Doug-authored items={len(user_items)}; records with correction/change cues={len(correction_cues)}; reviewed conflict state={reviewed_state}.",
             "Before composing any concrete claim, check whether another retrieved record states a materially different version of the SAME fact.",
             "Do not call two records contradictory merely because they differ: first test whether they describe different time periods, scopes, people, places or stages.",
             "If Doug later explicitly corrects the same fact, prefer that correction under the existing authority policy.",
