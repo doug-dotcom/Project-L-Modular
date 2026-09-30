@@ -542,6 +542,13 @@ app.include_router(shine_me_routes(
     lambda owner_id: supabase.table('shine_me_correction_reviews')
         .select('id,owner_id,question,source,provenance,issue_kind,proposed_correction,status,created_at')
         .eq('owner_id', owner_id).order('created_at', desc=True).limit(50).execute(),
+    lambda owner_id: supabase.table('shine_me_owner_state')
+        .select('owner_id,state,revision,updated_at')
+        .eq('owner_id', owner_id).limit(1).execute(),
+    lambda row: supabase.table('shine_me_owner_state').insert(row).execute(),
+    lambda owner_id, expected_revision, row: supabase.table('shine_me_owner_state')
+        .update(row).eq('owner_id', owner_id)
+        .eq('revision', expected_revision).execute(),
 ))
 
 
