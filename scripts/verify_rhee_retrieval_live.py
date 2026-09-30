@@ -63,6 +63,29 @@ def main() -> None:
     if len(evidence) < 1:
         _fail("evidence-empty")
 
+    governed_evidence = [
+        item for item in evidence
+        if isinstance(item, dict) and item.get("provenance") == "owner_scoped_v2"
+    ]
+    if not governed_evidence:
+        _fail("governed-evidence-empty")
+    if any(item.get("owner_bound") is not True for item in governed_evidence):
+        _fail("owner-binding-lost")
+    if any(not isinstance(item.get("authority"), dict) for item in governed_evidence):
+        _fail("authority-metadata-lost")
+    if any(not isinstance(item.get("freshness"), dict) for item in governed_evidence):
+        _fail("freshness-metadata-lost")
+    if any(
+        not str(item.get("authority", {}).get("class") or "").strip()
+        for item in governed_evidence
+    ):
+        _fail("authority-class-empty")
+    if any(
+        not str(item.get("freshness", {}).get("class") or "").strip()
+        for item in governed_evidence
+    ):
+        _fail("freshness-class-empty")
+
     if plan.get("retrieval_status") != "checked":
         _fail("retrieval-unavailable")
     if plan.get("retrieval_query_binding") != "server-verified":
@@ -97,6 +120,7 @@ def main() -> None:
         f"engine={packet.get('engine')} "
         f"version={packet.get('version')} "
         f"evidence={len(evidence)} "
+        f"governed={len(governed_evidence)} "
         f"lineages={independence.get('independent_lineages')} "
         f"duplicates={independence.get('duplicate_representations')} "
         f"binding={plan.get('retrieval_query_binding')} "
