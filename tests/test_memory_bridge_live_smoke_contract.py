@@ -120,6 +120,17 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
                         "latency_ms": 20.0,
                     },
                 },
+                {
+                    "event_type": "memory_bridge_runtime_rollup",
+                    "payload": {
+                        "rollup_kind": "periodic",
+                        "requests": 2,
+                        "successes": 2,
+                        "failures": 0,
+                        "availability": 1.0,
+                        "mean_latency_ms": 100.0,
+                    },
+                },
             ]
 
         def record_event(self, event_type, payload):
@@ -138,8 +149,36 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
         def load_events(self):
             return list(self.events)
 
+    observability = Observability()
+
+    def flush_runtime_rollup(*, force, synchronous, rollup_kind):
+        assert force is True
+        assert synchronous is True
+        assert rollup_kind == "canary"
+        observability.events.append({
+            "event_type": "memory_bridge_runtime_rollup",
+            "payload": {
+                "rollup_kind": "canary",
+                "requests": 1,
+                "successes": 1,
+                "failures": 0,
+                "availability": 1.0,
+                "mean_latency_ms": 12.5,
+            },
+        })
+        return {
+            "scheduled": True,
+            "recorded": True,
+            "storage": "railway-redis-volume",
+        }
+
     monkeypatch.setattr(smoke, "_client", lambda: Client())
-    monkeypatch.setattr(smoke, "OBSERVABILITY_LIEUTENANT", Observability())
+    monkeypatch.setattr(smoke, "OBSERVABILITY_LIEUTENANT", observability)
+    monkeypatch.setattr(
+        smoke.bridge,
+        "_flush_runtime_rollup",
+        flush_runtime_rollup,
+    )
 
     smoke.main()
 
@@ -156,6 +195,15 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
     assert "durable_successes=3" in output
     assert "durable_failures=0" in output
     assert "durable_availability=1.0" in output
+    assert "runtime_rollup=railway-redis-volume" in output
+    assert "runtime_slo=warming" in output
+    assert "runtime_samples=2" in output
+    assert "runtime_successes=2" in output
+    assert "runtime_failures=0" in output
+    assert "runtime_availability=1.0" in output
+    assert "runtime_mean_latency_ms=100.0" in output
+    assert "runtime_periodic_rollups=1" in output
+    assert "runtime_canary_rollups=1" in output
     assert "SECRET MEMORY CONTENT" not in output
     assert "diving bali" not in output
     assert "11111111-1111-4111-8111-111111111111" not in output
@@ -306,3 +354,104 @@ def test_durable_slo_reports_met_and_missed_after_enough_history(monkeypatch):
     assert missed["successes"] == 19
     assert missed["failures"] == 1
     assert missed["availability"] == 0.95
+
+
+
+def test_durable_runtime_slo_excludes_canary_rollups(monkeypatch):
+    smoke = load_smoke_module()
+
+    class Observability:
+        def load_events(self):
+            return [
+                {
+                    "event_type": "memory_bridge_runtime_rollup",
+                    "payload": {
+                        "rollup_kind": "canary",
+                        "successes": 1,
+                        "failures": 0,
+                        "mean_latency_ms": 50.0,
+                    },
+                },
+                {
+                    "event_type": "memory_bridge_runtime_rollup",
+                    "payload": {
+                        "rollup_kind": "periodic",
+                        "successes": 3,
+                        "failures": 1,
+                        "mean_latency_ms": 400.0,
+                    },
+                },
+            ]
+
+    monkeypatch.setattr(smoke, "OBSERVABILITY_LIEUTENANT", Observability())
+
+    summary = smoke._durable_runtime_slo_summary()
+
+    assert summary["samples"] == 4
+    assert summary["successes"] == 3
+    assert summary["failures"] == 1
+    assert summary["availability"] == 0.75
+    assert summary["mean_latency_ms"] == 400.0
+    assert summary["periodic_rollups"] == 1
+    assert summary["canary_rollups"] == 1
+    assert summary["status"] == "warming"
+
+
+def test_durable_runtime_slo_reports_met_and_missed_after_real_samples(monkeypatch):
+    smoke = load_smoke_module()
+
+    class Observability:
+        events = []
+
+        def load_events(self):
+            return list(self.events)
+
+    obs = Observability()
+    monkeypatch.setattr(smoke, "OBSERVABILITY_LIEUTENANT", obs)
+
+    obs.events = [
+        {
+            "event_type": "memory_bridge_runtime_rollup",
+            "payload": {
+                "rollup_kind": "periodic",
+                "successes": 20,
+                "failures": 0,
+                "mean_latency_ms": 800.0,
+            },
+        }
+    ]
+    met = smoke._durable_runtime_slo_summary()
+    assert met["status"] == "met"
+    assert met["samples"] == 20
+    assert met["availability"] == 1.0
+    assert met["mean_latency_ms"] == 800.0
+
+    obs.events = [
+        {
+            "event_type": "memory_bridge_runtime_rollup",
+            "payload": {
+                "rollup_kind": "periodic",
+                "successes": 19,
+                "failures": 1,
+                "mean_latency_ms": 800.0,
+            },
+        }
+    ]
+    missed_availability = smoke._durable_runtime_slo_summary()
+    assert missed_availability["status"] == "missed"
+    assert missed_availability["availability"] == 0.95
+
+    obs.events = [
+        {
+            "event_type": "memory_bridge_runtime_rollup",
+            "payload": {
+                "rollup_kind": "periodic",
+                "successes": 20,
+                "failures": 0,
+                "mean_latency_ms": 3500.0,
+            },
+        }
+    ]
+    missed_latency = smoke._durable_runtime_slo_summary()
+    assert missed_latency["status"] == "missed"
+    assert missed_latency["mean_latency_ms"] == 3500.0
