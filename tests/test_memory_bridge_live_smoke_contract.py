@@ -697,3 +697,97 @@ def test_observability_memory_slo_snapshot_exposes_runtime_recovery_streak(tmp_p
     assert runtime["recovery_successes_since_last_failure"] == 4
     assert runtime["recovery_samples_since_last_failure"] == 4
     assert runtime["recovery_state"] == "healthy_streak"
+
+
+def test_durable_runtime_recovery_rejects_slow_success_streak(monkeypatch):
+    smoke = load_smoke_module()
+
+    class Observability:
+        def load_events(self):
+            return [
+                {
+                    "event_type": "memory_bridge_runtime_rollup",
+                    "payload": {
+                        "rollup_kind": "periodic",
+                        "successes": 20,
+                        "failures": 1,
+                        "mean_latency_ms": 1000.0,
+                    },
+                },
+                {
+                    "event_type": "memory_bridge_runtime_rollup",
+                    "payload": {
+                        "rollup_kind": "periodic",
+                        "successes": 2,
+                        "failures": 0,
+                        "mean_latency_ms": 3500.0,
+                    },
+                },
+                {
+                    "event_type": "memory_bridge_runtime_rollup",
+                    "payload": {
+                        "rollup_kind": "shutdown",
+                        "successes": 2,
+                        "failures": 0,
+                        "mean_latency_ms": 4000.0,
+                    },
+                },
+            ]
+
+    monkeypatch.setattr(smoke, "OBSERVABILITY_LIEUTENANT", Observability())
+
+    summary = smoke._durable_runtime_slo_summary()
+
+    assert summary["status"] == "missed"
+    assert summary["recovery_successes_since_last_failure"] == 4
+    assert summary["qualified_recovery_successes"] == 0
+    assert summary["recovery_state"] == "latency_degraded"
+    assert summary["operational_state"] == "degraded"
+
+
+def test_observability_marks_historical_miss_as_recovered_observing(monkeypatch):
+    from orchestration.lieutenants import observability_lieutenant as module
+
+    lieutenant = module.ObservabilityLieutenant()
+    monkeypatch.setattr(
+        lieutenant,
+        "load_events_with_source",
+        lambda: ([
+            {
+                "event_type": "memory_bridge_runtime_rollup",
+                "payload": {
+                    "rollup_kind": "periodic",
+                    "successes": 20,
+                    "failures": 2,
+                    "mean_latency_ms": 1000.0,
+                },
+            },
+            {
+                "event_type": "memory_bridge_runtime_rollup",
+                "payload": {
+                    "rollup_kind": "periodic",
+                    "successes": 2,
+                    "failures": 0,
+                    "mean_latency_ms": 800.0,
+                },
+            },
+            {
+                "event_type": "memory_bridge_runtime_rollup",
+                "payload": {
+                    "rollup_kind": "shutdown",
+                    "successes": 2,
+                    "failures": 0,
+                    "mean_latency_ms": 700.0,
+                },
+            },
+        ], "railway-redis-volume"),
+    )
+
+    runtime = lieutenant.memory_bridge_slo_snapshot()["runtime"]
+
+    assert runtime["status"] == "missed"
+    assert runtime["qualified_recovery_successes"] == 4
+    assert runtime["qualified_recovery_samples"] == 4
+    assert runtime["recovery_state"] == "healthy_streak"
+    assert runtime["operational_state"] == "recovered_observing"
+
