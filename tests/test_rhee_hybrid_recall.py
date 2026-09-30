@@ -351,8 +351,25 @@ def test_deep_recall_is_explicit_without_hijacking_full_swot():
 
 
 def test_semantic_broad_recall_does_not_report_explicit_deep_recall():
+    from types import SimpleNamespace
+    from layers.layer6_semantic_query_rewriter import install
+
     prompt = "Recall diving Bali"
-    assert rhee.deep_recall_requested(prompt) is True
+    fake = SimpleNamespace(
+        expanded_query_terms=lambda query: [],
+        deep_recall_requested=rhee.explicit_deep_recall_requested,
+        plan_recall=lambda query, today=None: {
+            "mode": "focused",
+            "raw_candidates": 20,
+            "memory_candidates": 20,
+            "evidence_char_budget": 8000,
+            "retrieval_budget_ms": 1000,
+        },
+        safe_text=rhee.safe_text,
+    )
+    install(fake)
+
+    assert fake.deep_recall_requested(prompt) is True
     assert rhee.explicit_deep_recall_requested(prompt) is False
 
 
