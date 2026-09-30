@@ -747,6 +747,12 @@ def load_table_memories(table_name, batch_size=1000):
     return table_memories
 
 def load_all_memories():
+    # Once a Data API failure has opened the recall circuit, do not let
+    # deep-recall enrichment layers quietly substitute local/cached memory and
+    # then describe it as a complete corpus scan.
+    if recall_rpc_retry_after():
+        return []
+
     now = time.monotonic()
     generation = cache_generation("long_term")
     cached_rows = _memory_cache.get("rows")
@@ -856,6 +862,11 @@ def format_recall_packet(query, limit=25):
 
 
 def load_all_raw_catchall(batch_size=1000):
+    # Prevent downstream deep-recall passes from re-hammering PostgREST after
+    # the first bounded failure and from turning stale cache into "full recall".
+    if recall_rpc_retry_after():
+        return []
+
     now = time.monotonic()
     generation = cache_generation("raw")
     cached_rows = _raw_cache.get("rows")
