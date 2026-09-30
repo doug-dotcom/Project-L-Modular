@@ -86,11 +86,20 @@ RHEE EVIDENCE AUTHORITY REVIEW
         output["context"] = context
         output["context_size"] = len(context)
         receipt = dict(output.get("recall_plan") or {})
+        # Layer 9 establishes the machine-readable conflict contract. It does
+        # not infer a conflict from wording alone. Later reconciliation layers
+        # may promote this state to "unresolved" only after same-fact review.
+        existing_conflict_state = rhee.safe_text(receipt.get("conflict_state")).lower()
+        conflict_state = existing_conflict_state if existing_conflict_state in {
+            "none_reported", "resolved_by_correction", "temporal_transition", "unresolved"
+        } else "none_reported"
         receipt.update({
             "authority_review": "applied",
             "authority_contract": "owner-scoped-v2-precedence-first",
             "authority_counts": counts,
             "conflict_policy": "preserve_primary_conflicts_and_prefer_explicit_user_corrections",
+            "conflict_state": conflict_state,
+            "unresolved_conflict": conflict_state == "unresolved",
         })
         output["recall_plan"] = receipt
         return output
