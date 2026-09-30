@@ -282,6 +282,18 @@ def _durable_runtime_slo_summary() -> dict:
     failures = sum(int(item.get("failures", 0) or 0) for item in runtime)
     completed = successes + failures
 
+    # Keep lifetime SLO truth intact while separately showing whether real
+    # runtime traffic has recovered since the most recent failed rollup.
+    recovery_successes = 0
+    recovery_samples = 0
+    for item in reversed(runtime):
+        item_failures = int(item.get("failures", 0) or 0)
+        item_successes = int(item.get("successes", 0) or 0)
+        if item_failures > 0:
+            break
+        recovery_successes += item_successes
+        recovery_samples += item_successes
+
     latency_sum_ms = 0.0
     latency_completed = 0
     for item in runtime:
@@ -329,6 +341,15 @@ def _durable_runtime_slo_summary() -> dict:
         "periodic_rollups": periodic_rollups,
         "shutdown_rollups": shutdown_rollups,
         "canary_rollups": canary_rollups,
+        "recovery_successes_since_last_failure": recovery_successes,
+        "recovery_samples_since_last_failure": recovery_samples,
+        "recovery_state": (
+            "healthy_streak"
+            if recovery_samples >= 3
+            else "recovering"
+            if recovery_samples > 0
+            else "no_clean_runtime_samples"
+        ),
     }
 
 
@@ -479,6 +500,8 @@ def main() -> None:
         f"runtime_periodic_rollups={runtime_durable.get('periodic_rollups')} "
         f"runtime_shutdown_rollups={runtime_durable.get('shutdown_rollups')} "
         f"runtime_canary_rollups={runtime_durable.get('canary_rollups')} "
+        f"runtime_recovery_state={runtime_durable.get('recovery_state')} "
+        f"runtime_recovery_successes={runtime_durable.get('recovery_successes_since_last_failure')} "
         f"observability_api=verified"
     )
 
