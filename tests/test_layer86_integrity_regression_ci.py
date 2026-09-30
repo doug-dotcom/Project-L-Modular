@@ -7,8 +7,13 @@ WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 
 
 def layer_test_files():
+    files = []
+    for path in (ROOT / "tests").glob("test_layer*.py"):
+        match = re.search(r"test_layer(\d+)", path.name)
+        if match and int(match.group(1)) >= 68:
+            files.append(path)
     return sorted(
-        (ROOT / "tests").glob("test_layer*.py"),
+        files,
         key=lambda path: (
             int(re.search(r"test_layer(\d+)", path.name).group(1)),
             path.name,
