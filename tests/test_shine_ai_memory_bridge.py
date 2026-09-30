@@ -1237,3 +1237,91 @@ def test_shutdown_flush_waits_for_inflight_rollup_then_flushes_requeued_metrics(
     assert recorded[0]["requests"] == 1
     assert recorded[0]["successes"] == 0
     assert recorded[0]["failures"] == 1
+
+
+
+def test_memory_bridge_observability_is_authenticated_and_never_touches_supabase(
+    monkeypatch,
+):
+    configure(monkeypatch)
+    called = {"database": 0, "summary": 0}
+
+    def should_not_run():
+        called["database"] += 1
+        raise AssertionError("observability endpoint must not touch Supabase")
+
+    class Observability:
+        def memory_bridge_slo_snapshot(self):
+            called["summary"] += 1
+            return {
+                "storage": "railway-redis-volume",
+                "targets": {
+                    "min_samples": 20,
+                    "availability": 0.99,
+                    "latency_ms": 3000.0,
+                    "history_limit": 100,
+                },
+                "deployment": {
+                    "status": "warming",
+                    "samples": 8,
+                    "successes": 8,
+                    "failures": 0,
+                    "availability": 1.0,
+                    "ewma_latency_ms": 1461.6,
+                },
+                "runtime": {
+                    "status": "warming",
+                    "samples": 3,
+                    "successes": 3,
+                    "failures": 0,
+                    "availability": 1.0,
+                    "mean_latency_ms": 1428.7,
+                    "periodic_rollups": 1,
+                    "shutdown_rollups": 0,
+                    "canary_rollups": 4,
+                },
+            }
+
+    import orchestration.lieutenants.observability_lieutenant as obs_module
+
+    monkeypatch.setattr(bridge, "_database", should_not_run)
+    monkeypatch.setattr(
+        obs_module,
+        "OBSERVABILITY_LIEUTENANT",
+        Observability(),
+    )
+
+    response = client().get(
+        "/internal/shine-ai/memory/observability",
+        headers={"X-Shine-Service-Token": "x" * 32},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["source"] == "project-l"
+    assert body["component"] == "memory-bridge-observability"
+    assert body["version"] == "1.0"
+    assert body["database_touched"] is False
+    assert body["memory_content_included"] is False
+    assert body["durable"]["storage"] == "railway-redis-volume"
+    assert body["durable"]["deployment"]["samples"] == 8
+    assert body["durable"]["runtime"]["samples"] == 3
+    assert body["durable"]["runtime"]["canary_rollups"] == 4
+    assert body["process_metrics"]["runtime_rollup"]["interval_seconds"] == 300.0
+    assert called == {"database": 0, "summary": 1}
+
+    raw = str(body).lower()
+    for forbidden in (
+        "diving bali",
+        "secret memory",
+        OWNER.lower(),
+        "service-role-key",
+    ):
+        assert forbidden not in raw
+
+    denied = client().get(
+        "/internal/shine-ai/memory/observability",
+        headers={"X-Shine-Service-Token": "wrong"},
+    )
+    assert denied.status_code == 401
+    assert called == {"database": 0, "summary": 1}
