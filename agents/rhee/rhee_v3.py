@@ -9,6 +9,7 @@ import threading
 import time
 from datetime import date, timedelta
 from pathlib import Path
+from uuid import UUID
 
 from memory.identity_core.context_builder import build_identity_context
 from core.cognition.learning_engine import retrieve_growth_context
@@ -140,6 +141,57 @@ def recall_rpc_error_code(exc):
 def recall_query_key(terms):
     # Deterministic cohort identifier only; not used as a security primitive.
     return hashlib.md5("\x1f".join(terms).encode("utf-8")).hexdigest()
+
+
+def project_l_memory_owner_id():
+    """Return the configured single-user owner binding, or fail closed."""
+    value = safe_text(
+        os.getenv("L_MEMORY_OWNER_ID", "")
+        or os.getenv("PROJECT_L_OWNER_ID", "")
+    )
+    if not value:
+        return ""
+    try:
+        return str(UUID(value))
+    except (TypeError, ValueError, AttributeError):
+        return ""
+
+
+def owner_scoped_memory_candidate(match):
+    """Adapt the governed owner-scoped RPC shape to Rhee's memory-row contract."""
+    if not isinstance(match, dict):
+        return None
+    provenance = match.get("provenance")
+    provenance = provenance if isinstance(provenance, dict) else {}
+    source_table = safe_text(provenance.get("sourceTable"))
+    source_id = provenance.get("sourceId")
+    if source_id is None:
+        source_id = match.get("id")
+    content = safe_text(match.get("content"))
+    if not source_table or source_id is None or not content:
+        return None
+
+    source_role = safe_text(provenance.get("sourceRole")).lower()
+    if source_role not in {"user", "assistant"}:
+        source_role = "unknown"
+
+    return {
+        "id": source_id,
+        "_table": source_table,
+        "raw_id": provenance.get("rawId"),
+        "content": content,
+        "primary_subject": safe_text(match.get("subject")),
+        "importance": safe_int(match.get("importance"), 50),
+        "salience": safe_int(match.get("salience"), 50),
+        "anchor": bool(match.get("anchor")),
+        "created_at": safe_text(match.get("createdAt")),
+        "role": source_role,
+        "_source_role": source_role,
+        "_provenance_evidence": "owner_scoped_v2",
+        "_server_match_score": match.get("matchScore"),
+        "_owner_scoped_authority": match.get("authority"),
+        "_owner_scoped_freshness": match.get("freshness"),
+    }
 
 
 def recall_rpc_retry_after():
@@ -1279,10 +1331,28 @@ def database_search_terms(query):
 
 
 def search_database_candidates(query, raw_limit=200, memory_limit=80, receipt_out=None):
-    """Fetch one query-bound indexed cohort, retrying transient failures only."""
+    """Fetch one owner-bound, query-bound indexed cohort.
+
+    The old global public search RPC is intentionally retired. Rhee now uses the
+    same governed owner-scoped v2 service contract as the Shine AI memory bridge.
+    """
     if not supabase:
         if receipt_out is not None:
-            receipt_out.update(retrieval_status="unavailable", retrieval_reason="database_not_configured")
+            receipt_out.update(
+                retrieval_status="unavailable",
+                retrieval_reason="database_not_configured",
+            )
+        return None
+
+    owner_id = project_l_memory_owner_id()
+    if not owner_id:
+        if receipt_out is not None:
+            receipt_out.update(
+                retrieval_status="unavailable",
+                retrieval_reason="owner_binding_not_configured",
+                retrieval_query_binding="owner-unbound",
+                retrieval_owner_bound=False,
+            )
         return None
 
     terms = tuple(database_search_terms(query))
@@ -1290,12 +1360,17 @@ def search_database_candidates(query, raw_limit=200, memory_limit=80, receipt_ou
     if receipt_out is not None:
         receipt_out.update(
             retrieval_query_key=query_key,
-            retrieval_query_contract="v2",
+            retrieval_query_contract="owner-scoped-v2",
             retrieval_query_binding="pending",
+            retrieval_owner_bound=True,
         )
     if not terms:
         if receipt_out is not None:
-            receipt_out.update(retrieval_status="checked", retrieval_query_binding="empty-query")
+            receipt_out.update(
+                retrieval_status="checked",
+                retrieval_query_binding="empty-query",
+                retrieval_owner_bound=True,
+            )
         return {"raw": [], "memories": []}
 
     retry_after = recall_rpc_retry_after()
@@ -1311,31 +1386,58 @@ def search_database_candidates(query, raw_limit=200, memory_limit=80, receipt_ou
     binding_mode = "server-verified"
 
     def execute(candidate_raw_limit, candidate_memory_limit):
-        common = {
-            "p_terms": list(terms),
-            "p_raw_limit": min(max(safe_int(candidate_raw_limit, 200), 1), 500),
-            "p_memory_limit": min(max(safe_int(candidate_memory_limit, 80), 1), 500),
-        }
+        # The governed service deliberately caps one cohort to six promoted
+        # memories. Rhee can still perform its one bounded semantic escalation
+        # and merge evidence across the two independently query-bound cohorts.
+        candidate_limit = min(
+            max(safe_int(candidate_memory_limit, 6), 1),
+            6,
+        )
+        char_budget = min(12000, max(2400, candidate_limit * 1800))
         response = supabase.rpc(
-            "search_project_l_memory_v2",
-            {**common, "p_query_key": query_key},
+            "project_l_memory_context_service_v2",
+            {
+                "p_user": owner_id,
+                "p_terms": list(terms),
+                "p_query_key": query_key,
+                "p_limit": candidate_limit,
+                "p_char_budget": char_budget,
+            },
         ).execute()
 
         payload = response.data or {}
         if isinstance(payload, list) and len(payload) == 1 and isinstance(payload[0], dict):
             payload = payload[0]
         if not isinstance(payload, dict):
-            raise ValueError("candidate search returned a non-object payload")
+            raise ValueError("owner-scoped candidate search returned a non-object payload")
         if safe_text(payload.get("queryKey")) != query_key:
-            raise ValueError("candidate search query cohort mismatch")
+            raise ValueError("owner-scoped candidate search query cohort mismatch")
         if safe_text(payload.get("queryContractVersion")) != _RECALL_QUERY_CONTRACT_VERSION:
-            raise ValueError("candidate search query contract mismatch")
+            raise ValueError("owner-scoped candidate search query contract mismatch")
+        if safe_text(payload.get("status")).lower() != "ok":
+            raise ValueError("owner-scoped candidate search did not return ok")
 
-        raw_rows = payload.get("raw", [])
-        memory_rows = payload.get("memories", [])
-        if not isinstance(raw_rows, list) or not isinstance(memory_rows, list):
-            raise ValueError("candidate search returned malformed row lists")
-        return {"raw": raw_rows, "memories": memory_rows}
+        scope = payload.get("scope")
+        scope = scope if isinstance(scope, dict) else {}
+        if scope.get("ownerBound") is not True:
+            raise ValueError("owner-scoped candidate search lost owner binding")
+
+        matches = payload.get("matches", [])
+        if not isinstance(matches, list):
+            raise ValueError("owner-scoped candidate search returned malformed matches")
+
+        memory_rows = []
+        for match in matches:
+            candidate = owner_scoped_memory_candidate(match)
+            if candidate is not None:
+                memory_rows.append(candidate)
+
+        return {
+            "raw": [],
+            "memories": memory_rows,
+            "_allowed_domain_count": safe_int(scope.get("allowedDomainCount"), 0),
+            "_returned_count": safe_int(payload.get("returnedCount"), len(memory_rows)),
+        }
 
     attempt = 0
     limits = (raw_limit, memory_limit)
@@ -1349,8 +1451,15 @@ def search_database_candidates(query, raw_limit=200, memory_limit=80, receipt_ou
                     retrieval_attempts=attempt + 1,
                     retrieval_query_binding=binding_mode,
                     retrieval_query_contract_version=_RECALL_QUERY_CONTRACT_VERSION,
+                    retrieval_owner_bound=True,
+                    retrieval_scope="owner-scoped-v2",
+                    retrieval_allowed_domain_count=result.get("_allowed_domain_count", 0),
+                    retrieval_server_returned_count=result.get("_returned_count", 0),
                 )
-            return result
+            return {
+                "raw": list(result.get("raw") or []),
+                "memories": list(result.get("memories") or []),
+            }
         except Exception as error:
             code = recall_rpc_error_code(error)
             delays = _TRANSIENT_RECALL_RPC_DELAYS.get(code, ())
@@ -1363,7 +1472,7 @@ def search_database_candidates(query, raw_limit=200, memory_limit=80, receipt_ou
                 time.sleep(delay)
                 limits = (
                     min(safe_int(raw_limit, 200), 100),
-                    min(safe_int(memory_limit, 80), 60),
+                    min(safe_int(memory_limit, 80), 4),
                 )
                 continue
 
@@ -1376,11 +1485,12 @@ def search_database_candidates(query, raw_limit=200, memory_limit=80, receipt_ou
                     retrieval_error_code=code or "non_transient",
                     retrieval_query_binding=binding_mode,
                     retrieval_query_contract_version=_RECALL_QUERY_CONTRACT_VERSION,
+                    retrieval_owner_bound=True,
+                    retrieval_scope="owner-scoped-v2",
                     retrieval_retry_after=recall_rpc_retry_after(),
                 )
             print(f"INDEXED MEMORY SEARCH UNAVAILABLE code={code or 'non_transient'}")
             return None
-
 
 def build_context(user_message, evidence_out=None, recall_plan=None, receipt_out=None):
     started = time.monotonic()
