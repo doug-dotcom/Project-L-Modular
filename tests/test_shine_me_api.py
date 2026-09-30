@@ -56,8 +56,32 @@ def make_client(monkeypatch, owner="owner-a", *, approved=True, freshness="uncha
             "status": "pending_review", "created_at": "2026-09-27T00:00:00Z",
         }]})()
 
-    app.include_router(routes(retrieve, cognize, lambda receipt: {"status": freshness},
-                              save, list_reviews))
+    state_store = {}
+
+    def load_state(owner_id):
+        calls.append(("state_load", owner_id))
+        row = state_store.get(owner_id)
+        return type("State", (), {"data": [dict(row)] if row else []})()
+
+    def insert_state(row):
+        calls.append(("state_insert", row))
+        if row["owner_id"] in state_store:
+            raise RuntimeError("duplicate")
+        state_store[row["owner_id"]] = dict(row)
+        return type("State", (), {"data": [dict(row)]})()
+
+    def update_state(owner_id, expected_revision, row):
+        calls.append(("state_update", owner_id, expected_revision, row))
+        current = state_store.get(owner_id)
+        if not current or current["revision"] != expected_revision:
+            return type("State", (), {"data": []})()
+        state_store[owner_id] = dict(row)
+        return type("State", (), {"data": [dict(row)]})()
+
+    app.include_router(routes(
+        retrieve, cognize, lambda receipt: {"status": freshness},
+        save, list_reviews, load_state, insert_state, update_state,
+    ))
     return TestClient(app), calls
 
 
@@ -269,3 +293,90 @@ def test_correction_list_rejects_cross_owner_storage_result(monkeypatch):
                               list_corrections=wrong_owner))
     response = TestClient(app).get("/shine-me/corrections")
     assert response.status_code == 503
+
+
+def test_owner_state_sync_is_owner_bound_and_memory_separate(monkeypatch):
+    client, calls = make_client(monkeypatch)
+    headers = {"x-test-verified-user": "owner-a"}
+
+    response = client.get("/shine-me/state", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "empty", "state": None, "revision": 0, "updated_at": None,
+    }
+    assert calls == [("state_load", "owner-a")]
+
+    state = {
+        "mood": 4,
+        "moodNote": "Steady",
+        "goals": [{"text": "Walk", "done": False, "completedOn": None}],
+        "routines": [],
+        "history": {},
+        "journal": [],
+        "lastDay": "2026-10-01",
+    }
+    response = client.put(
+        "/shine-me/state",
+        json={"state": state, "expected_revision": 0},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert response.json()["revision"] == 1
+    assert "retrieve" not in calls and "cognize" not in calls
+
+    response = client.get("/shine-me/state", headers=headers)
+    assert response.status_code == 200
+    assert response.json()["state"]["mood"] == 4
+    assert response.json()["revision"] == 1
+
+
+def test_owner_state_sync_rejects_stale_revision(monkeypatch):
+    client, _ = make_client(monkeypatch)
+    headers = {"x-test-verified-user": "owner-a"}
+    state = {
+        "mood": None, "moodNote": "", "goals": [], "routines": [],
+        "history": {}, "journal": [], "lastDay": "2026-10-01",
+    }
+    first = client.put(
+        "/shine-me/state",
+        json={"state": state, "expected_revision": 0},
+        headers=headers,
+    )
+    assert first.status_code == 200
+    assert first.json()["revision"] == 1
+
+    state["mood"] = 3
+    second = client.put(
+        "/shine-me/state",
+        json={"state": state, "expected_revision": 1},
+        headers=headers,
+    )
+    assert second.status_code == 200
+    assert second.json()["revision"] == 2
+
+    stale = client.put(
+        "/shine-me/state",
+        json={"state": state, "expected_revision": 1},
+        headers=headers,
+    )
+    assert stale.status_code == 409
+
+
+def test_owner_state_sync_rejects_other_account_and_unknown_fields(monkeypatch):
+    client, calls = make_client(monkeypatch)
+    state = {
+        "mood": None, "moodNote": "", "goals": [], "routines": [],
+        "history": {}, "journal": [], "lastDay": "2026-10-01",
+    }
+    assert client.get(
+        "/shine-me/state", headers={"x-test-verified-user": "other"},
+    ).status_code == 403
+    assert calls == []
+
+    state["owner_id"] = "owner-a"
+    response = client.put(
+        "/shine-me/state",
+        json={"state": state, "expected_revision": 0},
+        headers={"x-test-verified-user": "owner-a"},
+    )
+    assert response.status_code == 400
