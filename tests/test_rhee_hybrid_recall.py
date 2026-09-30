@@ -1007,3 +1007,77 @@ def test_recall_confidence_does_not_overstate_duplicated_or_ungoverned_support()
     assert confidence["confidence"] == "moderate"
     assert confidence["independent_lineages"] == 1
     assert confidence["governance_metadata_complete"] is False
+
+
+
+def test_authority_review_prefers_governed_precedence_over_legacy_role():
+    from types import SimpleNamespace
+    from layers.layer9_authority_conflict import install
+
+    evidence = [
+        {
+            "source": "memory_general:legacy-user",
+            "role": "user",
+            "quote_source": "legacy role-only evidence",
+        },
+        {
+            "source": "memory_general:governed",
+            "role": "assistant",
+            "quote_source": "governed direct-user promoted evidence",
+            "provenance": "owner_scoped_v2",
+            "authority": {
+                "class": "direct_user_promoted_memory",
+                "precedence": 70,
+            },
+        },
+    ]
+    fake = SimpleNamespace(
+        build_context_packet=lambda query: {
+            "context": "base",
+            "evidence": list(evidence),
+            "recall_plan": {"status": "checked"},
+        },
+        safe_text=lambda value: "" if value is None else str(value).strip(),
+    )
+    install(fake)
+
+    result = fake.build_context_packet("Recall")
+    ordered = result["evidence"]
+
+    assert ordered[0]["source"] == "memory_general:governed"
+    assert result["recall_plan"]["authority_contract"] == "owner-scoped-v2-precedence-first"
+    assert result["recall_plan"]["authority_counts"]["user_primary"] == 2
+
+
+def test_authority_review_orders_governed_items_by_precedence():
+    from types import SimpleNamespace
+    from layers.layer9_authority_conflict import install
+
+    evidence = [
+        {
+            "source": "memory_general:derived",
+            "provenance": "owner_scoped_v2",
+            "authority": {"class": "assistant_derived_promoted_memory", "precedence": 45},
+        },
+        {
+            "source": "memory_general:direct",
+            "provenance": "owner_scoped_v2",
+            "authority": {"class": "direct_user_promoted_memory", "precedence": 70},
+        },
+    ]
+    fake = SimpleNamespace(
+        build_context_packet=lambda query: {
+            "context": "base",
+            "evidence": list(evidence),
+            "recall_plan": {"status": "checked"},
+        },
+        safe_text=lambda value: "" if value is None else str(value).strip(),
+    )
+    install(fake)
+
+    result = fake.build_context_packet("Recall")
+
+    assert [item["source"] for item in result["evidence"]] == [
+        "memory_general:direct",
+        "memory_general:derived",
+    ]
