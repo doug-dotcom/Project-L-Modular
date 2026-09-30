@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "request_id": "universe-go-0027",
+  "request_id": "universe-go-0028",
   "pass": 1,
   "scope": "core",
   "dispatch_group": "project-l",
@@ -8,5 +8,5 @@
     "L",
     "Me"
   ],
-  "note": "One Shine end-to-end pass: preserve identity and longitudinal context across the journey; expose failure and recovery without losing user continuity."
+  "note": "One Shine end-to-end pass focused on stable identity, memory context, and request intent across service handoffs and recovery."
 }
