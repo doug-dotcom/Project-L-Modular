@@ -651,3 +651,35 @@ def test_indexed_search_rejects_wrong_query_contract_version(monkeypatch):
     assert result is None
     assert receipt["retrieval_status"] == "unavailable"
     assert receipt["retrieval_error_code"] == "non_transient"
+
+
+
+def test_sparse_recall_escalation_never_promotes_itself_to_explicit_deep_recall():
+    from types import SimpleNamespace
+    from layers.layer7_retrieval_escalation import install
+
+    calls = []
+
+    def base_packet(query):
+        calls.append(query)
+        return {
+            "evidence": [],
+            "context": "",
+            "context_size": 0,
+            "recall_active": False,
+            "recall_plan": {"status": "checked"},
+        }
+
+    fake = SimpleNamespace(
+        build_context_packet=base_packet,
+        safe_text=lambda value: "" if value is None else str(value).strip(),
+    )
+
+    install(fake)
+    result = fake.build_context_packet("Recall diving Bali")
+
+    assert result["recall_plan"]["retrieval_escalation"] == "performed"
+    assert len(calls) == 2
+    assert calls[0] == "Recall diving Bali"
+    assert "deep recall" not in calls[1].lower()
+    assert "comprehensive recall history" in calls[1].lower()
