@@ -2350,62 +2350,70 @@
         const avgScore=average(scored);
         const avgSleep=average(slept);
 
-        body.innerHTML=`
-          <div class="sheet-section">
-            <div class="progress-stats">
-              <div class="progress-stat"><small>Check-in days</small><strong>${checkins}</strong><em>of the last 7 days</em></div>
-              <div class="progress-stat"><small>Goals finished</small><strong>${goals}</strong><em>completed this week</em></div>
-              <div class="progress-stat"><small>Routines done</small><strong>${routines}</strong><em>tracked completions</em></div>
-            </div>
-          </div>
-          <div class="sheet-section">
-            <h3>Daily check-ins</h3>
-            ${fullCheckins?`
-              <div class="checkin-trend-grid">
-                <div class="checkin-trend-stat"><small>Full check-ins</small><strong>${fullCheckins}</strong><em>saved in the last 7 days</em></div>
-                <div class="checkin-trend-stat"><small>Avg day score</small><strong>${avgScore===null?'—':avgScore.toFixed(1)+'/10'}</strong><em>average of your own entries</em></div>
-                <div class="checkin-trend-stat"><small>Avg sleep</small><strong>${avgSleep===null?'—':avgSleep.toFixed(1)+'/10'}</strong><em>average of your own entries</em></div>
-              </div>
-              <div class="checkin-trend-list">
-                ${rows.slice().reverse().filter(x=>x.checkin).map(({day,checkin})=>{
-                  const words=[checkin.feeling1,checkin.feeling2].filter(Boolean).join(' · ');
-                  const score=Number.isFinite(Number(checkin.score))?Number(checkin.score).toFixed(1):'—';
-                  const sleep=Number.isFinite(Number(checkin.sleep))?Number(checkin.sleep).toFixed(1):'—';
-                  const details=[
-                    checkin.gratitude?'Grateful: '+escapeHtml(checkin.gratitude):'',
-                    checkin.challenge?'Challenge: '+escapeHtml(checkin.challenge):'',
-                    checkin.intention?'Intention: '+escapeHtml(checkin.intention):''
-                  ].filter(Boolean).join(' · ');
-                  return `<div class="checkin-trend-row"><div class="checkin-trend-row-top"><time>${day.date.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})}</time><strong>${score}/10 · sleep ${sleep}/10</strong></div><p>${escapeHtml(words||'No feeling words saved')}${details?' · '+details:''}</p></div>`;
-                }).join('')}
-              </div>
-            `:'<div class="progress-empty">Full Daily Check-ins will appear here as you save them. Quick mood taps still count as check-in activity, but they do not invent day or sleep scores.</div>'}
-          </div>
-          <div class="sheet-section">
-            <h3>Last 7 days</h3>
-            ${hasAny?`<div class="week-strip">
-              ${rows.map(({day,entry,checkin})=>{
-                const activity=activityFor(entry);
-                const height=activity?Math.max(14,Math.round(activity/maxActivity*74)):5;
-                const moodIndex=Number.isInteger(checkin?.mood)?checkin.mood:entry?.mood;
-                const mood=Number.isInteger(moodIndex)?moodFaces[moodIndex]:'';
-                return `<div class="day-cell"><div class="day-mood">${mood}</div><div class="day-bar-wrap"><div class="day-bar" data-empty="${activity===0}" style="height:${height}px"></div></div><div class="day-label">${day.label}</div></div>`;
-              }).join('')}
-            </div>`:'<div class="progress-empty">Your seven-day view will build from check-ins and completions — nothing is guessed or scored.</div>'}
-          </div>
-          <div class="sheet-section">
-            <h3>What this means</h3>
-            <p class="sheet-copy">${activeDays?('You recorded activity on '+activeDays+' of the last 7 days. Day and sleep averages above are arithmetic summaries of numbers you entered yourself — not a wellness score or judgement.'):'There is not enough tracked activity yet to describe a pattern. That is completely fine — Shine only shows what is actually here.')}</p>
-          </div>
-          <div class="sheet-section">
-            <h3>Recent detail</h3>
-            <div class="history-list">
-              ${rows.slice().reverse().filter(x=>activityFor(x.entry)>0||x.checkin).map(({day,entry,checkin})=>{
-                const moodIndex=Number.isInteger(checkin?.mood)?checkin.mood:entry?.mood;
-                return `<div class="history-row"><time>${day.date.toLocaleDateString(undefined,{day:'numeric',month:'short'})}</time><span>${Number.isInteger(moodIndex)?('Mood '+moodFaces[moodIndex]+' · '):''}${entry?.goalCompleted||0} goal · ${entry?.routineCompleted||0} routine</span><strong>${checkin?'full check-in':activityFor(entry)+' tracked'}</strong></div>`;
-              }).join('')||'<div class="progress-empty">No saved history yet.</div>'}
-            </div>
-          </div>`;
+        const checkinRowsHtml=rows.slice().reverse().filter(x=>x.checkin).map(({day,checkin})=>{
+          const words=[checkin.feeling1,checkin.feeling2].filter(Boolean).join(' · ');
+          const score=Number.isFinite(Number(checkin.score))?Number(checkin.score).toFixed(1):'—';
+          const sleep=Number.isFinite(Number(checkin.sleep))?Number(checkin.sleep).toFixed(1):'—';
+          const details=[
+            checkin.gratitude?'Grateful: '+escapeHtml(checkin.gratitude):'',
+            checkin.challenge?'Challenge: '+escapeHtml(checkin.challenge):'',
+            checkin.intention?'Intention: '+escapeHtml(checkin.intention):''
+          ].filter(Boolean).join(' · ');
+          const detailText=(words||'No feeling words saved')+(details?' · '+details:'');
+          return '<div class="checkin-trend-row">'
+            +'<div class="checkin-trend-row-top">'
+            +'<time>'+day.date.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})+'</time>'
+            +'<strong>'+score+'/10 · sleep '+sleep+'/10</strong>'
+            +'</div><p>'+escapeHtml(words||'No feeling words saved')+(details?' · '+details:'')+'</p></div>';
+        }).join('');
+
+        const weekHtml=rows.map(({day,entry,checkin})=>{
+          const activity=activityFor(entry);
+          const height=activity?Math.max(14,Math.round(activity/maxActivity*74)):5;
+          const moodIndex=Number.isInteger(checkin?.mood)?checkin.mood:entry?.mood;
+          const mood=Number.isInteger(moodIndex)?moodFaces[moodIndex]:'';
+          return '<div class="day-cell">'
+            +'<div class="day-mood">'+mood+'</div>'
+            +'<div class="day-bar-wrap"><div class="day-bar" data-empty="'+String(activity===0)+'" style="height:'+height+'px"></div></div>'
+            +'<div class="day-label">'+day.label+'</div></div>';
+        }).join('');
+
+        const recentHtml=rows.slice().reverse().filter(x=>activityFor(x.entry)>0||x.checkin).map(({day,entry,checkin})=>{
+          const moodIndex=Number.isInteger(checkin?.mood)?checkin.mood:entry?.mood;
+          const moodText=Number.isInteger(moodIndex)?('Mood '+moodFaces[moodIndex]+' · '):'';
+          const strong=checkin?'full check-in':activityFor(entry)+' tracked';
+          return '<div class="history-row">'
+            +'<time>'+day.date.toLocaleDateString(undefined,{day:'numeric',month:'short'})+'</time>'
+            +'<span>'+moodText+(entry?.goalCompleted||0)+' goal · '+(entry?.routineCompleted||0)+' routine</span>'
+            +'<strong>'+strong+'</strong></div>';
+        }).join('')||'<div class="progress-empty">No saved history yet.</div>';
+
+        const dailyHtml=fullCheckins
+          ? '<div class="checkin-trend-grid">'
+            +'<div class="checkin-trend-stat"><small>Full check-ins</small><strong>'+fullCheckins+'</strong><em>saved in the last 7 days</em></div>'
+            +'<div class="checkin-trend-stat"><small>Avg day score</small><strong>'+(avgScore===null?'—':avgScore.toFixed(1)+'/10')+'</strong><em>average of your own entries</em></div>'
+            +'<div class="checkin-trend-stat"><small>Avg sleep</small><strong>'+(avgSleep===null?'—':avgSleep.toFixed(1)+'/10')+'</strong><em>average of your own entries</em></div>'
+            +'</div><div class="checkin-trend-list">'+checkinRowsHtml+'</div>'
+          : '<div class="progress-empty">Full Daily Check-ins will appear here as you save them. Quick mood taps still count as check-in activity, but they do not invent day or sleep scores.</div>';
+
+        const lastWeekHtml=hasAny
+          ? '<div class="week-strip">'+weekHtml+'</div>'
+          : '<div class="progress-empty">Your seven-day view will build from check-ins and completions — nothing is guessed or scored.</div>';
+
+        const meaning=activeDays
+          ? 'You recorded activity on '+activeDays+' of the last 7 days. Day and sleep averages above are arithmetic summaries of numbers you entered yourself — not a wellness score or judgement.'
+          : 'There is not enough tracked activity yet to describe a pattern. That is completely fine — Shine only shows what is actually here.';
+
+        body.innerHTML=
+          '<div class="sheet-section"><div class="progress-stats">'
+          +'<div class="progress-stat"><small>Check-in days</small><strong>'+checkins+'</strong><em>of the last 7 days</em></div>'
+          +'<div class="progress-stat"><small>Goals finished</small><strong>'+goals+'</strong><em>completed this week</em></div>'
+          +'<div class="progress-stat"><small>Routines done</small><strong>'+routines+'</strong><em>tracked completions</em></div>'
+          +'</div></div>'
+          +'<div class="sheet-section"><h3>Daily check-ins</h3>'+dailyHtml+'</div>'
+          +'<div class="sheet-section"><h3>Last 7 days</h3>'+lastWeekHtml+'</div>'
+          +'<div class="sheet-section"><h3>What this means</h3><p class="sheet-copy">'+meaning+'</p></div>'
+          +'<div class="sheet-section"><h3>Recent detail</h3><div class="history-list">'+recentHtml+'</div></div>';
 
         const progressAction=document.createElement('div');
         progressAction.className='context-action-row';
