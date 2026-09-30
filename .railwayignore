@@ -1,0 +1,22 @@
+# Project L Railway source exclusions
+# Historical archives remain preserved in Git history / archive branch.
+FULL_BACKUPS
+_FULL_BACKUPS
+_LOCKED_RELEASE
+LOCKED_RELEASES
+MANTLE
+backups
+_smart_backups
+api/Backups
+
+# Local/development-only material
+.git
+.github
+.pytest_cache
+**/__pycache__
+**/*.py[cod]
+.env
+.env.*
+**/token.json
+**/credentials.json
+**/openai_key.txt
