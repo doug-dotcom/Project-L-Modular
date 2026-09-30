@@ -7,65 +7,629 @@
   <script src="/ui/account.js?v=stage7-reset1"></script>
   <link rel="stylesheet" href="/ui/account-evidence.css?v=stage7">
   <style>
+    :root {
+      color-scheme: dark;
+      --ink: #07111f;
+      --ink-2: #0d1b2d;
+      --ink-3: #16253a;
+      --paper: #fffdf8;
+      --paper-2: #f5f1e9;
+      --text: #f8f5ee;
+      --muted: #aeb9c8;
+      --gold: #f4cf83;
+      --gold-2: #ffe8ae;
+      --blue: #86a9dd;
+      --teal: #77c7bd;
+      --pink: #ef7894;
+      --line: rgba(255,255,255,.12);
+      --shadow: 0 30px 90px rgba(0,0,0,.42);
+    }
     * { box-sizing: border-box; }
-    body { margin: 0; background: #0f172a; color: #f8fafc; font: 16px/1.5 Arial, sans-serif; }
-    main { max-width: 700px; margin: auto; padding: 24px 16px 70px; }
-    header { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; }
-    a { color: #93c5fd; }
-    h1 { margin-bottom: 0; color: #22c55e; }
-    .muted { color: #cbd5e1; }
-    form { margin-top: 28px; }
-    label { display: block; margin-bottom: 8px; }
-    textarea { display: block; width: 100%; min-height: 100px; padding: 12px; border-radius: 10px; font: inherit; resize: vertical; }
-    button { padding: 10px 16px; min-height: 44px; margin-top: 12px; border-radius: 10px; border: 1px solid #64748b; background: #263b59; color: white; font: inherit; }
-    button:disabled { opacity: .5; }
-    #reply { margin-top: 28px; padding: 18px; border-radius: 12px; background: #18263d; white-space: pre-wrap; overflow-wrap: anywhere; }
-    #evidence { margin-top: 12px; color: #cbd5e1; overflow-wrap: anywhere; }
-    #accountGate { background: #18263d; border-radius: 12px; }
-    #correctionPanel { margin-top: 24px; padding: 18px; border-radius: 12px; background: #18263d; }
-    #correctionPanel textarea { color: #0f172a; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font: 15px/1.45 Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(122,156,210,.32), transparent 32rem),
+        radial-gradient(circle at 12% 25%, rgba(244,207,131,.11), transparent 26rem),
+        linear-gradient(180deg, #142238 0%, #09111d 55%, #050a12 100%);
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: radial-gradient(rgba(255,255,255,.12) .55px, transparent .55px);
+      background-size: 12px 12px;
+      opacity: .12;
+    }
+    button, textarea, select { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; }
+    #accountFallback {
+      position: fixed;
+      z-index: 100;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: #09111d;
+      color: #d9e2ee;
+      letter-spacing: .02em;
+    }
+    main.app-shell {
+      position: relative;
+      width: min(100%, 520px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 18px 18px 112px;
+      background:
+        radial-gradient(circle at 82% 7%, rgba(255,224,160,.14), transparent 20rem),
+        radial-gradient(circle at 20% 20%, rgba(93,128,177,.18), transparent 25rem),
+        linear-gradient(180deg, rgba(18,31,50,.96), rgba(8,15,26,.985));
+      box-shadow: var(--shadow);
+      isolation: isolate;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 8px 2px 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .spark {
+      position: relative;
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+    }
+    .spark::before, .spark::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%) rotate(45deg);
+      background: linear-gradient(135deg, #fff8e7, var(--gold));
+      border-radius: 3px 70% 3px 70%;
+      box-shadow: 0 0 18px rgba(255,218,137,.75);
+    }
+    .spark::before { width: 18px; height: 18px; }
+    .spark::after { width: 7px; height: 7px; transform: translate(7px,-13px) rotate(45deg); }
+    .brand-word {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 27px;
+      line-height: 1;
+      letter-spacing: -.035em;
+      white-space: nowrap;
+    }
+    .brand-word b { color: var(--gold); font-weight: 500; }
+    .account-mini {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    #accountLabel {
+      max-width: 118px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #b9c4d3;
+      font-size: 11px;
+    }
+    #signOutL {
+      margin: 0;
+      min-height: 36px;
+      padding: 0 11px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 999px;
+      color: #dbe4ef;
+      background: rgba(255,255,255,.06);
+      cursor: pointer;
+    }
+    .greeting { padding: 16px 3px 17px; text-align: center; }
+    .greeting h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(29px, 8vw, 38px);
+      font-weight: 500;
+      letter-spacing: -.035em;
+    }
+    .greeting p { margin: 5px 0 0; color: #d7dfeb; font-size: 16px; }
+    .greeting small { display: block; margin-top: 3px; color: #99a9bc; font-size: 13px; }
+    .hero-card {
+      position: relative;
+      min-height: 196px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 27px;
+      background:
+        radial-gradient(circle at 78% 30%, rgba(255,231,174,.92), transparent 13%),
+        linear-gradient(155deg, rgba(16,36,58,.1), rgba(255,222,155,.15)),
+        linear-gradient(180deg, #7895b2 0%, #b8c9cf 38%, #f0d5ae 39%, #9a7464 60%, #263b47 100%);
+      box-shadow: inset 0 1px rgba(255,255,255,.35), 0 18px 45px rgba(0,0,0,.22);
+    }
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      left: -7%;
+      right: 40%;
+      bottom: -20%;
+      height: 70%;
+      background: linear-gradient(145deg, transparent 40%, #243a4c 41% 61%, #172b39 62%);
+      clip-path: polygon(0 100%, 25% 35%, 39% 58%, 57% 10%, 73% 46%, 100% 24%, 100% 100%);
+      opacity: .9;
+    }
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      left: 25%;
+      right: -5%;
+      bottom: -27%;
+      height: 60%;
+      border-radius: 50% 50% 0 0;
+      background: linear-gradient(180deg, rgba(232,238,229,.95), #96a29d);
+      opacity: .54;
+      transform: rotate(-3deg);
+    }
+    .hero-copy {
+      position: relative;
+      z-index: 2;
+      width: 72%;
+      padding: 30px 24px;
+      text-shadow: 0 2px 15px rgba(0,0,0,.28);
+    }
+    .hero-copy .script {
+      display: block;
+      max-width: 260px;
+      font-family: "Snell Roundhand", "Segoe Script", "Bradley Hand", cursive;
+      font-size: clamp(28px, 8vw, 37px);
+      line-height: 1.03;
+      color: #fff8e8;
+      transform: rotate(-2deg);
+    }
+    .hero-copy .hero-sub { display: block; margin-top: 12px; color: rgba(255,255,255,.86); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+    .hero-arrow {
+      position: absolute;
+      z-index: 3;
+      right: 18px;
+      bottom: 18px;
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.5);
+      color: #152239;
+      background: rgba(255,253,247,.86);
+      backdrop-filter: blur(8px);
+      text-decoration: none;
+      font-size: 22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.15);
+    }
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 11px;
+      margin-top: 12px;
+    }
+    .dash-card {
+      position: relative;
+      min-height: 155px;
+      padding: 17px;
+      border-radius: 23px;
+      color: #152033;
+      background: linear-gradient(160deg, rgba(255,255,255,.98), rgba(244,241,234,.95));
+      border: 1px solid rgba(255,255,255,.72);
+      box-shadow: 0 12px 34px rgba(0,0,0,.18), inset 0 1px rgba(255,255,255,.9);
+      overflow: hidden;
+    }
+    .card-head { display: flex; align-items: center; gap: 10px; }
+    .card-icon {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      font-size: 20px;
+      background: #edf0f7;
+      box-shadow: inset 0 0 0 1px rgba(27,40,60,.05);
+    }
+    .mood-card .card-icon { background: #e8e5fb; color: #7068b5; }
+    .health-card .card-icon { background: #fde5ea; color: #df5475; }
+    .goals-card .card-icon { background: #e0f3ee; color: #399e8f; }
+    .routine-card .card-icon { background: #fff0cf; color: #d6992f; }
+    .dash-card h2 { margin: 0; font-size: 15px; line-height: 1.15; font-weight: 700; }
+    .dash-card p { margin: 4px 0 0; color: #737d8c; font-size: 11px; line-height: 1.35; }
+    .moods { display: flex; justify-content: space-between; gap: 4px; margin-top: 20px; }
+    .mood {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      margin: 0;
+      min-height: 0;
+      padding: 0;
+      border-radius: 50%;
+      background: #e8edf5;
+      cursor: pointer;
+      font-size: 15px;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .mood:hover, .mood:focus-visible { transform: translateY(-2px) scale(1.08); box-shadow: 0 5px 14px rgba(30,45,65,.18); outline: none; }
+    .mood:last-child { background: #f7cd63; }
+    .mini-bars { display: flex; align-items: end; gap: 3px; height: 31px; margin-top: 18px; }
+    .mini-bars i { display: block; width: 5px; border-radius: 6px; background: #548bca; }
+    .mini-bars i:nth-child(1){height:11px}.mini-bars i:nth-child(2){height:20px}.mini-bars i:nth-child(3){height:27px}.mini-bars i:nth-child(4){height:17px}.mini-bars i:nth-child(5){height:30px}
+    .metric-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 9px; color: #344055; font-size: 11px; }
+    .progress-track { height: 6px; margin-top: 18px; overflow: hidden; border-radius: 99px; background: #dfe4eb; }
+    .progress-track span { display: block; height: 100%; width: 64%; border-radius: inherit; background: linear-gradient(90deg,#7a99c8,#4d76ae); }
+    .routine-card .progress-track span { width: 47%; background: linear-gradient(90deg,#eab84b,#f4cc6d); }
+    .progress-card {
+      margin-top: 12px;
+      padding: 19px 19px 16px;
+      border-radius: 25px;
+      color: #152033;
+      background: linear-gradient(160deg, #fffefb, #f0eee9);
+      border: 1px solid rgba(255,255,255,.7);
+      box-shadow: 0 12px 34px rgba(0,0,0,.18);
+    }
+    .progress-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+    .progress-title { display: flex; align-items: center; gap: 10px; }
+    .progress-title h2 { margin: 0; font-size: 15px; }
+    .progress-title p { margin: 3px 0 0; color: #778292; font-size: 11px; }
+    .status-pill {
+      flex: 0 0 auto;
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: #317b71;
+      background: #e0f2ee;
+      font-weight: 700;
+      font-size: 11px;
+    }
+    .chart { width: 100%; height: 70px; margin-top: 9px; }
+    .chart path { fill: none; stroke: #6688be; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+    .chart .area { fill: url(#chartFill); stroke: none; opacity: .45; }
+    #connectionStatus {
+      margin: 4px 0 0;
+      color: #6e7989;
+      font-size: 10px;
+      line-height: 1.35;
+    }
+    #retryConnection {
+      min-height: 34px;
+      margin: 7px 0 0;
+      padding: 0 10px;
+      color: #33415a;
+      background: #eef1f5;
+      border: 1px solid #d7dde5;
+      border-radius: 10px;
+    }
+    .memory-zone { margin-top: 16px; }
+    .memory-card {
+      position: relative;
+      padding: 22px;
+      overflow: hidden;
+      border-radius: 27px;
+      border: 1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(circle at 90% 0%, rgba(246,205,126,.12), transparent 17rem),
+        linear-gradient(145deg, rgba(26,42,64,.92), rgba(12,24,40,.98));
+      box-shadow: 0 18px 50px rgba(0,0,0,.27);
+    }
+    .eyebrow { color: var(--gold); font-size: 10px; font-weight: 800; letter-spacing: .19em; text-transform: uppercase; }
+    .memory-card h2 {
+      margin: 7px 0 6px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 500;
+      font-size: 27px;
+      letter-spacing: -.025em;
+    }
+    .muted { color: #9eacbd; }
+    .memory-card > p { margin: 0; font-size: 12px; }
+    form { margin-top: 18px; }
+    label { display: block; margin-bottom: 7px; color: #dbe3ed; font-size: 12px; font-weight: 650; }
+    textarea, select {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,.12);
+      outline: none;
+      color: #eef4fa;
+      background: rgba(255,255,255,.065);
+      box-shadow: inset 0 1px rgba(255,255,255,.03);
+    }
+    textarea {
+      display: block;
+      min-height: 112px;
+      padding: 14px;
+      border-radius: 17px;
+      resize: vertical;
+    }
+    textarea:focus, select:focus { border-color: rgba(244,207,131,.66); box-shadow: 0 0 0 3px rgba(244,207,131,.08); }
+    textarea::placeholder { color: #718096; }
+    select { height: 44px; padding: 0 12px; border-radius: 13px; }
+    .primary-btn, #askButton, #saveCorrection, #prepareCorrection, #copyCorrection, #refreshReviews {
+      min-height: 46px;
+      margin-top: 11px;
+      padding: 0 16px;
+      border: 1px solid rgba(255,232,174,.48);
+      border-radius: 15px;
+      color: #132033;
+      background: linear-gradient(135deg, #fff6da, #f0c86f);
+      box-shadow: 0 10px 28px rgba(240,200,111,.15);
+      cursor: pointer;
+      font-weight: 750;
+    }
+    #askButton { width: 100%; }
+    button:disabled { opacity: .48; cursor: not-allowed; }
+    #evidenceStatus { margin: 11px 0 0; color: #aeb9c8; font-size: 11px; }
+    #reply {
+      margin-top: 15px;
+      padding: 18px;
+      border-radius: 18px;
+      color: #1b2737;
+      background: linear-gradient(160deg, #fffefb, #f4f0e9);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      box-shadow: 0 12px 30px rgba(0,0,0,.2);
+    }
+    #evidence { margin: 9px 1px 0; color: #9eadbd; font-size: 10px; overflow-wrap: anywhere; }
+    details {
+      margin-top: 12px;
+      padding: 11px 13px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 14px;
+      color: #c6d0dc;
+      background: rgba(255,255,255,.04);
+      font-size: 11px;
+    }
+    details summary { cursor: pointer; color: #e8edf3; font-weight: 700; }
+    #correctionPanel, #reviewsPanel {
+      margin-top: 16px;
+      padding: 17px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.09);
+      background: rgba(255,255,255,.045);
+    }
+    #correctionPanel h2, #reviewsPanel h2 { margin: 0 0 5px; font-size: 15px; }
+    #correctionPanel textarea { margin-bottom: 9px; }
     #correctionDraft { min-height: 150px; }
-    #reviewList article { padding: 12px; margin: 12px 0; border: 1px solid #64748b; border-radius: 10px; overflow-wrap: anywhere; }
-    #reviewList p { white-space: pre-wrap; }
+    #reviewList article {
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 13px;
+      overflow-wrap: anywhere;
+      background: rgba(255,255,255,.035);
+      font-size: 11px;
+    }
+    #reviewList p { white-space: pre-wrap; color: #aeb9c8; }
+    .discover-strip {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 9px;
+    }
+    .discover-tile {
+      min-height: 102px;
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-radius: 19px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(155deg, rgba(255,255,255,.1), rgba(255,255,255,.035));
+      color: #dce5ef;
+    }
+    .discover-tile span { font-size: 19px; }
+    .discover-tile strong { font-size: 11px; }
+    .discover-tile small { color: #8f9daf; font-size: 9px; }
+    .bottom-nav {
+      position: fixed;
+      z-index: 30;
+      left: 50%;
+      bottom: 12px;
+      transform: translateX(-50%);
+      width: min(calc(100% - 24px), 496px);
+      height: 72px;
+      display: grid;
+      grid-template-columns: repeat(5,1fr);
+      align-items: center;
+      padding: 0 8px;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 24px;
+      background: rgba(8,14,24,.82);
+      box-shadow: 0 18px 55px rgba(0,0,0,.45), inset 0 1px rgba(255,255,255,.05);
+      backdrop-filter: blur(20px);
+    }
+    .bottom-nav a {
+      display: grid;
+      justify-items: center;
+      gap: 4px;
+      color: #8794a5;
+      text-decoration: none;
+      font-size: 9px;
+    }
+    .bottom-nav a:first-child { color: #fff; }
+    .nav-icon { font-size: 19px; line-height: 1; }
+    .shine-button {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      margin-top: -15px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,224,157,.72);
+      color: #fff3cd;
+      background: radial-gradient(circle, #c99739 0%, #6e5027 40%, #17243a 72%);
+      box-shadow: 0 0 0 5px rgba(236,192,102,.06), 0 0 24px rgba(247,205,117,.42);
+      font-size: 24px;
+    }
+    .footer-note { padding: 20px 0 4px; text-align: center; color: #7f8b9a; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; }
+    @media (min-width: 700px) {
+      body { padding: 30px 0; }
+      main.app-shell { min-height: calc(100vh - 60px); border: 1px solid rgba(255,255,255,.13); border-radius: 42px; overflow: hidden; }
+      .bottom-nav { bottom: 42px; }
+    }
+    @media (max-width: 380px) {
+      main.app-shell { padding-left: 12px; padding-right: 12px; }
+      .dash-card { padding: 14px; min-height: 150px; }
+      .card-icon { width: 34px; height: 34px; }
+      .discover-strip { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
   </style>
 </head>
 <body>
-  <div id="accountFallback">Loading secure sign-in…</div>
-  <main>
-    <header><a href="/">← Project L</a><span id="accountLabel"></span><button id="signOutL" type="button">Sign out</button></header>
-    <h1>Shine-Me</h1>
-    <p class="muted">Personal memory preview. Answers quote one approved record and show its source. This preview does not yet provide a full conversation or change memories.</p>
-    <form id="askForm">
-      <label for="question">Ask about something you have told me</label>
-      <textarea id="question" required maxlength="2000" placeholder="What do you remember about…?"></textarea>
-      <button id="askButton" type="submit" disabled>Ask Shine-Me</button>
-    </form>
-    <p id="connectionStatus" role="status" aria-live="polite">Sign in to check your memory access.</p>
-    <button id="retryConnection" type="button" hidden>Check connection again</button>
-    <p id="evidenceStatus" role="status" aria-live="polite"></p>
-    <section id="reply" aria-live="polite" hidden></section>
-    <p id="evidence" hidden></p>
-    <details id="whyPanel" hidden><summary>Why this answer?</summary><p id="whyText"></p></details>
-    <section id="correctionPanel" hidden>
-      <h2>Flag this answer</h2>
-      <p class="muted">Submit a correction for review with the source attached. Review does not change memory automatically.</p>
-      <label for="correctionKind">What needs fixing?</label>
-      <select id="correctionKind"><option value="wrong">Wrong</option><option value="incomplete">Incomplete</option></select>
-      <label for="correctionText">What should Shine-Me know?</label>
-      <textarea id="correctionText" maxlength="2000" placeholder="Write your correction here…"></textarea>
-      <button id="saveCorrection" type="button">Submit for review</button>
-      <button id="prepareCorrection" type="button">Prepare copyable draft</button>
-      <label for="correctionDraft" id="correctionDraftLabel" hidden>Correction draft</label>
-      <textarea id="correctionDraft" readonly hidden></textarea>
-      <button id="copyCorrection" type="button" hidden>Copy correction</button>
-      <p id="correctionStatus" role="status" aria-live="polite"></p>
+  <div id="accountFallback">Loading your Shine space…</div>
+  <main class="app-shell" id="home">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Back to Shine">
+        <span class="spark" aria-hidden="true"></span>
+        <span class="brand-word">Shine<b>Me</b></span>
+      </a>
+      <div class="account-mini">
+        <span id="accountLabel"></span>
+        <button id="signOutL" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <section class="greeting" aria-labelledby="welcomeTitle">
+      <h1 id="welcomeTitle">Good evening, Doug</h1>
+      <p>A brighter you, today.</p>
+      <small>Your life, health, and growth in one place.</small>
     </section>
-    <section id="reviewsPanel" hidden>
-      <h2>Your correction reviews</h2>
-      <button id="refreshReviews" type="button">Refresh reviews</button>
-      <p id="reviewsStatus" role="status" aria-live="polite"></p>
-      <div id="reviewList"></div>
+
+    <section class="hero-card" aria-label="Daily inspiration">
+      <div class="hero-copy">
+        <span class="script">Small steps,<br>brighter tomorrows.</span>
+        <span class="hero-sub">Keep shining</span>
+      </div>
+      <a class="hero-arrow" href="#journal" aria-label="Ask Shine Me">›</a>
     </section>
+
+    <section class="dashboard-grid" aria-label="Your day">
+      <article class="dash-card mood-card">
+        <div class="card-head">
+          <span class="card-icon" aria-hidden="true">☺</span>
+          <div><h2>Mood Check-in</h2><p>How are you feeling today?</p></div>
+        </div>
+        <div class="moods" aria-label="Mood choices">
+          <button class="mood" type="button" aria-label="Very low">☹</button>
+          <button class="mood" type="button" aria-label="Low">◔</button>
+          <button class="mood" type="button" aria-label="Okay">•</button>
+          <button class="mood" type="button" aria-label="Good">◡</button>
+          <button class="mood" type="button" aria-label="Great">☺</button>
+        </div>
+      </article>
+
+      <article class="dash-card health-card" id="you">
+        <div class="card-head">
+          <span class="card-icon" aria-hidden="true">♥</span>
+          <div><h2>Health</h2><p>Move · Fuel · Rest<br>Feel your best.</p></div>
+        </div>
+        <div class="mini-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="metric-line"><span>Shine Wellness</span><strong>Connected</strong></div>
+      </article>
+
+      <article class="dash-card goals-card">
+        <div class="card-head">
+          <span class="card-icon" aria-hidden="true">◎</span>
+          <div><h2>Goals</h2><p>Bigger tomorrows<br>start here.</p></div>
+        </div>
+        <div class="metric-line"><span>Your direction</span><strong>Growing</strong></div>
+        <div class="progress-track" aria-hidden="true"><span></span></div>
+      </article>
+
+      <article class="dash-card routine-card">
+        <div class="card-head">
+          <span class="card-icon" aria-hidden="true">☀</span>
+          <div><h2>Routines</h2><p>Small habits.<br>Big change.</p></div>
+        </div>
+        <div class="metric-line"><span>Today</span><strong>Keep going</strong></div>
+        <div class="progress-track" aria-hidden="true"><span></span></div>
+      </article>
+    </section>
+
+    <section class="progress-card" aria-labelledby="progressHeading">
+      <div class="progress-top">
+        <div class="progress-title">
+          <span class="card-icon" aria-hidden="true">▥</span>
+          <div><h2 id="progressHeading">Your Progress</h2><p>You’re growing. Keep shining.</p></div>
+        </div>
+        <span class="status-pill">Shine connected</span>
+      </div>
+      <svg class="chart" viewBox="0 0 420 82" role="img" aria-label="Decorative progress trend">
+        <defs><linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#86a9dd" stop-opacity=".45"/><stop offset="100%" stop-color="#86a9dd" stop-opacity="0"/></linearGradient></defs>
+        <path class="area" d="M4 67 C42 50,65 61,92 48 S145 62,176 47 S230 56,264 40 S321 52,361 27 S397 19,416 11 L416 82 L4 82 Z"/>
+        <path d="M4 67 C42 50,65 61,92 48 S145 62,176 47 S230 56,264 40 S321 52,361 27 S397 19,416 11"/>
+      </svg>
+      <p id="connectionStatus" role="status" aria-live="polite">Sign in to check your memory access.</p>
+      <button id="retryConnection" type="button" hidden>Check connection again</button>
+    </section>
+
+    <section class="memory-zone" id="journal">
+      <div class="memory-card">
+        <span class="eyebrow">Your Shine companion</span>
+        <h2>Ask Shine Me</h2>
+        <p class="muted">Ask about something you’ve told Shine. Answers remain grounded in approved memory and show their source.</p>
+        <form id="askForm">
+          <label for="question">What’s on your mind?</label>
+          <textarea id="question" required maxlength="2000" placeholder="What do you remember about…?"></textarea>
+          <button id="askButton" type="submit" disabled>Ask Shine Me ✦</button>
+        </form>
+        <p id="evidenceStatus" role="status" aria-live="polite"></p>
+        <section id="reply" aria-live="polite" hidden></section>
+        <p id="evidence" hidden></p>
+        <details id="whyPanel" hidden><summary>Why this answer?</summary><p id="whyText"></p></details>
+
+        <section id="correctionPanel" hidden>
+          <h2>Flag this answer</h2>
+          <p class="muted">Submit a correction for review with the source attached. Review does not change memory automatically.</p>
+          <label for="correctionKind">What needs fixing?</label>
+          <select id="correctionKind"><option value="wrong">Wrong</option><option value="incomplete">Incomplete</option></select>
+          <label for="correctionText">What should Shine Me know?</label>
+          <textarea id="correctionText" maxlength="2000" placeholder="Write your correction here…"></textarea>
+          <button id="saveCorrection" type="button">Submit for review</button>
+          <button id="prepareCorrection" type="button">Prepare copyable draft</button>
+          <label for="correctionDraft" id="correctionDraftLabel" hidden>Correction draft</label>
+          <textarea id="correctionDraft" readonly hidden></textarea>
+          <button id="copyCorrection" type="button" hidden>Copy correction</button>
+          <p id="correctionStatus" role="status" aria-live="polite"></p>
+        </section>
+
+        <section id="reviewsPanel" hidden>
+          <h2>Your correction reviews</h2>
+          <button id="refreshReviews" type="button">Refresh reviews</button>
+          <p id="reviewsStatus" role="status" aria-live="polite"></p>
+          <div id="reviewList"></div>
+        </section>
+      </div>
+    </section>
+
+    <section class="discover-strip" id="discover" aria-label="A brighter you">
+      <div class="discover-tile"><span>☁</span><div><strong>A calmer mind</strong><br><small>Reflection & memory</small></div></div>
+      <div class="discover-tile"><span>♡</span><div><strong>A healthier you</strong><br><small>Wellness in context</small></div></div>
+      <div class="discover-tile"><span>↗</span><div><strong>A brighter tomorrow</strong><br><small>Goals & growth</small></div></div>
+    </section>
+
+    <p class="footer-note">Real people · Brighter lives</p>
+
+    <nav class="bottom-nav" aria-label="Primary">
+      <a href="#home"><span class="nav-icon">⌂</span><span>Home</span></a>
+      <a href="#journal"><span class="nav-icon">▧</span><span>Journal</span></a>
+      <a href="#journal" aria-label="Shine Me"><span class="shine-button">✦</span><span>Shine</span></a>
+      <a href="#discover"><span class="nav-icon">⌕</span><span>Discover</span></a>
+      <a href="#you"><span class="nav-icon">♙</span><span>You</span></a>
+    </nav>
   </main>
   <script>
     (() => {
@@ -261,6 +825,25 @@
             : (error.message || 'The memory check could not finish.');
         } finally { button.disabled = false; }
       });
+    })();
+  </script>
+
+  <script>
+    (() => {
+      const moods = Array.from(document.querySelectorAll('.mood'));
+      moods.forEach((button, index) => {
+        button.addEventListener('click', () => {
+          moods.forEach(item => item.style.boxShadow = '');
+          button.style.boxShadow = '0 0 0 3px rgba(244,207,131,.55), 0 6px 18px rgba(0,0,0,.18)';
+          try { localStorage.setItem('shine-me-mood', String(index)); } catch (_) {}
+        });
+      });
+      try {
+        const saved = Number(localStorage.getItem('shine-me-mood'));
+        if (Number.isInteger(saved) && moods[saved]) {
+          moods[saved].style.boxShadow = '0 0 0 3px rgba(244,207,131,.55), 0 6px 18px rgba(0,0,0,.18)';
+        }
+      } catch (_) {}
     })();
   </script>
 </body>
