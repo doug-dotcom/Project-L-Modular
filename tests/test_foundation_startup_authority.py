@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from pathlib import Path
 
 from services.foundation_startup_authority import FoundationStartupAuthority
@@ -178,3 +179,52 @@ def test_server_wires_foundation_startup_reconciliation_into_health_and_shutdown
     assert "on_transition=log_foundation_startup_authority" in source
     assert '"foundation_startup_authority": FOUNDATION_STARTUP_AUTHORITY.snapshot()' in source
     assert "FOUNDATION_STARTUP_AUTHORITY.stop()" in source
+
+
+
+def test_foundation_startup_honours_absolute_lease_retry_timestamp():
+    threads = []
+    waits = []
+    results = [
+        {
+            "status": "busy",
+            "retry_after": "2026-09-30T22:47:00+00:00",
+        },
+        {"status": "active"},
+    ]
+    monitor = FoundationStartupAuthority(
+        owner_resolver=lambda db: "11111111-1111-4111-8111-111111111111",
+        ensure_impl=lambda *args, **kwargs: results.pop(0),
+        retry_delays_seconds=(2.0, 5.0, 12.0, 30.0),
+        max_retry_delay_seconds=30.0,
+        thread_factory=thread_factory_recorder(threads),
+        wait_impl=lambda delay: waits.append(delay) or False,
+        now_impl=lambda: datetime(2026, 9, 30, 22, 46, 0, tzinfo=timezone.utc),
+    )
+
+    monitor.start("db")
+    threads[0].run()
+
+    # The database contract returns an absolute lease-expiry timestamp. Honour
+    # that clock rather than repeatedly polling with the fallback 2/5/12s plan.
+    assert waits == [30.0]
+    assert monitor.snapshot() == {
+        "status": "active",
+        "attempts": 2,
+        "background_retry": False,
+        "retry_exhausted": False,
+    }
+
+
+def test_foundation_startup_retries_promptly_when_lease_timestamp_is_past():
+    monitor = FoundationStartupAuthority(
+        retry_delays_seconds=(2.0,),
+        now_impl=lambda: datetime(2026, 9, 30, 22, 47, 1, tzinfo=timezone.utc),
+    )
+
+    delay = monitor._retry_delay(
+        {"status": "busy", "retry_after": "2026-09-30T22:47:00Z"},
+        0,
+    )
+
+    assert delay == 0.5

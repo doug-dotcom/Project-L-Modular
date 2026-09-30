@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import threading
+from datetime import datetime, timezone
 from typing import Any, Callable
 
 from services.foundation_companion_service import (
@@ -12,9 +13,10 @@ from services.foundation_companion_service import (
 
 
 RETRYABLE_STATUSES = frozenset({"busy", "unavailable"})
-DEFAULT_RETRY_DELAYS_SECONDS = (2.0, 5.0, 12.0)
+DEFAULT_RETRY_DELAYS_SECONDS = (2.0, 5.0, 12.0, 30.0)
 MAX_RETRY_DELAY_SECONDS = 30.0
 FOUNDATION_CHECK_TIMEOUT_SECONDS = 6.0
+LEASE_RETRY_CUSHION_SECONDS = 0.5
 
 
 class FoundationStartupAuthority:
@@ -36,6 +38,7 @@ class FoundationStartupAuthority:
         check_timeout_seconds: float = FOUNDATION_CHECK_TIMEOUT_SECONDS,
         thread_factory: Callable[..., Any] = threading.Thread,
         wait_impl: Callable[[float], bool] | None = None,
+        now_impl: Callable[[], datetime] | None = None,
     ):
         if not retry_delays_seconds:
             raise ValueError("at least one retry delay is required")
@@ -53,6 +56,7 @@ class FoundationStartupAuthority:
         self._check_timeout = float(check_timeout_seconds)
         self._thread_factory = thread_factory
         self._wait_impl = wait_impl
+        self._now_impl = now_impl or (lambda: datetime.now(timezone.utc))
 
         self._lock = threading.Lock()
         self._stop = threading.Event()
@@ -96,13 +100,35 @@ class FoundationStartupAuthority:
 
     def _retry_delay(self, result: dict, retry_index: int) -> float:
         retry_after = result.get("retry_after")
+        delay = None
+
         try:
             delay = float(retry_after)
         except (TypeError, ValueError):
-            delay = self._retry_delays[min(retry_index, len(self._retry_delays) - 1)]
+            if isinstance(retry_after, str) and retry_after.strip():
+                try:
+                    target = datetime.fromisoformat(
+                        retry_after.strip().replace("Z", "+00:00")
+                    )
+                    if target.tzinfo is None:
+                        target = target.replace(tzinfo=timezone.utc)
+                    now = self._now_impl()
+                    if now.tzinfo is None:
+                        now = now.replace(tzinfo=timezone.utc)
+                    delay = (
+                        target.astimezone(timezone.utc)
+                        - now.astimezone(timezone.utc)
+                    ).total_seconds() + LEASE_RETRY_CUSHION_SECONDS
+                except (TypeError, ValueError):
+                    delay = None
+
+        if delay is None:
+            delay = self._retry_delays[
+                min(retry_index, len(self._retry_delays) - 1)
+            ]
         if delay <= 0:
-            delay = self._retry_delays[min(retry_index, len(self._retry_delays) - 1)]
-        return min(max(delay, 0.0), self._max_retry_delay)
+            delay = LEASE_RETRY_CUSHION_SECONDS
+        return min(max(delay, LEASE_RETRY_CUSHION_SECONDS), self._max_retry_delay)
 
     def _wait(self, delay: float) -> bool:
         if self._wait_impl is not None:
