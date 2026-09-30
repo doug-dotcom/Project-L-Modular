@@ -166,6 +166,7 @@ from services.foundation_companion_service import (
     foundation_account_owner,
     foundation_fleet_status,
 )
+from services.foundation_startup_authority import FOUNDATION_STARTUP_AUTHORITY
 from services.shine_runtime_service import (
     build_human_status,
     build_runtime_recovery,
@@ -552,22 +553,31 @@ app.include_router(shine_me_routes(
 ))
 
 
+def log_foundation_startup_authority(snapshot):
+    log(
+        "FOUNDATION STARTUP AUTHORITY: "
+        f"{snapshot.get('status', 'unknown')} "
+        f"attempts={snapshot.get('attempts', 0)} "
+        f"background_retry={str(bool(snapshot.get('background_retry'))).lower()} "
+        f"retry_exhausted={str(bool(snapshot.get('retry_exhausted'))).lower()}"
+    )
+
+
 @app.on_event("startup")
 def start_durable_tasks():
     task_runner.start()
-    owner_id = foundation_account_owner(supabase) if supabase is not None else None
-    if supabase is not None and owner_id:
-        try:
-            foundation = ensure_foundation_delegation(supabase, owner_id)
-            log("FOUNDATION STARTUP AUTHORITY: " + str(foundation.get("status") or "unknown"))
-        except Exception:
-            # Foundation is optional to L's standalone purpose. A renewal outage
-            # must never stop the Companion from starting.
-            log("FOUNDATION STARTUP AUTHORITY: unavailable")
+    # Foundation is optional to L's standalone purpose. Reconcile its delegated
+    # authority in a bounded background worker so remote refresh contention can
+    # never delay Project L becoming healthy.
+    FOUNDATION_STARTUP_AUTHORITY.start(
+        supabase,
+        on_transition=log_foundation_startup_authority,
+    )
 
 
 @app.on_event("shutdown")
 def stop_durable_tasks():
+    FOUNDATION_STARTUP_AUTHORITY.stop()
     task_runner.stop()
     try:
         result = flush_memory_runtime_rollup_on_shutdown()
@@ -1019,6 +1029,7 @@ def health():
         "model_adapter_ready": bool(active_model_adapter.available),
         "portability_certification_ready": True,
         "capability_router_ready": True,
+        "foundation_startup_authority": FOUNDATION_STARTUP_AUTHORITY.snapshot(),
         "main_street": True,
         "release_layer": 181,
         "release_certification_ready": True,
