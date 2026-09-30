@@ -69,6 +69,7 @@ _SLO_AVAILABILITY_TARGET = 0.99
 _SLO_EWMA_LATENCY_TARGET_MS = 3000.0
 _RUNTIME_ROLLUP_INTERVAL_SECONDS = 300.0
 _RUNTIME_ROLLUP_EVENT = "memory_bridge_runtime_rollup"
+_RUNTIME_ROLLUP_SHUTDOWN_DRAIN_SECONDS = 2.5
 
 _rpc_circuit_lock = threading.Lock()
 _rpc_circuit_open_until = 0.0
@@ -417,6 +418,49 @@ def _runtime_rollup_state_snapshot() -> dict[str, object]:
                 ),
                 1,
             ),
+        }
+
+
+def flush_memory_runtime_rollup_on_shutdown() -> dict[str, object]:
+    """Best-effort durable flush for real traffic during graceful shutdown."""
+    deadline = time.monotonic() + _RUNTIME_ROLLUP_SHUTDOWN_DRAIN_SECONDS
+    while True:
+        with _runtime_rollup_lock:
+            inflight = _runtime_rollup_inflight
+        if not inflight or time.monotonic() >= deadline:
+            break
+        time.sleep(0.05)
+
+    with _runtime_rollup_lock:
+        still_inflight = _runtime_rollup_inflight
+    if still_inflight:
+        print(
+            "SHINE_AI_MEMORY_RUNTIME_ROLLUP kind=shutdown "
+            "storage=inflight-timeout pending-preserved=true",
+            flush=True,
+        )
+        return {
+            "scheduled": False,
+            "recorded": False,
+            "storage": "inflight-timeout",
+        }
+
+    try:
+        return _flush_runtime_rollup(
+            force=True,
+            synchronous=True,
+            rollup_kind="shutdown",
+        )
+    except Exception:
+        print(
+            "SHINE_AI_MEMORY_RUNTIME_ROLLUP kind=shutdown "
+            "storage=unavailable pending-preserved=true",
+            flush=True,
+        )
+        return {
+            "scheduled": False,
+            "recorded": False,
+            "storage": "unavailable",
         }
 
 
