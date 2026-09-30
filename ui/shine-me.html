@@ -1719,7 +1719,22 @@
         }
       }
 
+      async function retryAccountSync(){
+        if(syncInFlight||syncMeta.conflict)return;
+        if(syncTimer)clearTimeout(syncTimer);
+        syncTimer=null;
+        accountSyncReady=false;
+        syncMeta.status='connecting';
+        persistSync();
+        refreshSyncLabels();
+        await initialiseAccountSync();
+        if(syncMeta.dirty&&!syncMeta.conflict) scheduleAccountSync(0);
+        if(navSurface?.dataset.open==='true'&&navSurfaceTitle?.textContent==='You') renderYouSurface();
+      }
       window.addEventListener('shine-me-binding-ready',initialiseAccountSync);
+      window.addEventListener('online',()=>{
+        if(syncMeta.status==='error'||syncMeta.dirty) retryAccountSync();
+      });
       const backdrop=document.getElementById('dashboardSheet');
       const sheet=backdrop?.querySelector('.sheet');
       const title=document.getElementById('sheetTitle');
@@ -1954,7 +1969,7 @@
             <h3>Account continuity</h3>
             <p>Shine Me saves locally first, then syncs through the verified owner boundary. The synced state is separate from Project L memory.</p>
             <div class="data-row"><span><strong>Sync status</strong><small>Revision ${Number(syncMeta.revision||0)}${syncMeta.lastSyncedAt?' · last synced '+new Date(syncMeta.lastSyncedAt).toLocaleString():''}</small></span><span class="data-state" data-sync-state>${syncStateLabel()}</span></div>
-            ${syncMeta.conflict?`<div class="context-handoff"><div class="context-handoff-top"><div class="context-handoff-label"><span><strong>Another device changed first</strong></span></div></div><small>Your local copy is preserved. Choose which version should continue.</small><div class="context-action-row"><button class="surface-action secondary" id="useAccountCopy" type="button">Use account version</button><button class="surface-action" id="keepDeviceCopy" type="button">Keep this device version</button></div></div>`:''}
+            ${syncMeta.conflict?`<div class="context-handoff"><div class="context-handoff-top"><div class="context-handoff-label"><span><strong>Another device changed first</strong></span></div></div><small>Your local copy is preserved. Choose which version should continue.</small><div class="context-action-row"><button class="surface-action secondary" id="useAccountCopy" type="button">Use account version</button><button class="surface-action" id="keepDeviceCopy" type="button">Keep this device version</button></div></div>`:'<button class="surface-action secondary" id="retryAccountSync" type="button">Retry sync now</button>'}
           </section>
           <section class="surface-card">
             <h3>Local data controls</h3>
@@ -1962,6 +1977,19 @@
             <button class="danger-action" id="clearLocalShineMe" type="button">Clear this device copy</button>
             <p class="surface-status" id="clearLocalStatus"></p>
           </section>`;
+        navSurfaceBody.querySelector('#retryAccountSync')?.addEventListener('click',async()=>{
+          const status=navSurfaceBody.querySelector('#clearLocalStatus');
+          if(status)status.textContent='Checking account sync…';
+          await retryAccountSync();
+          if(status){
+            status.textContent=syncMeta.status==='synced'
+              ? 'Account sync is up to date.'
+              : syncMeta.status==='conflict'
+                ? 'Another device changed first. Review the versions above.'
+                : 'Sync is still unavailable; your local copy remains safe.';
+          }
+        });
+
         navSurfaceBody.querySelector('#useAccountCopy')?.addEventListener('click',()=>{
           try{
             const conflict=JSON.parse(localStorage.getItem(conflictKey)||'null');
