@@ -1368,6 +1368,7 @@
             button.disabled = false;
             reviewsPanel.hidden = false;
             loadReviews();
+            window.dispatchEvent(new CustomEvent('shine-me-binding-ready'));
             return;
           }
           connection.textContent = response.status === 403
