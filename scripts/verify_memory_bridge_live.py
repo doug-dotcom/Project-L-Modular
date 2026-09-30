@@ -206,7 +206,85 @@ def _durable_slo_summary() -> dict:
     }
 
 
-def _run_success_path() -> tuple[dict, dict, dict]:
+def _durable_runtime_slo_summary() -> dict:
+    try:
+        events = OBSERVABILITY_LIEUTENANT.load_events()
+    except Exception:
+        events = []
+
+    rollups = [
+        item
+        for item in events
+        if isinstance(item, dict)
+        and item.get("event_type") == "memory_bridge_runtime_rollup"
+        and isinstance(item.get("payload"), dict)
+    ][-SLO_HISTORY_LIMIT:]
+
+    periodic = [
+        item["payload"]
+        for item in rollups
+        if str(item["payload"].get("rollup_kind") or "") == "periodic"
+    ]
+    canary_rollups = sum(
+        1
+        for item in rollups
+        if str(item["payload"].get("rollup_kind") or "") == "canary"
+    )
+
+    successes = sum(int(item.get("successes", 0) or 0) for item in periodic)
+    failures = sum(int(item.get("failures", 0) or 0) for item in periodic)
+    completed = successes + failures
+
+    latency_sum_ms = 0.0
+    latency_completed = 0
+    for item in periodic:
+        item_completed = (
+            int(item.get("successes", 0) or 0)
+            + int(item.get("failures", 0) or 0)
+        )
+        try:
+            mean_latency_ms = float(item.get("mean_latency_ms"))
+        except (TypeError, ValueError):
+            mean_latency_ms = -1.0
+        if item_completed > 0 and mean_latency_ms >= 0:
+            latency_sum_ms += mean_latency_ms * item_completed
+            latency_completed += item_completed
+
+    availability = successes / completed if completed else None
+    mean_latency_ms = (
+        latency_sum_ms / latency_completed if latency_completed else None
+    )
+
+    if completed < SLO_MIN_SAMPLES:
+        status = "warming"
+    elif (
+        availability is not None
+        and availability >= SLO_AVAILABILITY_TARGET
+        and mean_latency_ms is not None
+        and mean_latency_ms <= SLO_EWMA_LATENCY_TARGET_MS
+    ):
+        status = "met"
+    else:
+        status = "missed"
+
+    return {
+        "status": status,
+        "samples": completed,
+        "successes": successes,
+        "failures": failures,
+        "availability": (
+            round(availability, 6) if availability is not None else None
+        ),
+        "mean_latency_ms": (
+            round(mean_latency_ms, 1) if mean_latency_ms is not None else None
+        ),
+        "rollup_events": len(rollups),
+        "periodic_rollups": len(periodic),
+        "canary_rollups": canary_rollups,
+    }
+
+
+def _run_success_path() -> tuple[dict, dict, dict, dict]:
     token = _required_env("SHINE_AI_MEMORY_TOKEN")
     owner_id = _required_env("L_MEMORY_OWNER_ID", "PROJECT_L_OWNER_ID")
 
@@ -240,12 +318,26 @@ def _run_success_path() -> tuple[dict, dict, dict]:
             "Project L memory bridge live smoke: FAIL telemetry-unverified"
         )
 
-    return after, after_metrics, receipt
+    runtime_rollup = bridge._flush_runtime_rollup(
+        force=True,
+        synchronous=True,
+        rollup_kind="canary",
+    )
+    if (
+        runtime_rollup.get("scheduled") is not True
+        or runtime_rollup.get("recorded") is not True
+        or runtime_rollup.get("storage") != "railway-redis-volume"
+    ):
+        raise SystemExit(
+            "Project L memory bridge live smoke: FAIL runtime-rollup-unavailable"
+        )
+
+    return after, after_metrics, receipt, runtime_rollup
 
 
 def main() -> None:
     try:
-        after, after_metrics, receipt = _run_success_path()
+        after, after_metrics, receipt, runtime_rollup = _run_success_path()
     except BaseException as exc:
         if isinstance(exc, (KeyboardInterrupt, GeneratorExit)):
             raise
@@ -286,6 +378,7 @@ def main() -> None:
         }
     )
     durable = _durable_slo_summary()
+    runtime_durable = _durable_runtime_slo_summary()
 
     print(
         "Project L memory bridge live smoke: PASS "
@@ -304,7 +397,16 @@ def main() -> None:
         f"durable_successes={durable.get('successes')} "
         f"durable_failures={durable.get('failures')} "
         f"durable_availability={durable.get('availability')} "
-        f"durable_ewma_latency_ms={durable.get('ewma_latency_ms')}"
+        f"durable_ewma_latency_ms={durable.get('ewma_latency_ms')} "
+        f"runtime_rollup={runtime_rollup.get('storage')} "
+        f"runtime_slo={runtime_durable.get('status')} "
+        f"runtime_samples={runtime_durable.get('samples')} "
+        f"runtime_successes={runtime_durable.get('successes')} "
+        f"runtime_failures={runtime_durable.get('failures')} "
+        f"runtime_availability={runtime_durable.get('availability')} "
+        f"runtime_mean_latency_ms={runtime_durable.get('mean_latency_ms')} "
+        f"runtime_periodic_rollups={runtime_durable.get('periodic_rollups')} "
+        f"runtime_canary_rollups={runtime_durable.get('canary_rollups')}"
     )
 
 
