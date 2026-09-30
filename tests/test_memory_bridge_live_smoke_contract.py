@@ -31,6 +31,10 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
             return self._body
 
     class Client:
+        def __init__(self):
+            self.requests_total = 0
+            self.success_total = 0
+
         def get(self, path, headers):
             assert path == "/internal/shine-ai/memory/health"
             assert headers["X-Shine-Service-Token"] == "x" * 32
@@ -51,12 +55,25 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
                 "rpc_pool_seconds": 1.0,
                 "read_only": True,
                 "fail_closed": True,
+                "metrics": {
+                    "requests_total": self.requests_total,
+                    "success_total": self.success_total,
+                    "failure_total": 0,
+                    "success_rate": (
+                        1.0 if self.success_total else None
+                    ),
+                    "last_latency_ms": (
+                        12.5 if self.success_total else 0.0
+                    ),
+                },
             })
 
         def post(self, path, headers, json):
             assert path == "/internal/shine-ai/memory/retrieve"
             assert json["query"] == "diving bali"
             assert json["scopes"] == ["sport"]
+            self.requests_total += 1
+            self.success_total += 1
             return Response({
                 "source": "project-l",
                 "engine": "project-l-memory-context-v2",
@@ -90,4 +107,7 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
     output = capsys.readouterr().out
     assert "Project L memory bridge live smoke: PASS" in output
     assert "records=1" in output
+    assert "requests=1" in output
+    assert "success_rate=1.0" in output
+    assert "latency_ms=12.5" in output
     assert "SECRET MEMORY CONTENT" not in output
