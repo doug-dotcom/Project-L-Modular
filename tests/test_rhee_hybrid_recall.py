@@ -340,6 +340,7 @@ def test_recall_is_not_misread_as_all_or_evidence_mode():
 
 
 def test_deep_recall_is_explicit_without_hijacking_full_swot():
+    assert rhee.explicit_deep_recall_requested("Deep recall Leah") is True
     assert rhee.deep_recall_requested("Deep recall Leah") is True
     assert rhee.exhaustive_requested("Deep recall Leah") is True
     assert rhee.evidence_mode_requested("Deep recall Leah") is True
@@ -347,6 +348,13 @@ def test_deep_recall_is_explicit_without_hijacking_full_swot():
     assert rhee.exhaustive_requested("Tell me all about Leah") is False
     assert "deep" not in rhee.database_search_terms("Deep recall Leah")
     assert "leah" in rhee.database_search_terms("Deep recall Leah")
+
+
+def test_semantic_broad_recall_does_not_report_explicit_deep_recall():
+    prompt = "Recall diving Bali"
+    assert rhee.deep_recall_requested(prompt) is True
+    assert rhee.explicit_deep_recall_requested(prompt) is False
+
 
 
 def test_month_first_dates_are_detected_and_prioritised_for_breakup_recall():
