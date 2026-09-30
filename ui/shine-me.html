@@ -1232,33 +1232,6 @@
 
   <script>
     (() => {
-      const greeting = document.getElementById('welcomeTitle');
-      if (greeting) {
-        const hour = new Date().getHours();
-        const daypart = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
-        greeting.textContent = 'Good ' + daypart + ', Doug';
-      }
-      const moods = Array.from(document.querySelectorAll('.mood'));
-      const moodStatus = document.getElementById('moodStatus');
-      const moodWords = ['A rough one', 'A bit low', 'Steady', 'Feeling good', 'Feeling great'];
-      moods.forEach((button, index) => {
-        button.addEventListener('click', () => {
-          moods.forEach(item => item.style.boxShadow = '');
-          button.style.boxShadow = '0 0 0 3px rgba(244,207,131,.55), 0 6px 18px rgba(0,0,0,.18)';
-          if (moodStatus) moodStatus.textContent = moodWords[index] + ' · saved on this device';\n          try { localStorage.setItem('shine-me-mood', String(index)); } catch (_) {}
-        });
-      });
-      try {
-        const saved = Number(localStorage.getItem('shine-me-mood'));
-        if (Number.isInteger(saved) && moods[saved]) {
-          moods[saved].style.boxShadow = '0 0 0 3px rgba(244,207,131,.55), 0 6px 18px rgba(0,0,0,.18)';\n          if (moodStatus) moodStatus.textContent = moodWords[saved] + ' · saved on this device';
-        }
-      } catch (_) {}
-    })();
-  </script>
-
-  <script>
-    (() => {
       const welcome = document.getElementById('welcomeTitle');
       const accountLabel = document.getElementById('accountLabel');
       const connection = document.getElementById('connectionStatus');
@@ -1364,6 +1337,16 @@
         });
         card.addEventListener('keydown',e=>{
           if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openSheet(card.dataset.panel,card); }
+        });
+      });
+      document.querySelectorAll('.mood').forEach((button,index)=>{
+        button.setAttribute('aria-pressed',String(state.mood===index));
+        button.addEventListener('click',e=>{
+          e.stopPropagation();
+          state.mood=index;
+          save();
+          syncDashboard();
+          try { if(navigator.vibrate) navigator.vibrate(8); } catch (_) {}
         });
       });
 
@@ -1482,7 +1465,11 @@
         const goalsCard=document.querySelector('.goals-card');
         const routineCard=document.querySelector('.routine-card');
         const moods=Array.from(document.querySelectorAll('.mood'));
-        moods.forEach((m,i)=>m.dataset.selected=String(state.mood===i));
+        moods.forEach((m,i)=>{
+          const selected=state.mood===i;
+          m.dataset.selected=String(selected);
+          m.setAttribute('aria-pressed',String(selected));
+        });
         if(moodCard&&state.mood!==null){
           const p=moodCard.querySelector('.card-head p');
           if(p)p.textContent=['Very low today','Low today','Okay today','Feeling good','Feeling great'][state.mood]||'Checked in';
