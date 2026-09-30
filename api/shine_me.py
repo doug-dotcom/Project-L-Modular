@@ -185,7 +185,7 @@ def _clean_owner_state(raw):
         "dailyCheckins": _clean_daily_checkins(raw.get("dailyCheckins")),
         "lastDay": _clean_day(raw.get("lastDay"), optional=True),
     }
-    if len(json.dumps(clean, separators=(",", ":"), ensure_ascii=False)) > 64_000:
+    if len(json.dumps(clean, separators=(",", ":"), ensure_ascii=False)) > 262_144:
         raise ValueError("Shine-Me state is too large.")
     return clean
 
