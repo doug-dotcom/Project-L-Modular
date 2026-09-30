@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "request_id": "universe-go-0026",
+  "request_id": "universe-go-0027",
   "pass": 1,
   "scope": "core",
   "dispatch_group": "project-l",
@@ -8,5 +8,5 @@
     "L",
     "Me"
   ],
-  "note": "One governed Shine Universe core pass from Chat Control."
+  "note": "One Shine end-to-end pass: preserve identity and longitudinal context across the journey; expose failure and recovery without losing user continuity."
 }
