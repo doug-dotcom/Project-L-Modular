@@ -945,3 +945,65 @@ def test_unlinked_evidence_does_not_claim_owner_binding():
     assert evidence[0]["provenance"] == "unlinked"
     assert evidence[0]["owner_bound"] is False
     assert evidence[0]["authority"] is None
+
+
+
+def test_recall_confidence_uses_governed_independent_lineages():
+    from types import SimpleNamespace
+    from layers.layer10_recall_confidence import install
+
+    evidence = [{"source": f"memory_general:{i}", "raw_id": i} for i in range(12)]
+    base = {
+        "context": "base",
+        "evidence": evidence,
+        "recall_plan": {"status": "checked"},
+        "evidence_independence": {
+            "independent_lineages": 6,
+            "governed_evidence_items": 12,
+            "governance_metadata_complete": True,
+        },
+    }
+    fake = SimpleNamespace(
+        build_context_packet=lambda query: dict(base),
+        safe_text=lambda value: "" if value is None else str(value),
+    )
+    install(fake)
+
+    result = fake.build_context_packet("Recall diving")
+    confidence = result["recall_confidence"]
+
+    assert confidence["state"] == "supported_retrieval"
+    assert confidence["confidence"] == "high"
+    assert confidence["independent_lineages"] == 6
+    assert confidence["governed_evidence_sources"] == 12
+    assert confidence["governance_metadata_complete"] is True
+
+
+def test_recall_confidence_does_not_overstate_duplicated_or_ungoverned_support():
+    from types import SimpleNamespace
+    from layers.layer10_recall_confidence import install
+
+    evidence = [{"source": f"memory_general:{i}", "raw_id": 44} for i in range(12)]
+    base = {
+        "context": "base",
+        "evidence": evidence,
+        "recall_plan": {"status": "checked"},
+        "evidence_independence": {
+            "independent_lineages": 1,
+            "governed_evidence_items": 12,
+            "governance_metadata_complete": False,
+        },
+    }
+    fake = SimpleNamespace(
+        build_context_packet=lambda query: dict(base),
+        safe_text=lambda value: "" if value is None else str(value),
+    )
+    install(fake)
+
+    result = fake.build_context_packet("Recall diving")
+    confidence = result["recall_confidence"]
+
+    assert confidence["state"] == "supported_retrieval"
+    assert confidence["confidence"] == "moderate"
+    assert confidence["independent_lineages"] == 1
+    assert confidence["governance_metadata_complete"] is False
