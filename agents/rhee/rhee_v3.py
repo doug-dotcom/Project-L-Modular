@@ -941,9 +941,19 @@ def pauline_report_requested(query):
     return asks_for_report and (pauline_context or six_month_context)
 
 
-def deep_recall_requested(query):
+def explicit_deep_recall_requested(query):
+    """Return only user-visible Deep Recall mode before modular broadening.
+
+    Later recall layers may widen ordinary family, health, timeline or semantic
+    retrieval by wrapping deep_recall_requested. That internal breadth must not
+    leak into the public deep_recall mode flag or prompt label.
+    """
     text = safe_text(query).lower()
     return term_in_text("deep recall", text) or pauline_report_requested(text)
+
+
+def deep_recall_requested(query):
+    return explicit_deep_recall_requested(query)
 
 
 def exhaustive_requested(query):
@@ -1378,7 +1388,8 @@ def build_context(user_message, evidence_out=None, recall_plan=None, receipt_out
     identity_context = load_identity()
     learnings_context = load_learnings(user_message=user_message)
     exhaustive = exhaustive_requested(user_message)
-    deep_recall = deep_recall_requested(user_message)
+    broad_recall = deep_recall_requested(user_message)
+    explicit_deep_recall = explicit_deep_recall_requested(user_message)
     pauline_report = pauline_report_requested(user_message)
     candidates = search_database_candidates(
         user_message,
@@ -1407,7 +1418,7 @@ def build_context(user_message, evidence_out=None, recall_plan=None, receipt_out
 
     recall_packet = build_recall_packet(
         user_message,
-        limit=6 if recall_plan['mode'] == 'focused' else (20 if deep_recall else 12),
+        limit=6 if recall_plan['mode'] == 'focused' else (20 if broad_recall else 12),
         database_memories=memory_candidates,
     )
     print("LONG TERM RECORDS SENT: " + ",".join(
@@ -1423,7 +1434,8 @@ def build_context(user_message, evidence_out=None, recall_plan=None, receipt_out
     sections.append("")
     sections.append(f"SHORT TERM DOMAIN: {short_term_domain}")
     sections.append(f"LONG TERM RECALL ACTIVE: {recall_active}")
-    sections.append(f"DEEP RECALL MODE: {deep_recall}")
+    sections.append(f"DEEP RECALL MODE: {explicit_deep_recall}")
+    sections.append(f"BROAD RECALL MODE: {broad_recall}")
     sections.append(f"PAULINE REPORT MODE: {pauline_report}")
     sections.append("")
 
@@ -1559,7 +1571,8 @@ def build_context_packet(user_message):
         "context": context,
         "context_size": len(context),
         "recall_active": bool(evidence) or "LONG TERM RECALL ACTIVE: True" in context,
-        "deep_recall": deep_recall_requested(user_message),
+        "deep_recall": explicit_deep_recall_requested(user_message),
+        "broad_recall": deep_recall_requested(user_message),
         "short_term_domain": classify_short_term_domain(user_message),
     }
 
