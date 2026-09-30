@@ -104,17 +104,45 @@ def main() -> None:
     owner_id = _required_env("L_MEMORY_OWNER_ID", "PROJECT_L_OWNER_ID")
 
     client = _client()
-    health = _health(client, token)
+    before = _health(client, token)
+    before_metrics = (
+        before.get("metrics")
+        if isinstance(before.get("metrics"), dict)
+        else {}
+    )
     result = _retrieve(client, token, owner_id)
     receipt = result["receipt"]
+    after = _health(client, token)
+    after_metrics = (
+        after.get("metrics")
+        if isinstance(after.get("metrics"), dict)
+        else {}
+    )
+
+    if (
+        int(after_metrics.get("requests_total") or 0)
+            < int(before_metrics.get("requests_total") or 0) + 1
+        or int(after_metrics.get("success_total") or 0)
+            < int(before_metrics.get("success_total") or 0) + 1
+        or int(after_metrics.get("failure_total") or 0)
+            < int(before_metrics.get("failure_total") or 0)
+        or after_metrics.get("success_rate") is None
+        or float(after_metrics.get("last_latency_ms") or -1) < 0
+    ):
+        raise SystemExit(
+            "Project L memory bridge live smoke: FAIL telemetry-unverified"
+        )
 
     print(
         "Project L memory bridge live smoke: PASS "
-        f"circuit={health.get('circuit_state')} "
+        f"circuit={after.get('circuit_state')} "
         f"records={receipt.get('records_returned')} "
         f"owner_bound={str(receipt.get('owner_bound')).lower()} "
         f"query_binding={receipt.get('query_binding')} "
-        f"contract={receipt.get('query_contract_version')}"
+        f"contract={receipt.get('query_contract_version')} "
+        f"requests={after_metrics.get('requests_total')} "
+        f"success_rate={after_metrics.get('success_rate')} "
+        f"latency_ms={after_metrics.get('last_latency_ms')}"
     )
 
 
