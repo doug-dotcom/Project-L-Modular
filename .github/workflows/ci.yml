@@ -132,6 +132,7 @@ jobs:
           tests/test_shine_runtime_service.py
           tests/test_modern_models.py
           tests/test_model_independence.py
+          tests/test_memory_recovery_backpressure.py
           tests/test_layer*.py
           tests/test_temporal_memory.py
           tests/test_recall_planner.py
