@@ -38,7 +38,7 @@ def install(rhee):
 
         broadened = (
             rhee.safe_text(query)
-            + " comprehensive deep recall history timeline childhood family school education "
+            + " comprehensive recall history timeline childhood family school education "
               "friends relationships army military career work employment health sport major events"
         )
         second = previous_packet(broadened)
