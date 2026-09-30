@@ -53,6 +53,7 @@ jobs:
           api/wellness_context.py
           scripts/verify_memory_bridge_live.py
           scripts/verify_rhee_retrieval_live.py
+          scripts/verify_shine_me_state_sync.py
           api/shine_me.py
           layers/layer11_true_deep_recall.py
           sitecustomize.py
@@ -124,6 +125,7 @@ jobs:
           tests/test_shine_me_context.py
           tests/test_shine_me_service.py
           tests/test_shine_me_api.py
+          tests/test_shine_me_state_sync_smoke.py
           tests/test_foundation_companion_service.py
           tests/test_foundation_chain_redis_checkpoint.py
           tests/test_external_witness_roster.py
