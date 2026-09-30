@@ -126,8 +126,17 @@ def main() -> None:
         "sparse_retrieval",
         "partial_coverage",
         "supported_retrieval",
+        "conflicted_retrieval",
     }:
         _fail("confidence-state-invalid")
+
+    if str(confidence.get("state") or "") == "conflicted_retrieval":
+        if confidence.get("unresolved_conflict") is not True:
+            _fail("conflicted-confidence-without-unresolved-state")
+        if plan.get("conflict_state") != "unresolved":
+            _fail("conflicted-confidence-plan-state-mismatch")
+        if plan.get("conflict_state_reviewed") is not True:
+            _fail("conflicted-confidence-unreviewed")
 
     print(
         "Project L Rhee retrieval smoke: PASS "
