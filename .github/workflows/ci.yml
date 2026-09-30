@@ -115,7 +115,7 @@ jobs:
           tests/test_durable_ui.py
           tests/test_shine_ai_memory_bridge.py
           tests/test_memory_bridge_live_smoke_contract.py
-          tests/orchestration/test_observability_lieutenant.py
+          tests/test_observability_lieutenant.py
           tests/test_shine_ai_bridge.py
           tests/test_shine_me_context.py
           tests/test_shine_me_service.py
