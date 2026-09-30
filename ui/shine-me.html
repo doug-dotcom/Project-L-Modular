@@ -1060,6 +1060,29 @@
     .checkin-trend-row p { margin:6px 0 0; color:#95a5b7; font-size:9px; line-height:1.4; }
     @media (max-width:380px){ .checkin-trend-grid{grid-template-columns:1fr;} }
 
+  
+    /* shine-me-30day-patterns-v1 */
+    .pattern-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .pattern-card {
+      min-height:90px; padding:12px 10px; border-radius:16px;
+      border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.04);
+    }
+    .pattern-card small { display:block; color:#8595a9; font-size:8px; letter-spacing:.09em; text-transform:uppercase; }
+    .pattern-card strong { display:block; margin-top:8px; color:#eef4fa; font-size:17px; line-height:1.1; }
+    .pattern-card em { display:block; margin-top:5px; color:#8293a8; font-size:9px; line-height:1.3; font-style:normal; }
+    .pattern-delta { margin-left:4px; font-size:9px; font-weight:750; }
+    .pattern-delta[data-dir="up"] { color:#87c9ae; }
+    .pattern-delta[data-dir="down"] { color:#d8a0a6; }
+    .pattern-delta[data-dir="same"] { color:#8fa0b4; }
+    .feeling-chips { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+    .feeling-chip {
+      display:inline-flex; align-items:center; gap:5px; padding:7px 9px; border-radius:999px;
+      border:1px solid rgba(244,207,131,.18); background:rgba(244,207,131,.07);
+      color:#ead59f; font-size:9px;
+    }
+    .feeling-chip b { color:#f7e7bc; font-size:10px; }
+    @media (max-width:380px){ .pattern-grid{grid-template-columns:1fr;} }
+
   </style>
 </head>
 <body>
@@ -2349,6 +2372,40 @@
         const average=values=>values.length?values.reduce((a,b)=>a+b,0)/values.length:null;
         const avgScore=average(scored);
         const avgSleep=average(slept);
+        const last14=lastDays(14);
+        const current7=last14.slice(7);
+        const previous7=last14.slice(0,7);
+        const statsFor=period=>{
+          const checkins=period.map(day=>state.dailyCheckins?.[day.key]).filter(Boolean);
+          const scores=checkins.map(x=>Number(x.score)).filter(Number.isFinite);
+          const sleeps=checkins.map(x=>Number(x.sleep)).filter(Number.isFinite);
+          const words=[];
+          checkins.forEach(x=>{
+            [x.feeling1,x.feeling2].filter(Boolean).forEach(word=>{
+              const clean=String(word).trim().toLowerCase();
+              if(clean)words.push(clean);
+            });
+          });
+          const counts={};
+          words.forEach(word=>{counts[word]=(counts[word]||0)+1;});
+          return {
+            count:checkins.length,
+            score:average(scores),
+            sleep:average(sleeps),
+            feelings:Object.entries(counts).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))
+          };
+        };
+        const currentStats=statsFor(current7);
+        const previousStats=statsFor(previous7);
+        const delta=(current,previous)=>{
+          if(current===null||previous===null)return null;
+          return Number((current-previous).toFixed(1));
+        };
+        const scoreDelta=delta(currentStats.score,previousStats.score);
+        const sleepDelta=delta(currentStats.sleep,previousStats.sleep);
+        const deltaText=value=>value===null?'no prior data':(value===0?'no change':((value>0?'+':'')+value.toFixed(1)));
+        const deltaDir=value=>value===null||value===0?'same':value>0?'up':'down';
+        const topFeelings=currentStats.feelings.slice(0,5);
 
         const checkinRowsHtml=rows.slice().reverse().filter(x=>x.checkin).map(({day,checkin})=>{
           const words=[checkin.feeling1,checkin.feeling2].filter(Boolean).join(' · ');
@@ -2411,6 +2468,14 @@
           +'<div class="progress-stat"><small>Routines done</small><strong>'+routines+'</strong><em>tracked completions</em></div>'
           +'</div></div>'
           +'<div class="sheet-section"><h3>Daily check-ins</h3>'+dailyHtml+'</div>'
+          +'<div class="sheet-section"><h3>What changed</h3>'
+          +'<div class="pattern-grid">'
+          +'<div class="pattern-card"><small>Day score</small><strong>'+(currentStats.score===null?'—':currentStats.score.toFixed(1)+'/10')+'</strong><em>vs previous 7 days <span class="pattern-delta" data-dir="'+deltaDir(scoreDelta)+'">'+deltaText(scoreDelta)+'</span></em></div>'
+          +'<div class="pattern-card"><small>Sleep</small><strong>'+(currentStats.sleep===null?'—':currentStats.sleep.toFixed(1)+'/10')+'</strong><em>vs previous 7 days <span class="pattern-delta" data-dir="'+deltaDir(sleepDelta)+'">'+deltaText(sleepDelta)+'</span></em></div>'
+          +'<div class="pattern-card"><small>Full check-ins</small><strong>'+currentStats.count+'</strong><em>previous 7 days '+previousStats.count+'</em></div>'
+          +'</div>'
+          +(topFeelings.length?'<div class="feeling-chips">'+topFeelings.map(([word,count])=>'<span class="feeling-chip"><b>'+escapeHtml(word)+'</b> × '+count+'</span>').join('')+'</div>':'<p class="sheet-copy">No repeated feeling words yet.</p>')
+          +'<p class="sheet-copy" style="margin-top:10px">These are simple comparisons of what you entered. They do not explain why anything changed.</p></div>'
           +'<div class="sheet-section"><h3>Last 7 days</h3>'+lastWeekHtml+'</div>'
           +'<div class="sheet-section"><h3>What this means</h3><p class="sheet-copy">'+meaning+'</p></div>'
           +'<div class="sheet-section"><h3>Recent detail</h3><div class="history-list">'+recentHtml+'</div></div>';
@@ -2427,6 +2492,9 @@
             fullCheckins+' full Daily Check-in'+(fullCheckins===1?'':'s'),
             avgScore===null?'':('average self-rated day score '+avgScore.toFixed(1)+'/10'),
             avgSleep===null?'':('average self-rated sleep '+avgSleep.toFixed(1)+'/10'),
+            scoreDelta===null?'':('day score change vs previous 7 days '+deltaText(scoreDelta)),
+            sleepDelta===null?'':('sleep change vs previous 7 days '+deltaText(sleepDelta)),
+            topFeelings.length?('most repeated feeling words '+topFeelings.map(([word,count])=>word+' x'+count).join(', ')):'',
             goals+' goal completion'+(goals===1?'':'s'),
             routines+' routine completion'+(routines===1?'':'s'),
             activeDays+' active tracked day'+(activeDays===1?'':'s')
