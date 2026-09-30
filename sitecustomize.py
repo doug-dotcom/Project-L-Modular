@@ -214,6 +214,28 @@ if _rhee is not None:
     try:
         from layers.layer3_family_recall import install as _install_layer3_family
         _install_layer3_family(_rhee)
+
+        # The modular deep-recall layers can add, suppress or replace evidence
+        # after the base Rhee packet is built. Recompute independence only after
+        # the complete installed chain returns so the receipt describes exactly
+        # the evidence that downstream cognition will actually see.
+        _final_build_context_packet = _rhee.build_context_packet
+
+        def _build_context_packet_with_final_evidence_independence(query):
+            result = _final_build_context_packet(query)
+            if not isinstance(result, dict):
+                return result
+            output = dict(result)
+            independence = _rhee.evidence_independence_receipt(
+                output.get("evidence") or []
+            )
+            output["evidence_independence"] = independence
+            receipt = dict(output.get("recall_plan") or {})
+            receipt["evidence_independence"] = independence
+            output["recall_plan"] = receipt
+            return output
+
+        _rhee.build_context_packet = _build_context_packet_with_final_evidence_independence
     except Exception as _layer3_exc:
         _tb = _layer3_exc.__traceback__
         while _tb and _tb.tb_next:
