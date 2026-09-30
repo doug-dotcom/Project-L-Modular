@@ -1328,3 +1328,22 @@ def test_authority_review_does_not_trust_unreviewed_conflict_state():
 
     assert result["recall_plan"]["conflict_state"] == "none_reported"
     assert result["recall_plan"]["unresolved_conflict"] is False
+
+
+
+def test_rhee_recall_rpc_classifies_http_timeout_as_transient():
+    class TimeoutErrorLike(Exception):
+        pass
+
+    error = TimeoutErrorLike("The read operation timed out")
+
+    assert rhee.recall_rpc_error_code(error) == "HTTP_TIMEOUT"
+    assert rhee._TRANSIENT_RECALL_RPC_DELAYS["HTTP_TIMEOUT"] == (0.25,)
+
+
+def test_rhee_recall_rpc_does_not_misclassify_auth_failure_as_timeout():
+    class AuthErrorLike(Exception):
+        code = "401"
+        message = "unauthorized"
+
+    assert rhee.recall_rpc_error_code(AuthErrorLike()) == "401"
