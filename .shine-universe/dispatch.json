@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "request_id": "universe-go-0028",
+  "request_id": "universe-go-0029",
   "pass": 1,
   "scope": "core",
   "dispatch_group": "project-l",
@@ -8,5 +8,5 @@
     "L",
     "Me"
   ],
-  "note": "One Shine end-to-end pass focused on stable identity, memory context, and request intent across service handoffs and recovery."
+  "note": "One Shine end-to-end pass focused on recovery convergence: preserve one current memory and identity state through retry and recovery, without replay drift or stale context."
 }
