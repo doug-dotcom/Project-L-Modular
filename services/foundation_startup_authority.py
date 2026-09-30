@@ -17,6 +17,7 @@ DEFAULT_RETRY_DELAYS_SECONDS = (2.0, 5.0, 12.0, 30.0)
 MAX_RETRY_DELAY_SECONDS = 30.0
 FOUNDATION_CHECK_TIMEOUT_SECONDS = 6.0
 LEASE_RETRY_CUSHION_SECONDS = 0.5
+MAX_BUSY_OUTCOMES = 8
 
 
 class FoundationStartupAuthority:
@@ -39,6 +40,7 @@ class FoundationStartupAuthority:
         thread_factory: Callable[..., Any] = threading.Thread,
         wait_impl: Callable[[float], bool] | None = None,
         now_impl: Callable[[], datetime] | None = None,
+        max_busy_outcomes: int = MAX_BUSY_OUTCOMES,
     ):
         if not retry_delays_seconds:
             raise ValueError("at least one retry delay is required")
@@ -48,6 +50,8 @@ class FoundationStartupAuthority:
             raise ValueError("max retry delay must be positive")
         if check_timeout_seconds <= 0:
             raise ValueError("check timeout must be positive")
+        if max_busy_outcomes < 1:
+            raise ValueError("max busy outcomes must be positive")
 
         self._owner_resolver = owner_resolver
         self._ensure_impl = ensure_impl
@@ -57,6 +61,7 @@ class FoundationStartupAuthority:
         self._thread_factory = thread_factory
         self._wait_impl = wait_impl
         self._now_impl = now_impl or (lambda: datetime.now(timezone.utc))
+        self._max_busy_outcomes = int(max_busy_outcomes)
 
         self._lock = threading.Lock()
         self._stop = threading.Event()
@@ -165,15 +170,21 @@ class FoundationStartupAuthority:
         else:
             result = {}
 
-        max_attempts = len(self._retry_delays) + 1
-        for attempt in range(1, max_attempts + 1):
+        attempts = 0
+        unavailable_outcomes = 0
+        busy_outcomes = 0
+        max_unavailable_outcomes = len(self._retry_delays) + 1
+
+        while True:
             if self._stop.is_set():
                 self._publish(
                     status=self.snapshot().get("status", "stopped"),
-                    attempts=max(0, attempt - 1),
+                    attempts=attempts,
                     background_retry=False,
                 )
                 return
+
+            attempts += 1
 
             if owner_lookup_failed:
                 try:
@@ -200,23 +211,40 @@ class FoundationStartupAuthority:
 
             status = str(result.get("status") or "unavailable")
             retryable = self._retryable(result)
-            final_attempt = attempt >= max_attempts
+            if not retryable:
+                self._publish(
+                    status=status,
+                    attempts=attempts,
+                    background_retry=False,
+                )
+                return
+
+            if status == "busy":
+                busy_outcomes += 1
+                retry_exhausted = busy_outcomes >= self._max_busy_outcomes
+                retry_index = busy_outcomes - 1
+            else:
+                unavailable_outcomes += 1
+                retry_exhausted = (
+                    unavailable_outcomes >= max_unavailable_outcomes
+                )
+                retry_index = unavailable_outcomes - 1
 
             self._publish(
                 status=status,
-                attempts=attempt,
-                background_retry=retryable and not final_attempt,
-                retry_exhausted=retryable and final_attempt,
+                attempts=attempts,
+                background_retry=not retry_exhausted,
+                retry_exhausted=retry_exhausted,
             )
 
-            if not retryable or final_attempt:
+            if retry_exhausted:
                 return
 
-            delay = self._retry_delay(result, attempt - 1)
+            delay = self._retry_delay(result, retry_index)
             if self._wait(delay):
                 self._publish(
                     status=status,
-                    attempts=attempt,
+                    attempts=attempts,
                     background_retry=False,
                 )
                 return
