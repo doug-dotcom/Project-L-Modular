@@ -292,13 +292,17 @@ def test_owner_context_retries_pgrst002_once_then_recovers(monkeypatch):
     configure(monkeypatch)
     calls = {"count": 0}
     sleeps = []
+    query = "What diving qualifications have I completed?"
 
     class SchemaCacheUnavailable(Exception):
         code = "PGRST002"
         message = "Could not query the database for the schema cache"
 
     class Result:
-        data = owner_context()
+        data = {
+            **owner_context(),
+            "queryKey": bridge._query_key(bridge._query_terms(query)),
+        }
 
     class Rpc:
         def execute(self):
@@ -309,13 +313,14 @@ def test_owner_context_retries_pgrst002_once_then_recovers(monkeypatch):
 
     class Database:
         def rpc(self, name, payload):
-            assert name == "project_l_memory_context_service_v1"
+            assert name == "project_l_memory_context_service_v2"
+            assert payload["p_query_key"] == bridge._query_key(payload["p_terms"])
             return Rpc()
 
     monkeypatch.setattr(bridge, "_database", lambda: Database())
     monkeypatch.setattr(bridge.time, "sleep", lambda delay: sleeps.append(delay))
 
-    result = bridge._owner_context(OWNER, "What diving qualifications have I completed?", 4)
+    result = bridge._owner_context(OWNER, query, 4)
 
     assert result["status"] == "ok"
     assert calls["count"] == 2
@@ -350,7 +355,7 @@ def test_pgrst002_exhaustion_opens_short_circuit(monkeypatch):
         assert False, "expected HTTPException"
     except Exception as exc:
         assert getattr(exc, "status_code", None) == 503
-        assert getattr(exc, "headers", {})["Retry-After"] == "4"
+        assert getattr(exc, "headers", {})["Retry-After"] == "8"
 
     assert calls["count"] == 2
 
@@ -359,7 +364,7 @@ def test_pgrst002_exhaustion_opens_short_circuit(monkeypatch):
         assert False, "expected circuit HTTPException"
     except Exception as exc:
         assert getattr(exc, "status_code", None) == 503
-        assert getattr(exc, "headers", {})["Retry-After"] == "4"
+        assert getattr(exc, "headers", {})["Retry-After"] == "8"
 
     assert calls["count"] == 2
 
@@ -368,13 +373,17 @@ def test_statement_timeout_retries_once_without_opening_schema_circuit(monkeypat
     configure(monkeypatch)
     calls = {"count": 0}
     sleeps = []
+    query = "Dive history"
 
     class StatementTimeout(Exception):
         code = "57014"
         message = "canceling statement due to statement timeout"
 
     class Result:
-        data = owner_context()
+        data = {
+            **owner_context(),
+            "queryKey": bridge._query_key(bridge._query_terms(query)),
+        }
 
     class Rpc:
         def execute(self):
@@ -390,9 +399,65 @@ def test_statement_timeout_retries_once_without_opening_schema_circuit(monkeypat
     monkeypatch.setattr(bridge, "_database", lambda: Database())
     monkeypatch.setattr(bridge.time, "sleep", lambda delay: sleeps.append(delay))
 
-    result = bridge._owner_context(OWNER, "Dive history", 4)
+    result = bridge._owner_context(OWNER, query, 4)
 
     assert result["status"] == "ok"
     assert calls["count"] == 2
     assert sleeps == [0.2]
     assert bridge._rpc_circuit_open_until == 0.0
+
+
+
+def test_owner_context_falls_back_to_v1_only_when_v2_function_is_missing(monkeypatch):
+    configure(monkeypatch)
+    calls = []
+
+    class FunctionMissing(Exception):
+        code = "PGRST202"
+        message = "Could not find the function public.project_l_memory_context_service_v2"
+
+    class MissingRpc:
+        def execute(self):
+            raise FunctionMissing()
+
+    class LegacyRpc:
+        def execute(self):
+            return type("Result", (), {"data": owner_context()})()
+
+    class Database:
+        def rpc(self, name, payload):
+            calls.append(name)
+            return MissingRpc() if name.endswith("_v2") else LegacyRpc()
+
+    monkeypatch.setattr(bridge, "_database", lambda: Database())
+    result = bridge._owner_context(OWNER, "Dive history", 4)
+
+    assert calls == [
+        "project_l_memory_context_service_v2",
+        "project_l_memory_context_service_v1",
+    ]
+    assert result["_queryBinding"]["mode"] == "legacy-unverified"
+
+
+def test_owner_context_rejects_mismatched_server_query_key(monkeypatch):
+    configure(monkeypatch)
+
+    class Rpc:
+        def execute(self):
+            return type("Result", (), {
+                "data": {**owner_context(), "queryKey": "wrong-cohort"}
+            })()
+
+    class Database:
+        def rpc(self, name, payload):
+            assert name == "project_l_memory_context_service_v2"
+            return Rpc()
+
+    monkeypatch.setattr(bridge, "_database", lambda: Database())
+
+    try:
+        bridge._owner_context(OWNER, "Dive history", 4)
+        assert False, "expected HTTPException"
+    except Exception as exc:
+        assert getattr(exc, "status_code", None) == 503
+        assert "query binding" in str(getattr(exc, "detail", "")).lower()
