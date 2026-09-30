@@ -11,21 +11,35 @@ def install(rhee):
     previous_packet = rhee.build_context_packet
 
     def authority_rank(item):
+        authority = item.get("authority")
+        authority = authority if isinstance(authority, dict) else {}
+        governed_class = rhee.safe_text(authority.get("class")).lower()
+        precedence = authority.get("precedence")
+        try:
+            governed_precedence = int(precedence)
+        except (TypeError, ValueError):
+            governed_precedence = None
+
+        # Owner-scoped v2 authority is the source of truth when present.
+        # Higher precedence means stronger authority; map it into the existing
+        # lower-is-stronger sort contract while retaining a deterministic tie.
+        if item.get("provenance") == "owner_scoped_v2" and governed_precedence is not None:
+            return (0, -governed_precedence, governed_class)
+
         role = rhee.safe_text(item.get("role")).lower()
         source = rhee.safe_text(item.get("source")).lower()
-        # Doug-authored USER evidence is primary. Canonical/promoted memory is
-        # next when not explicitly assistant-authored. Assistant prose is
-        # secondary and must never override Doug's own record.
+        # Compatibility fallback for evidence not yet carrying governed v2
+        # metadata. It must never outrank a governed item merely by source name.
         if role == "user":
-            return 0
+            return (1, 0, "legacy-user")
         if role not in {"assistant", "model"} and (
             source.startswith("memory_") or source.startswith("identity_anchors")
             or source.startswith("episodic_memories")
         ):
-            return 1
+            return (2, 0, "legacy-promoted")
         if role in {"assistant", "model"}:
-            return 3
-        return 2
+            return (4, 0, "legacy-assistant")
+        return (3, 0, "legacy-other")
 
     def packet(query):
         result = previous_packet(query)
@@ -41,11 +55,14 @@ def install(rhee):
         counts = {"user_primary": 0, "canonical_or_promoted": 0, "other": 0, "assistant_secondary": 0}
         for item in ordered:
             rank = authority_rank(item)
-            if rank == 0:
+            authority = item.get("authority")
+            authority = authority if isinstance(authority, dict) else {}
+            authority_class = rhee.safe_text(authority.get("class")).lower()
+            if authority_class == "direct_user_promoted_memory" or rank[0] == 1:
                 counts["user_primary"] += 1
-            elif rank == 1:
+            elif rank[0] in {0, 2}:
                 counts["canonical_or_promoted"] += 1
-            elif rank == 3:
+            elif rank[0] == 4:
                 counts["assistant_secondary"] += 1
             else:
                 counts["other"] += 1
@@ -71,6 +88,7 @@ RHEE EVIDENCE AUTHORITY REVIEW
         receipt = dict(output.get("recall_plan") or {})
         receipt.update({
             "authority_review": "applied",
+            "authority_contract": "owner-scoped-v2-precedence-first",
             "authority_counts": counts,
             "conflict_policy": "preserve_primary_conflicts_and_prefer_explicit_user_corrections",
         })
