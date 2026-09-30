@@ -203,6 +203,7 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
     assert "runtime_availability=1.0" in output
     assert "runtime_mean_latency_ms=100.0" in output
     assert "runtime_periodic_rollups=1" in output
+    assert "runtime_shutdown_rollups=0" in output
     assert "runtime_canary_rollups=1" in output
     assert "SECRET MEMORY CONTENT" not in output
     assert "diving bali" not in output
@@ -393,6 +394,7 @@ def test_durable_runtime_slo_excludes_canary_rollups(monkeypatch):
     assert summary["availability"] == 0.75
     assert summary["mean_latency_ms"] == 400.0
     assert summary["periodic_rollups"] == 1
+    assert summary["shutdown_rollups"] == 0
     assert summary["canary_rollups"] == 1
     assert summary["status"] == "warming"
 
@@ -455,3 +457,54 @@ def test_durable_runtime_slo_reports_met_and_missed_after_real_samples(monkeypat
     missed_latency = smoke._durable_runtime_slo_summary()
     assert missed_latency["status"] == "missed"
     assert missed_latency["mean_latency_ms"] == 3500.0
+
+
+
+def test_durable_runtime_slo_counts_shutdown_rollups_as_real_traffic(monkeypatch):
+    smoke = load_smoke_module()
+
+    class Observability:
+        def load_events(self):
+            return [
+                {
+                    "event_type": "memory_bridge_runtime_rollup",
+                    "payload": {
+                        "rollup_kind": "periodic",
+                        "successes": 2,
+                        "failures": 0,
+                        "mean_latency_ms": 400.0,
+                    },
+                },
+                {
+                    "event_type": "memory_bridge_runtime_rollup",
+                    "payload": {
+                        "rollup_kind": "shutdown",
+                        "successes": 1,
+                        "failures": 1,
+                        "mean_latency_ms": 600.0,
+                    },
+                },
+                {
+                    "event_type": "memory_bridge_runtime_rollup",
+                    "payload": {
+                        "rollup_kind": "canary",
+                        "successes": 1,
+                        "failures": 0,
+                        "mean_latency_ms": 50.0,
+                    },
+                },
+            ]
+
+    monkeypatch.setattr(smoke, "OBSERVABILITY_LIEUTENANT", Observability())
+
+    summary = smoke._durable_runtime_slo_summary()
+
+    assert summary["samples"] == 4
+    assert summary["successes"] == 3
+    assert summary["failures"] == 1
+    assert summary["availability"] == 0.75
+    assert summary["mean_latency_ms"] == 500.0
+    assert summary["periodic_rollups"] == 1
+    assert summary["shutdown_rollups"] == 1
+    assert summary["canary_rollups"] == 1
+    assert summary["status"] == "warming"
