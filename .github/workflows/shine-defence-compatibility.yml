@@ -1,0 +1,34 @@
+name: Shine Defence Compatibility
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/shine-defence-release-head.yml'
+      - '.github/workflows/shine-defence-compatibility.yml'
+      - 'security/shine-defence/attestation-workflow-compatibility-v1.json'
+      - 'security/shine-defence/integration-kit/attestation-workflow-compatibility-v1.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/shine-defence-release-head.yml'
+      - '.github/workflows/shine-defence-compatibility.yml'
+      - 'security/shine-defence/attestation-workflow-compatibility-v1.json'
+      - 'security/shine-defence/integration-kit/attestation-workflow-compatibility-v1.mjs'
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash --noprofile --norc -euo pipefail {0}
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify canonical Defence attestation compatibility
+        run: node security/shine-defence/integration-kit/attestation-workflow-compatibility-v1.mjs --workflow .github/workflows/shine-defence-release-head.yml
