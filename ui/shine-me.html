@@ -1039,6 +1039,27 @@
     }
     @media (max-width:380px){ .checkin-grid{grid-template-columns:1fr;} }
 
+  
+    /* shine-me-checkin-trends-v1 */
+    .checkin-trend-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .checkin-trend-stat {
+      min-height:86px; padding:12px 10px; border-radius:16px;
+      border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.04);
+    }
+    .checkin-trend-stat small { display:block; color:#8595a9; font-size:8px; letter-spacing:.09em; text-transform:uppercase; }
+    .checkin-trend-stat strong { display:block; margin-top:8px; color:#eef4fa; font-size:18px; }
+    .checkin-trend-stat em { display:block; margin-top:5px; color:#8293a8; font-size:9px; line-height:1.3; font-style:normal; }
+    .checkin-trend-list { display:grid; gap:8px; }
+    .checkin-trend-row {
+      padding:12px; border-radius:15px;
+      border:1px solid rgba(255,255,255,.075); background:rgba(255,255,255,.035);
+    }
+    .checkin-trend-row-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .checkin-trend-row time { color:#d9bf7f; font-size:9px; letter-spacing:.07em; text-transform:uppercase; }
+    .checkin-trend-row strong { color:#eef4fa; font-size:11px; }
+    .checkin-trend-row p { margin:6px 0 0; color:#95a5b7; font-size:9px; line-height:1.4; }
+    @media (max-width:380px){ .checkin-trend-grid{grid-template-columns:1fr;} }
+
   </style>
 </head>
 <body>
@@ -2310,14 +2331,25 @@
         title.textContent='Your Progress';
         kicker.textContent='A factual view of what you’ve actually tracked.';
         const days=lastDays(7);
-        const rows=days.map(day=>({day,entry:state.history?.[day.key]||null}));
-        const checkins=rows.filter(x=>Number.isInteger(x.entry?.mood)).length;
+        const rows=days.map(day=>({
+          day,
+          entry:state.history?.[day.key]||null,
+          checkin:state.dailyCheckins?.[day.key]||null
+        }));
+        const checkins=rows.filter(x=>Number.isInteger(x.entry?.mood)||x.checkin).length;
+        const fullCheckins=rows.filter(x=>x.checkin).length;
         const goals=rows.reduce((sum,x)=>sum+(Number(x.entry?.goalCompleted)||0),0);
         const routines=rows.reduce((sum,x)=>sum+(Number(x.entry?.routineCompleted)||0),0);
-        const activeDays=rows.filter(x=>activityFor(x.entry)>0).length;
+        const activeDays=rows.filter(x=>activityFor(x.entry)>0||x.checkin).length;
         const maxActivity=Math.max(1,...rows.map(x=>activityFor(x.entry)));
         const moodFaces=['☹','◔','•','◡','☺'];
-        const hasAny=rows.some(x=>activityFor(x.entry)>0);
+        const hasAny=rows.some(x=>activityFor(x.entry)>0||x.checkin);
+        const scored=rows.map(x=>Number(x.checkin?.score)).filter(Number.isFinite);
+        const slept=rows.map(x=>Number(x.checkin?.sleep)).filter(Number.isFinite);
+        const average=values=>values.length?values.reduce((a,b)=>a+b,0)/values.length:null;
+        const avgScore=average(scored);
+        const avgSleep=average(slept);
+
         body.innerHTML=`
           <div class="sheet-section">
             <div class="progress-stats">
@@ -2327,26 +2359,54 @@
             </div>
           </div>
           <div class="sheet-section">
+            <h3>Daily check-ins</h3>
+            ${fullCheckins?`
+              <div class="checkin-trend-grid">
+                <div class="checkin-trend-stat"><small>Full check-ins</small><strong>${fullCheckins}</strong><em>saved in the last 7 days</em></div>
+                <div class="checkin-trend-stat"><small>Avg day score</small><strong>${avgScore===null?'—':avgScore.toFixed(1)+'/10'}</strong><em>average of your own entries</em></div>
+                <div class="checkin-trend-stat"><small>Avg sleep</small><strong>${avgSleep===null?'—':avgSleep.toFixed(1)+'/10'}</strong><em>average of your own entries</em></div>
+              </div>
+              <div class="checkin-trend-list">
+                ${rows.slice().reverse().filter(x=>x.checkin).map(({day,checkin})=>{
+                  const words=[checkin.feeling1,checkin.feeling2].filter(Boolean).join(' · ');
+                  const score=Number.isFinite(Number(checkin.score))?Number(checkin.score).toFixed(1):'—';
+                  const sleep=Number.isFinite(Number(checkin.sleep))?Number(checkin.sleep).toFixed(1):'—';
+                  const details=[
+                    checkin.gratitude?'Grateful: '+escapeHtml(checkin.gratitude):'',
+                    checkin.challenge?'Challenge: '+escapeHtml(checkin.challenge):'',
+                    checkin.intention?'Intention: '+escapeHtml(checkin.intention):''
+                  ].filter(Boolean).join(' · ');
+                  return `<div class="checkin-trend-row"><div class="checkin-trend-row-top"><time>${day.date.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})}</time><strong>${score}/10 · sleep ${sleep}/10</strong></div><p>${escapeHtml(words||'No feeling words saved')}${details?' · '+details:''}</p></div>`;
+                }).join('')}
+              </div>
+            `:'<div class="progress-empty">Full Daily Check-ins will appear here as you save them. Quick mood taps still count as check-in activity, but they do not invent day or sleep scores.</div>'}
+          </div>
+          <div class="sheet-section">
             <h3>Last 7 days</h3>
             ${hasAny?`<div class="week-strip">
-              ${rows.map(({day,entry})=>{
+              ${rows.map(({day,entry,checkin})=>{
                 const activity=activityFor(entry);
                 const height=activity?Math.max(14,Math.round(activity/maxActivity*74)):5;
-                const mood=Number.isInteger(entry?.mood)?moodFaces[entry.mood]:'';
+                const moodIndex=Number.isInteger(checkin?.mood)?checkin.mood:entry?.mood;
+                const mood=Number.isInteger(moodIndex)?moodFaces[moodIndex]:'';
                 return `<div class="day-cell"><div class="day-mood">${mood}</div><div class="day-bar-wrap"><div class="day-bar" data-empty="${activity===0}" style="height:${height}px"></div></div><div class="day-label">${day.label}</div></div>`;
               }).join('')}
             </div>`:'<div class="progress-empty">Your seven-day view will build from check-ins and completions — nothing is guessed or scored.</div>'}
           </div>
           <div class="sheet-section">
             <h3>What this means</h3>
-            <p class="sheet-copy">${activeDays?('You recorded activity on '+activeDays+' of the last 7 days. This is a record of what you tracked, not a judgement of how well you are doing.'):'There is not enough tracked activity yet to describe a pattern. That is completely fine — Shine only shows what is actually here.'}</p>
+            <p class="sheet-copy">${activeDays?('You recorded activity on '+activeDays+' of the last 7 days. Day and sleep averages above are arithmetic summaries of numbers you entered yourself — not a wellness score or judgement.'):'There is not enough tracked activity yet to describe a pattern. That is completely fine — Shine only shows what is actually here.')}</p>
           </div>
           <div class="sheet-section">
             <h3>Recent detail</h3>
             <div class="history-list">
-              ${rows.slice().reverse().filter(x=>activityFor(x.entry)>0).map(({day,entry})=>`<div class="history-row"><time>${day.date.toLocaleDateString(undefined,{day:'numeric',month:'short'})}</time><span>${Number.isInteger(entry.mood)?('Mood '+moodFaces[entry.mood]+' · '):''}${entry.goalCompleted||0} goal · ${entry.routineCompleted||0} routine</span><strong>${activityFor(entry)} tracked</strong></div>`).join('')||'<div class="progress-empty">No saved history yet.</div>'}
+              ${rows.slice().reverse().filter(x=>activityFor(x.entry)>0||x.checkin).map(({day,entry,checkin})=>{
+                const moodIndex=Number.isInteger(checkin?.mood)?checkin.mood:entry?.mood;
+                return `<div class="history-row"><time>${day.date.toLocaleDateString(undefined,{day:'numeric',month:'short'})}</time><span>${Number.isInteger(moodIndex)?('Mood '+moodFaces[moodIndex]+' · '):''}${entry?.goalCompleted||0} goal · ${entry?.routineCompleted||0} routine</span><strong>${checkin?'full check-in':activityFor(entry)+' tracked'}</strong></div>`;
+              }).join('')||'<div class="progress-empty">No saved history yet.</div>'}
             </div>
           </div>`;
+
         const progressAction=document.createElement('div');
         progressAction.className='context-action-row';
         const progressButton=document.createElement('button');
@@ -2355,16 +2415,18 @@
         progressButton.textContent='Ask Shine about this week';
         progressButton.addEventListener('click',()=>{
           const facts=[
-            checkins+' mood check-in day'+(checkins===1?'':'s'),
+            checkins+' check-in day'+(checkins===1?'':'s'),
+            fullCheckins+' full Daily Check-in'+(fullCheckins===1?'':'s'),
+            avgScore===null?'':('average self-rated day score '+avgScore.toFixed(1)+'/10'),
+            avgSleep===null?'':('average self-rated sleep '+avgSleep.toFixed(1)+'/10'),
             goals+' goal completion'+(goals===1?'':'s'),
             routines+' routine completion'+(routines===1?'':'s'),
             activeDays+' active tracked day'+(activeDays===1?'':'s')
-          ];
-          handoffToShine('Your Progress','Over the last 7 days I tracked: '+facts.join(', ')+'. Help me reflect on this without turning it into a score or judgement.');
+          ].filter(Boolean);
+          handoffToShine('Your Progress','Over the last 7 days I tracked: '+facts.join(', ')+'. Help me reflect on this without turning the numbers into a diagnosis, prediction or judgement.');
         });
         progressAction.appendChild(progressButton);
         body.appendChild(progressAction);
-
       }
 
       function syncDashboard(){
@@ -2403,7 +2465,12 @@
 
         const days=lastDays(7);
         const activity=days.map(day=>activityFor(state.history?.[day.key]||null));
-        const checkins=days.filter(day=>Number.isInteger(state.history?.[day.key]?.mood)).length;
+        const checkins=days.filter(day=>Number.isInteger(state.history?.[day.key]?.mood)||state.dailyCheckins?.[day.key]).length;
+        const fullCheckins=days.filter(day=>state.dailyCheckins?.[day.key]).length;
+        const dailyScores=days.map(day=>Number(state.dailyCheckins?.[day.key]?.score)).filter(Number.isFinite);
+        const dailySleeps=days.map(day=>Number(state.dailyCheckins?.[day.key]?.sleep)).filter(Number.isFinite);
+        const avgDay=dailyScores.length?dailyScores.reduce((a,b)=>a+b,0)/dailyScores.length:null;
+        const avgSleep=dailySleeps.length?dailySleeps.reduce((a,b)=>a+b,0)/dailySleeps.length:null;
         const weeklyGoals=days.reduce((sum,day)=>sum+(Number(state.history?.[day.key]?.goalCompleted)||0),0);
         const weeklyRoutines=days.reduce((sum,day)=>sum+(Number(state.history?.[day.key]?.routineCompleted)||0),0);
         const max=Math.max(1,...activity);
@@ -2425,7 +2492,13 @@
           ? activeDays+' active day'+(activeDays===1?'':'s')+' in the last 7'
           : 'Your recent Shine activity.';
         if(meta) meta.textContent=(checkins||weeklyGoals||weeklyRoutines)
-          ? checkins+' check-in'+(checkins===1?'':'s')+' · '+weeklyGoals+' goal'+(weeklyGoals===1?'':'s')+' · '+weeklyRoutines+' routine'+(weeklyRoutines===1?'':'s')
+          ? [
+              checkins+' check-in'+(checkins===1?'':'s'),
+              fullCheckins&&avgDay!==null?'day '+avgDay.toFixed(1)+'/10':'',
+              fullCheckins&&avgSleep!==null?'sleep '+avgSleep.toFixed(1)+'/10':'',
+              weeklyGoals+' goal'+(weeklyGoals===1?'':'s'),
+              weeklyRoutines+' routine'+(weeklyRoutines===1?'':'s')
+            ].filter(Boolean).join(' · ')
           : 'No tracked activity yet';
 
       }
