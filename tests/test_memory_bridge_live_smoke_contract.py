@@ -65,6 +65,7 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
                     "last_latency_ms": (
                         12.5 if self.success_total else 0.0
                     ),
+                    "slo_status": "warming",
                 },
             })
 
@@ -100,7 +101,20 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
                 },
             })
 
+    recorded = {}
+
+    class Observability:
+        def record_event(self, event_type, payload):
+            recorded["event_type"] = event_type
+            recorded["payload"] = dict(payload)
+            return {
+                "recorded": True,
+                "event_type": event_type,
+                "storage": "railway-redis-volume",
+            }
+
     monkeypatch.setattr(smoke, "_client", lambda: Client())
+    monkeypatch.setattr(smoke, "OBSERVABILITY_LIEUTENANT", Observability())
 
     smoke.main()
 
@@ -110,4 +124,23 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
     assert "requests=1" in output
     assert "success_rate=1.0" in output
     assert "latency_ms=12.5" in output
+    assert "slo=warming" in output
+    assert "history=railway-redis-volume" in output
     assert "SECRET MEMORY CONTENT" not in output
+    assert "diving bali" not in output
+    assert "11111111-1111-4111-8111-111111111111" not in output
+
+    assert recorded["event_type"] == "memory_bridge_deploy_slo"
+    assert recorded["payload"] == {
+        "circuit_state": "closed",
+        "records": 1,
+        "contract_version": "2",
+        "telemetry_requests": 1,
+        "success_rate": 1.0,
+        "latency_ms": 12.5,
+        "slo_status": "warming",
+    }
+    raw_payload = str(recorded["payload"])
+    assert "SECRET MEMORY CONTENT" not in raw_payload
+    assert "diving bali" not in raw_payload
+    assert "11111111-1111-4111-8111-111111111111" not in raw_payload
