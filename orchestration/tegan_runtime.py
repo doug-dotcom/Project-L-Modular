@@ -72,7 +72,7 @@ class MajorTeganRuntime:
                 "handled": deployment.get(
                     "handled"
                 ),
-                "message": user_msg[:200]
+                "input_chars": len(user_msg or "")
             }
         )
 
