@@ -24,6 +24,7 @@ def configure(monkeypatch):
 def owner_context():
     return {
         "status": "ok",
+        "queryContractVersion": "2",
         "scope": {
             "ownerBound": True,
             "quarantineExcluded": True,
@@ -107,6 +108,7 @@ def test_retrieval_is_service_authenticated_owner_scoped_and_bounded(monkeypatch
     assert body["receipt"]["permission_scoped"] is True
     assert body["receipt"]["legacy_global_search_used"] is False
     assert body["receipt"]["legacy_rpc_fallback_used"] is False
+    assert body["receipt"]["query_contract_version"] == ""
     assert body["receipt"]["unavailable_scopes"] == ["episodic"]
     assert body["receipt"]["read_only"] is True
     assert body["receipt"]["bounded"] is True
@@ -768,3 +770,33 @@ def test_memory_bridge_health_reports_degraded_when_database_not_configured(monk
     assert body["status"] == "degraded"
     assert body["database_configured"] is False
     assert body["database_touched"] is False
+
+
+
+def test_owner_context_rejects_mismatched_query_contract_version(monkeypatch):
+    configure(monkeypatch)
+    query = "Dive history"
+
+    class Rpc:
+        def execute(self):
+            return type("Result", (), {
+                "data": {
+                    **owner_context(),
+                    "queryKey": bridge._query_key(bridge._query_terms(query)),
+                    "queryContractVersion": "1",
+                }
+            })()
+
+    class Database:
+        def rpc(self, name, payload):
+            assert name == "project_l_memory_context_service_v2"
+            return Rpc()
+
+    monkeypatch.setattr(bridge, "_database", lambda: Database())
+
+    try:
+        bridge._owner_context(OWNER, query, 4)
+        assert False, "expected HTTPException"
+    except Exception as exc:
+        assert getattr(exc, "status_code", None) == 503
+        assert "query contract" in str(getattr(exc, "detail", "")).lower()
