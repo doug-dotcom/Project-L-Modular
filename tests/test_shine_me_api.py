@@ -380,3 +380,78 @@ def test_owner_state_sync_rejects_other_account_and_unknown_fields(monkeypatch):
         headers={"x-test-verified-user": "owner-a"},
     )
     assert response.status_code == 400
+
+
+def test_owner_state_sync_accepts_bounded_daily_checkin(monkeypatch):
+    client, _ = make_client(monkeypatch)
+    state = {
+        "mood": 3,
+        "moodNote": "A note",
+        "goals": [],
+        "routines": [],
+        "history": {},
+        "journal": [],
+        "dailyCheckins": {
+            "2026-10-01": {
+                "mood": 3,
+                "feeling1": "calm",
+                "feeling2": "hopeful",
+                "score": 7.4,
+                "sleep": 6.2,
+                "gratitude": "A good morning",
+                "challenge": "Admin",
+                "intention": "Stay steady",
+                "note": "Keep it simple",
+                "updatedAt": "2026-10-01T08:00:00+10:00",
+            }
+        },
+        "lastDay": "2026-10-01",
+    }
+    response = client.put(
+        "/shine-me/state",
+        json={"state": state, "expected_revision": 0},
+        headers={"x-test-verified-user": "owner-a"},
+    )
+    assert response.status_code == 200
+
+    loaded = client.get(
+        "/shine-me/state", headers={"x-test-verified-user": "owner-a"},
+    )
+    assert loaded.status_code == 200
+    checkin = loaded.json()["state"]["dailyCheckins"]["2026-10-01"]
+    assert checkin["feeling1"] == "calm"
+    assert checkin["score"] == 7.4
+    assert checkin["sleep"] == 6.2
+
+
+def test_owner_state_sync_rejects_invalid_daily_checkin_score(monkeypatch):
+    client, _ = make_client(monkeypatch)
+    state = {
+        "mood": None,
+        "moodNote": "",
+        "goals": [],
+        "routines": [],
+        "history": {},
+        "journal": [],
+        "dailyCheckins": {
+            "2026-10-01": {
+                "mood": 2,
+                "feeling1": "okay",
+                "feeling2": "",
+                "score": 11,
+                "sleep": 5,
+                "gratitude": "",
+                "challenge": "",
+                "intention": "",
+                "note": "",
+                "updatedAt": "2026-10-01T08:00:00+10:00",
+            }
+        },
+        "lastDay": "2026-10-01",
+    }
+    response = client.put(
+        "/shine-me/state",
+        json={"state": state, "expected_revision": 0},
+        headers={"x-test-verified-user": "owner-a"},
+    )
+    assert response.status_code == 400
