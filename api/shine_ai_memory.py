@@ -104,6 +104,43 @@ def _rpc_requires_half_open_probe() -> bool:
         )
 
 
+def _rpc_runtime_snapshot() -> dict[str, object]:
+    now = time.monotonic()
+    with _rpc_circuit_lock:
+        failure_streak = _rpc_failure_streak
+        remaining = max(0.0, _rpc_circuit_open_until - now)
+
+    if remaining > 0:
+        circuit_state = "open"
+    elif failure_streak > 0:
+        circuit_state = "half-open"
+    else:
+        circuit_state = "closed"
+
+    database_configured = bool(
+        os.getenv("SUPABASE_URL", "").strip()
+        and (
+            os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+            or os.getenv("SUPABASE_KEY", "").strip()
+        )
+    )
+    if not database_configured:
+        status = "degraded"
+    elif circuit_state == "closed":
+        status = "ready"
+    else:
+        status = "protected"
+
+    return {
+        "status": status,
+        "circuit_state": circuit_state,
+        "retry_after": max(1, math.ceil(remaining)) if remaining > 0 else 0,
+        "failure_streak": failure_streak,
+        "recovery_probe_in_progress": _rpc_half_open_probe.locked(),
+        "database_configured": database_configured,
+    }
+
+
 def _open_rpc_circuit(seconds: float) -> None:
     global _rpc_circuit_open_until
     with _rpc_circuit_lock:
@@ -180,6 +217,25 @@ class MemoryRetrieveResponse(BaseModel):
     recall_active: bool
     records: list[MemoryRecordResponse]
     receipt: dict[str, object]
+
+
+class MemoryBridgeHealthResponse(BaseModel):
+    source: Literal["project-l"]
+    component: Literal["memory-bridge"]
+    version: str
+    status: Literal["ready", "protected", "degraded"]
+    circuit_state: Literal["closed", "open", "half-open"]
+    retry_after: int
+    failure_streak: int
+    recovery_probe_in_progress: bool
+    database_configured: bool
+    database_touched: Literal[False]
+    max_concurrent_rpcs: int
+    rpc_timeout_seconds: float
+    rpc_connect_seconds: float
+    rpc_pool_seconds: float
+    read_only: Literal[True]
+    fail_closed: Literal[True]
 
 
 def _configured_owner(service_token: str) -> str:
@@ -491,6 +547,37 @@ def _records(
         if len(records) >= limit:
             break
     return records
+
+
+@router.get("/memory/health", response_model=MemoryBridgeHealthResponse)
+def memory_bridge_health(
+    x_shine_service_token: str = Header(default=""),
+) -> MemoryBridgeHealthResponse:
+    # Authenticate against the same narrow service credential as retrieval.
+    # Deliberately do not touch Supabase: this endpoint must remain useful while
+    # the database is the dependency that is failing.
+    _configured_owner(x_shine_service_token)
+    snapshot = _rpc_runtime_snapshot()
+    return MemoryBridgeHealthResponse(
+        source="project-l",
+        component="memory-bridge",
+        version="2.2",
+        status=str(snapshot["status"]),
+        circuit_state=str(snapshot["circuit_state"]),
+        retry_after=int(snapshot["retry_after"]),
+        failure_streak=int(snapshot["failure_streak"]),
+        recovery_probe_in_progress=bool(
+            snapshot["recovery_probe_in_progress"]
+        ),
+        database_configured=bool(snapshot["database_configured"]),
+        database_touched=False,
+        max_concurrent_rpcs=_MAX_CONCURRENT_MEMORY_RPCS,
+        rpc_timeout_seconds=_MEMORY_RPC_TIMEOUT_SECONDS,
+        rpc_connect_seconds=_MEMORY_RPC_CONNECT_SECONDS,
+        rpc_pool_seconds=_MEMORY_RPC_POOL_SECONDS,
+        read_only=True,
+        fail_closed=True,
+    )
 
 
 @router.post("/memory/retrieve", response_model=MemoryRetrieveResponse)
