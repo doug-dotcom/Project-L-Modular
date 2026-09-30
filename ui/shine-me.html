@@ -1580,6 +1580,146 @@
         refreshSyncLabels();
         scheduleAccountSync();
       };
+      function saveConflict(remote){
+        const record={
+          detectedAt:new Date().toISOString(),
+          localState:stateSnapshot(),
+          remoteState:remote?.state||null,
+          remoteRevision:Number(remote?.revision||0)
+        };
+        try { localStorage.setItem(conflictKey,JSON.stringify(record)); } catch (_) {}
+        syncMeta.conflict=true;
+        syncMeta.status='conflict';
+        syncMeta.dirty=true;
+        persistSync();
+        refreshSyncLabels();
+      }
+
+      function applyRemoteState(remote){
+        state=normaliseState(remote?.state||{});
+        syncMeta.revision=Number(remote?.revision||0);
+        syncMeta.dirty=false;
+        syncMeta.conflict=false;
+        syncMeta.status='synced';
+        syncMeta.lastSyncedAt=remote?.updated_at||new Date().toISOString();
+        try { localStorage.removeItem(conflictKey); } catch (_) {}
+        persistState();
+        persistSync();
+        syncDashboard();
+        refreshSyncLabels();
+        if(navSurface?.dataset.open==='true' && navSurfaceTitle?.textContent==='You')renderYouSurface();
+      }
+
+      async function fetchAccountState(){
+        const response=await fetch('/shine-me/state',{
+          cache:'no-store',
+          signal:AbortSignal.timeout(20000)
+        });
+        if(!response.ok)throw new Error('state-load-'+response.status);
+        return response.json();
+      }
+
+      function scheduleAccountSync(delay=700){
+        if(!accountSyncReady||syncMeta.conflict||!syncMeta.dirty)return;
+        if(syncTimer)clearTimeout(syncTimer);
+        syncTimer=setTimeout(()=>{ syncToAccount(); },delay);
+      }
+
+      async function syncToAccount(){
+        if(!accountSyncReady||syncMeta.conflict||!syncMeta.dirty||syncInFlight)return;
+        syncInFlight=true;
+        syncMeta.status='syncing';
+        persistSync();
+        refreshSyncLabels();
+        try{
+          const response=await fetch('/shine-me/state',{
+            method:'PUT',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+              state:stateSnapshot(),
+              expected_revision:Number(syncMeta.revision||0)
+            }),
+            signal:AbortSignal.timeout(25000)
+          });
+          if(response.status===409){
+            const remote=await fetchAccountState();
+            saveConflict(remote);
+            return;
+          }
+          if(!response.ok)throw new Error('state-save-'+response.status);
+          const result=await response.json();
+          syncMeta.revision=Number(result.revision||0);
+          syncMeta.dirty=false;
+          syncMeta.conflict=false;
+          syncMeta.status='synced';
+          syncMeta.lastSyncedAt=result.updated_at||new Date().toISOString();
+          persistSync();
+          refreshSyncLabels();
+          if(navSurface?.dataset.open==='true' && navSurfaceTitle?.textContent==='You')renderYouSurface();
+        }catch(_){
+          syncMeta.status='error';
+          persistSync();
+          refreshSyncLabels();
+        }finally{
+          syncInFlight=false;
+        }
+      }
+
+      async function initialiseAccountSync(){
+        if(accountSyncReady)return;
+        accountSyncReady=true;
+        syncMeta.status='connecting';
+        persistSync();
+        refreshSyncLabels();
+        try{
+          const remote=await fetchAccountState();
+          if(remote.status==='empty'||!remote.state){
+            if(hasMeaningfulState(state)){
+              syncMeta.revision=0;
+              syncMeta.dirty=true;
+              syncMeta.status='pending';
+              persistSync();
+              await syncToAccount();
+            }else{
+              syncMeta.revision=0;
+              syncMeta.dirty=false;
+              syncMeta.status='synced';
+              syncMeta.lastSyncedAt=new Date().toISOString();
+              persistSync();
+              refreshSyncLabels();
+            }
+            return;
+          }
+
+          const remoteRevision=Number(remote.revision||0);
+          const localRevision=Number(syncMeta.revision||0);
+          if(localRevision===0 && hasMeaningfulState(state)){
+            const localText=JSON.stringify(stateSnapshot());
+            const remoteText=JSON.stringify(normaliseState(remote.state));
+            if(localText!==remoteText){
+              saveConflict(remote);
+              return;
+            }
+          }
+          if(syncMeta.dirty && remoteRevision!==localRevision){
+            saveConflict(remote);
+            return;
+          }
+          if(!syncMeta.dirty || remoteRevision>localRevision){
+            applyRemoteState(remote);
+            return;
+          }
+          if(syncMeta.dirty && remoteRevision===localRevision){
+            await syncToAccount();
+          }
+        }catch(_){
+          syncMeta.status='error';
+          persistSync();
+          refreshSyncLabels();
+        }
+      }
+
+      window.addEventListener('shine-me-binding-ready',initialiseAccountSync);
       const backdrop=document.getElementById('dashboardSheet');
       const sheet=backdrop?.querySelector('.sheet');
       const title=document.getElementById('sheetTitle');
