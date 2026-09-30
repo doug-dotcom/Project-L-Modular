@@ -1002,6 +1002,24 @@
       }
     }
 
+  
+    /* shine-me-context-handoff-v1 */
+    .context-handoff {
+      margin-top:14px; padding:12px 13px; border-radius:15px;
+      border:1px solid rgba(244,207,131,.24);
+      background:linear-gradient(145deg,rgba(244,207,131,.085),rgba(255,255,255,.025));
+    }
+    .context-handoff-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .context-handoff-label { display:flex; align-items:center; gap:7px; color:#dfe8f1; font-size:10px; }
+    .context-handoff-label svg { width:14px; height:14px; stroke:var(--gold); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .context-handoff-label strong { color:#f0d18b; font-weight:750; }
+    .context-handoff button {
+      min-height:28px; margin:0; padding:0 8px; border:0; border-radius:9px;
+      color:#9dacbd; background:rgba(255,255,255,.045); cursor:pointer; font-size:9px;
+    }
+    .context-handoff small { display:block; margin-top:6px; color:#7f91a5; font-size:9px; line-height:1.35; }
+    .context-action-row { display:grid; grid-template-columns:1fr; gap:8px; margin-top:12px; }
+
   </style>
 </head>
 <body>
@@ -1132,6 +1150,16 @@
         <div class="secure-row" aria-label="Trusted personal context">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
           <span>Private · sourced · reviewable</span>
+        </div>
+        <div class="context-handoff" id="contextHandoff" hidden>
+          <div class="context-handoff-top">
+            <div class="context-handoff-label">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10H7z"/><path d="M10 4h10v10M4 10v10h10"/></svg>
+              <span>Context from <strong id="contextHandoffSource">Shine Me</strong></span>
+            </div>
+            <button id="clearContextHandoff" type="button">Clear</button>
+          </div>
+          <small>This prepares the conversation only. It does not save this local context into Project L memory.</small>
         </div>
         <form id="askForm">
           <label for="question">What’s on your mind?</label>
@@ -1505,6 +1533,12 @@
       const body=document.getElementById('sheetBody');
       const close=document.getElementById('sheetClose');
       let previousFocus=null;
+      const contextHandoff=document.getElementById('contextHandoff');
+      const contextHandoffSource=document.getElementById('contextHandoffSource');
+      const clearContextHandoff=document.getElementById('clearContextHandoff');
+      const askQuestion=document.getElementById('question');
+      const askStatus=document.getElementById('evidenceStatus');
+      let handoffOriginalPrompt='';
 
       const navSurface=document.getElementById('navSurface');
       const navSurfaceBody=document.getElementById('navSurfaceBody');
@@ -1569,6 +1603,37 @@
         });
       });
 
+
+      function clearHandoff(){
+        if(contextHandoff)contextHandoff.hidden=true;
+        if(contextHandoffSource)contextHandoffSource.textContent='Shine Me';
+        if(askQuestion && askQuestion.value===handoffOriginalPrompt) askQuestion.value='';
+        handoffOriginalPrompt='';
+      }
+      clearContextHandoff?.addEventListener('click',clearHandoff);
+
+      function handoffToShine(source,prompt){
+        const cleanPrompt=String(prompt||'').trim().slice(0,2000);
+        if(!cleanPrompt)return;
+        closeNavSurface();
+        closeSheet();
+        handoffOriginalPrompt=cleanPrompt;
+        if(contextHandoffSource)contextHandoffSource.textContent=source||'Shine Me';
+        if(contextHandoff)contextHandoff.hidden=false;
+        if(askQuestion)askQuestion.value=cleanPrompt;
+        if(askStatus)askStatus.textContent='Context prepared from '+(source||'Shine Me')+'. Edit it if you want before sending.';
+        setTimeout(()=>{
+          document.getElementById('journal')?.scrollIntoView({behavior:'smooth'});
+          setTimeout(()=>askQuestion?.focus(),220);
+        },80);
+      }
+
+      document.getElementById('askForm')?.addEventListener('submit',()=>{
+        if(contextHandoff){
+          contextHandoff.hidden=true;
+          handoffOriginalPrompt='';
+        }
+      });
 
       function setNavActive(section){
         bottomNavLinks.forEach(link=>link.dataset.active=String(link.dataset.section===section));
