@@ -1,9 +1,11 @@
 from supabase import create_client
 from dotenv import load_dotenv
 
+import hashlib
 import os
 import json
 import re
+import threading
 import time
 from datetime import date, timedelta
 from pathlib import Path
@@ -49,6 +51,15 @@ supabase = None
 
 if SUPABASE_URL and SUPABASE_KEY:
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+_TRANSIENT_RECALL_RPC_DELAYS = {
+    "PGRST002": (0.4,),
+    "PGRST003": (0.25,),
+    "57014": (0.2,),
+}
+_RECALL_DATA_API_CIRCUIT_SECONDS = 8.0
+_recall_rpc_circuit_lock = threading.Lock()
+_recall_rpc_circuit_open_until = 0.0
 
 LONG_TERM_TABLES = [
     "memory_family",
@@ -110,6 +121,82 @@ def safe_list(value):
         except Exception:
             return [value]
     return []
+
+
+def recall_rpc_error_code(exc):
+    code = safe_text(getattr(exc, "code", "")).upper()
+    if code:
+        return code[:80]
+    message = safe_text(getattr(exc, "message", "") or exc).upper()
+    for candidate in _TRANSIENT_RECALL_RPC_DELAYS:
+        if candidate in message:
+            return candidate
+    if "COULD NOT FIND THE FUNCTION" in message:
+        return "PGRST202"
+    return ""
+
+
+def recall_rpc_function_missing(exc):
+    code = recall_rpc_error_code(exc)
+    if code in {"PGRST202", "42883"}:
+        return True
+    message = safe_text(getattr(exc, "message", "") or exc).lower()
+    return "could not find the function" in message or ("function" in message and "does not exist" in message)
+
+
+def recall_query_key(terms):
+    # Deterministic cohort identifier only; not used as a security primitive.
+    return hashlib.md5("\x1f".join(terms).encode("utf-8")).hexdigest()
+
+
+def recall_rpc_retry_after():
+    with _recall_rpc_circuit_lock:
+        remaining = _recall_rpc_circuit_open_until - time.monotonic()
+    return max(1, int(remaining + 0.999)) if remaining > 0 else 0
+
+
+def open_recall_rpc_circuit(seconds=_RECALL_DATA_API_CIRCUIT_SECONDS):
+    global _recall_rpc_circuit_open_until
+    with _recall_rpc_circuit_lock:
+        _recall_rpc_circuit_open_until = max(
+            _recall_rpc_circuit_open_until,
+            time.monotonic() + max(0.0, float(seconds)),
+        )
+
+
+def close_recall_rpc_circuit():
+    global _recall_rpc_circuit_open_until
+    with _recall_rpc_circuit_lock:
+        _recall_rpc_circuit_open_until = 0.0
+
+
+def evidence_independence_receipt(evidence):
+    rows = list(evidence or [])
+    lineages = {}
+    for item in rows:
+        if not isinstance(item, dict):
+            continue
+        source = safe_text(item.get("source"))
+        raw_id = safe_text(item.get("raw_id"))
+        if source.startswith("raw_catchall:"):
+            key = "raw:" + source.split(":", 1)[1]
+        elif raw_id:
+            key = "raw:" + raw_id
+        elif source:
+            key = "source:" + source
+        else:
+            key = "unknown:" + str(len(lineages))
+        lineages.setdefault(key, []).append(source or "unknown")
+    shared = sum(1 for sources in lineages.values() if len(sources) > 1)
+    return {
+        "status": "checked",
+        "evidence_items": len(rows),
+        "independent_lineages": len(lineages),
+        "shared_lineages": shared,
+        "duplicate_representations": max(0, len(rows) - len(lineages)),
+        "confidence_counts_lineages_not_copies": True,
+    }
+
 
 def clean_query(query):
     text = safe_text(query).lower()
@@ -1177,47 +1264,111 @@ def database_search_terms(query):
     return terms
 
 
-def search_database_candidates(query, raw_limit=200, memory_limit=80):
-    """Fetch bounded indexed candidates in one RPC, or signal fallback."""
+def search_database_candidates(query, raw_limit=200, memory_limit=80, receipt_out=None):
+    """Fetch one query-bound indexed cohort, retrying transient failures only."""
     if not supabase:
+        if receipt_out is not None:
+            receipt_out.update(retrieval_status="unavailable", retrieval_reason="database_not_configured")
         return None
 
-    terms = database_search_terms(query)
+    terms = tuple(database_search_terms(query))
+    query_key = recall_query_key(list(terms))
+    if receipt_out is not None:
+        receipt_out.update(
+            retrieval_query_key=query_key,
+            retrieval_query_contract="v2",
+            retrieval_query_binding="pending",
+        )
     if not terms:
+        if receipt_out is not None:
+            receipt_out.update(retrieval_status="checked", retrieval_query_binding="empty-query")
         return {"raw": [], "memories": []}
 
+    retry_after = recall_rpc_retry_after()
+    if retry_after:
+        if receipt_out is not None:
+            receipt_out.update(
+                retrieval_status="unavailable",
+                retrieval_reason="data_api_circuit_open",
+                retrieval_retry_after=retry_after,
+            )
+        return None
+
+    binding_mode = "server-verified"
+
     def execute(candidate_raw_limit, candidate_memory_limit):
-        response = supabase.rpc(
-            "search_project_l_memory",
-            {
-                "p_terms": terms,
-                "p_raw_limit": min(max(safe_int(candidate_raw_limit, 200), 1), 500),
-                "p_memory_limit": min(max(safe_int(candidate_memory_limit, 80), 1), 500),
-            },
-        ).execute()
+        nonlocal binding_mode
+        common = {
+            "p_terms": list(terms),
+            "p_raw_limit": min(max(safe_int(candidate_raw_limit, 200), 1), 500),
+            "p_memory_limit": min(max(safe_int(candidate_memory_limit, 80), 1), 500),
+        }
+        try:
+            response = supabase.rpc(
+                "search_project_l_memory_v2",
+                {**common, "p_query_key": query_key},
+            ).execute()
+            binding_mode = "server-verified"
+        except Exception as exc:
+            if not recall_rpc_function_missing(exc):
+                raise
+            response = supabase.rpc("search_project_l_memory", common).execute()
+            binding_mode = "legacy-unverified"
+
         payload = response.data or {}
         if isinstance(payload, list) and len(payload) == 1 and isinstance(payload[0], dict):
             payload = payload[0]
         if not isinstance(payload, dict):
             raise ValueError("candidate search returned a non-object payload")
+        if binding_mode == "server-verified" and safe_text(payload.get("queryKey")) != query_key:
+            raise ValueError("candidate search query cohort mismatch")
 
         raw_rows = payload.get("raw", [])
         memory_rows = payload.get("memories", [])
         if not isinstance(raw_rows, list) or not isinstance(memory_rows, list):
             raise ValueError("candidate search returned malformed row lists")
-
         return {"raw": raw_rows, "memories": memory_rows}
 
-    try:
-        return execute(raw_limit, memory_limit)
-    except Exception as error:
-        print(f"INDEXED MEMORY SEARCH RETRY: {error}")
+    attempt = 0
+    limits = (raw_limit, memory_limit)
+    while True:
         try:
-            return execute(min(safe_int(raw_limit, 200), 100), min(safe_int(memory_limit, 80), 60))
-        except Exception as retry_error:
-            # Deployment order and transient database errors must not take L's
-            # memory offline. The caller retains the proven full-scan path.
-            print(f"INDEXED MEMORY SEARCH FALLBACK: {retry_error}")
+            result = execute(*limits)
+            close_recall_rpc_circuit()
+            if receipt_out is not None:
+                receipt_out.update(
+                    retrieval_status="checked",
+                    retrieval_attempts=attempt + 1,
+                    retrieval_query_binding=binding_mode,
+                )
+            return result
+        except Exception as error:
+            code = recall_rpc_error_code(error)
+            delays = _TRANSIENT_RECALL_RPC_DELAYS.get(code, ())
+            if attempt < len(delays):
+                delay = delays[attempt]
+                attempt += 1
+                if code in {"PGRST002", "PGRST003"}:
+                    open_recall_rpc_circuit()
+                print(f"INDEXED MEMORY SEARCH RETRY code={code} attempt={attempt}")
+                time.sleep(delay)
+                limits = (
+                    min(safe_int(raw_limit, 200), 100),
+                    min(safe_int(memory_limit, 80), 60),
+                )
+                continue
+
+            if code in {"PGRST002", "PGRST003"}:
+                open_recall_rpc_circuit()
+            if receipt_out is not None:
+                receipt_out.update(
+                    retrieval_status="unavailable",
+                    retrieval_attempts=attempt + 1,
+                    retrieval_error_code=code or "non_transient",
+                    retrieval_query_binding=binding_mode,
+                    retrieval_retry_after=recall_rpc_retry_after(),
+                )
+            print(f"INDEXED MEMORY SEARCH UNAVAILABLE code={code or 'non_transient'}")
             return None
 
 
@@ -1235,6 +1386,7 @@ def build_context(user_message, evidence_out=None, recall_plan=None, receipt_out
         # Python deliberately down-ranks, so retain a wider candidate pool.
         raw_limit=recall_plan['raw_candidates'],
         memory_limit=recall_plan['memory_candidates'],
+        receipt_out=receipt_out,
     )
     # Bounded pilot: do not turn an indexed-query failure into a full-corpus scan.
     if candidates is None:
@@ -1394,8 +1546,12 @@ def build_context_packet(user_message):
     context += '\n\n' + temporal['context']
     evidence.extend(temporal['evidence'])
 
+    independence = evidence_independence_receipt(evidence)
+    receipt["evidence_independence"] = independence
+
     return {
         "evidence": evidence,
+        "evidence_independence": independence,
         "recall_plan": receipt,
         "temporal_memory": temporal['receipt'],
         "engine": "rhee",
