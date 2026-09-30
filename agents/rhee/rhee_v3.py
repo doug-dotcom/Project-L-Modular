@@ -57,6 +57,7 @@ _TRANSIENT_RECALL_RPC_DELAYS = {
     "PGRST002": (0.4,),
     "PGRST003": (0.25,),
     "57014": (0.2,),
+    "HTTP_TIMEOUT": (0.25,),
 }
 _RECALL_DATA_API_CIRCUIT_SECONDS = 8.0
 _RECALL_QUERY_CONTRACT_VERSION = "2"
@@ -135,6 +136,14 @@ def recall_rpc_error_code(exc):
             return candidate
     if "COULD NOT FIND THE FUNCTION" in message:
         return "PGRST202"
+    if (
+        "TIMED OUT" in message
+        or "TIMEOUT" in message
+        or "READTIMEOUT" in message
+        or "CONNECTTIMEOUT" in message
+        or "POOLTIMEOUT" in message
+    ):
+        return "HTTP_TIMEOUT"
     return ""
 
 
@@ -1494,7 +1503,7 @@ def search_database_candidates(query, raw_limit=200, memory_limit=80, receipt_ou
             if attempt < len(delays):
                 delay = delays[attempt]
                 attempt += 1
-                if code in {"PGRST002", "PGRST003"}:
+                if code in {"PGRST002", "PGRST003", "HTTP_TIMEOUT"}:
                     open_recall_rpc_circuit()
                 print(f"INDEXED MEMORY SEARCH RETRY code={code} attempt={attempt}")
                 time.sleep(delay)
@@ -1504,7 +1513,7 @@ def search_database_candidates(query, raw_limit=200, memory_limit=80, receipt_ou
                 )
                 continue
 
-            if code in {"PGRST002", "PGRST003"}:
+            if code in {"PGRST002", "PGRST003", "HTTP_TIMEOUT"}:
                 open_recall_rpc_circuit()
             if receipt_out is not None:
                 receipt_out.update(
