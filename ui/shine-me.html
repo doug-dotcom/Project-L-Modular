@@ -1020,6 +1020,25 @@
     .context-handoff small { display:block; margin-top:6px; color:#7f91a5; font-size:9px; line-height:1.35; }
     .context-action-row { display:grid; grid-template-columns:1fr; gap:8px; margin-top:12px; }
 
+  
+    .checkin-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+    .checkin-field { min-width:0; }
+    .checkin-field label { margin-bottom:6px; }
+    .checkin-field input[type="text"],
+    .checkin-field input[type="number"] {
+      width:100%; height:43px; padding:0 11px; border-radius:13px;
+      border:1px solid rgba(255,255,255,.11); outline:none;
+      color:#eef4f9; background:rgba(255,255,255,.055); font:inherit;
+    }
+    .checkin-field input:focus { border-color:rgba(244,207,131,.66); box-shadow:0 0 0 3px rgba(244,207,131,.08); }
+    .score-row { display:grid; grid-template-columns:1fr 58px; gap:9px; align-items:center; }
+    .score-row input[type="range"] { width:100%; accent-color:#e7ba5d; }
+    .score-value {
+      height:38px; display:grid; place-items:center; border-radius:12px;
+      color:#fff1c5; background:rgba(244,207,131,.1); border:1px solid rgba(244,207,131,.2); font-weight:750;
+    }
+    @media (max-width:380px){ .checkin-grid{grid-template-columns:1fr;} }
+
   </style>
 </head>
 <body>
@@ -1495,7 +1514,7 @@
         const d=new Date(), y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
         return y+'-'+m+'-'+day;
       };
-      const defaults={mood:null,moodNote:'',goals:[],routines:[],history:{},journal:[],lastDay:todayKey()};
+      const defaults={mood:null,moodNote:'',goals:[],routines:[],history:{},journal:[],dailyCheckins:{},lastDay:todayKey()};
       const syncKey='shine-me-dashboard-sync-v1';
       const conflictKey='shine-me-dashboard-conflict-v1';
       const normaliseState=input=>{
@@ -1504,6 +1523,7 @@
         if(!Array.isArray(next.goals))next.goals=[];
         if(!Array.isArray(next.routines))next.routines=[];
         if(!Array.isArray(next.journal))next.journal=[];
+        if(!next.dailyCheckins||typeof next.dailyCheckins!=='object'||Array.isArray(next.dailyCheckins))next.dailyCheckins={};
         if(next.lastDay!==todayKey()){
           next.mood=null;
           next.moodNote='';
@@ -1527,6 +1547,7 @@
         routines:Array.isArray(state.routines)?state.routines:[],
         history:state.history&&typeof state.history==='object'?state.history:{},
         journal:Array.isArray(state.journal)?state.journal:[],
+        dailyCheckins:state.dailyCheckins&&typeof state.dailyCheckins==='object'?state.dailyCheckins:{},
         lastDay:state.lastDay||todayKey()
       });
       const hasMeaningfulState=source=>{
@@ -1536,6 +1557,7 @@
           || Boolean(s.goals?.length)
           || Boolean(s.routines?.length)
           || Boolean(s.journal?.length)
+          || Object.keys(s.dailyCheckins||{}).length>0
           || Object.values(s.history||{}).some(entry=>
             Number.isInteger(entry?.mood)
             || Number(entry?.goalCompleted||0)>0
@@ -2072,43 +2094,100 @@
       }));
 
       function renderMood(){
-        title.textContent='Mood Check-in';
-        kicker.textContent='A small check-in can change the shape of a day.';
+        title.textContent='Daily Check-in';
+        kicker.textContent='A small honest snapshot of today — no score is a judgement.';
         const labels=['Very low','Low','Okay','Good','Great'];
         const faces=['☹','◔','•','◡','☺'];
+        const today=state.dailyCheckins?.[todayKey()]||{};
+        const currentMood=Number.isInteger(today.mood)?today.mood:state.mood;
         body.innerHTML=`
           <div class="sheet-section">
             <h3>How are you feeling?</h3>
             <div class="choice-row" id="sheetMoodChoices">
-              ${labels.map((label,i)=>`<button class="choice" type="button" data-index="${i}" data-selected="${state.mood===i}"><strong>${faces[i]}</strong><span>${label}</span></button>`).join('')}
+              ${labels.map((label,i)=>`<button class="choice" type="button" data-index="${i}" data-selected="${currentMood===i}"><strong>${faces[i]}</strong><span>${label}</span></button>`).join('')}
             </div>
           </div>
           <div class="sheet-section">
-            <label for="sheetMoodNote">Anything behind that feeling?</label>
-            <textarea id="sheetMoodNote" maxlength="500" placeholder="Optional note…">${escapeHtml(state.moodNote)}</textarea>
+            <h3>Put today into words</h3>
+            <div class="checkin-grid">
+              <div class="checkin-field"><label for="checkFeeling1">Feeling word 1</label><input id="checkFeeling1" type="text" maxlength="40" value="${escapeHtml(today.feeling1||'')}" placeholder="e.g. calm"></div>
+              <div class="checkin-field"><label for="checkFeeling2">Feeling word 2</label><input id="checkFeeling2" type="text" maxlength="40" value="${escapeHtml(today.feeling2||'')}" placeholder="e.g. hopeful"></div>
+            </div>
+          </div>
+          <div class="sheet-section">
+            <label for="checkScore">How is today feeling overall? <span class="muted">0–10</span></label>
+            <div class="score-row"><input id="checkScore" type="range" min="0" max="10" step=".1" value="${Number.isFinite(Number(today.score))?Number(today.score):5}"><span class="score-value" id="checkScoreValue">${Number.isFinite(Number(today.score))?Number(today.score).toFixed(1):'5.0'}</span></div>
+          </div>
+          <div class="sheet-section">
+            <label for="checkSleep">Sleep <span class="muted">0–10</span></label>
+            <div class="score-row"><input id="checkSleep" type="range" min="0" max="10" step=".1" value="${Number.isFinite(Number(today.sleep))?Number(today.sleep):5}"><span class="score-value" id="checkSleepValue">${Number.isFinite(Number(today.sleep))?Number(today.sleep).toFixed(1):'5.0'}</span></div>
+          </div>
+          <div class="sheet-section">
+            <label for="checkGratitude">Gratitude</label>
+            <textarea id="checkGratitude" maxlength="500" placeholder="Something I’m grateful for…">${escapeHtml(today.gratitude||'')}</textarea>
+            <label for="checkChallenge">Challenge</label>
+            <textarea id="checkChallenge" maxlength="500" placeholder="What feels difficult today?">${escapeHtml(today.challenge||'')}</textarea>
+            <label for="checkIntention">Intention</label>
+            <textarea id="checkIntention" maxlength="500" placeholder="What matters today?">${escapeHtml(today.intention||'')}</textarea>
+            <label for="sheetMoodNote">Anything else?</label>
+            <textarea id="sheetMoodNote" maxlength="1000" placeholder="Optional note…">${escapeHtml(today.note||state.moodNote||'')}</textarea>
           </div>
           <div class="sheet-actions">
-            <button class="sheet-primary" id="saveMood" type="button">Save check-in</button>
+            <button class="sheet-primary" id="saveMood" type="button">Save daily check-in</button>
             <button class="sheet-secondary" id="talkMood" type="button">Talk to Shine about this</button>
           </div>
-          <p class="sheet-note" id="sheetNote">Saved locally first; owner sync follows when available.</p>`;
-        let selected=state.mood;
+          <p class="sheet-note" id="sheetNote">Saved locally first; owner sync follows when available. This is Shine Me state, not Project L memory.</p>`;
+        let selected=currentMood;
         body.querySelectorAll('#sheetMoodChoices .choice').forEach(btn=>btn.addEventListener('click',()=>{
           selected=Number(btn.dataset.index);
           body.querySelectorAll('#sheetMoodChoices .choice').forEach(x=>x.dataset.selected=String(x===btn));
         }));
+        const score=body.querySelector('#checkScore');
+        const sleep=body.querySelector('#checkSleep');
+        score?.addEventListener('input',()=>{ const v=body.querySelector('#checkScoreValue'); if(v)v.textContent=Number(score.value).toFixed(1); });
+        sleep?.addEventListener('input',()=>{ const v=body.querySelector('#checkSleepValue'); if(v)v.textContent=Number(sleep.value).toFixed(1); });
+
+        const draftCheckin=()=>({
+          mood:Number.isInteger(selected)?selected:null,
+          feeling1:body.querySelector('#checkFeeling1')?.value.trim()||'',
+          feeling2:body.querySelector('#checkFeeling2')?.value.trim()||'',
+          score:Number(body.querySelector('#checkScore')?.value||5),
+          sleep:Number(body.querySelector('#checkSleep')?.value||5),
+          gratitude:body.querySelector('#checkGratitude')?.value.trim()||'',
+          challenge:body.querySelector('#checkChallenge')?.value.trim()||'',
+          intention:body.querySelector('#checkIntention')?.value.trim()||'',
+          note:body.querySelector('#sheetMoodNote')?.value.trim()||'',
+          updatedAt:new Date().toISOString()
+        });
+
         body.querySelector('#saveMood')?.addEventListener('click',()=>{
-          state.mood=selected;
-          state.moodNote=body.querySelector('#sheetMoodNote')?.value.trim()||'';
+          const entry=draftCheckin();
+          state.mood=entry.mood;
+          state.moodNote=entry.note;
+          if(!state.dailyCheckins||typeof state.dailyCheckins!=='object')state.dailyCheckins={};
+          state.dailyCheckins[todayKey()]=entry;
+          const keys=Object.keys(state.dailyCheckins).sort();
+          while(keys.length>30){ const oldest=keys.shift(); delete state.dailyCheckins[oldest]; }
           save(); syncDashboard();
-          const n=body.querySelector('#sheetNote'); if(n)n.textContent='Check-in saved on this device ✓';
+          const n=body.querySelector('#sheetNote'); if(n)n.textContent='Daily check-in saved in Shine Me ✓';
           setTimeout(closeSheet,350);
         });
         body.querySelector('#talkMood')?.addEventListener('click',()=>{
-          const labels=['very low','low','okay','good','great'];
-          const note=body.querySelector('#sheetMoodNote')?.value.trim()||'';
-          const feeling=Number.isInteger(selected)?labels[selected]:'not selected';
-          handoffToShine('Mood Check-in','I am feeling '+feeling+' today.'+(note?' What is behind it: '+note:'')+' Help me think this through.');
+          const entry=draftCheckin();
+          const moodLabel=Number.isInteger(entry.mood)?labels[entry.mood].toLowerCase():'not selected';
+          const parts=[
+            'My daily check-in:',
+            'Mood: '+moodLabel,
+            entry.feeling1||entry.feeling2?'Feeling words: '+[entry.feeling1,entry.feeling2].filter(Boolean).join(', '):'',
+            'Overall: '+entry.score.toFixed(1)+'/10',
+            'Sleep: '+entry.sleep.toFixed(1)+'/10',
+            entry.gratitude?'Gratitude: '+entry.gratitude:'',
+            entry.challenge?'Challenge: '+entry.challenge:'',
+            entry.intention?'Intention: '+entry.intention:'',
+            entry.note?'Note: '+entry.note:'',
+            'Help me reflect on this without treating the numbers as a diagnosis or judgement.'
+          ].filter(Boolean);
+          handoffToShine('Daily Check-in',parts.join('\n'));
         });
       }
       function renderHealth(){
