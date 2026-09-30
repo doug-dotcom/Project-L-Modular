@@ -25,12 +25,14 @@ def test_backpressure_only_retunes_known_project_l_and_shine_me_minute_workers()
         "private.me_correlate_activation_operational_events_v1(300)": "1-59/5 * * * *",
     }
 
-    assert sql.count("update cron.job") == len(expected_workers)
+    assert "update cron.job" not in sql
+    assert sql.count("perform cron.alter_job(") == len(expected_workers)
+    assert sql.count("select jobid") == len(expected_workers)
     assert sql.count("and schedule = '* * * * *'") == len(expected_workers)
 
     for worker, schedule in expected_workers.items():
         assert worker in sql
-        assert f"set schedule = '{schedule}'" in sql
+        assert f"schedule := '{schedule}'" in sql
 
     assert "rivers_" not in sql
     assert "fiona_" not in sql
@@ -38,4 +40,6 @@ def test_backpressure_only_retunes_known_project_l_and_shine_me_minute_workers()
 
 def test_backpressure_reloads_postgrest_after_cadence_repair():
     sql = source()
-    assert sql.rfind("notify pgrst, 'reload schema';") > sql.rfind("update cron.job")
+    assert sql.rfind("notify pgrst, 'reload schema';") > sql.rfind(
+        "perform cron.alter_job("
+    )
