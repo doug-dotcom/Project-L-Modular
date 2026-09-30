@@ -2379,7 +2379,14 @@
         });
         if(moodCard&&state.mood!==null){
           const p=moodCard.querySelector('.card-head p');
-          if(p)p.textContent=['Very low today','Low today','Okay today','Feeling good','Feeling great'][state.mood]||'Checked in';
+          const todayCheck=state.dailyCheckins?.[todayKey()];
+          if(p&&todayCheck){
+            const words=[todayCheck.feeling1,todayCheck.feeling2].filter(Boolean).join(' · ');
+            const score=Number.isFinite(Number(todayCheck.score))?Number(todayCheck.score).toFixed(1)+'/10':'';
+            p.textContent=words||score||(['Very low today','Low today','Okay today','Feeling good','Feeling great'][state.mood]||'Checked in');
+          }else if(p){
+            p.textContent=['Very low today','Low today','Okay today','Feeling good','Feeling great'][state.mood]||'Checked in';
+          }
         }
         const goalRows=Array.isArray(state.goals)?state.goals:[];
         const goalDone=goalRows.filter(x=>x.done).length;
