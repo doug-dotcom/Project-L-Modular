@@ -132,7 +132,10 @@ from core.cognition.delivery_integrity import (
 from core.cognition.account_access import require_account
 from core.cognition.document_evidence import EvidenceStore, answer_from_document
 from api.account_documents import routes as account_document_routes
-from api.shine_ai_memory import router as shine_ai_memory_router
+from api.shine_ai_memory import (
+    flush_memory_runtime_rollup_on_shutdown,
+    router as shine_ai_memory_router,
+)
 from api.shine_me import routes as shine_me_routes
 from api.foundation_companion import routes as foundation_companion_routes
 from core.cognition.reflection import reflect_on_task
@@ -557,6 +560,16 @@ def start_durable_tasks():
 @app.on_event("shutdown")
 def stop_durable_tasks():
     task_runner.stop()
+    try:
+        result = flush_memory_runtime_rollup_on_shutdown()
+        if result.get("scheduled") or result.get("recorded"):
+            log(
+                "MEMORY RUNTIME ROLLUP SHUTDOWN: "
+                + str(result.get("storage") or "unknown")
+            )
+    except Exception:
+        # Observability must never block or fail Project L shutdown.
+        log("MEMORY RUNTIME ROLLUP SHUTDOWN: unavailable")
 
 
 @app.post("/chat/start")
