@@ -1211,3 +1211,56 @@ def test_authority_review_rejects_unknown_conflict_state():
 
     assert result["recall_plan"]["conflict_state"] == "none_reported"
     assert result["recall_plan"]["unresolved_conflict"] is False
+
+
+
+def test_final_deep_recall_conflict_reconciliation_preserves_reviewed_unresolved_state():
+    from types import SimpleNamespace
+    from layers.layer40_deep_recall_final_conflict_reconciliation import install
+
+    fake = SimpleNamespace(
+        build_context_packet=lambda query: {
+            "context": "base",
+            "evidence": [{"source": "memory_general:1", "quote_source": "fact"}],
+            "recall_plan": {"status": "checked", "conflict_state": "unresolved"},
+        },
+        safe_text=lambda value: "" if value is None else str(value).strip(),
+        term_in_text=lambda term, text: term in text,
+        load_all_raw_catchall=lambda: [],
+        load_all_memories=lambda: [],
+    )
+    install(fake)
+
+    result = fake.build_context_packet("deep recall history")
+
+    assert result["recall_plan"]["conflict_state"] == "unresolved"
+    assert result["recall_plan"]["unresolved_conflict"] is True
+    assert result["recall_plan"]["deep_recall_conflict_state_handoff"] == "reviewed-state-only"
+
+
+def test_final_deep_recall_conflict_reconciliation_does_not_infer_from_cue_words():
+    from types import SimpleNamespace
+    from layers.layer40_deep_recall_final_conflict_reconciliation import install
+
+    fake = SimpleNamespace(
+        build_context_packet=lambda query: {
+            "context": "base",
+            "evidence": [{
+                "source": "memory_general:1",
+                "quote_source": "Actually this was updated later.",
+                "role": "user",
+            }],
+            "recall_plan": {"status": "checked", "conflict_state": "none_reported"},
+        },
+        safe_text=lambda value: "" if value is None else str(value).strip(),
+        term_in_text=lambda term, text: term in text,
+        load_all_raw_catchall=lambda: [],
+        load_all_memories=lambda: [],
+    )
+    install(fake)
+
+    result = fake.build_context_packet("deep recall history")
+
+    assert result["recall_plan"]["deep_recall_final_conflict_cue_sources"] == ["memory_general:1"]
+    assert result["recall_plan"]["conflict_state"] == "none_reported"
+    assert result["recall_plan"]["unresolved_conflict"] is False
