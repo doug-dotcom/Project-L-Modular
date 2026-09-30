@@ -105,6 +105,20 @@ def main() -> None:
         _fail("independence-lineage-empty")
     if independence.get("confidence_counts_lineages_not_copies") is not True:
         _fail("independence-contract-invalid")
+    if int(independence.get("governed_evidence_items") or 0) != len(governed_evidence):
+        _fail("governance-receipt-count-mismatch")
+    if int(independence.get("owner_bound_governed_items") or 0) != len(governed_evidence):
+        _fail("governance-receipt-owner-mismatch")
+    if independence.get("governance_metadata_complete") is not True:
+        _fail("governance-receipt-incomplete")
+    authority_classes = independence.get("authority_classes")
+    freshness_classes = independence.get("freshness_classes")
+    if not isinstance(authority_classes, dict) or not authority_classes:
+        _fail("governance-receipt-authority-empty")
+    if not isinstance(freshness_classes, dict) or not freshness_classes:
+        _fail("governance-receipt-freshness-empty")
+    if "unknown" in authority_classes or "unknown" in freshness_classes:
+        _fail("governance-receipt-unknown-class")
 
     if confidence.get("storage_absence_verified") is not False:
         _fail("confidence-absence-invalid")
@@ -121,6 +135,9 @@ def main() -> None:
         f"version={packet.get('version')} "
         f"evidence={len(evidence)} "
         f"governed={len(governed_evidence)} "
+        f"governance_complete={str(independence.get('governance_metadata_complete')).lower()} "
+        f"authority_classes={len(authority_classes)} "
+        f"freshness_classes={len(freshness_classes)} "
         f"lineages={independence.get('independent_lineages')} "
         f"duplicates={independence.get('duplicate_representations')} "
         f"binding={plan.get('retrieval_query_binding')} "
