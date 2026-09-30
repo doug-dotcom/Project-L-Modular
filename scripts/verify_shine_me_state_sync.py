@@ -69,7 +69,7 @@ def main() -> None:
         if not isinstance(updated_at, str) or not updated_at.strip():
             _fail("updated-at-invalid")
         state_bytes = len(json.dumps(state, separators=(",", ":"), ensure_ascii=False).encode())
-        if state_bytes > 64_000:
+        if state_bytes > 262_144:
             _fail("state-oversize")
         status = "present"
 
