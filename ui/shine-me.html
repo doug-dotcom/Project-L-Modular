@@ -1083,6 +1083,43 @@
     .feeling-chip b { color:#f7e7bc; font-size:10px; }
     @media (max-width:380px){ .pattern-grid{grid-template-columns:1fr;} }
 
+  
+    /* shine-me-today-snapshot-v1 */
+    .today-snapshot {
+      margin:14px 0 16px; padding:16px; border-radius:22px;
+      border:1px solid rgba(255,255,255,.10);
+      background:
+        radial-gradient(circle at 90% 0%,rgba(244,207,131,.13),transparent 12rem),
+        linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.028));
+      box-shadow:0 16px 34px rgba(0,0,0,.15);
+    }
+    .today-snapshot-head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .today-snapshot-head h2 { margin:0; font:500 22px/1 Georgia,"Times New Roman",serif; letter-spacing:-.02em; color:#eef4fa; }
+    .today-snapshot-head span { color:#8fa0b4; font-size:9px; letter-spacing:.08em; text-transform:uppercase; }
+    .today-empty { margin-top:12px; color:#96a7b9; font-size:11px; line-height:1.45; }
+    .today-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:12px; }
+    .today-tile {
+      min-height:76px; padding:12px; border-radius:16px;
+      border:1px solid rgba(255,255,255,.075); background:rgba(255,255,255,.035);
+    }
+    .today-tile small { display:block; color:#8798aa; font-size:8px; letter-spacing:.08em; text-transform:uppercase; }
+    .today-tile strong { display:block; margin-top:7px; color:#edf3f9; font-size:15px; line-height:1.25; }
+    .today-wide { grid-column:1 / -1; }
+    .today-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+    .today-action {
+      min-height:42px; margin:0; padding:0 12px; border-radius:13px; cursor:pointer; font-weight:750;
+      border:1px solid rgba(255,255,255,.11); color:#dce6f1; background:rgba(255,255,255,.055);
+    }
+    .today-action.primary {
+      border-color:rgba(255,232,174,.42); color:#142033;
+      background:linear-gradient(135deg,#fff6da,#efc66c);
+    }
+    .today-foot { margin:10px 1px 0; color:#788a9f; font-size:9px; line-height:1.4; }
+    @media (max-width:380px){
+      .today-grid,.today-actions{grid-template-columns:1fr;}
+      .today-wide{grid-column:auto;}
+    }
+
   </style>
 </head>
 <body>
@@ -1140,11 +1177,21 @@
       <a class="hero-arrow" href="#journal" aria-label="Ask Shine Me">›</a>
     </section>
 
+    <section class="today-snapshot" id="todaySnapshot" aria-labelledby="todaySnapshotTitle">
+      <div class="today-snapshot-head">
+        <h2 id="todaySnapshotTitle">Today</h2>
+        <span id="todaySnapshotState">Not checked in yet</span>
+      </div>
+      <div id="todaySnapshotBody">
+        <p class="today-empty">Your Daily Check-in will appear here after you save it. Nothing is inferred before you do.</p>
+      </div>
+    </section>
+
     <section class="dashboard-grid" aria-label="Your day">
-      <article class="dash-card mood-card" data-panel="mood" tabindex="0" role="button" aria-label="Open Mood Check-in">
+      <article class="dash-card mood-card" data-panel="mood" tabindex="0" role="button" aria-label="Open Daily Check-in">
         <div class="card-head">
           <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 10h.01M15 10h.01M8.8 14.2c1.8 2 4.6 2 6.4 0"/></svg></span>
-          <div><h2>Mood Check-in</h2><p>How are you feeling today?</p></div>
+          <div><h2>Daily Check-in</h2><p>How are you today?</p></div>
         </div>
         <div class="moods" aria-label="Mood choices">
           <button class="mood" type="button" aria-label="Very low">☹</button>
@@ -2505,7 +2552,66 @@
         body.appendChild(progressAction);
       }
 
+      function renderTodaySnapshot(){
+        const root=document.getElementById('todaySnapshotBody');
+        const status=document.getElementById('todaySnapshotState');
+        if(!root||!status)return;
+        const checkin=state.dailyCheckins?.[todayKey()]||null;
+        const routines=Array.isArray(state.routines)?state.routines:[];
+        const openRoutines=routines.filter(x=>!x.done);
+        const goals=Array.isArray(state.goals)?state.goals:[];
+        const openGoals=goals.filter(x=>!x.done);
+        if(!checkin){
+          status.textContent='Not checked in yet';
+          root.innerHTML=
+            '<p class="today-empty">Your Daily Check-in will appear here after you save it. Nothing is inferred before you do.</p>'
+            +'<div class="today-actions"><button class="today-action primary" id="todayCheckinNow" type="button">Check in now</button>'
+            +'<button class="today-action" id="todayAskShine" type="button">Ask Shine</button></div>';
+          root.querySelector('#todayCheckinNow')?.addEventListener('click',()=>openSheet('mood',document.querySelector('.mood-card')));
+          root.querySelector('#todayAskShine')?.addEventListener('click',()=>{
+            handoffToShine('Today','Help me think about what matters today. I have not completed my Daily Check-in yet.');
+          });
+          return;
+        }
+
+        status.textContent='Checked in';
+        const words=[checkin.feeling1,checkin.feeling2].filter(Boolean).join(' · ')||'No feeling words saved';
+        const score=Number.isFinite(Number(checkin.score))?Number(checkin.score).toFixed(1)+'/10':'—';
+        const sleep=Number.isFinite(Number(checkin.sleep))?Number(checkin.sleep).toFixed(1)+'/10':'—';
+        const intention=String(checkin.intention||'').trim()||'No intention saved';
+        const nextRoutine=openRoutines[0]?.text||'No open routine';
+        const nextGoal=openGoals[0]?.text||'No open goal';
+        root.innerHTML=
+          '<div class="today-grid">'
+          +'<div class="today-tile"><small>Feeling</small><strong>'+escapeHtml(words)+'</strong></div>'
+          +'<div class="today-tile"><small>Day / sleep</small><strong>'+score+' · '+sleep+'</strong></div>'
+          +'<div class="today-tile today-wide"><small>Intention</small><strong>'+escapeHtml(intention)+'</strong></div>'
+          +'<div class="today-tile"><small>Next routine</small><strong>'+escapeHtml(nextRoutine)+'</strong></div>'
+          +'<div class="today-tile"><small>Open goal</small><strong>'+escapeHtml(nextGoal)+'</strong></div>'
+          +'</div>'
+          +'<div class="today-actions"><button class="today-action primary" id="todayContinueShine" type="button">Continue with Shine</button>'
+          +'<button class="today-action" id="todayEditCheckin" type="button">Edit check-in</button></div>'
+          +'<p class="today-foot">This is a snapshot of what you entered today, not an assessment of how you should feel.</p>';
+        root.querySelector('#todayEditCheckin')?.addEventListener('click',()=>openSheet('mood',document.querySelector('.mood-card')));
+        root.querySelector('#todayContinueShine')?.addEventListener('click',()=>{
+          const parts=[
+            'My Today snapshot:',
+            'Feeling: '+words,
+            'Day score: '+score,
+            'Sleep: '+sleep,
+            checkin.gratitude?'Gratitude: '+checkin.gratitude:'',
+            checkin.challenge?'Challenge: '+checkin.challenge:'',
+            'Intention: '+intention,
+            openRoutines.length?'Open routines: '+openRoutines.slice(0,5).map(x=>x.text).join(', '):'No open routines',
+            openGoals.length?'Open goals: '+openGoals.slice(0,5).map(x=>x.text).join(', '):'No open goals',
+            'Help me decide what is useful to focus on next without treating these numbers as a diagnosis or judgement.'
+          ].filter(Boolean);
+          handoffToShine('Today',parts.join('\n'));
+        });
+      }
+
       function syncDashboard(){
+        renderTodaySnapshot();
         const moodCard=document.querySelector('.mood-card');
         const goalsCard=document.querySelector('.goals-card');
         const routineCard=document.querySelector('.routine-card');
