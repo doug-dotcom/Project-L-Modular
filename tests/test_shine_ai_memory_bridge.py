@@ -19,6 +19,23 @@ def configure(monkeypatch):
     bridge._db_transport = None
     bridge._rpc_circuit_open_until = 0.0
     bridge._rpc_failure_streak = 0
+    with bridge._rpc_metrics_lock:
+        bridge._rpc_metrics.update({
+            "requests_total": 0,
+            "success_total": 0,
+            "failure_total": 0,
+            "saturation_rejections": 0,
+            "circuit_rejections": 0,
+            "recovery_probe_rejections": 0,
+            "transient_retries": 0,
+            "breaker_open_events": 0,
+            "http_timeout_failures": 0,
+            "last_latency_ms": 0.0,
+            "ewma_latency_ms": 0.0,
+            "max_latency_ms": 0.0,
+            "last_success_at": 0.0,
+            "last_failure_at": 0.0,
+        })
 
 
 def owner_context():
@@ -800,3 +817,110 @@ def test_owner_context_rejects_mismatched_query_contract_version(monkeypatch):
     except Exception as exc:
         assert getattr(exc, "status_code", None) == 503
         assert "query contract" in str(getattr(exc, "detail", "")).lower()
+
+
+
+def test_memory_bridge_metrics_record_success_without_query_or_memory_content(
+    monkeypatch,
+    capsys,
+):
+    configure(monkeypatch)
+    query = "Private diving phrase"
+    secret_memory = "DO NOT LOG THIS MEMORY"
+
+    class Result:
+        data = {
+            **owner_context(),
+            "queryKey": bridge._query_key(bridge._query_terms(query)),
+            "queryContractVersion": "2",
+            "matches": [{
+                "id": "1",
+                "domain": "sport",
+                "content": secret_memory,
+                "provenance": {
+                    "sourceTable": "memory_sport",
+                    "sourceId": "1",
+                    "sourceRole": "user",
+                },
+            }],
+        }
+
+    class Rpc:
+        def execute(self):
+            return Result()
+
+    class Database:
+        def rpc(self, name, payload):
+            return Rpc()
+
+    monkeypatch.setattr(bridge, "_database", lambda: Database())
+
+    result = bridge._owner_context(OWNER, query, 4)
+    assert result["status"] == "ok"
+
+    metrics = bridge._rpc_metrics_snapshot()
+    assert metrics["requests_total"] == 1
+    assert metrics["success_total"] == 1
+    assert metrics["failure_total"] == 0
+    assert metrics["success_rate"] == 1.0
+    assert metrics["last_latency_ms"] >= 0
+    assert metrics["ewma_latency_ms"] >= 0
+    assert metrics["max_latency_ms"] >= metrics["last_latency_ms"]
+
+    output = capsys.readouterr().out
+    assert "SHINE_AI_MEMORY_SLO outcome=success" in output
+    assert query not in output
+    assert secret_memory not in output
+    assert OWNER not in output
+
+
+def test_memory_bridge_metrics_count_circuit_rejection(monkeypatch):
+    configure(monkeypatch)
+    now = {"value": 1000.0}
+    bridge._rpc_failure_streak = 1
+    bridge._rpc_circuit_open_until = 1008.0
+    monkeypatch.setattr(bridge.time, "monotonic", lambda: now["value"])
+
+    try:
+        bridge._owner_context(OWNER, "Dive history", 4)
+        assert False, "expected HTTPException"
+    except Exception as exc:
+        assert getattr(exc, "status_code", None) == 503
+
+    metrics = bridge._rpc_metrics_snapshot()
+    assert metrics["requests_total"] == 1
+    assert metrics["success_total"] == 0
+    assert metrics["failure_total"] == 1
+    assert metrics["circuit_rejections"] == 1
+    assert metrics["success_rate"] == 0.0
+
+
+def test_memory_bridge_health_exposes_privacy_safe_metrics(monkeypatch):
+    configure(monkeypatch)
+    monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "service-role-key")
+    with bridge._rpc_metrics_lock:
+        bridge._rpc_metrics["requests_total"] = 8
+        bridge._rpc_metrics["success_total"] = 7
+        bridge._rpc_metrics["failure_total"] = 1
+        bridge._rpc_metrics["transient_retries"] = 2
+        bridge._rpc_metrics["last_latency_ms"] = 12.5
+        bridge._rpc_metrics["ewma_latency_ms"] = 10.0
+        bridge._rpc_metrics["max_latency_ms"] = 30.0
+
+    response = client().get(
+        "/internal/shine-ai/memory/health",
+        headers={"X-Shine-Service-Token": "x" * 32},
+    )
+
+    assert response.status_code == 200
+    metrics = response.json()["metrics"]
+    assert metrics["requests_total"] == 8
+    assert metrics["success_total"] == 7
+    assert metrics["failure_total"] == 1
+    assert metrics["success_rate"] == 0.875
+    assert metrics["transient_retries"] == 2
+    assert metrics["last_latency_ms"] == 12.5
+    assert "query" not in metrics
+    assert "owner" not in metrics
+    assert "memory" not in metrics
