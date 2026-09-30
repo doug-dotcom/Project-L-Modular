@@ -1748,6 +1748,7 @@
             <div class="you-stat"><strong>${routines.length}</strong><span>Routines</span></div>
             <div class="you-stat"><strong>${journal.length}</strong><span>Journal</span></div>
           </div>
+          <button class="surface-action secondary" id="askYouMemory" type="button">Ask Shine what it remembers about me</button>
           <section class="surface-card">
             <h3>Your Shine Me data</h3>
             <div class="data-row"><span><strong>Approved memory</strong><small>Grounded through Project L when you ask Shine Me.</small></span><span class="data-state">${escapeHtml(connectionText||'Checking')}</span></div>
@@ -1760,6 +1761,9 @@
             <button class="danger-action" id="clearLocalShineMe" type="button">Clear local Shine Me activity</button>
             <p class="surface-status" id="clearLocalStatus"></p>
           </section>`;
+        navSurfaceBody.querySelector('#askYouMemory')?.addEventListener('click',()=>{
+          handoffToShine('You','What do you remember about me? Please separate approved memory from inference and tell me where the important details come from.');
+        });
         navSurfaceBody.querySelector('#clearLocalShineMe')?.addEventListener('click',()=>{
           if(!window.confirm('Clear local Shine Me mood, goals, routines, progress and journal data from this browser?'))return;
           state.mood=null; state.moodNote=''; state.goals=[]; state.routines=[]; state.history={}; state.journal=[]; state.lastDay=todayKey();
@@ -1989,6 +1993,24 @@
               ${rows.slice().reverse().filter(x=>activityFor(x.entry)>0).map(({day,entry})=>`<div class="history-row"><time>${day.date.toLocaleDateString(undefined,{day:'numeric',month:'short'})}</time><span>${Number.isInteger(entry.mood)?('Mood '+moodFaces[entry.mood]+' · '):''}${entry.goalCompleted||0} goal · ${entry.routineCompleted||0} routine</span><strong>${activityFor(entry)} tracked</strong></div>`).join('')||'<div class="progress-empty">No saved history yet.</div>'}
             </div>
           </div>`;
+        const progressAction=document.createElement('div');
+        progressAction.className='context-action-row';
+        const progressButton=document.createElement('button');
+        progressButton.className='sheet-secondary';
+        progressButton.type='button';
+        progressButton.textContent='Ask Shine about this week';
+        progressButton.addEventListener('click',()=>{
+          const facts=[
+            checkins+' mood check-in day'+(checkins===1?'':'s'),
+            goals+' goal completion'+(goals===1?'':'s'),
+            routines+' routine completion'+(routines===1?'':'s'),
+            activeDays+' active tracked day'+(activeDays===1?'':'s')
+          ];
+          handoffToShine('Your Progress','Over the last 7 days I tracked: '+facts.join(', ')+'. Help me reflect on this without turning it into a score or judgement.');
+        });
+        progressAction.appendChild(progressButton);
+        body.appendChild(progressAction);
+
       }
 
       function syncDashboard(){
