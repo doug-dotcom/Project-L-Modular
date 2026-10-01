@@ -1531,49 +1531,94 @@ def search_database_candidates(query, raw_limit=200, memory_limit=80, receipt_ou
 
 def build_context(user_message, evidence_out=None, recall_plan=None, receipt_out=None):
     started = time.monotonic()
+    stage_latency_ms = {}
+
+    def timed_stage(stage_name, fn):
+        stage_started = time.monotonic()
+        value = fn()
+        stage_latency_ms[stage_name] = round(
+            (time.monotonic() - stage_started) * 1000
+        )
+        return value
+
     recall_plan = recall_plan or plan_recall(user_message)
-    identity_context = load_identity()
-    learnings_context = load_learnings(user_message=user_message)
+    identity_context = timed_stage("identity", load_identity)
+    learnings_context = timed_stage(
+        "learnings",
+        lambda: load_learnings(user_message=user_message),
+    )
     exhaustive = exhaustive_requested(user_message)
     broad_recall = deep_recall_requested(user_message)
     explicit_deep_recall = explicit_deep_recall_requested(user_message)
     pauline_report = pauline_report_requested(user_message)
-    candidates = search_database_candidates(
-        user_message,
-        # Raw evidence contains questions and historical failed answers that
-        # Python deliberately down-ranks, so retain a wider candidate pool.
-        raw_limit=recall_plan['raw_candidates'],
-        memory_limit=recall_plan['memory_candidates'],
-        receipt_out=receipt_out,
+    candidates = timed_stage(
+        "indexed_retrieval",
+        lambda: search_database_candidates(
+            user_message,
+            # Raw evidence contains questions and historical failed answers that
+            # Python deliberately down-ranks, so retain a wider candidate pool.
+            raw_limit=recall_plan['raw_candidates'],
+            memory_limit=recall_plan['memory_candidates'],
+            receipt_out=receipt_out,
+        ),
     )
     # Bounded pilot: do not turn an indexed-query failure into a full-corpus scan.
     if candidates is None:
         if receipt_out is not None:
-            receipt_out.update(status='unavailable')
+            slowest_stage = (
+                max(stage_latency_ms, key=stage_latency_ms.get)
+                if stage_latency_ms
+                else "none"
+            )
+            receipt_out.update(
+                status='unavailable',
+                stage_latency_ms=stage_latency_ms,
+                slowest_stage=slowest_stage,
+                slowest_stage_ms=stage_latency_ms.get(slowest_stage, 0),
+            )
         return 'Indexed recall unavailable; no complete-memory claim is warranted.'
     raw_candidates = candidates['raw']
     memory_candidates = candidates['memories']
 
-    continuity_context = build_raw_recall_packet(
-        user_message,
-        limit=6 if recall_plan['mode'] == 'focused' else 12,
-        rows=raw_candidates,
-        evidence_out=evidence_out,
+    continuity_context = timed_stage(
+        "raw_continuity",
+        lambda: build_raw_recall_packet(
+            user_message,
+            limit=6 if recall_plan['mode'] == 'focused' else 12,
+            rows=raw_candidates,
+            evidence_out=evidence_out,
+        ),
     )
-    recent_conversation_context = load_recent_conversation()
-    short_term_context, short_term_domain = load_short_term(user_message)
+    recent_conversation_context = timed_stage(
+        "recent_conversation",
+        load_recent_conversation,
+    )
+    short_term_context, short_term_domain = timed_stage(
+        "short_term",
+        lambda: load_short_term(user_message),
+    )
 
-    recall_packet = build_recall_packet(
-        user_message,
-        limit=6 if recall_plan['mode'] == 'focused' else (20 if broad_recall else 12),
-        database_memories=memory_candidates,
+    recall_packet = timed_stage(
+        "recall_ranking",
+        lambda: build_recall_packet(
+            user_message,
+            limit=6 if recall_plan['mode'] == 'focused' else (20 if broad_recall else 12),
+            database_memories=memory_candidates,
+        ),
     )
     print("LONG TERM RECORDS SENT: " + ",".join(
         f"{safe_text(memory.get('_table'))}:{safe_text(memory.get('id'))}"
         for memory in recall_packet
     ))
     recall_active = bool(recall_packet)
-    long_term_context = format_memory_packet(user_message, recall_packet, evidence_out=evidence_out)
+    long_term_context = timed_stage(
+        "long_term_format",
+        lambda: format_memory_packet(
+            user_message,
+            recall_packet,
+            evidence_out=evidence_out,
+        ),
+    )
 
     sections = []
 
@@ -1625,10 +1670,21 @@ def build_context(user_message, evidence_out=None, recall_plan=None, receipt_out
 
     if receipt_out is not None:
         elapsed = round((time.monotonic() - started) * 1000)
-        receipt_out.update(status='checked' if elapsed <= recall_plan['retrieval_budget_ms'] else 'budget_exceeded',
-                           latency_ms=elapsed, raw_candidates_returned=len(raw_candidates),
-                           memory_candidates_returned=len(memory_candidates),
-                           source_count=len(evidence_out or []))
+        slowest_stage = (
+            max(stage_latency_ms, key=stage_latency_ms.get)
+            if stage_latency_ms
+            else "none"
+        )
+        receipt_out.update(
+            status='checked' if elapsed <= recall_plan['retrieval_budget_ms'] else 'budget_exceeded',
+            latency_ms=elapsed,
+            raw_candidates_returned=len(raw_candidates),
+            memory_candidates_returned=len(memory_candidates),
+            source_count=len(evidence_out or []),
+            stage_latency_ms=stage_latency_ms,
+            slowest_stage=slowest_stage,
+            slowest_stage_ms=stage_latency_ms.get(slowest_stage, 0),
+        )
     return "\n".join(sections)
 
 
@@ -1688,6 +1744,7 @@ def format_memory_packet(query, packet, evidence_out=None):
     return "\n".join(lines)
 
 def build_context_packet(user_message):
+    packet_started = time.monotonic()
     evidence = []
     try:
         plan = plan_recall(user_message)
@@ -1701,6 +1758,7 @@ def build_context_packet(user_message):
         context, evidence, receipt = period['context'], period['evidence'], period['receipt']
     else:
         context = build_context(user_message, evidence_out=evidence, recall_plan=plan, receipt_out=receipt)
+    temporal_started = time.monotonic()
     if plan['period']:
         temporal = build_temporal_packet(supabase, user_message, window_override={
             'mode': 'historical', 'from': plan['period']['from'],
@@ -1708,6 +1766,12 @@ def build_context_packet(user_message):
             'assumption': plan['assumption']})
     else:
         temporal = build_temporal_packet(supabase, user_message)
+    receipt["temporal_latency_ms"] = round(
+        (time.monotonic() - temporal_started) * 1000
+    )
+    receipt["packet_latency_ms"] = round(
+        (time.monotonic() - packet_started) * 1000
+    )
     context += '\n\n' + temporal['context']
     evidence.extend(temporal['evidence'])
 
