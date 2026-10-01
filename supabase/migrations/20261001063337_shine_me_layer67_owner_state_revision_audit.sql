@@ -1,3 +1,4 @@
+-- data-api-public-relation-approved: public.shine_me_owner_state_events
 create table if not exists public.shine_me_owner_state_events (
   id bigint generated always as identity primary key,
   owner_id text not null,
