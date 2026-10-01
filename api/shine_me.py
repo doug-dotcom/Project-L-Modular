@@ -4,7 +4,6 @@ import json
 import os
 import re
 from collections.abc import Callable
-from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
@@ -195,8 +194,7 @@ def routes(
     save_correction: Callable[[dict], object] | None = None,
     list_corrections: Callable[[str], object] | None = None,
     load_owner_state: Callable[[str], object] | None = None,
-    insert_owner_state: Callable[[dict], object] | None = None,
-    update_owner_state: Callable[[str, int, dict], object] | None = None,
+    apply_owner_state: Callable[[str, int, dict], object] | None = None,
 ) -> APIRouter:
     router = APIRouter(tags=["shine-me"])
 
@@ -268,8 +266,7 @@ def routes(
         if (
             not os.getenv("SUPABASE_SERVICE_ROLE_KEY")
             or load_owner_state is None
-            or insert_owner_state is None
-            or update_owner_state is None
+            or apply_owner_state is None
         ):
             raise HTTPException(503, "Shine-Me account sync is temporarily unavailable.")
         owner_id = str(os.getenv("PROJECT_L_OWNER_ID") or "").strip()
@@ -278,29 +275,16 @@ def routes(
         except ValueError as exc:
             raise HTTPException(400, str(exc)) from exc
 
-        now = datetime.now(timezone.utc).isoformat()
         next_revision = payload.expected_revision + 1
-        row = {
-            "owner_id": owner_id,
-            "state": clean_state,
-            "revision": next_revision,
-            "updated_at": now,
-        }
         try:
-            if payload.expected_revision == 0:
-                current = load_owner_state(owner_id)
-                existing = getattr(current, "data", None)
-                if not isinstance(existing, list):
-                    raise RuntimeError("Invalid state result")
-                if existing:
-                    raise HTTPException(409, "Shine-Me state changed on another device.")
-                saved = insert_owner_state(row)
-            else:
-                saved = update_owner_state(owner_id, payload.expected_revision, row)
-
+            saved = apply_owner_state(
+                owner_id,
+                payload.expected_revision,
+                clean_state,
+            )
             rows = getattr(saved, "data", None)
             if not isinstance(rows, list) or len(rows) != 1:
-                raise HTTPException(409, "Shine-Me state changed on another device.")
+                raise RuntimeError("Invalid atomic state receipt")
             stored = rows[0]
             if (
                 stored.get("owner_id") != owner_id
@@ -310,11 +294,15 @@ def routes(
             return {
                 "status": "synced",
                 "revision": next_revision,
-                "updated_at": stored.get("updated_at") or now,
+                "updated_at": stored.get("updated_at"),
             }
         except HTTPException:
             raise
         except Exception as exc:
+            if "REVISION_CONFLICT" in str(exc):
+                raise HTTPException(
+                    409, "Shine-Me state changed on another device."
+                ) from exc
             raise HTTPException(503, "Shine-Me account state could not be saved.") from exc
 
     @router.post("/shine-me/context")

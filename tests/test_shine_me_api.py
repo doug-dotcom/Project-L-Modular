@@ -63,24 +63,29 @@ def make_client(monkeypatch, owner="owner-a", *, approved=True, freshness="uncha
         row = state_store.get(owner_id)
         return type("State", (), {"data": [dict(row)] if row else []})()
 
-    def insert_state(row):
-        calls.append(("state_insert", row))
-        if row["owner_id"] in state_store:
-            raise RuntimeError("duplicate")
-        state_store[row["owner_id"]] = dict(row)
-        return type("State", (), {"data": [dict(row)]})()
-
-    def update_state(owner_id, expected_revision, row):
-        calls.append(("state_update", owner_id, expected_revision, row))
+    def apply_state(owner_id, expected_revision, state):
+        calls.append(("state_apply", owner_id, expected_revision, dict(state)))
         current = state_store.get(owner_id)
-        if not current or current["revision"] != expected_revision:
-            return type("State", (), {"data": []})()
-        state_store[owner_id] = dict(row)
+        if expected_revision == 0:
+            if current is not None:
+                raise RuntimeError("REVISION_CONFLICT")
+            next_revision = 1
+        else:
+            if not current or current["revision"] != expected_revision:
+                raise RuntimeError("REVISION_CONFLICT")
+            next_revision = expected_revision + 1
+        row = {
+            "owner_id": owner_id,
+            "state": dict(state),
+            "revision": next_revision,
+            "updated_at": f"2026-10-01T00:00:0{min(next_revision, 9)}Z",
+        }
+        state_store[owner_id] = row
         return type("State", (), {"data": [dict(row)]})()
 
     app.include_router(routes(
         retrieve, cognize, lambda receipt: {"status": freshness},
-        save, list_reviews, load_state, insert_state, update_state,
+        save, list_reviews, load_state, apply_state,
     ))
     return TestClient(app), calls
 
@@ -322,6 +327,8 @@ def test_owner_state_sync_is_owner_bound_and_memory_separate(monkeypatch):
     )
     assert response.status_code == 200
     assert response.json()["revision"] == 1
+    assert calls[-1][0] == "state_apply"
+    assert calls[-1][1:3] == ("owner-a", 0)
     assert "retrieve" not in calls and "cognize" not in calls
 
     response = client.get("/shine-me/state", headers=headers)
@@ -360,6 +367,23 @@ def test_owner_state_sync_rejects_stale_revision(monkeypatch):
         headers=headers,
     )
     assert stale.status_code == 409
+
+    remote = client.get("/shine-me/state", headers=headers)
+    assert remote.status_code == 200
+    assert remote.json()["revision"] == 2
+    assert remote.json()["state"]["mood"] == 3
+
+    # This models the browser's explicit "Keep this device" reconciliation:
+    # rebase the preserved local copy onto the freshly loaded account revision,
+    # then retry. A second concurrent change would simply produce another 409.
+    state["mood"] = 4
+    reconciled = client.put(
+        "/shine-me/state",
+        json={"state": state, "expected_revision": remote.json()["revision"]},
+        headers=headers,
+    )
+    assert reconciled.status_code == 200
+    assert reconciled.json()["revision"] == 3
 
 
 def test_owner_state_sync_rejects_other_account_and_unknown_fields(monkeypatch):
