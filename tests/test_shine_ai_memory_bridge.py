@@ -220,6 +220,75 @@ def test_broad_recall_is_rejected_before_database_query(monkeypatch):
     assert called["value"] is False
 
 
+
+def test_wellness_bridge_is_limited_to_health_scope(monkeypatch):
+    configure(monkeypatch)
+    monkeypatch.setattr(
+        bridge,
+        "_owner_context",
+        lambda owner_id, query, limit: {
+            **owner_context(),
+            "matches": [
+                {
+                    "id": "health-1",
+                    "domain": "health",
+                    "content": "Reviewed health memory.",
+                    "authority": {"class": "direct_user_promoted_memory"},
+                    "provenance": {
+                        "sourceTable": "memory_health",
+                        "sourceId": "health-1",
+                        "sourceRole": "user",
+                        "ownerBound": True,
+                    },
+                },
+                {
+                    "id": "recovery-1",
+                    "domain": "recovery",
+                    "content": "Recovery information must not cross this scope boundary.",
+                    "authority": {"class": "direct_user_promoted_memory"},
+                    "provenance": {
+                        "sourceTable": "memory_recovery",
+                        "sourceId": "recovery-1",
+                        "sourceRole": "user",
+                        "ownerBound": True,
+                    },
+                },
+            ],
+        },
+    )
+
+    allowed = client().post(
+        "/internal/shine-ai/memory/retrieve",
+        headers={"X-Shine-Service-Token": "x" * 32},
+        json={
+            "app": "shine-wellness",
+            "user_id": OWNER,
+            "query": "Recall my health history.",
+            "scopes": ["health"],
+            "limit": 4,
+        },
+    )
+    assert allowed.status_code == 200
+    body = allowed.json()
+    assert body["receipt"]["requested_scopes"] == ["health"]
+    assert [record["tags"][0] for record in body["records"]] == ["health"]
+    assert all("Recovery information" not in record["text"] for record in body["records"])
+
+    for denied_scope in ("general", "sport", "recovery", "episodic"):
+        denied = client().post(
+            "/internal/shine-ai/memory/retrieve",
+            headers={"X-Shine-Service-Token": "x" * 32},
+            json={
+                "app": "shine-wellness",
+                "user_id": OWNER,
+                "query": "Recall my history.",
+                "scopes": [denied_scope],
+                "limit": 4,
+            },
+        )
+        assert denied.status_code == 403
+
+
 def test_daash_bridge_is_limited_to_sport_scope(monkeypatch):
     configure(monkeypatch)
     monkeypatch.setattr(

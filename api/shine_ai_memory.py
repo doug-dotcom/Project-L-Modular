@@ -23,6 +23,7 @@ router = APIRouter(prefix="/internal/shine-ai", tags=["internal-shine-ai"])
 _APP_SCOPE_POLICY: dict[str, frozenset[str]] = {
     "shine-dive": frozenset({"episodic", "sport", "general"}),
     "daash": frozenset({"sport"}),
+    "shine-wellness": frozenset({"health"}),
 }
 
 _BROAD_RECALL_RE = re.compile(
