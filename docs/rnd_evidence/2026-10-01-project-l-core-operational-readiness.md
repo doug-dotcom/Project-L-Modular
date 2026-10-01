@@ -75,3 +75,18 @@ Run the complete active Project L regression suite, merge only on a green result
 ## Time / cost
 
 Engineering time is represented by contemporaneous GitHub commit, PR, CI and deployment timestamps. No external monetary cost is claimed in this receipt.
+
+
+## Follow-up experiment — predeploy transient recovery
+
+- **Observed deployment:** `f72af43c-116b-4e70-9550-df6796c8c7fa`
+- **Merged readiness commit:** `a9dc47c01bf541fb09f09d9d28801dea4d7bf23b`
+- **Observed result:** Railway predeploy failed before application startup.
+- **Failure evidence:** memory bridge live smoke returned `retrieval-unavailable` after a 12,299.1 ms failed canary and recorded a durable failure event.
+- **Key observation:** Concierge, Shine-AI trace trust and external roster rotation all passed before the memory smoke failure. The readiness endpoint itself had not started executing.
+- **Technical uncertainty:** whether the predeploy smoke should honour the memory bridge's existing circuit-breaker `Retry-After` contract without masking genuine auth/config/permission/contract failures.
+- **Hypothesis:** one bounded replay, only for exact known transient 503 responses with a valid `Retry-After`, will tolerate a recoverable circuit window while remaining fail-closed for persistent or non-transient failure.
+- **Change:** PR #248 adds one transient replay maximum, caps the wait at 10 seconds, preserves fail-closed behaviour on the second failure, and records `transient_replays` without memory content.
+- **Regression evidence:** CI run `36805911875` — **PASS: 1,717 passed, 5 warnings, 13 subtests passed in 31.19s**.
+- **Unexpected behaviour / learning:** the deployment gate was stricter than the runtime recovery contract. A release smoke must test the same bounded recovery semantics as the component it certifies; otherwise healthy recovery protection can become a false deployment blocker.
+- **Next step:** merge PR #248, deploy the exact merged image, verify the memory smoke, Project L startup, `/health`, and live `/readiness`.
