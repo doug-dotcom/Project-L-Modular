@@ -48,7 +48,8 @@ At capture time:
 ## Tests / evidence
 
 - Branch: `project-l/single-durable-dispatcher-slot-20261001`
-- CI result: pending at contemporaneous capture.
+- CI result: **PASS — 1,756 passed, 5 warnings, 13 subtests passed in 39.25s**.
+- PR #267 merged as commit `eab9b77124991271cb65ab170263c160872e4c85`.
 
 ## Learning
 
@@ -56,7 +57,14 @@ When a shared data plane is degraded, independent background workers should be t
 
 ## Next step
 
-Run the full Project L regression suite, merge only on green, and deploy when the Data API can pass the fail-closed trace-trust predeploy gate.
+The exact merged Railway deployment `8e746e9d-5a16-4eb9-b6e7-67447d994391` failed before application startup:
+- Concierge fleet smoke: PASS;
+- trace-trust snapshot: transient unavailable;
+- bounded retries: 2s then 5s;
+- terminal result: FAIL `trace-trust-snapshot-unavailable`;
+- Rhee/memory/app startup were not reached.
+
+Therefore the single-slot dispatcher is source-ready but **not yet live**. Deploy only when the Data API can pass the fail-closed trace-trust gate.
 
 ## Source artefacts
 
