@@ -1,4 +1,5 @@
 import hashlib
+import hmac
 import json
 import math
 import os
@@ -70,6 +71,8 @@ _RETRIEVAL_CONTRACT_NAME = "project-l:shine-ai-memory-retrieval:v1"
 _RETRIEVAL_ENDPOINT = "/internal/shine-ai/memory/retrieve"
 _RETRIEVAL_ENGINE = "project-l-memory-context-v2"
 _RETRIEVAL_VERSION = "2.2"
+_HEALTH_ATTESTATION_DOMAIN = "project-l:shine-ai-memory-health-attestation:v1"
+_HEALTH_NONCE_RE = re.compile(r"^[A-Za-z0-9._:-]{16,128}$")
 
 
 def memory_retrieval_contract_manifest() -> dict[str, object]:
@@ -731,6 +734,17 @@ class MemoryRetrieveResponse(BaseModel):
     receipt: dict[str, object]
 
 
+class MemoryBridgeHealthAttestation(BaseModel):
+    version: Literal[1] = 1
+    algorithm: Literal["HMAC-SHA-256"] = "HMAC-SHA-256"
+    domain: Literal[
+        "project-l:shine-ai-memory-health-attestation:v1"
+    ] = "project-l:shine-ai-memory-health-attestation:v1"
+    nonce: str = Field(min_length=16, max_length=128)
+    payload_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+    signature_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+
+
 class MemoryBridgeHealthResponse(BaseModel):
     source: Literal["project-l"]
     component: Literal["memory-bridge"]
@@ -751,6 +765,7 @@ class MemoryBridgeHealthResponse(BaseModel):
     read_only: Literal[True]
     fail_closed: Literal[True]
     metrics: dict[str, object]
+    attestation: MemoryBridgeHealthAttestation | None = None
 
 
 class MemoryBridgeObservabilityResponse(BaseModel):
@@ -1089,38 +1104,85 @@ def _records(
     return records
 
 
+def _health_response_attestation(
+    payload: dict[str, object],
+    *,
+    nonce: str,
+    service_token: str,
+) -> MemoryBridgeHealthAttestation:
+    canonical = json.dumps(
+        payload,
+        sort_keys=True,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    payload_sha256 = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    material = (
+        _HEALTH_ATTESTATION_DOMAIN
+        + "\n"
+        + nonce
+        + "\n"
+        + payload_sha256
+    ).encode("utf-8")
+    signature_sha256 = hmac.new(
+        service_token.encode("utf-8"),
+        material,
+        hashlib.sha256,
+    ).hexdigest()
+    return MemoryBridgeHealthAttestation(
+        nonce=nonce,
+        payload_sha256=payload_sha256,
+        signature_sha256=signature_sha256,
+    )
+
+
 @router.get("/memory/health", response_model=MemoryBridgeHealthResponse)
 def memory_bridge_health(
     x_shine_service_token: str = Header(default=""),
+    x_shine_health_nonce: str = Header(default=""),
 ) -> MemoryBridgeHealthResponse:
     # Authenticate against the same narrow service credential as retrieval.
     # Deliberately do not touch Supabase: this endpoint must remain useful while
     # the database is the dependency that is failing.
     _configured_owner(x_shine_service_token)
+    nonce = x_shine_health_nonce.strip()
+    if nonce and _HEALTH_NONCE_RE.fullmatch(nonce) is None:
+        raise HTTPException(status_code=422, detail="Invalid health probe nonce.")
+
     snapshot = _rpc_runtime_snapshot()
-    return MemoryBridgeHealthResponse(
-        source="project-l",
-        component="memory-bridge",
-        version=_RETRIEVAL_VERSION,
-        query_contract_version=_QUERY_CONTRACT_VERSION,
-        retrieval_contract_sha256=memory_retrieval_contract_sha256(),
-        status=str(snapshot["status"]),
-        circuit_state=str(snapshot["circuit_state"]),
-        retry_after=int(snapshot["retry_after"]),
-        failure_streak=int(snapshot["failure_streak"]),
-        recovery_probe_in_progress=bool(
+    payload: dict[str, object] = {
+        "source": "project-l",
+        "component": "memory-bridge",
+        "version": _RETRIEVAL_VERSION,
+        "query_contract_version": _QUERY_CONTRACT_VERSION,
+        "retrieval_contract_sha256": memory_retrieval_contract_sha256(),
+        "status": str(snapshot["status"]),
+        "circuit_state": str(snapshot["circuit_state"]),
+        "retry_after": int(snapshot["retry_after"]),
+        "failure_streak": int(snapshot["failure_streak"]),
+        "recovery_probe_in_progress": bool(
             snapshot["recovery_probe_in_progress"]
         ),
-        database_configured=bool(snapshot["database_configured"]),
-        database_touched=False,
-        max_concurrent_rpcs=_MAX_CONCURRENT_MEMORY_RPCS,
-        rpc_timeout_seconds=_MEMORY_RPC_TIMEOUT_SECONDS,
-        rpc_connect_seconds=_MEMORY_RPC_CONNECT_SECONDS,
-        rpc_pool_seconds=_MEMORY_RPC_POOL_SECONDS,
-        read_only=True,
-        fail_closed=True,
-        metrics=_rpc_metrics_snapshot(),
+        "database_configured": bool(snapshot["database_configured"]),
+        "database_touched": False,
+        "max_concurrent_rpcs": _MAX_CONCURRENT_MEMORY_RPCS,
+        "rpc_timeout_seconds": _MEMORY_RPC_TIMEOUT_SECONDS,
+        "rpc_connect_seconds": _MEMORY_RPC_CONNECT_SECONDS,
+        "rpc_pool_seconds": _MEMORY_RPC_POOL_SECONDS,
+        "read_only": True,
+        "fail_closed": True,
+        "metrics": _rpc_metrics_snapshot(),
+    }
+    attestation = (
+        _health_response_attestation(
+            payload,
+            nonce=nonce,
+            service_token=x_shine_service_token,
+        )
+        if nonce
+        else None
     )
+    return MemoryBridgeHealthResponse(**payload, attestation=attestation)
 
 
 @router.get(
