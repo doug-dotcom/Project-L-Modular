@@ -1798,6 +1798,7 @@
         syncMeta.recurringConflict=record.recurring;
         persistSync();
         refreshSyncLabels();
+        await refreshConflictHealth(false);
       }
 
       function applyRemoteState(remote){
