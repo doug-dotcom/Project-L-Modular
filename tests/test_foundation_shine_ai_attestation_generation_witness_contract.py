@@ -52,3 +52,12 @@ def test_edge_exposes_only_bounded_generation_witness_operations():
     assert "shine_ai_attestation_generation_witness_record_v1" in value
     assert "set local role foundation_gateway" in value
     assert "decrypted_secret" not in value
+
+
+def test_attestation_generation_witness_binds_response_to_authenticated_client():
+    value = " ".join(sql().split())
+
+    assert "'clientid',v_current.client_id" in value
+    assert "'clientid','shine.ai.runtime'" in value
+    assert "'clientid',v_state.client_id" in value
+    assert "client_id text not null" in value
