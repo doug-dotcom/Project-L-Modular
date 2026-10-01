@@ -69,6 +69,16 @@ Project L memory/retrieval reliability, deployment recovery, readiness truth and
 - Live `/health`: **200**; Foundation authority **active**.
 - Live `/readiness`: still correctly **503**, but now explains the gap: **1 / 3 qualified successes, 2 remaining**, blocker `needs-qualified-successes`, latest qualified latency **2,133.1 ms** under the **3,000 ms** target.
 
+### Public Data API schema-growth guard — PR #262
+- Production investigation measured approximately **762 public tables, 67 public views and 465 exposed functions** in Shine-L.
+- PostgREST repeatedly failed schema-cache rebuilds with `PGRST002` and PostgreSQL `57014` while the Supabase project control plane remained `ACTIVE_HEALTHY`.
+- Separated timeouts during recovery: `service_role` pinned to **8s**; PostgREST `authenticator` schema-cache window raised first to **20s**, then **60s**. This reduced immediate timeout killing but did not by itself restore the Data API.
+- New Project L migrations now require explicit schema placement for new relations.
+- New `public.*` tables/views require a per-object `data-api-public-relation-approved` marker.
+- Existing legacy public objects are grandfathered for later bounded migration to `private`; no risky bulk move was attempted during the incident.
+- CI: **1,750 passed, 5 warnings, 13 subtests passed in 34.43s**.
+- PR #262 merged as `8d562846a0e4fbdf99132d755feccb1d6f48dbb7`.
+
 ## Learning
 
 The release is healthy and the current memory path is available, but the real-traffic recovery ledger has not yet accumulated enough latency-qualified successes to certify recovery. That historical evidence is deliberately retained rather than reset after an optimisation. Current process readiness and durable recovery history are separate signals and should remain separate.
