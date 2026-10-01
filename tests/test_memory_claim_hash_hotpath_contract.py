@@ -29,6 +29,7 @@ def test_claim_hash_optimisation_preserves_retrieval_security_boundary():
     assert "STABLE SECURITY DEFINER" in sql
     assert "SET search_path TO ''" in sql
     assert "SET statement_timeout TO '5s'" in sql
+    assert "end;\n$function$;" in sql
     assert (
         "revoke all on function "
         "private.project_l_memory_context_v2(uuid,text[],integer,integer,integer)"
