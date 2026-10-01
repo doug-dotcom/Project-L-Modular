@@ -33,10 +33,24 @@ def test_layer177_claim_function_no_longer_globally_reaps():
     assert "least(coalesce(p_limit, 100), 500)" in source
 
 
-def test_dispatcher_reaps_before_claiming():
+def test_dispatcher_coordinates_reaping_before_claiming():
     source = open("core/cognition/durable_tasks.py", encoding="utf-8").read()
-    loop = source[source.index("    def loop(self):"):source.index("    def _persist_terminal_bound")]
-    assert loop.index("self.store.reap_expired(limit=100)") < loop.index("self.store.claim(")
+    reaper = source[
+        source.index("    def _maybe_reap_expired(self):"):
+        source.index("    def loop(self):")
+    ]
+    loop = source[
+        source.index("    def loop(self):"):
+        source.index("    def _persist_terminal_bound")
+    ]
+
+    assert "self.store.reap_expired(limit=100)" in reaper
+    assert "self.store.reap_expired(limit=100)" not in loop
+    assert loop.index("self._maybe_reap_expired()") < loop.index(
+        "self.store.claim("
+    )
+    assert "self._reaper_lock.acquire(blocking=False)" in reaper
+    assert "self.reaper_failure_backoff_seconds" in reaper
 
 
 def test_layer177_release_marker_is_continuous():
