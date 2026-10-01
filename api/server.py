@@ -531,7 +531,10 @@ def execute_durable_request(request):
     return chat(ChatRequest(**request))
 
 
-task_runner = TaskRunner(task_store, execute_durable_request)
+# Production uses one durable dispatcher slot during shared-database recovery.
+# TaskRunner's reusable default remains unchanged; this only halves Project L's
+# background claim/poll concurrency in the live service.
+task_runner = TaskRunner(task_store, execute_durable_request, slots=1)
 app.include_router(account_document_routes(supabase, task_store))
 app.include_router(shine_ai_memory_router)
 app.include_router(wellness_context_router)
