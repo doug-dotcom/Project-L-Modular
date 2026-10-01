@@ -1498,9 +1498,9 @@ def test_memory_bridge_health_attests_nonce_bound_content(monkeypatch):
     assert attestation["payload_sha256"] == payload_sha256
     material = (
         bridge._HEALTH_ATTESTATION_DOMAIN
-        + "\\n"
+        + "\n"
         + nonce
-        + "\\n"
+        + "\n"
         + payload_sha256
     ).encode("utf-8")
     expected_signature = hmac.new(
