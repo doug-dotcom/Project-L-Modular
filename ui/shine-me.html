@@ -1654,7 +1654,7 @@
       };
       let state=normaliseState({});
       try { state=normaliseState(JSON.parse(localStorage.getItem(storageKey)||'{}')); } catch (_) {}
-      let syncMeta={revision:0,dirty:false,lastSyncedAt:null,status:'local',conflict:false,conflictId:null,recentConflicts24h:0,recurringConflict:false,conflictHealthStatus:'unknown',conflictHealthDetections24h:0,conflictHealthResolutions24h:0,conflictHealthUnresolved:0,conflictHealthOldestMinutes:0,conflictHealthLastAt:null,conflictHealthReasonCodes:[],conflictRecoveryState:'clear'};
+      let syncMeta={revision:0,dirty:false,lastSyncedAt:null,status:'local',conflict:false,conflictId:null,recentConflicts24h:0,recurringConflict:false,conflictHealthStatus:'unknown',conflictHealthDetections24h:0,conflictHealthResolutions24h:0,conflictHealthUnresolved:0,conflictHealthOldestMinutes:0,conflictHealthLastAt:null,conflictHealthReasonCodes:[],conflictRecoveryState:'clear',conflictTransitionDirection:'unknown',conflictTransitionRecorded:false,conflictStateAgeSeconds:0,conflictEpisodeAgeSeconds:0,conflictRecoverySeconds:null,conflictTransitionHistorySize:0};
       try { syncMeta={...syncMeta,...JSON.parse(localStorage.getItem(syncKey)||'{}')}; } catch (_) {}
       let accountSyncReady=false;
       let syncTimer=null;
@@ -1748,8 +1748,15 @@
           syncMeta.conflictHealthLastAt=result.last_conflict_at||null;
           syncMeta.conflictHealthReasonCodes=Array.isArray(result.reason_codes)?result.reason_codes.slice(0,3):[];
           syncMeta.conflictRecoveryState=['clear','observing','resolving','stalled'].includes(result.recovery_state)?result.recovery_state:'clear';
+          syncMeta.conflictTransitionDirection=['baseline','steady','improving','worsening','recovered','mixed'].includes(result.transition_direction)?result.transition_direction:'unknown';
+          syncMeta.conflictTransitionRecorded=Boolean(result.transition_recorded);
+          syncMeta.conflictStateAgeSeconds=Math.max(0,Number(result.state_age_seconds||0));
+          syncMeta.conflictEpisodeAgeSeconds=Math.max(0,Number(result.episode_age_seconds||0));
+          syncMeta.conflictRecoverySeconds=result.recovery_seconds===null||result.recovery_seconds===undefined?null:Math.max(0,Number(result.recovery_seconds||0));
+          syncMeta.conflictTransitionHistorySize=Math.max(0,Math.min(32,Number(result.transition_history_size||0)));
         }catch(_){
           syncMeta.conflictHealthStatus='unavailable';
+          syncMeta.conflictTransitionDirection='unknown';
         }
         persistSync();
         if(render && navSurface?.dataset.open==='true' && navSurfaceTitle?.textContent==='You')renderYouSurface();
