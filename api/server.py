@@ -89,6 +89,7 @@ from core.cognition.recovery_provenance import (
 )
 from core.cognition.saved_answer_integrity_audit import load_saved_answer_integrity_audit
 from core.cognition.production_security_gate import production_security_gate
+from core.cognition.operational_readiness import build_operational_readiness
 from core.cognition.cold_recovery_certification import load_cold_recovery_certification
 from core.cognition.key_retirement_certification import load_key_retirement_certification
 from core.cognition.recovery_coverage_certification import load_recovery_coverage_certification
@@ -167,6 +168,7 @@ from services.foundation_companion_service import (
     foundation_fleet_status,
 )
 from services.foundation_startup_authority import FOUNDATION_STARTUP_AUTHORITY
+from orchestration.lieutenants.observability_lieutenant import OBSERVABILITY_LIEUTENANT
 from services.shine_runtime_service import (
     build_human_status,
     build_runtime_recovery,
@@ -411,7 +413,7 @@ app.add_middleware(
 
 @app.middleware('http')
 async def account_boundary(request: Request, call_next):
-    public_paths = {'/', '/health', '/account/config', '/account/login', '/account/signup', '/account/refresh', '/account/recover', '/internal/shine-ai/memory/retrieve'}
+    public_paths = {'/', '/health', '/readiness', '/account/config', '/account/login', '/account/signup', '/account/refresh', '/account/recover', '/internal/shine-ai/memory/retrieve'}
     path = request.url.path
     if path not in public_paths and not path.startswith('/ui/') and request.method != 'OPTIONS':
         try:
@@ -420,7 +422,7 @@ async def account_boundary(request: Request, call_next):
         except HTTPException as exc:
             return JSONResponse({'detail': exc.detail}, status_code=exc.status_code, headers={'Cache-Control': 'no-store'})
     response = await call_next(request)
-    if path == '/health':
+    if path in {'/health', '/readiness'}:
         for name, value in runtime_provenance_headers().items():
             response.headers[name] = value
     response.headers['Cache-Control'] = 'no-store'
@@ -1050,6 +1052,21 @@ def health():
     if security_gate.get("production_enforced") and not security_gate.get("ready"):
         payload["status"] = "blocked"
         return JSONResponse(payload, status_code=503)
+    return payload
+
+
+@app.get("/readiness")
+def readiness():
+    memory_snapshot = OBSERVABILITY_LIEUTENANT.memory_bridge_slo_snapshot()
+    payload, status_code = build_operational_readiness(
+        security_gate=production_security_gate(),
+        memory_snapshot=memory_snapshot,
+        foundation_snapshot=FOUNDATION_STARTUP_AUTHORITY.snapshot(),
+    )
+    payload["server"] = "vx"
+    payload["release_provenance"] = build_release_provenance()
+    if status_code != 200:
+        return JSONResponse(payload, status_code=status_code)
     return payload
 
 
