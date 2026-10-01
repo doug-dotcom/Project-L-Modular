@@ -52,7 +52,8 @@ Because the cadence migration has not successfully applied live, correcting its 
 ## Tests / evidence
 
 - Branch: `project-l/cron-cadence-no-postgrest-reload-20261001`
-- CI result: pending at contemporaneous capture.
+- CI result: **PASS — 1,750 passed, 5 warnings, 13 subtests passed in 32.10s**.
+- PR #265 merged as commit `37ab12f5bc3a62b051ed5a878889f1f747102426`.
 
 ## Failures / unexpected behaviour
 
@@ -64,7 +65,7 @@ Operational configuration changes should not trigger PostgREST schema rebuilds u
 
 ## Next step
 
-Run the full Project L suite, merge only on green, then apply the cadence update directly when a database connection is available, omitting any PostgREST reload. Verify jobs 117 and 119 by reading their schedules back.
+Apply the cadence update directly when a database connection is reliably available, omitting any PostgREST reload. Verify jobs 117 and 119 by reading their schedules back. Until then, do not claim the 15-minute cadence is live.
 
 ## Source artefacts
 
