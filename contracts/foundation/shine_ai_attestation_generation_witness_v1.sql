@@ -40,6 +40,22 @@ create table if not exists foundation.shine_ai_attestation_generation_witness_ev
 alter table foundation.shine_ai_attestation_generation_witness_state enable row level security;
 alter table foundation.shine_ai_attestation_generation_witness_events enable row level security;
 
+drop policy if exists deny_all on foundation.shine_ai_attestation_generation_witness_state;
+create policy deny_all
+on foundation.shine_ai_attestation_generation_witness_state
+for all
+to public
+using (false)
+with check (false);
+
+drop policy if exists deny_all on foundation.shine_ai_attestation_generation_witness_events;
+create policy deny_all
+on foundation.shine_ai_attestation_generation_witness_events
+for all
+to public
+using (false)
+with check (false);
+
 revoke all on foundation.shine_ai_attestation_generation_witness_state
   from public, anon, authenticated, foundation_runtime, foundation_gateway,
        shine_defence_runtime, service_role;
