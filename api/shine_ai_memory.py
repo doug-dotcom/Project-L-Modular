@@ -682,6 +682,7 @@ class MemoryBridgeHealthResponse(BaseModel):
     source: Literal["project-l"]
     component: Literal["memory-bridge"]
     version: str
+    query_contract_version: str
     status: Literal["ready", "protected", "degraded"]
     circuit_state: Literal["closed", "open", "half-open"]
     retry_after: int
@@ -1047,6 +1048,7 @@ def memory_bridge_health(
         source="project-l",
         component="memory-bridge",
         version="2.2",
+        query_contract_version=_QUERY_CONTRACT_VERSION,
         status=str(snapshot["status"]),
         circuit_state=str(snapshot["circuit_state"]),
         retry_after=int(snapshot["retry_after"]),

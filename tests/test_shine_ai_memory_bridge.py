@@ -790,6 +790,7 @@ def test_memory_bridge_health_is_authenticated_and_zero_database_touch(monkeypat
     body = response.json()
     assert body["source"] == "project-l"
     assert body["component"] == "memory-bridge"
+    assert body["query_contract_version"] == bridge._QUERY_CONTRACT_VERSION
     assert body["status"] == "ready"
     assert body["circuit_state"] == "closed"
     assert body["retry_after"] == 0
