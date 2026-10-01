@@ -58,6 +58,17 @@ Project L memory/retrieval reliability, deployment recovery, readiness truth and
 - Current-main CI: **1,729 passed, 5 warnings, 13 subtests passed in 33.11s**.
 - Original stale-base PR #250 was closed as superseded by #253.
 
+### Recovery certification explainability — PR #254
+- Made the durable recovery certificate self-explaining without changing its safety threshold.
+- Recovery still requires **3 latency-qualified genuine runtime successes** after the latest failure; canaries remain excluded.
+- Added required count, remaining count, certification flag, blocker, latency target and latest recovery latency to `/readiness`.
+- Initial regression exposed an under-sampled test-fixture mistake; existing warm-up precedence was preserved.
+- Final CI: **1,734 passed, 5 warnings, 13 subtests passed in 34.00s**.
+- Railway deployment `62bf6d85-65a8-4e3e-827d-7b0ba050ecf3`: **SUCCESS**.
+- Live memory smoke: **PASS at 2,094.4 ms**, circuit closed, zero transient replay.
+- Live `/health`: **200**; Foundation authority **active**.
+- Live `/readiness`: still correctly **503**, but now explains the gap: **1 / 3 qualified successes, 2 remaining**, blocker `needs-qualified-successes`, latest qualified latency **2,133.1 ms** under the **3,000 ms** target.
+
 ## Learning
 
 The release is healthy and the current memory path is available, but the real-traffic recovery ledger has not yet accumulated enough latency-qualified successes to certify recovery. That historical evidence is deliberately retained rather than reset after an optimisation. Current process readiness and durable recovery history are separate signals and should remain separate.
