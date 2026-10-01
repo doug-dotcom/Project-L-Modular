@@ -793,6 +793,12 @@ def test_memory_bridge_health_is_authenticated_and_zero_database_touch(monkeypat
     assert body["source"] == "project-l"
     assert body["component"] == "memory-bridge"
     assert body["query_contract_version"] == bridge._QUERY_CONTRACT_VERSION
+    assert body["retrieval_contract_sha256"] == (
+        bridge.memory_retrieval_contract_sha256()
+    )
+    assert body["retrieval_contract_sha256"] == (
+        "caf74ae7d02551b093a11699493b4eaa9185e9c0f3b813644af260d9c0d674ae"
+    )
     assert body["status"] == "ready"
     assert body["circuit_state"] == "closed"
     assert body["retry_after"] == 0
@@ -1416,3 +1422,40 @@ def test_account_boundary_allows_internal_memory_service_auth_routes():
         assert route in public_block
 
     assert "if path not in public_paths" in server_source
+
+
+
+def test_memory_retrieval_contract_manifest_matches_live_boundary():
+    manifest = bridge.memory_retrieval_contract_manifest()
+
+    assert manifest["query_contract_version"] == bridge._QUERY_CONTRACT_VERSION
+    assert manifest["endpoint"] == "/internal/shine-ai/memory/retrieve"
+    assert manifest["request"]["fields"] == list(
+        bridge.MemoryRetrieveRequest.model_fields
+    )
+    assert manifest["response"]["record_fields"] == list(
+        bridge.MemoryRecordResponse.model_fields
+    )
+    assert manifest["response"]["engine"] == bridge._RETRIEVAL_ENGINE
+    assert manifest["response"]["version"] == bridge._RETRIEVAL_VERSION
+    assert manifest["scope_policy"] == {
+        app: sorted(scopes)
+        for app, scopes in sorted(bridge._APP_SCOPE_POLICY.items())
+    }
+    assert manifest["semantics"] == {
+        "read_only": True,
+        "permission_scoped": True,
+        "broad_recall_rejected": True,
+        "legacy_global_search_used": False,
+        "legacy_rpc_fallback_used": False,
+    }
+
+
+def test_memory_retrieval_contract_fingerprint_is_deterministic():
+    first = bridge.memory_retrieval_contract_sha256()
+    second = bridge.memory_retrieval_contract_sha256()
+
+    assert first == second
+    assert first == (
+        "caf74ae7d02551b093a11699493b4eaa9185e9c0f3b813644af260d9c0d674ae"
+    )
