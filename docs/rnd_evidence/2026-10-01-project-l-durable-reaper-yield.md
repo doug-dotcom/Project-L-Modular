@@ -102,3 +102,11 @@ Run the full current Project L regression suite, merge only on green, deploy the
 ## Time / cost
 
 Engineering time is evidenced by GitHub, CI, Railway and Supabase timestamps. No external monetary cost is claimed.
+
+
+## Live deployment status
+
+- Current-main CI for merged PR #266: **PASS — 1,753 passed, 5 warnings, 13 subtests passed in 32.14s**.
+- PR #266 merged as `4d946b5d89423f2a4a34d9f991ea4b92f71e1fd4`.
+- Railway deployment `a7c79ece-38e2-48d7-be47-d8a199e6365a` failed before application startup at `trace-trust-snapshot-unavailable` after bounded 2s/5s retries.
+- The lease-reaper yield is therefore source-ready but **not yet live**.
