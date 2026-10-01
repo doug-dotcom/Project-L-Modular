@@ -6,6 +6,7 @@ but never prints memory content, owner identifiers, or service credentials.
 """
 
 import os
+import time
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -14,6 +15,15 @@ from api import shine_ai_memory as bridge
 from orchestration.lieutenants.observability_lieutenant import (
     OBSERVABILITY_LIEUTENANT,
 )
+
+
+MAX_TRANSIENT_REPLAYS = 1
+MAX_TRANSIENT_RETRY_DELAY_SECONDS = 10.0
+TRANSIENT_RETRIEVAL_DETAILS = frozenset({
+    "Project L owner-scoped retrieval is temporarily unavailable.",
+    "Project L owner-scoped retrieval recovery probe is already in progress.",
+    "Project L owner-scoped retrieval is temporarily saturated.",
+})
 
 
 def _required_env(*names: str) -> str:
@@ -108,19 +118,60 @@ def _observability(client: TestClient, token: str) -> dict:
     return body
 
 
-def _retrieve(client: TestClient, token: str, owner_id: str) -> dict:
-    response = client.post(
-        "/internal/shine-ai/memory/retrieve",
-        headers={"X-Shine-Service-Token": token},
-        json={
-            "app": "shine-dive",
-            "user_id": owner_id,
-            "query": "diving bali",
-            "scopes": ["sport"],
-            "limit": 4,
-        },
-    )
-    if response.status_code != 200:
+def _transient_retrieval_retry_delay(response) -> float | None:
+    if int(getattr(response, "status_code", 0) or 0) != 503:
+        return None
+    try:
+        body = response.json()
+    except Exception:
+        return None
+    if not isinstance(body, dict):
+        return None
+    detail = str(body.get("detail") or "")
+    if detail not in TRANSIENT_RETRIEVAL_DETAILS:
+        return None
+    retry_after = str(getattr(response, "headers", {}).get("Retry-After") or "").strip()
+    try:
+        seconds = float(retry_after)
+    except (TypeError, ValueError):
+        return None
+    if seconds <= 0:
+        return None
+    return min(seconds + 0.25, MAX_TRANSIENT_RETRY_DELAY_SECONDS)
+
+
+def _retrieve(client: TestClient, token: str, owner_id: str) -> tuple[dict, int]:
+    transient_replays = 0
+    while True:
+        response = client.post(
+            "/internal/shine-ai/memory/retrieve",
+            headers={"X-Shine-Service-Token": token},
+            json={
+                "app": "shine-dive",
+                "user_id": owner_id,
+                "query": "diving bali",
+                "scopes": ["sport"],
+                "limit": 4,
+            },
+        )
+        if response.status_code == 200:
+            break
+
+        retry_delay = _transient_retrieval_retry_delay(response)
+        if (
+            retry_delay is not None
+            and transient_replays < MAX_TRANSIENT_REPLAYS
+        ):
+            transient_replays += 1
+            print(
+                "Project L memory bridge live smoke: RETRY "
+                f"transient_replay={transient_replays} "
+                f"delay_seconds={retry_delay:.2f}",
+                flush=True,
+            )
+            time.sleep(retry_delay)
+            continue
+
         raise SystemExit(
             "Project L memory bridge live smoke: FAIL retrieval-unavailable"
         )
@@ -150,7 +201,7 @@ def _retrieve(client: TestClient, token: str, owner_id: str) -> dict:
         raise SystemExit(
             "Project L memory bridge live smoke: FAIL retrieval-contract-invalid"
         )
-    return body
+    return body, transient_replays
 
 
 SLO_MIN_SAMPLES = 20
@@ -405,7 +456,7 @@ def _durable_runtime_slo_summary() -> dict:
     }
 
 
-def _run_success_path() -> tuple[dict, dict, dict, dict]:
+def _run_success_path() -> tuple[dict, dict, dict, dict, dict, int]:
     token = _required_env("SHINE_AI_MEMORY_TOKEN")
     owner_id = _required_env("L_MEMORY_OWNER_ID", "PROJECT_L_OWNER_ID")
 
@@ -416,7 +467,7 @@ def _run_success_path() -> tuple[dict, dict, dict, dict]:
         if isinstance(before.get("metrics"), dict)
         else {}
     )
-    result = _retrieve(client, token, owner_id)
+    result, transient_replays = _retrieve(client, token, owner_id)
     receipt = result["receipt"]
     after = _health(client, token)
     after_metrics = (
@@ -454,7 +505,14 @@ def _run_success_path() -> tuple[dict, dict, dict, dict]:
         )
 
     observability = _observability(client, token)
-    return after, after_metrics, receipt, runtime_rollup, observability
+    return (
+        after,
+        after_metrics,
+        receipt,
+        runtime_rollup,
+        observability,
+        transient_replays,
+    )
 
 
 def main() -> None:
@@ -465,6 +523,7 @@ def main() -> None:
             receipt,
             runtime_rollup,
             observability,
+            transient_replays,
         ) = _run_success_path()
     except BaseException as exc:
         if isinstance(exc, (KeyboardInterrupt, GeneratorExit)):
@@ -503,6 +562,7 @@ def main() -> None:
             "success_rate": after_metrics.get("success_rate"),
             "latency_ms": after_metrics.get("last_latency_ms"),
             "slo_status": after_metrics.get("slo_status"),
+            "transient_replays": transient_replays,
         }
     )
     durable = _durable_slo_summary()
@@ -535,6 +595,7 @@ def main() -> None:
         f"success_rate={after_metrics.get('success_rate')} "
         f"latency_ms={after_metrics.get('last_latency_ms')} "
         f"slo={after_metrics.get('slo_status')} "
+        f"transient_replays={transient_replays} "
         f"history={history.get('storage')} "
         f"durable_slo={durable.get('status')} "
         f"durable_samples={durable.get('samples')} "
