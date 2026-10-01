@@ -226,22 +226,35 @@ def test_wellness_bridge_is_limited_to_health_scope(monkeypatch):
     monkeypatch.setattr(
         bridge,
         "_owner_context",
-        lambda owner_id, query, limit: owner_context(
-            matches=[
-                memory_match(
-                    domain="health",
-                    table="memory_health",
-                    source_id="health-1",
-                    content="Reviewed health memory.",
-                ),
-                memory_match(
-                    domain="recovery",
-                    table="memory_recovery",
-                    source_id="recovery-1",
-                    content="Recovery information must not cross this scope boundary.",
-                ),
-            ]
-        ),
+        lambda owner_id, query, limit: {
+            **owner_context(),
+            "matches": [
+                {
+                    "id": "health-1",
+                    "domain": "health",
+                    "content": "Reviewed health memory.",
+                    "authority": {"class": "direct_user_promoted_memory"},
+                    "provenance": {
+                        "sourceTable": "memory_health",
+                        "sourceId": "health-1",
+                        "sourceRole": "user",
+                        "ownerBound": True,
+                    },
+                },
+                {
+                    "id": "recovery-1",
+                    "domain": "recovery",
+                    "content": "Recovery information must not cross this scope boundary.",
+                    "authority": {"class": "direct_user_promoted_memory"},
+                    "provenance": {
+                        "sourceTable": "memory_recovery",
+                        "sourceId": "recovery-1",
+                        "sourceRole": "user",
+                        "ownerBound": True,
+                    },
+                },
+            ],
+        },
     )
 
     allowed = client().post(
