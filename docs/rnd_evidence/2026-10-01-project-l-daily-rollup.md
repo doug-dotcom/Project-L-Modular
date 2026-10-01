@@ -79,6 +79,15 @@ Project L memory/retrieval reliability, deployment recovery, readiness truth and
 - CI: **1,750 passed, 5 warnings, 13 subtests passed in 34.43s**.
 - PR #262 merged as `8d562846a0e4fbdf99132d755feccb1d6f48dbb7`.
 
+### Cron cadence without PostgREST reload — PR #265
+- Confirmed jobs **117** and **119** remain live on the old `*/5 * * * *` cadence; the source #260 cadence reduction has still not successfully applied to Supabase.
+- Multiple direct write attempts failed before commit due connection timeout; read-back verified the schedules remained unchanged.
+- Corrected the pending source migration so its cron-only schedule change does **not** issue `NOTIFY pgrst, 'reload schema'`.
+- Regression now forbids `notify pgrst` / `reload schema` in this cron-only migration.
+- CI: **1,750 passed, 5 warnings, 13 subtests passed in 32.10s**.
+- PR #265 merged as `37ab12f5bc3a62b051ed5a878889f1f747102426`.
+- Live cadence remains explicitly **not claimed** until jobs 117/119 read back at the intended 15-minute schedules.
+
 ## Learning
 
 The release is healthy and the current memory path is available, but the real-traffic recovery ledger has not yet accumulated enough latency-qualified successes to certify recovery. That historical evidence is deliberately retained rather than reset after an optimisation. Current process readiness and durable recovery history are separate signals and should remain separate.
