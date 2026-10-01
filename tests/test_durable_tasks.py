@@ -292,3 +292,10 @@ def test_start_enables_recovery_logs_without_enabling_http_debug(monkeypatch):
         assert not durable_tasks.LOG.isEnabledFor(logging.DEBUG)
     finally:
         durable_tasks.LOG.setLevel(old_level)
+
+
+def test_production_server_limits_durable_dispatcher_to_one_recovery_slot():
+    from pathlib import Path
+
+    source = Path("api/server.py").read_text(encoding="utf-8")
+    assert "TaskRunner(task_store, execute_durable_request, slots=1)" in source
