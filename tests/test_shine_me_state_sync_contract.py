@@ -227,3 +227,12 @@ def test_layer70_health_refreshes_after_conflict_and_resolution():
         1,
     )[0]
     assert "await refreshConflictHealth(false)" in account_choice
+
+
+def test_layer70_server_wires_service_only_health_rpc():
+    source = SERVER.read_text()
+    shine_me_wiring = source.split("app.include_router(shine_me_routes(", 1)[1].split(
+        "))", 1
+    )[0]
+    assert "shine_me_owner_state_conflict_health_service_v1" in shine_me_wiring
+    assert "'p_owner_id': owner_id" in shine_me_wiring
