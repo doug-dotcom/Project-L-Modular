@@ -1,4 +1,4 @@
-"""Layer 68/69 contracts for atomic, observable Shine Me owner-state sync."""
+"""Layer 68-72 contracts for atomic, observable Shine Me owner-state sync."""
 
 from pathlib import Path
 
@@ -29,6 +29,18 @@ MIGRATION_71 = (
     / "supabase"
     / "migrations"
     / "20261001092245_shine_me_layer71_conflict_health_reason_codes.sql"
+)
+MIGRATION_72 = (
+    ROOT
+    / "supabase"
+    / "migrations"
+    / "20261001094307_shine_me_layer72_bounded_health_transition_receipts.sql"
+)
+MIGRATION_72_FIX = (
+    ROOT
+    / "supabase"
+    / "migrations"
+    / "20261001094459_shine_me_layer72_transition_health_fields_fix.sql"
 )
 
 
@@ -253,3 +265,85 @@ def test_layer71_server_uses_explanation_rpc_not_direct_content_reads():
     )[0]
     assert "shine_me_owner_state_conflict_health_explain_service_v1" in wiring
     assert "shine_me_owner_state_conflict_health_service_v1" not in wiring
+
+
+def test_layer72_transition_receipts_are_private_bounded_and_content_free():
+    sql = MIGRATION_72.read_text().lower()
+    assert "create table if not exists private.shine_me_owner_state_conflict_health_transitions" in sql
+    assert "enable row level security" in sql
+    assert "from public, anon, authenticated" in sql
+    assert "to service_role" in sql
+    assert "security invoker" in sql
+    assert "security definer" not in sql
+    assert "clock_timestamp()" in sql
+    assert "offset 32" in sql
+    assert "'baseline'" in sql
+    assert "'improving'" in sql
+    assert "'worsening'" in sql
+    assert "'recovered'" in sql
+    assert "'mixed'" in sql
+    table_block = sql.split(
+        "create table if not exists private.shine_me_owner_state_conflict_health_transitions",
+        1,
+    )[1].split(");", 1)[0]
+    forbidden = (" journal", " mood", " goals", " routines", " dailycheckins", " state jsonb")
+    assert all(item not in table_block for item in forbidden)
+    assert "update public.shine_me_owner_state" not in sql
+    assert "insert into public.shine_me_owner_state" not in sql
+    assert "delete from public.shine_me_owner_state" not in sql
+
+
+def test_layer72_steady_observation_does_not_append_receipt():
+    sql = MIGRATION_72.read_text().lower()
+    steady_block = sql.split(
+        "if v_has_previous", 1
+    )[1].split(
+        "if not v_has_previous", 1
+    )[0]
+    assert "'steady'::text" in steady_block
+    assert "select\n      false" in steady_block
+    assert "insert into private.shine_me_owner_state_conflict_health_transitions" not in steady_block
+    assert "offset 32" in steady_block
+
+
+def test_layer72_fix_preserves_layer71_health_fields_in_one_rpc():
+    sql = MIGRATION_72_FIX.read_text().lower()
+    assert "drop function if exists public.shine_me_owner_state_conflict_health_transition_service_v1(text)" in sql
+    for field in (
+        "detections_24h integer",
+        "resolutions_24h integer",
+        "unresolved_conflicts integer",
+        "oldest_unresolved_minutes integer",
+        "last_conflict_at timestamptz",
+        "state_age_seconds integer",
+        "episode_age_seconds integer",
+        "recovery_seconds integer",
+        "history_size integer",
+    ):
+        assert field in sql
+    assert "shine_me_owner_state_conflict_health_explain_service_v1" in sql
+    assert "offset 32" in sql
+    assert "clock_timestamp()" in sql
+
+
+def test_layer72_server_and_ui_surface_trend_without_resolution_authority():
+    server = SERVER.read_text()
+    html = UI.read_text()
+    api = (ROOT / "api" / "shine_me.py").read_text()
+    wiring = server.split("app.include_router(shine_me_routes(", 1)[1].split(
+        "))", 1
+    )[0]
+    assert "shine_me_owner_state_conflict_health_transition_service_v1" in wiring
+    assert "shine_me_owner_state_conflict_health_explain_service_v1" not in wiring
+    assert '"baseline", "steady", "improving", "worsening", "recovered", "mixed"' in api
+    assert "transition_history_size" in api
+    assert "history_size > 32" in api
+    assert "conflictTrendLabel" in html
+    assert "conflictTrendDetail" in html
+    assert "Improving" in html
+    assert "Worsening" in html
+    assert "Recovered" in html
+    assert "Sync trend" in html
+    assert "Use account version" in html
+    assert "Keep this device version" in html
+    assert "Shine will not choose a copy automatically." in html
