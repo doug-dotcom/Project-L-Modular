@@ -85,7 +85,7 @@ def test_rhee_live_smoke_prints_receipt_not_memory_content(monkeypatch, capsys):
 
     output = capsys.readouterr().out
     assert "Project L Rhee retrieval smoke: PASS" in output
-    assert "profile=rhee-stage-latency-v1" in output
+    assert "profile=rhee-stage-latency-v2" in output
     assert "binding=server-verified" in output
     assert "contract=2" in output
     assert "evidence=1" in output
