@@ -540,7 +540,7 @@ begin
     )
   );
 end;
-$function$
+$function$;
 
 
 revoke all on function private.project_l_memory_context_v2(uuid,text[],integer,integer,integer)
