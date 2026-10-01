@@ -596,6 +596,17 @@ def _rpc_runtime_snapshot() -> dict[str, object]:
     }
 
 
+def memory_bridge_process_snapshot() -> dict[str, object]:
+    """Privacy-safe current-process memory bridge readiness state.
+
+    This is intentionally content-free and does not touch Supabase. It exposes
+    only circuit/configuration state already used by the internal health route
+    so Project L readiness can distinguish historical recovery from a breaker
+    that is open right now.
+    """
+    return dict(_rpc_runtime_snapshot())
+
+
 def _open_rpc_circuit(seconds: float) -> None:
     global _rpc_circuit_open_until
     with _rpc_circuit_lock:
