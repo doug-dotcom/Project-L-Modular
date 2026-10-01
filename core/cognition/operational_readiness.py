@@ -23,6 +23,12 @@ def _memory_component(snapshot: dict[str, Any] | None) -> dict[str, Any]:
     operational_state = str(runtime.get("operational_state") or "unknown")
     recovery_state = str(runtime.get("recovery_state") or "unknown")
     historical_status = str(runtime.get("status") or "unknown")
+    recovery_required = int(
+        runtime.get("recovery_required_qualified_successes", 0) or 0
+    )
+    recovery_remaining = int(
+        runtime.get("recovery_qualified_successes_remaining", 0) or 0
+    )
 
     if operational_state in READY_MEMORY_STATES:
         readiness = "ready"
@@ -40,6 +46,20 @@ def _memory_component(snapshot: dict[str, Any] | None) -> dict[str, Any]:
         "samples": int(runtime.get("samples", 0) or 0),
         "qualified_recovery_successes": int(
             runtime.get("qualified_recovery_successes", 0) or 0
+        ),
+        "recovery_required_qualified_successes": recovery_required,
+        "recovery_qualified_successes_remaining": recovery_remaining,
+        "recovery_certified": bool(runtime.get("recovery_certified")),
+        "recovery_blocker": str(
+            runtime.get("recovery_blocker") or "unknown"
+        ),
+        "recovery_latency_target_ms": float(
+            runtime.get("recovery_latency_target_ms", 0.0) or 0.0
+        ),
+        "latest_recovery_latency_ms": (
+            float(runtime["latest_recovery_latency_ms"])
+            if runtime.get("latest_recovery_latency_ms") is not None
+            else None
         ),
     }
 

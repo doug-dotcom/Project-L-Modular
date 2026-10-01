@@ -290,3 +290,122 @@ def test_memory_bridge_slo_snapshot_reports_met_and_missed_after_baseline(tmp_pa
     missed_latency = lieutenant.memory_bridge_slo_snapshot()["runtime"]
     assert missed_latency["status"] == "missed"
     assert missed_latency["mean_latency_ms"] == 3500.0
+
+
+
+def test_memory_bridge_recovery_certification_explains_remaining_evidence(tmp_path):
+    lieutenant = ObservabilityLieutenant(
+        events_file=tmp_path / "events.json"
+    )
+    lieutenant.record_event(
+        "memory_bridge_runtime_rollup",
+        {
+            "rollup_kind": "periodic",
+            "successes": 19,
+            "failures": 1,
+            "mean_latency_ms": 900.0,
+        },
+    )
+    lieutenant.record_event(
+        "memory_bridge_runtime_rollup",
+        {
+            "rollup_kind": "periodic",
+            "successes": 1,
+            "failures": 0,
+            "mean_latency_ms": 1988.9,
+        },
+    )
+
+    runtime = lieutenant.memory_bridge_slo_snapshot()["runtime"]
+
+    assert runtime["qualified_recovery_successes"] == 1
+    assert runtime["qualified_recovery_samples"] == 1
+    assert runtime["recovery_required_qualified_successes"] == 3
+    assert runtime["recovery_qualified_successes_remaining"] == 2
+    assert runtime["recovery_certified"] is False
+    assert runtime["recovery_blocker"] == "needs-qualified-successes"
+    assert runtime["recovery_latency_target_ms"] == 3000.0
+    assert runtime["latest_recovery_latency_ms"] == 1988.9
+    assert runtime["recovery_state"] == "recovering"
+    assert runtime["operational_state"] == "recovering"
+
+
+def test_memory_bridge_recovery_certification_reports_latency_blocker(tmp_path):
+    lieutenant = ObservabilityLieutenant(
+        events_file=tmp_path / "events.json"
+    )
+    lieutenant.record_event(
+        "memory_bridge_runtime_rollup",
+        {
+            "rollup_kind": "periodic",
+            "successes": 19,
+            "failures": 1,
+            "mean_latency_ms": 900.0,
+        },
+    )
+    lieutenant.record_event(
+        "memory_bridge_runtime_rollup",
+        {
+            "rollup_kind": "periodic",
+            "successes": 2,
+            "failures": 0,
+            "mean_latency_ms": 3500.0,
+        },
+    )
+
+    runtime = lieutenant.memory_bridge_slo_snapshot()["runtime"]
+
+    assert runtime["qualified_recovery_successes"] == 0
+    assert runtime["recovery_qualified_successes_remaining"] == 3
+    assert runtime["recovery_certified"] is False
+    assert runtime["recovery_blocker"] == "latency-above-target"
+    assert runtime["latest_recovery_latency_ms"] == 3500.0
+    assert runtime["recovery_state"] == "latency_degraded"
+    assert runtime["operational_state"] == "degraded"
+
+
+def test_memory_bridge_recovery_certification_is_earned_at_three_clean_successes(tmp_path):
+    lieutenant = ObservabilityLieutenant(
+        events_file=tmp_path / "events.json"
+    )
+    lieutenant.record_event(
+        "memory_bridge_runtime_rollup",
+        {
+            "rollup_kind": "periodic",
+            "successes": 3,
+            "failures": 0,
+            "mean_latency_ms": 750.0,
+        },
+    )
+
+    runtime = lieutenant.memory_bridge_slo_snapshot()["runtime"]
+
+    assert runtime["qualified_recovery_successes"] == 3
+    assert runtime["recovery_qualified_successes_remaining"] == 0
+    assert runtime["recovery_certified"] is True
+    assert runtime["recovery_blocker"] == "none"
+    assert runtime["recovery_state"] == "healthy_streak"
+
+
+
+def test_memory_bridge_warming_still_exposes_recovery_gap(tmp_path):
+    lieutenant = ObservabilityLieutenant(
+        events_file=tmp_path / "events.json"
+    )
+    lieutenant.record_event(
+        "memory_bridge_runtime_rollup",
+        {
+            "rollup_kind": "periodic",
+            "successes": 1,
+            "failures": 0,
+            "mean_latency_ms": 700.0,
+        },
+    )
+
+    runtime = lieutenant.memory_bridge_slo_snapshot()["runtime"]
+
+    assert runtime["status"] == "warming"
+    assert runtime["operational_state"] == "warming"
+    assert runtime["qualified_recovery_successes"] == 1
+    assert runtime["recovery_qualified_successes_remaining"] == 2
+    assert runtime["recovery_blocker"] == "needs-qualified-successes"

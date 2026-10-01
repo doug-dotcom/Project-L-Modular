@@ -30,6 +30,7 @@ MEMORY_SLO_MIN_SAMPLES = 20
 MEMORY_SLO_AVAILABILITY_TARGET = 0.99
 MEMORY_SLO_LATENCY_TARGET_MS = 3000.0
 MEMORY_SLO_HISTORY_LIMIT = 100
+MEMORY_RECOVERY_REQUIRED_QUALIFIED_SUCCESSES = 3
 
 # Event history is operational telemetry, not memory. Keys that could carry
 # user content, credentials, identifiers or private payloads are discarded.
@@ -381,6 +382,8 @@ class ObservabilityLieutenant:
 
         qualified_recovery_successes = 0
         qualified_recovery_samples = 0
+        latest_recovery_latency_ms = None
+        recovery_disqualifier = "no-clean-runtime-samples"
         for item in reversed(runtime_events):
             payload = item["payload"]
             kind = str(payload.get("rollup_kind") or "")
@@ -391,18 +394,38 @@ class ObservabilityLieutenant:
             failures = int(payload.get("failures", 0) or 0)
             successes = int(payload.get("successes", 0) or 0)
             if failures > 0:
+                recovery_disqualifier = "latest-failure"
                 break
             try:
                 recovery_latency_ms = float(payload.get("mean_latency_ms"))
             except (TypeError, ValueError):
                 recovery_latency_ms = -1.0
-            if (
-                recovery_latency_ms < 0
-                or recovery_latency_ms > MEMORY_SLO_LATENCY_TARGET_MS
-            ):
+            if latest_recovery_latency_ms is None and recovery_latency_ms >= 0:
+                latest_recovery_latency_ms = round(recovery_latency_ms, 1)
+            if recovery_latency_ms < 0:
+                recovery_disqualifier = "missing-latency"
+                break
+            if recovery_latency_ms > MEMORY_SLO_LATENCY_TARGET_MS:
+                recovery_disqualifier = "latency-above-target"
                 break
             qualified_recovery_successes += successes
             qualified_recovery_samples += successes
+
+        recovery_successes_remaining = max(
+            0,
+            MEMORY_RECOVERY_REQUIRED_QUALIFIED_SUCCESSES
+            - qualified_recovery_successes,
+        )
+        recovery_certified = (
+            qualified_recovery_samples
+            >= MEMORY_RECOVERY_REQUIRED_QUALIFIED_SUCCESSES
+        )
+        if recovery_certified:
+            recovery_blocker = "none"
+        elif qualified_recovery_samples > 0:
+            recovery_blocker = "needs-qualified-successes"
+        else:
+            recovery_blocker = recovery_disqualifier
 
         runtime_samples = runtime_successes + runtime_failures
         runtime_availability = (
@@ -420,7 +443,10 @@ class ObservabilityLieutenant:
         )
         recovery_state = (
             "healthy_streak"
-            if qualified_recovery_samples >= 3
+            if (
+                qualified_recovery_samples
+                >= MEMORY_RECOVERY_REQUIRED_QUALIFIED_SUCCESSES
+            )
             else "recovering"
             if qualified_recovery_samples > 0
             else "latency_degraded"
@@ -481,6 +507,16 @@ class ObservabilityLieutenant:
                 "recovery_samples_since_last_failure": recovery_samples,
                 "qualified_recovery_successes": qualified_recovery_successes,
                 "qualified_recovery_samples": qualified_recovery_samples,
+                "recovery_required_qualified_successes": (
+                    MEMORY_RECOVERY_REQUIRED_QUALIFIED_SUCCESSES
+                ),
+                "recovery_qualified_successes_remaining": (
+                    recovery_successes_remaining
+                ),
+                "recovery_certified": recovery_certified,
+                "recovery_blocker": recovery_blocker,
+                "recovery_latency_target_ms": MEMORY_SLO_LATENCY_TARGET_MS,
+                "latest_recovery_latency_ms": latest_recovery_latency_ms,
                 "recovery_state": recovery_state,
                 "operational_state": operational_state,
             },

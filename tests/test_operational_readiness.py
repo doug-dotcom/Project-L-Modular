@@ -3,7 +3,19 @@ from pathlib import Path
 from core.cognition.operational_readiness import build_operational_readiness
 
 
-def memory_snapshot(state, *, historical="missed", recovery="healthy_streak", samples=40, qualified=3):
+def memory_snapshot(
+    state,
+    *,
+    historical="missed",
+    recovery="healthy_streak",
+    samples=40,
+    qualified=3,
+    required=3,
+    blocker=None,
+    latest_latency_ms=800.0,
+):
+    remaining = max(0, required - qualified)
+    certified = qualified >= required
     return {
         "runtime": {
             "status": historical,
@@ -11,6 +23,17 @@ def memory_snapshot(state, *, historical="missed", recovery="healthy_streak", sa
             "operational_state": state,
             "recovery_state": recovery,
             "qualified_recovery_successes": qualified,
+            "recovery_required_qualified_successes": required,
+            "recovery_qualified_successes_remaining": remaining,
+            "recovery_certified": certified,
+            "recovery_blocker": (
+                blocker
+                if blocker is not None
+                else "none" if certified
+                else "needs-qualified-successes"
+            ),
+            "recovery_latency_target_ms": 3000.0,
+            "latest_recovery_latency_ms": latest_latency_ms,
         }
     }
 
@@ -66,6 +89,12 @@ def test_recovered_observing_is_ready_even_when_historical_slo_is_missed():
         "historical_slo_status": "missed",
         "samples": 40,
         "qualified_recovery_successes": 3,
+        "recovery_required_qualified_successes": 3,
+        "recovery_qualified_successes_remaining": 0,
+        "recovery_certified": True,
+        "recovery_blocker": "none",
+        "recovery_latency_target_ms": 3000.0,
+        "latest_recovery_latency_ms": 800.0,
     }
 
 
@@ -251,3 +280,29 @@ def test_server_readiness_reads_current_memory_process_snapshot():
 
     assert "memory_bridge_process_snapshot" in source
     assert "memory_process_snapshot=memory_bridge_process_snapshot()" in source
+
+
+
+def test_recovering_readiness_explains_certification_gap():
+    payload, status = build_operational_readiness(
+        security_gate=security(),
+        memory_process_snapshot=memory_process(),
+        memory_snapshot=memory_snapshot(
+            "recovering",
+            recovery="recovering",
+            qualified=1,
+            blocker="needs-qualified-successes",
+            latest_latency_ms=1988.9,
+        ),
+        foundation_snapshot=foundation(),
+    )
+
+    assert status == 503
+    memory = payload["components"]["memory_runtime"]
+    assert memory["qualified_recovery_successes"] == 1
+    assert memory["recovery_required_qualified_successes"] == 3
+    assert memory["recovery_qualified_successes_remaining"] == 2
+    assert memory["recovery_certified"] is False
+    assert memory["recovery_blocker"] == "needs-qualified-successes"
+    assert memory["recovery_latency_target_ms"] == 3000.0
+    assert memory["latest_recovery_latency_ms"] == 1988.9
