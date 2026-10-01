@@ -141,7 +141,7 @@ begin
           'status','witnessed','replayed',true,'witnessVersion',1,
           'witnessType','project_l_health_attestation_generation_monotonic_witness',
           'authAlgorithm','HMAC-SHA-256','witnessId',v_current.witness_id,
-          'authKeyId',v_current.auth_key_id,'generation',v_current.generation,
+          'authKeyId',v_current.auth_key_id,'clientId',v_current.client_id,'generation',v_current.generation,
           'keyId',v_current.key_id,'authTag',v_current.auth_tag,
           'independentRetention','foundation-supabase-vault-hmac',
           'witnessedAt',v_current.witnessed_at
@@ -187,7 +187,7 @@ begin
     'status','witnessed','replayed',false,'witnessVersion',1,
     'witnessType','project_l_health_attestation_generation_monotonic_witness',
     'authAlgorithm','HMAC-SHA-256','witnessId',p_witness_id,
-    'authKeyId',v_auth_key_id,'generation',p_generation,'keyId',p_key_id,
+    'authKeyId',v_auth_key_id,'clientId','shine.ai.runtime','generation',p_generation,'keyId',p_key_id,
     'authTag',v_tag,'independentRetention','foundation-supabase-vault-hmac',
     'witnessedAt',now()
   );
@@ -245,7 +245,7 @@ begin
     'status','witnessed','replayed',true,'witnessVersion',1,
     'witnessType','project_l_health_attestation_generation_monotonic_witness',
     'authAlgorithm','HMAC-SHA-256','witnessId',v_state.witness_id,
-    'authKeyId',v_state.auth_key_id,'generation',v_state.generation,
+    'authKeyId',v_state.auth_key_id,'clientId',v_state.client_id,'generation',v_state.generation,
     'keyId',v_state.key_id,'authTag',v_state.auth_tag,
     'independentRetention','foundation-supabase-vault-hmac',
     'witnessedAt',v_state.witnessed_at
