@@ -168,15 +168,26 @@ def make_client(monkeypatch, owner="owner-a", *, approved=True, freshness="uncha
             "isolated" if detections or unresolved else
             "stable"
         )
+        reasons = []
+        if detections >= 3:
+            reasons.append("volume")
+        if unresolved >= 2:
+            reasons.append("unresolved_count")
+        recovery = (
+            "stalled" if unresolved >= 2 else
+            "resolving" if unresolved > 0 else
+            "observing" if detections > 0 else
+            "clear"
+        )
         return type("ConflictHealth", (), {"data": [{
             "health_status": status,
+            "reason_codes": reasons,
+            "recovery_state": recovery,
             "detections_24h": detections,
             "resolutions_24h": resolutions,
             "unresolved_conflicts": unresolved,
             "oldest_unresolved_minutes": 0,
             "last_conflict_at": None,
-            "recurring": recurring,
-            "persistent": persistent,
         }]})()
 
     app.include_router(routes(
@@ -555,6 +566,8 @@ def test_owner_state_conflict_health_moves_from_stable_to_recurring(monkeypatch)
     assert stable.status_code == 200
     assert stable.json() == {
         "status": "stable",
+        "reason_codes": [],
+        "recovery_state": "clear",
         "detections_24h": 0,
         "resolutions_24h": 0,
         "unresolved_conflicts": 0,
@@ -600,6 +613,8 @@ def test_owner_state_conflict_health_moves_from_stable_to_recurring(monkeypatch)
     recurring = client.get("/shine-me/state/conflicts/health", headers=headers)
     assert recurring.status_code == 200
     assert recurring.json()["status"] == "recurring"
+    assert recurring.json()["reason_codes"] == ["volume"]
+    assert recurring.json()["recovery_state"] == "observing"
     assert recurring.json()["detections_24h"] == 3
     assert recurring.json()["resolutions_24h"] == 3
     assert recurring.json()["unresolved_conflicts"] == 0
