@@ -59,6 +59,8 @@ def make_client(monkeypatch, owner="owner-a", *, approved=True, freshness="uncha
     state_store = {}
     conflict_store = {}
     conflict_counter = {"value": 0}
+    health_transition_store = {}
+    health_transition_counter = {"value": 0}
 
     def load_state(owner_id):
         calls.append(("state_load", owner_id))
@@ -179,7 +181,58 @@ def make_client(monkeypatch, owner="owner-a", *, approved=True, freshness="uncha
             "observing" if detections > 0 else
             "clear"
         )
+
+        current = (status, recovery, tuple(reasons))
+        previous = health_transition_store.get(owner_id)
+        recorded = previous is None or previous["current"] != current
+        if previous is None:
+            direction = "baseline"
+            history_size = 1
+            recovery_seconds = None
+        elif not recorded:
+            direction = "steady"
+            history_size = previous["history_size"]
+            recovery_seconds = previous.get("recovery_seconds")
+        else:
+            health_rank = {"stable": 0, "isolated": 1, "recurring": 2, "persistent": 3}
+            recovery_rank = {"clear": 0, "observing": 1, "resolving": 2, "stalled": 3}
+            prior_status, prior_recovery, _ = previous["current"]
+            health_delta = health_rank[status] - health_rank[prior_status]
+            recovery_delta = recovery_rank[recovery] - recovery_rank[prior_recovery]
+            if recovery == "clear" and prior_recovery != "clear":
+                direction = "recovered"
+            elif health_delta <= 0 and recovery_delta <= 0 and (
+                health_delta < 0 or recovery_delta < 0
+            ):
+                direction = "improving"
+            elif health_delta >= 0 and recovery_delta >= 0 and (
+                health_delta > 0 or recovery_delta > 0
+            ):
+                direction = "worsening"
+            else:
+                direction = "mixed"
+            history_size = min(32, previous["history_size"] + 1)
+            recovery_seconds = 7 if direction == "recovered" else None
+
+        if recorded:
+            health_transition_counter["value"] += 1
+            transition_id = (
+                f"10000000-0000-4000-8000-"
+                f"{health_transition_counter['value']:012d}"
+            )
+            health_transition_store[owner_id] = {
+                "current": current,
+                "transition_id": transition_id,
+                "history_size": history_size,
+                "recovery_seconds": recovery_seconds,
+            }
+        else:
+            transition_id = previous["transition_id"]
+
         return type("ConflictHealth", (), {"data": [{
+            "transition_recorded": recorded,
+            "transition_id": transition_id,
+            "direction": direction,
             "health_status": status,
             "reason_codes": reasons,
             "recovery_state": recovery,
@@ -188,6 +241,10 @@ def make_client(monkeypatch, owner="owner-a", *, approved=True, freshness="uncha
             "unresolved_conflicts": unresolved,
             "oldest_unresolved_minutes": 0,
             "last_conflict_at": None,
+            "state_age_seconds": 4 if direction == "steady" else 0,
+            "episode_age_seconds": 11 if recovery != "clear" else 0,
+            "recovery_seconds": recovery_seconds,
+            "history_size": history_size,
         }]})()
 
     app.include_router(routes(
@@ -568,6 +625,13 @@ def test_owner_state_conflict_health_moves_from_stable_to_recurring(monkeypatch)
         "status": "stable",
         "reason_codes": [],
         "recovery_state": "clear",
+        "transition_recorded": True,
+        "transition_id": "10000000-0000-4000-8000-000000000001",
+        "transition_direction": "baseline",
+        "state_age_seconds": 0,
+        "episode_age_seconds": 0,
+        "recovery_seconds": None,
+        "transition_history_size": 1,
         "detections_24h": 0,
         "resolutions_24h": 0,
         "unresolved_conflicts": 0,
@@ -615,6 +679,9 @@ def test_owner_state_conflict_health_moves_from_stable_to_recurring(monkeypatch)
     assert recurring.json()["status"] == "recurring"
     assert recurring.json()["reason_codes"] == ["volume"]
     assert recurring.json()["recovery_state"] == "observing"
+    assert recurring.json()["transition_recorded"] is True
+    assert recurring.json()["transition_direction"] == "worsening"
+    assert recurring.json()["transition_history_size"] == 2
     assert recurring.json()["detections_24h"] == 3
     assert recurring.json()["resolutions_24h"] == 3
     assert recurring.json()["unresolved_conflicts"] == 0
@@ -623,6 +690,13 @@ def test_owner_state_conflict_health_moves_from_stable_to_recurring(monkeypatch)
     assert "state" not in recurring.json()
     assert "journal" not in recurring.json()
     assert ("conflict_health", "owner-a") in calls
+
+    steady = client.get("/shine-me/state/conflicts/health", headers=headers)
+    assert steady.status_code == 200
+    assert steady.json()["transition_recorded"] is False
+    assert steady.json()["transition_direction"] == "steady"
+    assert steady.json()["transition_history_size"] == 2
+    assert steady.json()["state_age_seconds"] == 4
 
 
 def test_owner_state_conflict_health_is_owner_bound(monkeypatch):
