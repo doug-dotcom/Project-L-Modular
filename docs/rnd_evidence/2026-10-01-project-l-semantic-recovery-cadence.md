@@ -79,3 +79,19 @@ Run the full Project L suite, merge only on green, apply the exact migration whe
 ## Time / cost
 
 Engineering time is evidenced by GitHub, CI, Railway and Supabase timestamps. No external monetary cost is claimed.
+
+
+## Live verification after merge
+
+Source PR #260 merged, but the live database cadence change was **not yet applied** at verification time.
+
+Production PostgreSQL logs showed:
+- cron job 117 `project_l_semantic_cron_tick_v1()` starting at approximately **04:50** and **04:55 UTC**;
+- cron job 119 `project_l_semantic_circuit_breaker_v1()` starting at approximately **04:50** and **04:55 UTC**;
+- both jobs then reported **job startup timeout** in those windows.
+
+This proves the old five-minute cadence remained live after the source merge.
+
+Attempts to read migration history, execute `select 1`, and initialise the Supabase migration-history path all failed with connection timeouts while PostgREST logged `PGRST002 Could not query the database for the schema cache`.
+
+The migration must not be claimed live until the database control plane accepts and verifies the exact source migration.
