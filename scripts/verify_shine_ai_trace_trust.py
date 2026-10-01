@@ -77,7 +77,7 @@ def _seal_with_snapshot_recovery(db):
 
 
 def _keyset_with_snapshot_recovery(db):
-    keyset, error, trust, keyset_replays = _keyset_with_snapshot_recovery(db)
+    keyset, error, trust = runtime._shine_ai_verification_keyset(db)
     replays = 0
     for delay in TRACE_SNAPSHOT_RETRY_DELAYS_SECONDS:
         if error != TRACE_SNAPSHOT_TRANSIENT_REASON:
@@ -107,7 +107,7 @@ def main() -> None:
         )
 
     _reset_cache()
-    keyset, error, trust = runtime._shine_ai_verification_keyset(db)
+    keyset, error, trust, keyset_replays = _keyset_with_snapshot_recovery(db)
     if (
         error is not None
         or not isinstance(keyset, dict)
