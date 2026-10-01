@@ -44,6 +44,30 @@ def _memory_component(snapshot: dict[str, Any] | None) -> dict[str, Any]:
     }
 
 
+def _memory_process_component(snapshot: dict[str, Any] | None) -> dict[str, Any]:
+    snapshot = snapshot if isinstance(snapshot, dict) else {}
+    status = str(snapshot.get("status") or "unknown")
+    circuit_state = str(snapshot.get("circuit_state") or "unknown")
+    database_configured = bool(snapshot.get("database_configured"))
+    process_ready = (
+        status == "ready"
+        and circuit_state == "closed"
+        and database_configured
+    )
+    return {
+        "required": True,
+        "ready": process_ready,
+        "status": status,
+        "circuit_state": circuit_state,
+        "retry_after": int(snapshot.get("retry_after", 0) or 0),
+        "failure_streak": int(snapshot.get("failure_streak", 0) or 0),
+        "recovery_probe_in_progress": bool(
+            snapshot.get("recovery_probe_in_progress")
+        ),
+        "database_configured": database_configured,
+    }
+
+
 def _foundation_component(snapshot: dict[str, Any] | None) -> dict[str, Any]:
     snapshot = snapshot if isinstance(snapshot, dict) else {}
     status = str(snapshot.get("status") or "unknown")
@@ -71,13 +95,14 @@ def build_operational_readiness(
     *,
     security_gate: dict[str, Any] | None,
     memory_snapshot: dict[str, Any] | None,
+    memory_process_snapshot: dict[str, Any] | None,
     foundation_snapshot: dict[str, Any] | None,
 ) -> tuple[dict[str, Any], int]:
     """Return a privacy-safe readiness payload and HTTP status code.
 
     Rules:
     - production security remains fail closed;
-    - memory is a core readiness dependency;
+    - current-process memory circuit/configuration and durable memory are core readiness dependencies;
     - Foundation authority is visible but optional to standalone Project L;
     - historical SLO misses do not override a current recovered-observing state;
     - warming memory remains ready enough to serve while evidence accumulates.
@@ -85,12 +110,17 @@ def build_operational_readiness(
 
     security = _security_component(security_gate)
     memory = _memory_component(memory_snapshot)
+    memory_process = _memory_process_component(memory_process_snapshot)
     foundation = _foundation_component(foundation_snapshot)
 
     if security["production_enforced"] and not security["ready"]:
         status = "blocked"
         http_status = 503
         reason = "production-security-gate"
+    elif not memory_process["ready"]:
+        status = "degraded"
+        http_status = 503
+        reason = "memory-process-not-ready"
     elif memory["readiness"] == "not_ready":
         status = "degraded"
         http_status = 503
@@ -109,6 +139,7 @@ def build_operational_readiness(
         "reason": reason,
         "components": {
             "production_security": security,
+            "memory_process": memory_process,
             "memory_runtime": memory,
             "foundation_authority": foundation,
         },
