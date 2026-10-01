@@ -51,7 +51,8 @@ It does not query Supabase and contains no memory, prompt, query, owner, user or
 - Initial head: `f1c78a3e30b46f2d5a731c3bdc92a5ae519bb0f7`
 - CI workflow run: `36807693145`
 - Syntax, dependency-import and Shine Defence sensitive-memory gates: **PASS**
-- Full regression state at contemporaneous capture: **in progress**
+- Full regression result: **PASS — 1,725 passed, 5 warnings, 13 subtests passed in 30.02s**
+- Workflow card later ended as cancelled only because this evidence document changed the PR head after all executable CI steps had already completed successfully.
 
 ## Failure / unexpected behaviour that motivated the layer
 
