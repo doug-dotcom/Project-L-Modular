@@ -21,9 +21,9 @@ def test_semantic_worker_treats_transient_database_codes_as_yield_signals():
 def test_semantic_completion_timeout_defers_without_failure_write_amplification():
     ts = source()
 
-    eval_complete = ts.index('stage:"eval_complete"')
+    eval_complete = ts.index('deferredBody("eval_complete",code')
     eval_failure = ts.index('db.rpc("project_l_fail_eval_embedding_v1"')
-    unit_complete = ts.index('stage:"unit_complete"')
+    unit_complete = ts.index('deferredBody("unit_complete",code')
     unit_failure = ts.index('db.rpc("project_l_fail_semantic_unit_v1"')
 
     assert eval_complete < eval_failure
