@@ -24,6 +24,12 @@ MIGRATION_70 = (
     / "migrations"
     / "20261001084822_shine_me_layer70_conflict_health_summary.sql"
 )
+MIGRATION_71 = (
+    ROOT
+    / "supabase"
+    / "migrations"
+    / "20261001092245_shine_me_layer71_conflict_health_reason_codes.sql"
+)
 
 
 def test_server_uses_one_atomic_rpc_for_owner_state_writes():
@@ -205,3 +211,45 @@ def test_layer70_health_summary_does_not_clear_or_mutate_owner_state():
     assert "insert into public.shine_me_owner_state" not in sql
     assert "delete from public.shine_me_owner_state" not in sql
     assert "delete from private.shine_me_owner_state_conflict_events" not in sql
+
+
+def test_layer71_reason_codes_are_bounded_service_only_and_content_free():
+    sql = MIGRATION_71.read_text().lower()
+    assert "security invoker" in sql
+    assert "security definer" not in sql
+    assert "from public, anon, authenticated" in sql
+    assert "to service_role" in sql
+    assert "'volume'" in sql
+    assert "'unresolved_count'" in sql
+    assert "'unresolved_age'" in sql
+    assert "'clear'" in sql
+    assert "'observing'" in sql
+    assert "'resolving'" in sql
+    assert "'stalled'" in sql
+    assert "shine_me_owner_state_conflict_health_service_v1" in sql
+    forbidden = ("journal", "mood", "goals", "routines", "dailycheckins", "state jsonb")
+    assert all(item not in sql for item in forbidden)
+
+
+def test_layer71_api_and_ui_keep_explanations_bounded_and_human_controlled():
+    html = UI.read_text()
+    source = (ROOT / "api" / "shine_me.py").read_text()
+    assert 'allowed_reasons = {"volume", "unresolved_count", "unresolved_age"}' in source
+    assert 'recovery_state not in {"clear", "observing", "resolving", "stalled"}' in source
+    assert "conflictHealthReasonCodes" in html
+    assert "conflictRecoveryState" in html
+    assert "multiple conflicts in 24h" in html
+    assert "more than one conflict remains unresolved" in html
+    assert "a conflict has remained unresolved for 30+ minutes" in html
+    assert "Shine will not choose a copy automatically." in html
+    assert "Use account version" in html
+    assert "Keep this device version" in html
+
+
+def test_layer71_server_uses_explanation_rpc_not_direct_content_reads():
+    source = SERVER.read_text()
+    wiring = source.split("app.include_router(shine_me_routes(", 1)[1].split(
+        "))", 1
+    )[0]
+    assert "shine_me_owner_state_conflict_health_explain_service_v1" in wiring
+    assert "shine_me_owner_state_conflict_health_service_v1" not in wiring
