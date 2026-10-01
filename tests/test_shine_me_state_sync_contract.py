@@ -51,7 +51,7 @@ def test_browser_preserves_local_copy_and_refreshes_remote_on_conflict():
     )[0]
     assert "localState:stateSnapshot()" in save_conflict
     assert "remoteState:remote?.state||null" in save_conflict
-    assert "remoteRevision:Number(remote?.revision||0)" in save_conflict
+    assert "remoteRevision:Number(remote?.revision||meta.remote_revision||0)" in save_conflict
 
 
 def test_explicit_keep_device_rebases_before_safe_retry():
