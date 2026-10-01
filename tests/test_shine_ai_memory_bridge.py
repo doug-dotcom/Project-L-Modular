@@ -28,6 +28,10 @@ def configure(monkeypatch):
         "SHINE_AI_MEMORY_HEALTH_ATTESTATION_KEY",
         "h" * 48,
     )
+    monkeypatch.setenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_GENERATION",
+        "1",
+    )
     monkeypatch.setenv("PROJECT_L_OWNER_ID", OWNER)
     bridge._db_client = None
     bridge._db_transport = None
@@ -1492,6 +1496,7 @@ def test_memory_bridge_health_attests_nonce_bound_content(monkeypatch):
     assert response.status_code == 200
     body = response.json()
     attestation = body.pop("attestation")
+    assert body["attestation_key_generation"] == 1
     assert attestation["version"] == 1
     assert attestation["algorithm"] == "HMAC-SHA-256"
     assert attestation["key_id"] == "health-test-v1"
@@ -1622,10 +1627,16 @@ def test_health_attestation_keyring_selects_active_key(monkeypatch):
         }),
     )
 
-    key_id, key = bridge._configured_health_attestation_key()
+    monkeypatch.setenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_ACTIVE_GENERATION",
+        "2",
+    )
+
+    key_id, key, generation = bridge._configured_health_attestation_key()
 
     assert key_id == "health-b"
     assert key == "b" * 48
+    assert generation == 2
 
 
 def test_health_attestation_keyring_fails_if_active_key_missing(monkeypatch):
@@ -1679,7 +1690,61 @@ def test_health_attestation_legacy_key_is_migration_fallback(monkeypatch):
         raising=False,
     )
 
-    key_id, key = bridge._configured_health_attestation_key()
+    key_id, key, generation = bridge._configured_health_attestation_key()
 
     assert key_id == "health-test-v1"
     assert key == "h" * 48
+    assert generation == 1
+
+
+
+def test_health_attestation_keyring_rejects_missing_generation(monkeypatch):
+    configure(monkeypatch)
+    monkeypatch.setenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_ACTIVE_KEY_ID",
+        "health-b",
+    )
+    monkeypatch.setenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_KEYRING_JSON",
+        json.dumps({"health-b": "b" * 48}),
+    )
+    monkeypatch.delenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_ACTIVE_GENERATION",
+        raising=False,
+    )
+
+    with pytest.raises(Exception) as caught:
+        bridge._configured_health_attestation_key()
+
+    assert getattr(caught.value, "status_code", None) == 503
+    assert "generation is invalid" in str(
+        getattr(caught.value, "detail", "")
+    ).lower()
+
+
+def test_health_payload_generation_is_hmac_bound(monkeypatch):
+    configure(monkeypatch)
+    nonce = "shine-ai-health-generation-bound-0001"
+    response = client().get(
+        "/internal/shine-ai/memory/health",
+        headers={
+            "X-Shine-Service-Token": "x" * 32,
+            "X-Shine-Health-Nonce": nonce,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    attestation = body.pop("attestation")
+    body["attestation_key_generation"] = 999
+    canonical = json.dumps(
+        body,
+        sort_keys=True,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    tampered_payload_sha256 = hashlib.sha256(
+        canonical.encode("utf-8")
+    ).hexdigest()
+
+    assert tampered_payload_sha256 != attestation["payload_sha256"]
