@@ -50,6 +50,14 @@ Project L memory/retrieval reliability, deployment recovery, readiness truth and
   - qualified recovery successes: 1;
   - Foundation authority: active and optional.
 
+### Semantic background yield — PR #253
+- Rebased the already-live semantic contention reduction onto current Project L main.
+- Semantic activation preflight remains staggered at `2-59/15 * * * *`.
+- Post-migration scheduled runs: **4.18s, 5.09s, 4.55s, 4.40s**, all successful, versus the earlier **121.07s** statement-timeout failure.
+- Resource-limit helper remains fail-closed for HTTP 546 and bounded to at most 64 recent dispatch IDs before the pg_net join.
+- Current-main CI: **1,729 passed, 5 warnings, 13 subtests passed in 33.11s**.
+- Original stale-base PR #250 was closed as superseded by #253.
+
 ## Learning
 
 The release is healthy and the current memory path is available, but the real-traffic recovery ledger has not yet accumulated enough latency-qualified successes to certify recovery. That historical evidence is deliberately retained rather than reset after an optimisation. Current process readiness and durable recovery history are separate signals and should remain separate.
