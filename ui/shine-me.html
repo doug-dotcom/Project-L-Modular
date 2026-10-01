@@ -1654,7 +1654,7 @@
       };
       let state=normaliseState({});
       try { state=normaliseState(JSON.parse(localStorage.getItem(storageKey)||'{}')); } catch (_) {}
-      let syncMeta={revision:0,dirty:false,lastSyncedAt:null,status:'local',conflict:false,conflictId:null,recentConflicts24h:0,recurringConflict:false,conflictHealthStatus:'unknown',conflictHealthDetections24h:0,conflictHealthResolutions24h:0,conflictHealthUnresolved:0,conflictHealthOldestMinutes:0,conflictHealthLastAt:null};
+      let syncMeta={revision:0,dirty:false,lastSyncedAt:null,status:'local',conflict:false,conflictId:null,recentConflicts24h:0,recurringConflict:false,conflictHealthStatus:'unknown',conflictHealthDetections24h:0,conflictHealthResolutions24h:0,conflictHealthUnresolved:0,conflictHealthOldestMinutes:0,conflictHealthLastAt:null,conflictHealthReasonCodes:[],conflictRecoveryState:'clear'};
       try { syncMeta={...syncMeta,...JSON.parse(localStorage.getItem(syncKey)||'{}')}; } catch (_) {}
       let accountSyncReady=false;
       let syncTimer=null;
@@ -1729,6 +1729,8 @@
           syncMeta.conflictHealthUnresolved=Number(result.unresolved_conflicts||0);
           syncMeta.conflictHealthOldestMinutes=Number(result.oldest_unresolved_minutes||0);
           syncMeta.conflictHealthLastAt=result.last_conflict_at||null;
+          syncMeta.conflictHealthReasonCodes=Array.isArray(result.reason_codes)?result.reason_codes.slice(0,3):[];
+          syncMeta.conflictRecoveryState=['clear','observing','resolving','stalled'].includes(result.recovery_state)?result.recovery_state:'clear';
         }catch(_){
           syncMeta.conflictHealthStatus='unavailable';
         }
