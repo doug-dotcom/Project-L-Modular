@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -1395,3 +1397,22 @@ def test_memory_bridge_observability_is_authenticated_and_never_touches_supabase
     )
     assert denied.status_code == 401
     assert called == {"database": 0, "summary": 1}
+
+
+
+def test_account_boundary_allows_internal_memory_service_auth_routes():
+    server_source = (
+        Path(__file__).resolve().parents[1] / "api" / "server.py"
+    ).read_text()
+    public_block = server_source.split("public_paths =", 1)[1].split(
+        "path = request.url.path", 1
+    )[0]
+
+    for route in (
+        "/internal/shine-ai/memory/retrieve",
+        "/internal/shine-ai/memory/health",
+        "/internal/shine-ai/memory/observability",
+    ):
+        assert route in public_block
+
+    assert "if path not in public_paths" in server_source

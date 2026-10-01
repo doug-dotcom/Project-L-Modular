@@ -414,7 +414,19 @@ app.add_middleware(
 
 @app.middleware('http')
 async def account_boundary(request: Request, call_next):
-    public_paths = {'/', '/health', '/readiness', '/account/config', '/account/login', '/account/signup', '/account/refresh', '/account/recover', '/internal/shine-ai/memory/retrieve'}
+    public_paths = {
+        '/',
+        '/health',
+        '/readiness',
+        '/account/config',
+        '/account/login',
+        '/account/signup',
+        '/account/refresh',
+        '/account/recover',
+        '/internal/shine-ai/memory/retrieve',
+        '/internal/shine-ai/memory/health',
+        '/internal/shine-ai/memory/observability',
+    }
     path = request.url.path
     if path not in public_paths and not path.startswith('/ui/') and request.method != 'OPTIONS':
         try:
