@@ -88,6 +88,14 @@ Project L memory/retrieval reliability, deployment recovery, readiness truth and
 - PR #265 merged as `37ab12f5bc3a62b051ed5a878889f1f747102426`.
 - Live cadence remains explicitly **not claimed** until jobs 117/119 read back at the intended 15-minute schedules.
 
+### Durable dispatcher claim-pressure reduction — PR #267
+- Production durable dispatcher reduced from **2 claim workers → 1** while reusable `TaskRunner` default remains 2.
+- Claim-token safety, exponential transport backoff, heartbeats, terminal persistence and no-replay rules are unchanged.
+- CI: **1,756 passed, 5 warnings, 13 subtests passed in 39.25s**.
+- PR #267 merged as `eab9b77124991271cb65ab170263c160872e4c85`.
+- Exact Railway release `8e746e9d-5a16-4eb9-b6e7-67447d994391` failed before startup at the existing trace-trust snapshot gate after its bounded 2s/5s retries.
+- Therefore #267 is **not yet live**; Supabase/PostgREST remains the release blocker.
+
 ## Learning
 
 The release is healthy and the current memory path is available, but the real-traffic recovery ledger has not yet accumulated enough latency-qualified successes to certify recovery. That historical evidence is deliberately retained rather than reset after an optimisation. Current process readiness and durable recovery history are separate signals and should remain separate.
