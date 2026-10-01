@@ -2164,7 +2164,7 @@
             <h3>Account continuity</h3>
             <p>Shine Me saves locally first, then syncs through the verified owner boundary. The synced state is separate from Project L memory.</p>
             <div class="data-row"><span><strong>Sync status</strong><small>Revision ${Number(syncMeta.revision||0)}${syncMeta.lastSyncedAt?' · last synced '+new Date(syncMeta.lastSyncedAt).toLocaleString():''}</small></span><span class="data-state" data-sync-state>${syncStateLabel()}</span></div>
-            ${syncMeta.conflict?`<div class="context-handoff"><div class="context-handoff-top"><div class="context-handoff-label"><span><strong>Another device changed first</strong></span></div></div><small>Your local copy is preserved. Choose which version should continue.</small><div class="context-action-row"><button class="surface-action secondary" id="useAccountCopy" type="button">Use account version</button><button class="surface-action" id="keepDeviceCopy" type="button">Keep this device version</button></div></div>`:'<button class="surface-action secondary" id="retryAccountSync" type="button">Retry sync now</button>'}
+            ${syncMeta.conflict?`<div class="context-handoff"><div class="context-handoff-top"><div class="context-handoff-label"><span><strong>Another device changed first</strong></span></div></div><small>Your local copy is preserved. Choose which version should continue.${syncMeta.recurringConflict?' This has happened several times in the last 24 hours; Shine still will not choose a copy automatically.':''}</small><div class="context-action-row"><button class="surface-action secondary" id="useAccountCopy" type="button">Use account version</button><button class="surface-action" id="keepDeviceCopy" type="button">Keep this device version</button></div></div>`:'<button class="surface-action secondary" id="retryAccountSync" type="button">Retry sync now</button>'}
           </section>
           <section class="surface-card">
             <h3>Local data controls</h3>
@@ -2185,10 +2185,25 @@
           }
         });
 
-        navSurfaceBody.querySelector('#useAccountCopy')?.addEventListener('click',()=>{
+        navSurfaceBody.querySelector('#useAccountCopy')?.addEventListener('click',async()=>{
           try{
             const conflict=JSON.parse(localStorage.getItem(conflictKey)||'null');
             if(!conflict?.remoteState)throw new Error('missing');
+            const conflictId=conflict.conflictId||syncMeta.conflictId;
+            if(conflictId){
+              try{
+                await fetch('/shine-me/state/conflicts/resolve',{
+                  method:'POST',
+                  headers:{'Content-Type':'application/json'},
+                  body:JSON.stringify({
+                    conflict_id:conflictId,
+                    resolution:'account_copy',
+                    resolved_revision:Number(conflict.remoteRevision||0)
+                  }),
+                  signal:AbortSignal.timeout(12000)
+                });
+              }catch(_){}
+            }
             applyRemoteState({
               state:conflict.remoteState,
               revision:Number(conflict.remoteRevision||0),
@@ -2205,6 +2220,7 @@
             const conflict=JSON.parse(localStorage.getItem(conflictKey)||'null');
             if(!conflict)throw new Error('missing');
             syncMeta.revision=Number(conflict.remoteRevision||0);
+            syncMeta.conflictId=conflict.conflictId||syncMeta.conflictId||null;
             syncMeta.conflict=false;
             syncMeta.dirty=true;
             syncMeta.status='pending';
@@ -2234,6 +2250,9 @@
           state=normaliseState({});
           syncMeta.dirty=false;
           syncMeta.conflict=false;
+          syncMeta.conflictId=null;
+          syncMeta.recentConflicts24h=0;
+          syncMeta.recurringConflict=false;
           syncMeta.status=accountSyncReady?'synced':'local';
           try { localStorage.removeItem(conflictKey); } catch (_) {}
           persistState();
