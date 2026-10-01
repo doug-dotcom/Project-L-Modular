@@ -572,6 +572,22 @@ app.include_router(shine_me_routes(
             'p_state': state,
         },
     ).execute(),
+    lambda owner_id, local_revision: supabase.rpc(
+        'shine_me_owner_state_conflict_detect_service_v1',
+        {
+            'p_owner_id': owner_id,
+            'p_local_revision': local_revision,
+        },
+    ).execute(),
+    lambda owner_id, conflict_id, resolution, resolved_revision: supabase.rpc(
+        'shine_me_owner_state_conflict_resolve_service_v1',
+        {
+            'p_owner_id': owner_id,
+            'p_conflict_id': conflict_id,
+            'p_resolution': resolution,
+            'p_resolved_revision': resolved_revision,
+        },
+    ).execute(),
 ))
 
 

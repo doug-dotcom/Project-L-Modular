@@ -1654,7 +1654,7 @@
       };
       let state=normaliseState({});
       try { state=normaliseState(JSON.parse(localStorage.getItem(storageKey)||'{}')); } catch (_) {}
-      let syncMeta={revision:0,dirty:false,lastSyncedAt:null,status:'local',conflict:false};
+      let syncMeta={revision:0,dirty:false,lastSyncedAt:null,status:'local',conflict:false,conflictId:null,recentConflicts24h:0,recurringConflict:false};
       try { syncMeta={...syncMeta,...JSON.parse(localStorage.getItem(syncKey)||'{}')}; } catch (_) {}
       let accountSyncReady=false;
       let syncTimer=null;
@@ -1722,17 +1722,42 @@
         refreshSyncLabels();
         scheduleAccountSync();
       };
-      function saveConflict(remote){
+      async function recordConflictReceipt(localRevision){
+        try{
+          const response=await fetch('/shine-me/state/conflicts/detect',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({local_revision:Number(localRevision||0)}),
+            signal:AbortSignal.timeout(12000)
+          });
+          if(!response.ok)return {};
+          return await response.json();
+        }catch(_){
+          return {};
+        }
+      }
+
+      async function saveConflict(remote,receipt={}){
+        let meta=receipt&&typeof receipt==='object'?receipt:{};
+        if(!meta.conflict_id){
+          meta=await recordConflictReceipt(Number(syncMeta.revision||0));
+        }
         const record={
           detectedAt:new Date().toISOString(),
           localState:stateSnapshot(),
           remoteState:remote?.state||null,
-          remoteRevision:Number(remote?.revision||0)
+          remoteRevision:Number(remote?.revision||meta.remote_revision||0),
+          conflictId:meta.conflict_id||null,
+          recentConflicts24h:Number(meta.recent_conflicts_24h||0),
+          recurring:Boolean(meta.recurring)
         };
         try { localStorage.setItem(conflictKey,JSON.stringify(record)); } catch (_) {}
         syncMeta.conflict=true;
         syncMeta.status='conflict';
         syncMeta.dirty=true;
+        syncMeta.conflictId=record.conflictId;
+        syncMeta.recentConflicts24h=record.recentConflicts24h;
+        syncMeta.recurringConflict=record.recurring;
         persistSync();
         refreshSyncLabels();
       }
@@ -1742,6 +1767,9 @@
         syncMeta.revision=Number(remote?.revision||0);
         syncMeta.dirty=false;
         syncMeta.conflict=false;
+        syncMeta.conflictId=null;
+        syncMeta.recentConflicts24h=0;
+        syncMeta.recurringConflict=false;
         syncMeta.status='synced';
         syncMeta.lastSyncedAt=remote?.updated_at||new Date().toISOString();
         try { localStorage.removeItem(conflictKey); } catch (_) {}
@@ -1779,13 +1807,19 @@
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({
               state:stateSnapshot(),
-              expected_revision:Number(syncMeta.revision||0)
+              expected_revision:Number(syncMeta.revision||0),
+              conflict_id:syncMeta.conflictId||null
             }),
             signal:AbortSignal.timeout(25000)
           });
           if(response.status===409){
+            let receipt={};
+            try{
+              const body=await response.json();
+              receipt=body?.detail&&typeof body.detail==='object'?body.detail:{};
+            }catch(_){}
             const remote=await fetchAccountState();
-            saveConflict(remote);
+            await saveConflict(remote,receipt);
             return;
           }
           if(!response.ok)throw new Error('state-save-'+response.status);
@@ -1793,6 +1827,9 @@
           syncMeta.revision=Number(result.revision||0);
           syncMeta.dirty=false;
           syncMeta.conflict=false;
+          syncMeta.conflictId=null;
+          syncMeta.recentConflicts24h=0;
+          syncMeta.recurringConflict=false;
           syncMeta.status='synced';
           syncMeta.lastSyncedAt=result.updated_at||new Date().toISOString();
           persistSync();
@@ -1839,12 +1876,12 @@
             const localText=JSON.stringify(stateSnapshot());
             const remoteText=JSON.stringify(normaliseState(remote.state));
             if(localText!==remoteText){
-              saveConflict(remote);
+              await saveConflict(remote);
               return;
             }
           }
           if(syncMeta.dirty && remoteRevision!==localRevision){
-            saveConflict(remote);
+            await saveConflict(remote);
             return;
           }
           if(!syncMeta.dirty || remoteRevision>localRevision){
@@ -2127,7 +2164,7 @@
             <h3>Account continuity</h3>
             <p>Shine Me saves locally first, then syncs through the verified owner boundary. The synced state is separate from Project L memory.</p>
             <div class="data-row"><span><strong>Sync status</strong><small>Revision ${Number(syncMeta.revision||0)}${syncMeta.lastSyncedAt?' · last synced '+new Date(syncMeta.lastSyncedAt).toLocaleString():''}</small></span><span class="data-state" data-sync-state>${syncStateLabel()}</span></div>
-            ${syncMeta.conflict?`<div class="context-handoff"><div class="context-handoff-top"><div class="context-handoff-label"><span><strong>Another device changed first</strong></span></div></div><small>Your local copy is preserved. Choose which version should continue.</small><div class="context-action-row"><button class="surface-action secondary" id="useAccountCopy" type="button">Use account version</button><button class="surface-action" id="keepDeviceCopy" type="button">Keep this device version</button></div></div>`:'<button class="surface-action secondary" id="retryAccountSync" type="button">Retry sync now</button>'}
+            ${syncMeta.conflict?`<div class="context-handoff"><div class="context-handoff-top"><div class="context-handoff-label"><span><strong>Another device changed first</strong></span></div></div><small>Your local copy is preserved. Choose which version should continue.${syncMeta.recurringConflict?' This has happened several times in the last 24 hours; Shine still will not choose a copy automatically.':''}</small><div class="context-action-row"><button class="surface-action secondary" id="useAccountCopy" type="button">Use account version</button><button class="surface-action" id="keepDeviceCopy" type="button">Keep this device version</button></div></div>`:'<button class="surface-action secondary" id="retryAccountSync" type="button">Retry sync now</button>'}
           </section>
           <section class="surface-card">
             <h3>Local data controls</h3>
@@ -2148,10 +2185,25 @@
           }
         });
 
-        navSurfaceBody.querySelector('#useAccountCopy')?.addEventListener('click',()=>{
+        navSurfaceBody.querySelector('#useAccountCopy')?.addEventListener('click',async()=>{
           try{
             const conflict=JSON.parse(localStorage.getItem(conflictKey)||'null');
             if(!conflict?.remoteState)throw new Error('missing');
+            const conflictId=conflict.conflictId||syncMeta.conflictId;
+            if(conflictId){
+              try{
+                await fetch('/shine-me/state/conflicts/resolve',{
+                  method:'POST',
+                  headers:{'Content-Type':'application/json'},
+                  body:JSON.stringify({
+                    conflict_id:conflictId,
+                    resolution:'account_copy',
+                    resolved_revision:Number(conflict.remoteRevision||0)
+                  }),
+                  signal:AbortSignal.timeout(12000)
+                });
+              }catch(_){}
+            }
             applyRemoteState({
               state:conflict.remoteState,
               revision:Number(conflict.remoteRevision||0),
@@ -2168,6 +2220,7 @@
             const conflict=JSON.parse(localStorage.getItem(conflictKey)||'null');
             if(!conflict)throw new Error('missing');
             syncMeta.revision=Number(conflict.remoteRevision||0);
+            syncMeta.conflictId=conflict.conflictId||syncMeta.conflictId||null;
             syncMeta.conflict=false;
             syncMeta.dirty=true;
             syncMeta.status='pending';
@@ -2197,6 +2250,9 @@
           state=normaliseState({});
           syncMeta.dirty=false;
           syncMeta.conflict=false;
+          syncMeta.conflictId=null;
+          syncMeta.recentConflicts24h=0;
+          syncMeta.recurringConflict=false;
           syncMeta.status=accountSyncReady?'synced':'local';
           try { localStorage.removeItem(conflictKey); } catch (_) {}
           persistState();

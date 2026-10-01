@@ -57,6 +57,8 @@ def make_client(monkeypatch, owner="owner-a", *, approved=True, freshness="uncha
         }]})()
 
     state_store = {}
+    conflict_store = {}
+    conflict_counter = {"value": 0}
 
     def load_state(owner_id):
         calls.append(("state_load", owner_id))
@@ -83,9 +85,76 @@ def make_client(monkeypatch, owner="owner-a", *, approved=True, freshness="uncha
         state_store[owner_id] = row
         return type("State", (), {"data": [dict(row)]})()
 
+    def record_conflict(owner_id, local_revision):
+        calls.append(("conflict_detect", owner_id, local_revision))
+        current = state_store.get(owner_id)
+        if not current or current["revision"] == local_revision:
+            raise RuntimeError("NO_ACTIVE_REVISION_CONFLICT")
+        remote_revision = current["revision"]
+        for conflict_id, item in conflict_store.items():
+            if (
+                item["owner_id"] == owner_id
+                and item["local_revision"] == local_revision
+                and item["remote_revision"] == remote_revision
+                and not item.get("resolved")
+            ):
+                recent = len(conflict_store)
+                return type("Conflict", (), {"data": [{
+                    "conflict_id": conflict_id,
+                    "remote_revision": remote_revision,
+                    "recent_conflicts_24h": recent,
+                    "recurring": recent >= 3,
+                }]})()
+        conflict_counter["value"] += 1
+        conflict_id = f"00000000-0000-4000-8000-{conflict_counter['value']:012d}"
+        conflict_store[conflict_id] = {
+            "owner_id": owner_id,
+            "local_revision": local_revision,
+            "remote_revision": remote_revision,
+            "resolved": False,
+        }
+        recent = len(conflict_store)
+        return type("Conflict", (), {"data": [{
+            "conflict_id": conflict_id,
+            "remote_revision": remote_revision,
+            "recent_conflicts_24h": recent,
+            "recurring": recent >= 3,
+        }]})()
+
+    def resolve_conflict(owner_id, conflict_id, resolution, resolved_revision):
+        calls.append((
+            "conflict_resolve", owner_id, conflict_id, resolution, resolved_revision,
+        ))
+        item = conflict_store.get(conflict_id)
+        if not item or item["owner_id"] != owner_id:
+            raise RuntimeError("CONFLICT_NOT_FOUND")
+        if item.get("resolved"):
+            if (
+                item["resolution"] == resolution
+                and item["resolved_revision"] == resolved_revision
+            ):
+                status = "already_resolved"
+            else:
+                raise RuntimeError("CONFLICT_ALREADY_RESOLVED")
+        else:
+            if resolution == "account_copy" and resolved_revision != item["remote_revision"]:
+                raise RuntimeError("ACCOUNT_RESOLUTION_REVISION_MISMATCH")
+            if resolution == "device_copy" and resolved_revision <= item["remote_revision"]:
+                raise RuntimeError("DEVICE_RESOLUTION_REVISION_MISMATCH")
+            item["resolved"] = True
+            item["resolution"] = resolution
+            item["resolved_revision"] = resolved_revision
+            status = "resolved"
+        return type("ConflictResolution", (), {"data": [{
+            "status": status,
+            "resolution": resolution,
+            "resolved_revision": resolved_revision,
+        }]})()
+
     app.include_router(routes(
         retrieve, cognize, lambda receipt: {"status": freshness},
         save, list_reviews, load_state, apply_state,
+        record_conflict, resolve_conflict,
     ))
     return TestClient(app), calls
 
@@ -367,6 +436,12 @@ def test_owner_state_sync_rejects_stale_revision(monkeypatch):
         headers=headers,
     )
     assert stale.status_code == 409
+    conflict = stale.json()["detail"]
+    assert conflict["conflict_observability"] == "recorded"
+    assert conflict["remote_revision"] == 2
+    assert conflict["recent_conflicts_24h"] == 1
+    assert conflict["recurring"] is False
+    assert conflict["conflict_id"]
 
     remote = client.get("/shine-me/state", headers=headers)
     assert remote.status_code == 200
@@ -375,15 +450,68 @@ def test_owner_state_sync_rejects_stale_revision(monkeypatch):
 
     # This models the browser's explicit "Keep this device" reconciliation:
     # rebase the preserved local copy onto the freshly loaded account revision,
-    # then retry. A second concurrent change would simply produce another 409.
+    # then retry with the opaque conflict id. Resolution is recorded only after
+    # the atomic state write succeeds.
     state["mood"] = 4
     reconciled = client.put(
         "/shine-me/state",
-        json={"state": state, "expected_revision": remote.json()["revision"]},
+        json={
+            "state": state,
+            "expected_revision": remote.json()["revision"],
+            "conflict_id": conflict["conflict_id"],
+        },
         headers=headers,
     )
     assert reconciled.status_code == 200
     assert reconciled.json()["revision"] == 3
+    assert reconciled.json()["conflict_resolution_recorded"] is True
+
+
+def test_owner_state_conflict_detect_and_account_resolution_are_content_free(monkeypatch):
+    client, calls = make_client(monkeypatch)
+    headers = {"x-test-verified-user": "owner-a"}
+    state = {
+        "mood": 2, "moodNote": "private words", "goals": [], "routines": [],
+        "history": {}, "journal": [], "lastDay": "2026-10-01",
+    }
+    assert client.put(
+        "/shine-me/state",
+        json={"state": state, "expected_revision": 0},
+        headers=headers,
+    ).status_code == 200
+
+    detection = client.post(
+        "/shine-me/state/conflicts/detect",
+        json={"local_revision": 0},
+        headers=headers,
+    )
+    assert detection.status_code == 200
+    receipt = detection.json()
+    assert receipt["status"] == "recorded"
+    assert receipt["remote_revision"] == 1
+    assert receipt["recent_conflicts_24h"] == 1
+    assert receipt["recurring"] is False
+    assert "private words" not in str(receipt)
+
+    resolution = client.post(
+        "/shine-me/state/conflicts/resolve",
+        json={
+            "conflict_id": receipt["conflict_id"],
+            "resolution": "account_copy",
+            "resolved_revision": 1,
+        },
+        headers=headers,
+    )
+    assert resolution.status_code == 200
+    assert resolution.json() == {
+        "status": "resolved",
+        "resolution": "account_copy",
+        "resolved_revision": 1,
+    }
+    conflict_calls = [call for call in calls if isinstance(call, tuple) and call[0].startswith("conflict_")]
+    assert conflict_calls[0] == ("conflict_detect", "owner-a", 0)
+    assert conflict_calls[1][0:2] == ("conflict_resolve", "owner-a")
+    assert "private words" not in str(conflict_calls)
 
 
 def test_owner_state_sync_rejects_other_account_and_unknown_fields(monkeypatch):
