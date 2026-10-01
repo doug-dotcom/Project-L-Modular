@@ -209,6 +209,7 @@ def routes(
     apply_owner_state: Callable[[str, int, dict], object] | None = None,
     record_owner_state_conflict: Callable[[str, int], object] | None = None,
     resolve_owner_state_conflict: Callable[[str, str, str, int], object] | None = None,
+    get_owner_state_conflict_health: Callable[[str], object] | None = None,
 ) -> APIRouter:
     router = APIRouter(tags=["shine-me"])
 
@@ -431,6 +432,37 @@ def routes(
             )):
                 raise HTTPException(409, "Shine-Me conflict receipt no longer matches the current resolution.") from exc
             raise HTTPException(503, "Shine-Me conflict resolution could not be recorded.") from exc
+
+    @router.get("/shine-me/state/conflicts/health")
+    def owner_state_conflict_health(request: Request) -> dict:
+        binding(request)
+        if (
+            not os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+            or get_owner_state_conflict_health is None
+        ):
+            raise HTTPException(503, "Shine-Me conflict health is temporarily unavailable.")
+        owner_id = str(os.getenv("PROJECT_L_OWNER_ID") or "").strip()
+        try:
+            result = get_owner_state_conflict_health(owner_id)
+            rows = getattr(result, "data", None)
+            if not isinstance(rows, list) or len(rows) != 1:
+                raise RuntimeError("Invalid conflict health result")
+            row = rows[0]
+            status = str(row.get("health_status") or "")
+            if status not in {"stable", "isolated", "recurring", "persistent"}:
+                raise RuntimeError("Invalid conflict health status")
+            return {
+                "status": status,
+                "detections_24h": int(row.get("detections_24h") or 0),
+                "resolutions_24h": int(row.get("resolutions_24h") or 0),
+                "unresolved_conflicts": int(row.get("unresolved_conflicts") or 0),
+                "oldest_unresolved_minutes": int(row.get("oldest_unresolved_minutes") or 0),
+                "last_conflict_at": row.get("last_conflict_at"),
+                "recurring": bool(row.get("recurring", False)),
+                "persistent": bool(row.get("persistent", False)),
+            }
+        except Exception as exc:
+            raise HTTPException(503, "Shine-Me conflict health could not be loaded.") from exc
 
     @router.post("/shine-me/context")
     def context(payload: ContextRequest, request: Request) -> dict:
