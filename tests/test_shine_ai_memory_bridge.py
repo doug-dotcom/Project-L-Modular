@@ -4,6 +4,7 @@ import hmac
 import json
 
 from fastapi import FastAPI
+import pytest
 from fastapi.testclient import TestClient
 
 import api.shine_ai_memory as bridge
@@ -1604,3 +1605,81 @@ def test_health_attestation_requires_dedicated_key_when_nonce_present(
     assert response.json()["detail"] == (
         "Project L health attestation key is unavailable."
     )
+
+
+
+def test_health_attestation_keyring_selects_active_key(monkeypatch):
+    configure(monkeypatch)
+    monkeypatch.setenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_ACTIVE_KEY_ID",
+        "health-b",
+    )
+    monkeypatch.setenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_KEYRING_JSON",
+        json.dumps({
+            "health-a": "a" * 48,
+            "health-b": "b" * 48,
+        }),
+    )
+
+    key_id, key = bridge._configured_health_attestation_key()
+
+    assert key_id == "health-b"
+    assert key == "b" * 48
+
+
+def test_health_attestation_keyring_fails_if_active_key_missing(monkeypatch):
+    configure(monkeypatch)
+    monkeypatch.setenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_ACTIVE_KEY_ID",
+        "health-b",
+    )
+    monkeypatch.setenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_KEYRING_JSON",
+        json.dumps({"health-a": "a" * 48}),
+    )
+
+    with pytest.raises(Exception) as caught:
+        bridge._configured_health_attestation_key()
+
+    assert getattr(caught.value, "status_code", None) == 503
+    assert "active health attestation key" in str(
+        getattr(caught.value, "detail", "")
+    ).lower()
+
+
+def test_health_attestation_keyring_fails_closed_on_invalid_secret(monkeypatch):
+    configure(monkeypatch)
+    monkeypatch.setenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_ACTIVE_KEY_ID",
+        "health-b",
+    )
+    monkeypatch.setenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_KEYRING_JSON",
+        json.dumps({"health-b": "short"}),
+    )
+
+    with pytest.raises(Exception) as caught:
+        bridge._configured_health_attestation_key()
+
+    assert getattr(caught.value, "status_code", None) == 503
+    assert "keyring is invalid" in str(
+        getattr(caught.value, "detail", "")
+    ).lower()
+
+
+def test_health_attestation_legacy_key_is_migration_fallback(monkeypatch):
+    configure(monkeypatch)
+    monkeypatch.delenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_ACTIVE_KEY_ID",
+        raising=False,
+    )
+    monkeypatch.delenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_KEYRING_JSON",
+        raising=False,
+    )
+
+    key_id, key = bridge._configured_health_attestation_key()
+
+    assert key_id == "health-test-v1"
+    assert key == "h" * 48
