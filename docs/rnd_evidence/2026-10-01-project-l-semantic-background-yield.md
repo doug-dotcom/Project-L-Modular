@@ -62,7 +62,9 @@ Changes:
 - A subsequent helper timing completed in approximately **1.53 ms** under recovered load.
 - After the migration, job 118 completed four consecutive scheduled runs successfully in approximately **4.18s, 5.09s, 4.55s and 4.40s**.
 - The pre-migration failure immediately before those runs was **121.07s** with statement-timeout failure.
-- This source branch is rebased onto current Project L main after the indexed-claim-hash and current-process readiness layers; the full current regression suite must pass again before merge.
+- Replacement PR #253 rebased the change onto current Project L main after the indexed-claim-hash and current-process readiness layers.
+- Current-main regression result: **PASS — 1,729 passed, 5 warnings, 13 subtests passed in 33.11s**.
+- PR #253 merged as commit `d2629628ec7ca210937bead875698839c6a096fd`.
 
 ## Failures / unexpected behaviour
 
@@ -78,11 +80,12 @@ The failure was not fixed by making live recall more patient. The better archite
 
 ## Next step
 
-Run the current Project L regression suite on top of all newer memory/readiness layers, merge the rebased source change, and retain live recall's existing statement/client timeouts.
+Retain live recall's strict statement/client timeouts, continue observing scheduled semantic jobs under normal load, and preserve the separation between current process health and durable recovery evidence.
 
 ## Source artefacts
 
-- Original PR #250
+- Original PR #250 (superseded and closed)
+- Rebased merged PR #253
 - `supabase/migrations/20261001024000_project_l_semantic_background_yield.sql`
 - `tests/test_semantic_background_yield.py`
 - `.github/workflows/ci.yml`
