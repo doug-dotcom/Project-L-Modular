@@ -77,7 +77,7 @@ def main() -> None:
         health_result = (
             _client()
             .rpc(
-                "shine_me_owner_state_conflict_health_service_v1",
+                "shine_me_owner_state_conflict_health_explain_service_v1",
                 {"p_owner_id": owner_id},
             )
             .execute()
@@ -94,6 +94,17 @@ def main() -> None:
     health_status = str(health.get("health_status") or "")
     if health_status not in {"stable", "isolated", "recurring", "persistent"}:
         _fail("conflict-health-status-invalid")
+    reason_codes = health.get("reason_codes")
+    if not isinstance(reason_codes, list):
+        _fail("conflict-health-reasons-invalid")
+    allowed_reasons = {"volume", "unresolved_count", "unresolved_age"}
+    if len(reason_codes) > 3 or len(set(reason_codes)) != len(reason_codes) or any(
+        reason not in allowed_reasons for reason in reason_codes
+    ):
+        _fail("conflict-health-reasons-invalid")
+    recovery_state = str(health.get("recovery_state") or "")
+    if recovery_state not in {"clear", "observing", "resolving", "stalled"}:
+        _fail("conflict-health-recovery-invalid")
     detections_24h = health.get("detections_24h")
     unresolved = health.get("unresolved_conflicts")
     oldest_minutes = health.get("oldest_unresolved_minutes")
@@ -109,8 +120,10 @@ def main() -> None:
         "Project L Shine-Me state sync smoke: PASS "
         f"binding=server-verified state={status} revision={revision} "
         f"state_bytes={state_bytes} direct_browser_access=blocked-by-contract "
-        f"conflict_health={health_status} detections_24h={detections_24h} "
-        f"unresolved={unresolved} oldest_unresolved_minutes={oldest_minutes}"
+        f"conflict_health={health_status} recovery_state={recovery_state} "
+        f"reason_codes={','.join(reason_codes) if reason_codes else 'none'} "
+        f"detections_24h={detections_24h} unresolved={unresolved} "
+        f"oldest_unresolved_minutes={oldest_minutes}"
     )
 
 
