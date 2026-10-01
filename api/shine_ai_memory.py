@@ -1106,6 +1106,59 @@ def _records(
 
 
 def _configured_health_attestation_key() -> tuple[str, str]:
+    active_key_id = os.getenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_ACTIVE_KEY_ID",
+        "",
+    ).strip()
+    keyring_raw = os.getenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_KEYRING_JSON",
+        "",
+    ).strip()
+
+    if active_key_id or keyring_raw:
+        if not active_key_id or len(active_key_id) > 80 or not keyring_raw:
+            raise HTTPException(
+                status_code=503,
+                detail="Project L health attestation keyring is incomplete.",
+            )
+        try:
+            parsed = json.loads(keyring_raw)
+        except (TypeError, ValueError, json.JSONDecodeError) as exc:
+            raise HTTPException(
+                status_code=503,
+                detail="Project L health attestation keyring is invalid.",
+            ) from exc
+        if not isinstance(parsed, dict) or not 1 <= len(parsed) <= 4:
+            raise HTTPException(
+                status_code=503,
+                detail="Project L health attestation keyring is invalid.",
+            )
+
+        clean: dict[str, str] = {}
+        for candidate_id, candidate_key in parsed.items():
+            if (
+                not isinstance(candidate_id, str)
+                or not candidate_id.strip()
+                or len(candidate_id.strip()) > 80
+                or not isinstance(candidate_key, str)
+                or len(candidate_key.strip()) < 32
+            ):
+                raise HTTPException(
+                    status_code=503,
+                    detail="Project L health attestation keyring is invalid.",
+                )
+            clean[candidate_id.strip()] = candidate_key.strip()
+
+        active_key = clean.get(active_key_id)
+        if active_key is None:
+            raise HTTPException(
+                status_code=503,
+                detail="Project L active health attestation key is unavailable.",
+            )
+        return active_key_id, active_key
+
+    # Migration-only fallback. Layer 183 retires these variables after the
+    # keyring-based rotation proves live in both services.
     key_id = os.getenv(
         "SHINE_AI_MEMORY_HEALTH_ATTESTATION_KEY_ID",
         "",
