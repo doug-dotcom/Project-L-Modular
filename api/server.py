@@ -588,6 +588,12 @@ app.include_router(shine_me_routes(
             'p_resolved_revision': resolved_revision,
         },
     ).execute(),
+    lambda owner_id: supabase.rpc(
+        'shine_me_owner_state_conflict_health_service_v1',
+        {
+            'p_owner_id': owner_id,
+        },
+    ).execute(),
 ))
 
 
