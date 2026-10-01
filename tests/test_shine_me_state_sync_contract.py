@@ -205,3 +205,25 @@ def test_layer70_health_summary_does_not_clear_or_mutate_owner_state():
     assert "insert into public.shine_me_owner_state" not in sql
     assert "delete from public.shine_me_owner_state" not in sql
     assert "delete from private.shine_me_owner_state_conflict_events" not in sql
+
+
+def test_layer70_health_refreshes_after_conflict_and_resolution():
+    html = UI.read_text()
+    save_conflict = html.split(
+        "async function saveConflict(remote,receipt={})", 1
+    )[1].split("function applyRemoteState", 1)[0]
+    assert "await refreshConflictHealth(false)" in save_conflict
+
+    sync = html.split("async function syncToAccount()", 1)[1].split(
+        "async function initialiseAccountSync()", 1
+    )[0]
+    assert "await refreshConflictHealth(false)" in sync
+
+    account_choice = html.split(
+        "navSurfaceBody.querySelector('#useAccountCopy')?.addEventListener('click',async()=>{",
+        1,
+    )[1].split(
+        "navSurfaceBody.querySelector('#keepDeviceCopy')",
+        1,
+    )[0]
+    assert "await refreshConflictHealth(false)" in account_choice
