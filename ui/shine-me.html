@@ -1136,6 +1136,19 @@
     .today-actions[data-count="3"] { grid-template-columns:repeat(3,1fr); }
     @media (max-width:440px){ .today-actions[data-count="3"]{grid-template-columns:1fr;} }
 
+  
+    /* shine-me-checkin-review-v1 */
+    .review-checkin-btn {
+      min-height:30px; margin:8px 0 0; padding:0 9px; border-radius:9px;
+      border:1px solid rgba(255,255,255,.1); color:#b9c6d4;
+      background:rgba(255,255,255,.045); cursor:pointer; font-size:9px;
+    }
+    .review-warning {
+      margin-top:12px; padding:10px 11px; border-radius:13px;
+      border:1px solid rgba(244,207,131,.16); background:rgba(244,207,131,.05);
+      color:#899bad; font-size:9px; line-height:1.4;
+    }
+
   </style>
 </head>
 <body>
@@ -2429,6 +2442,86 @@
         if(!entry) return 0;
         return (Number.isInteger(entry.mood)?1:0)+(Number(entry.goalCompleted)||0)+(Number(entry.routineCompleted)||0);
       }
+      function renderCheckinReview(dayKey){
+        const checkin=state.dailyCheckins?.[dayKey];
+        if(!checkin)return;
+        const date=new Date(dayKey+'T12:00:00');
+        title.textContent='Review Daily Check-in';
+        kicker.textContent=date.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+        const labels=['Very low','Low','Okay','Good','Great'];
+        const faces=['☹','◔','•','◡','☺'];
+        body.innerHTML=`
+          <div class="sheet-section">
+            <h3>How you recorded the day</h3>
+            <div class="choice-row" id="reviewMoodChoices">
+              ${labels.map((label,i)=>`<button class="choice" type="button" data-index="${i}" data-selected="${checkin.mood===i}"><strong>${faces[i]}</strong><span>${label}</span></button>`).join('')}
+            </div>
+          </div>
+          <div class="sheet-section">
+            <div class="checkin-grid">
+              <div class="checkin-field"><label for="reviewFeeling1">Feeling word 1</label><input id="reviewFeeling1" type="text" maxlength="40" value="${escapeHtml(checkin.feeling1||'')}"></div>
+              <div class="checkin-field"><label for="reviewFeeling2">Feeling word 2</label><input id="reviewFeeling2" type="text" maxlength="40" value="${escapeHtml(checkin.feeling2||'')}"></div>
+            </div>
+          </div>
+          <div class="sheet-section">
+            <label for="reviewScore">Day score <span class="muted">0–10</span></label>
+            <div class="score-row"><input id="reviewScore" type="range" min="0" max="10" step=".1" value="${Number.isFinite(Number(checkin.score))?Number(checkin.score):5}"><span class="score-value" id="reviewScoreValue">${Number.isFinite(Number(checkin.score))?Number(checkin.score).toFixed(1):'5.0'}</span></div>
+          </div>
+          <div class="sheet-section">
+            <label for="reviewSleep">Sleep <span class="muted">0–10</span></label>
+            <div class="score-row"><input id="reviewSleep" type="range" min="0" max="10" step=".1" value="${Number.isFinite(Number(checkin.sleep))?Number(checkin.sleep):5}"><span class="score-value" id="reviewSleepValue">${Number.isFinite(Number(checkin.sleep))?Number(checkin.sleep).toFixed(1):'5.0'}</span></div>
+          </div>
+          <div class="sheet-section">
+            <label for="reviewGratitude">Gratitude</label><textarea id="reviewGratitude" maxlength="500">${escapeHtml(checkin.gratitude||'')}</textarea>
+            <label for="reviewChallenge">Challenge</label><textarea id="reviewChallenge" maxlength="500">${escapeHtml(checkin.challenge||'')}</textarea>
+            <label for="reviewIntention">Intention</label><textarea id="reviewIntention" maxlength="500">${escapeHtml(checkin.intention||'')}</textarea>
+            <label for="reviewNote">Note</label><textarea id="reviewNote" maxlength="1000">${escapeHtml(checkin.note||'')}</textarea>
+          </div>
+          <div class="sheet-actions">
+            <button class="sheet-primary" id="saveReviewedCheckin" type="button">Save correction</button>
+            <button class="sheet-secondary" id="backToProgress" type="button">Back to progress</button>
+            <button class="danger-action" id="removeReviewedCheckin" type="button">Remove full check-in</button>
+          </div>
+          <p class="review-warning">Removing this full Daily Check-in does not remove goals, routines or other activity recorded for that day.</p>
+          <p class="sheet-note" id="reviewCheckinStatus">Corrections sync as Shine Me state and remain separate from Project L memory.</p>`;
+        let selected=Number.isInteger(checkin.mood)?checkin.mood:null;
+        body.querySelectorAll('#reviewMoodChoices .choice').forEach(btn=>btn.addEventListener('click',()=>{
+          selected=Number(btn.dataset.index);
+          body.querySelectorAll('#reviewMoodChoices .choice').forEach(x=>x.dataset.selected=String(x===btn));
+        }));
+        const score=body.querySelector('#reviewScore');
+        const sleep=body.querySelector('#reviewSleep');
+        score?.addEventListener('input',()=>{const v=body.querySelector('#reviewScoreValue');if(v)v.textContent=Number(score.value).toFixed(1);});
+        sleep?.addEventListener('input',()=>{const v=body.querySelector('#reviewSleepValue');if(v)v.textContent=Number(sleep.value).toFixed(1);});
+        body.querySelector('#backToProgress')?.addEventListener('click',renderProgress);
+        body.querySelector('#saveReviewedCheckin')?.addEventListener('click',()=>{
+          state.dailyCheckins[dayKey]={
+            mood:Number.isInteger(selected)?selected:null,
+            feeling1:body.querySelector('#reviewFeeling1')?.value.trim()||'',
+            feeling2:body.querySelector('#reviewFeeling2')?.value.trim()||'',
+            score:Number(body.querySelector('#reviewScore')?.value||5),
+            sleep:Number(body.querySelector('#reviewSleep')?.value||5),
+            gratitude:body.querySelector('#reviewGratitude')?.value.trim()||'',
+            challenge:body.querySelector('#reviewChallenge')?.value.trim()||'',
+            intention:body.querySelector('#reviewIntention')?.value.trim()||'',
+            note:body.querySelector('#reviewNote')?.value.trim()||'',
+            updatedAt:new Date().toISOString()
+          };
+          if(state.history?.[dayKey]&&Number.isInteger(selected))state.history[dayKey].mood=selected;
+          save();
+          syncDashboard();
+          const status=body.querySelector('#reviewCheckinStatus');
+          if(status)status.textContent='Correction saved in Shine Me ✓';
+        });
+        body.querySelector('#removeReviewedCheckin')?.addEventListener('click',()=>{
+          if(!window.confirm('Remove the full Daily Check-in for this date? Other activity from the day will remain.'))return;
+          delete state.dailyCheckins[dayKey];
+          save();
+          syncDashboard();
+          renderProgress();
+        });
+      }
+
       function renderProgress(){
         title.textContent='Your Progress';
         kicker.textContent='A factual view of what you’ve actually tracked.';
@@ -2500,7 +2593,8 @@
             +'<div class="checkin-trend-row-top">'
             +'<time>'+day.date.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})+'</time>'
             +'<strong>'+score+'/10 · sleep '+sleep+'/10</strong>'
-            +'</div><p>'+escapeHtml(words||'No feeling words saved')+(details?' · '+details:'')+'</p></div>';
+            +'</div><p>'+escapeHtml(words||'No feeling words saved')+(details?' · '+details:'')+'</p>'
+            +'<button class="review-checkin-btn" type="button" data-review-checkin="'+day.key+'">Review check-in</button></div>';
         }).join('');
 
         const weekHtml=rows.map(({day,entry,checkin})=>{
@@ -2582,6 +2676,9 @@
         });
         progressAction.appendChild(progressButton);
         body.appendChild(progressAction);
+        body.querySelectorAll('[data-review-checkin]').forEach(button=>button.addEventListener('click',()=>{
+          renderCheckinReview(button.dataset.reviewCheckin);
+        }));
       }
 
       function renderTodaySnapshot(){
