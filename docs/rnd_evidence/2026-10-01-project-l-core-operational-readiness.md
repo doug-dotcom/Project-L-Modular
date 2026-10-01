@@ -47,11 +47,12 @@ The readiness payload contains operational states and counts only. It does not i
 - Initial head: `680fde19f561650720ccaa896ea9e981d7467da8`
 - CI workflow run: `36805386337`
 - CI state at contemporaneous capture: **in progress**
-- Syntax, dependency import and Shine Defence sensitive-memory certification gates are included before the full regression suite.
+- Final CI result: **PASS — 1,714 passed, 5 warnings, 13 subtests passed in 32.46s**
+- Syntax, dependency import and Shine Defence sensitive-memory certification gates: **PASS**
 
 ## Failures / unexpected behaviour
 
-No implementation failure had been observed at the time of this contemporaneous capture. Final regression and live deployment results must be appended from actual evidence; they must not be inferred.
+No implementation failure was observed. The full active Project L regression suite completed successfully. Live deployment verification remains the next evidence step and must be recorded from the actual merged deployment.
 
 ## Learning
 
