@@ -62,6 +62,10 @@ def packet():
             "storage_absence_verified": False,
             "absence_semantics": "retrieval_miss_is_not_storage_absence",
             "latency_ms": 123,
+            "packet_latency_ms": 150,
+            "temporal_latency_ms": 27,
+            "slowest_stage": "indexed_retrieval",
+            "slowest_stage_ms": 81,
         },
         "context": "SECRET CONTEXT TEXT",
     }
@@ -89,6 +93,10 @@ def test_rhee_live_smoke_prints_receipt_not_memory_content(monkeypatch, capsys):
     assert "authority_classes=1" in output
     assert "freshness_classes=1" in output
     assert "lineages=1" in output
+    assert "packet_latency_ms=150" in output
+    assert "temporal_latency_ms=27" in output
+    assert "slowest_stage=indexed_retrieval" in output
+    assert "slowest_stage_ms=81" in output
     assert "SECRET MEMORY TEXT" not in output
     assert "SECRET CONTEXT TEXT" not in output
     assert "INTERNAL SECRET LOG" not in output

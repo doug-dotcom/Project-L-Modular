@@ -213,6 +213,10 @@ def main() -> None:
         f"contract={plan.get('retrieval_query_contract_version')} "
         f"confidence={confidence.get('state')} "
         f"latency_ms={plan.get('latency_ms')} "
+        f"packet_latency_ms={plan.get('packet_latency_ms')} "
+        f"temporal_latency_ms={plan.get('temporal_latency_ms')} "
+        f"slowest_stage={plan.get('slowest_stage')} "
+        f"slowest_stage_ms={plan.get('slowest_stage_ms')} "
         f"transient_replays={transient_replays}"
     )
 
