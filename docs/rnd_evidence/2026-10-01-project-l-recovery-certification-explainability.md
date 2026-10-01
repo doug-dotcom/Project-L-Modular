@@ -50,7 +50,10 @@ Changes:
 - PR #254 — **Explain memory recovery certification in readiness**
 - Initial head: `939868ed5e7974ba4488877362c7bb1c04babf30`
 - CI workflow run: `36811713985`
-- CI state at contemporaneous capture: **in progress**
+- First full-suite attempt exposed two fixture assumptions about warm-up precedence: **2 failed, 1,731 passed, 5 warnings, 13 subtests**.
+- Investigation confirmed the pre-existing contract intentionally keeps `operational_state=warming` below 20 lifetime runtime samples, even while recovery metadata is visible.
+- Test fixtures were corrected to model the production condition (20+ historical samples) rather than changing warm-up semantics.
+- Final CI run `36811988983` on head `70c11dd286a55c9c944b813fc3e4b8e4c6d70ae4`: **PASS — 1,734 passed, 5 warnings, 13 subtests passed in 34.00s**.
 - New tests cover:
   - one qualified success → two remaining;
   - latency above 3,000 ms → latency blocker;
@@ -72,13 +75,39 @@ Immediately before this layer:
 
 No synthetic recovery traffic is introduced by this change.
 
+## Failures / unexpected behaviour
+
+The first regression run failed because two new tests expected `recovering` / `degraded` operational states with fewer than the 20 samples required to leave the established warm-up phase. Existing tests explicitly preserve `warming` precedence during that baseline period. The product semantics were left unchanged; the new fixtures were corrected to represent post-baseline production recovery.
+
+## Live production proof
+
+- PR #254 merged as `354e1442bcd53785a1df4099d76efb9e804484ea`.
+- Railway deployment `62bf6d85-65a8-4e3e-827d-7b0ba050ecf3`: **SUCCESS**.
+- Memory live smoke: **PASS**, circuit closed, 2,094.4 ms, zero transient replays.
+- Rhee live smoke: **PASS**, 9 governed evidence items, 5 lineages, server-verified contract v2.
+- External `/health`: **HTTP 200**.
+- Foundation startup authority: **active**, attempt 1.
+- External `/readiness`: **HTTP 503** `memory-runtime-not-ready`, with:
+  - current memory process ready;
+  - circuit closed;
+  - failure streak 0;
+  - qualified recovery successes **1**;
+  - required qualified successes **3**;
+  - qualified successes remaining **2**;
+  - recovery certified **false**;
+  - blocker `needs-qualified-successes`;
+  - latency target **3,000 ms**;
+  - latest real-traffic recovery latency **2,133.1 ms**.
+
+No canary or synthetic traffic was counted toward recovery certification.
+
 ## Learning
 
-A fail-closed health gate is more operationally useful when it exposes the evidence required to clear itself. Recovery certification should be auditable and deterministic, not an opaque boolean.
+A fail-closed health gate is more operationally useful when it exposes the evidence required to clear itself. Recovery certification should be auditable and deterministic, not an opaque boolean. Warm-up baseline semantics and post-failure recovery certification are separate concepts and should remain separate.
 
 ## Next step
 
-Complete the full Project L regression suite, merge only on green, deploy the exact runtime commit, and verify the live `/readiness` response reports the certification gap without changing its HTTP status or counting canaries.
+Allow genuine runtime use to earn the remaining two qualified successes. Do not manufacture recovery traffic or reset historical evidence merely to turn readiness green.
 
 ## Source artefacts
 
