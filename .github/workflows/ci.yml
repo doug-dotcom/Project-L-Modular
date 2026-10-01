@@ -151,6 +151,7 @@ jobs:
           tests/test_semantic_background_yield.py
           tests/test_semantic_recovery_cadence.py
           tests/test_semantic_worker_transient_yield.py
+          tests/test_public_schema_growth_guard.py
           tests/test_layer*.py
           tests/test_temporal_memory.py
           tests/test_recall_planner.py
