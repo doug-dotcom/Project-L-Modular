@@ -249,7 +249,7 @@ def test_wellness_bridge_is_limited_to_health_scope(monkeypatch):
         headers={"X-Shine-Service-Token": "x" * 32},
         json={
             "app": "shine-wellness",
-            "user_id": OWNER_ID,
+            "user_id": OWNER,
             "query": "Recall my health history.",
             "scopes": ["health"],
             "limit": 4,
@@ -267,7 +267,7 @@ def test_wellness_bridge_is_limited_to_health_scope(monkeypatch):
             headers={"X-Shine-Service-Token": "x" * 32},
             json={
                 "app": "shine-wellness",
-                "user_id": OWNER_ID,
+                "user_id": OWNER,
                 "query": "Recall my history.",
                 "scopes": [denied_scope],
                 "limit": 4,
