@@ -9,6 +9,7 @@ import logging
 import random
 import re
 import threading
+import time
 import traceback
 from uuid import UUID, uuid4
 
@@ -718,11 +719,29 @@ def checkpoint(stage):
 
 
 class TaskRunner:
-    def __init__(self, store, execute, slots=2, heartbeat_seconds=15):
+    def __init__(
+        self,
+        store,
+        execute,
+        slots=2,
+        heartbeat_seconds=15,
+        reaper_interval_seconds=30,
+        reaper_failure_backoff_seconds=60,
+    ):
         self.store, self.execute, self.slots = store, execute, slots
         self.heartbeat_seconds = max(0.001, float(heartbeat_seconds))
+        self.reaper_interval_seconds = max(
+            5.0,
+            float(reaper_interval_seconds),
+        )
+        self.reaper_failure_backoff_seconds = max(
+            self.reaper_interval_seconds,
+            float(reaper_failure_backoff_seconds),
+        )
         self.stop_event = threading.Event()
         self.threads = []
+        self._reaper_lock = threading.Lock()
+        self._next_reap_at = 0.0
 
     def start(self):
         if self.threads:
@@ -740,17 +759,56 @@ class TaskRunner:
     def stop(self):
         self.stop_event.set()
 
+    def _maybe_reap_expired(self):
+        """Run bounded lease maintenance at most once per process cadence.
+
+        Reaping is maintenance, not a prerequisite for claiming queued work.
+        One worker slot owns each maintenance attempt; sibling slots continue
+        normal claims without duplicating the same global mutation.
+        """
+        if not isinstance(self.store, TaskStore):
+            return False
+
+        now = time.monotonic()
+        if now < self._next_reap_at:
+            return False
+        if not self._reaper_lock.acquire(blocking=False):
+            return False
+
+        try:
+            now = time.monotonic()
+            if now < self._next_reap_at:
+                return False
+
+            # Reserve the cadence before touching the database so sibling
+            # worker slots cannot stampede the same RPC while this call blocks.
+            self._next_reap_at = now + self.reaper_interval_seconds
+            try:
+                self.store.reap_expired(limit=100)
+            except Exception:
+                self._next_reap_at = (
+                    time.monotonic()
+                    + self.reaper_failure_backoff_seconds
+                )
+                LOG.warning(
+                    'Durable task lease reaper unavailable; '
+                    'maintenance retry deferred'
+                )
+                return False
+            return True
+        finally:
+            self._reaper_lock.release()
+
     def loop(self):
         worker = str(uuid4())
         claim_token = None
         failures = 0
         while not self.stop_event.is_set():
             try:
-                # Lease expiry is a separate bounded maintenance operation.
-                # Real TaskStore dispatchers always reap before claiming. Legacy
-                # synthetic stores used by regression tests may not implement it.
-                if isinstance(self.store, TaskStore):
-                    self.store.reap_expired(limit=100)
+                # Lease expiry is bounded maintenance, shared by all
+                # worker slots. Claims remain independent and continue even if
+                # maintenance is temporarily unavailable.
+                self._maybe_reap_expired()
                 if claim_token is None:
                     claim_token = str(uuid4())
                 task = self.store.claim(worker, claim_token=claim_token)
