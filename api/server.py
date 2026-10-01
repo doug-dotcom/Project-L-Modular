@@ -589,7 +589,7 @@ app.include_router(shine_me_routes(
         },
     ).execute(),
     lambda owner_id: supabase.rpc(
-        'shine_me_owner_state_conflict_health_service_v1',
+        'shine_me_owner_state_conflict_health_explain_service_v1',
         {
             'p_owner_id': owner_id,
         },

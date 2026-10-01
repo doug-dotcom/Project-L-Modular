@@ -451,15 +451,35 @@ def routes(
             status = str(row.get("health_status") or "")
             if status not in {"stable", "isolated", "recurring", "persistent"}:
                 raise RuntimeError("Invalid conflict health status")
+
+            raw_reasons = row.get("reason_codes") or []
+            if not isinstance(raw_reasons, list):
+                raise RuntimeError("Invalid conflict health reason codes")
+            allowed_reasons = {"volume", "unresolved_count", "unresolved_age"}
+            reasons = [str(reason) for reason in raw_reasons]
+            if len(reasons) > 3 or len(set(reasons)) != len(reasons) or any(
+                reason not in allowed_reasons for reason in reasons
+            ):
+                raise RuntimeError("Invalid conflict health reason codes")
+
+            recovery_state = str(row.get("recovery_state") or "")
+            if recovery_state not in {"clear", "observing", "resolving", "stalled"}:
+                raise RuntimeError("Invalid conflict recovery state")
+
+            detections = int(row.get("detections_24h") or 0)
+            unresolved = int(row.get("unresolved_conflicts") or 0)
+            oldest = int(row.get("oldest_unresolved_minutes") or 0)
             return {
                 "status": status,
-                "detections_24h": int(row.get("detections_24h") or 0),
+                "reason_codes": reasons,
+                "recovery_state": recovery_state,
+                "detections_24h": detections,
                 "resolutions_24h": int(row.get("resolutions_24h") or 0),
-                "unresolved_conflicts": int(row.get("unresolved_conflicts") or 0),
-                "oldest_unresolved_minutes": int(row.get("oldest_unresolved_minutes") or 0),
+                "unresolved_conflicts": unresolved,
+                "oldest_unresolved_minutes": oldest,
                 "last_conflict_at": row.get("last_conflict_at"),
-                "recurring": bool(row.get("recurring", False)),
-                "persistent": bool(row.get("persistent", False)),
+                "recurring": "volume" in reasons and detections >= 3,
+                "persistent": status == "persistent",
             }
         except Exception as exc:
             raise HTTPException(503, "Shine-Me conflict health could not be loaded.") from exc

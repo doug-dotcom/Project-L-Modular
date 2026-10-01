@@ -54,6 +54,8 @@ class Client:
         self.rows = rows
         self.health = health or [{
             "health_status": "stable",
+            "reason_codes": [],
+            "recovery_state": "clear",
             "detections_24h": 0,
             "resolutions_24h": 0,
             "unresolved_conflicts": 0,
@@ -68,7 +70,7 @@ class Client:
         return Query(self.rows)
 
     def rpc(self, name, params):
-        assert name == "shine_me_owner_state_conflict_health_service_v1"
+        assert name == "shine_me_owner_state_conflict_health_explain_service_v1"
         assert set(params) == {"p_owner_id"}
         return RpcQuery(self.health)
 
@@ -99,6 +101,8 @@ def test_smoke_prints_receipt_not_personal_state(monkeypatch, capsys):
     assert "state=present" in output
     assert "revision=4" in output
     assert "conflict_health=stable" in output
+    assert "recovery_state=clear" in output
+    assert "reason_codes=none" in output
     assert "detections_24h=0" in output
     assert owner not in output
     assert secret not in output
@@ -143,6 +147,8 @@ def test_smoke_accepts_persistent_conflict_health_without_state_content(monkeypa
     monkeypatch.setenv("L_MEMORY_OWNER_ID", "owner-a")
     client = Client([], health=[{
         "health_status": "persistent",
+        "reason_codes": ["volume", "unresolved_count", "unresolved_age"],
+        "recovery_state": "stalled",
         "detections_24h": 6,
         "resolutions_24h": 4,
         "unresolved_conflicts": 2,
@@ -156,6 +162,8 @@ def test_smoke_accepts_persistent_conflict_health_without_state_content(monkeypa
     smoke.main()
     output = capsys.readouterr().out
     assert "conflict_health=persistent" in output
+    assert "recovery_state=stalled" in output
+    assert "reason_codes=volume,unresolved_count,unresolved_age" in output
     assert "detections_24h=6" in output
     assert "unresolved=2" in output
     assert "oldest_unresolved_minutes=31" in output
