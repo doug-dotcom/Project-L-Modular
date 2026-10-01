@@ -235,6 +235,7 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
     assert "success_rate=1.0" in output
     assert "latency_ms=12.5" in output
     assert "slo=warming" in output
+    assert "transient_replays=0" in output
     assert "history=railway-redis-volume" in output
     assert "durable_slo=warming" in output
     assert "durable_samples=3" in output
@@ -270,6 +271,7 @@ def test_memory_bridge_live_smoke_prints_receipts_not_memory_content(monkeypatch
         "success_rate": 1.0,
         "latency_ms": 12.5,
         "slo_status": "warming",
+        "transient_replays": 0,
     }
     raw_payload = str(recorded["payload"])
     assert "SECRET MEMORY CONTENT" not in raw_payload
@@ -801,3 +803,143 @@ def test_observability_marks_historical_miss_as_recovered_observing(monkeypatch)
     assert runtime["recovery_state"] == "healthy_streak"
     assert runtime["operational_state"] == "recovered_observing"
 
+
+
+
+def test_memory_bridge_live_smoke_replays_one_transient_503(monkeypatch):
+    smoke = load_smoke_module()
+    sleeps = []
+    posts = []
+
+    class Response:
+        def __init__(self, status_code, body, headers=None):
+            self.status_code = status_code
+            self._body = body
+            self.headers = headers or {}
+
+        def json(self):
+            return self._body
+
+    success_body = {
+        "source": "project-l",
+        "engine": "project-l-memory-context-v2",
+        "version": "2.2",
+        "recall_active": True,
+        "records": [{
+            "id": "memory_sport:1",
+            "text": "hidden",
+            "tags": ["sport"],
+            "priority": "normal",
+        }],
+        "receipt": {
+            "status": "ok",
+            "records_returned": 1,
+            "owner_bound": True,
+            "permission_scoped": True,
+            "bounded": True,
+            "read_only": True,
+            "legacy_global_search_used": False,
+            "legacy_rpc_fallback_used": False,
+            "query_binding": "server-verified",
+            "query_contract_version": "2",
+            "query_key": "a" * 32,
+        },
+    }
+
+    class Client:
+        def post(self, path, headers, json):
+            posts.append(True)
+            if len(posts) == 1:
+                return Response(
+                    503,
+                    {
+                        "detail": (
+                            "Project L owner-scoped retrieval is temporarily unavailable."
+                        )
+                    },
+                    {"Retry-After": "8"},
+                )
+            return Response(200, success_body)
+
+    monkeypatch.setattr(smoke.time, "sleep", sleeps.append)
+
+    body, replays = smoke._retrieve(
+        Client(),
+        "x" * 32,
+        "11111111-1111-4111-8111-111111111111",
+    )
+
+    assert body["receipt"]["status"] == "ok"
+    assert replays == 1
+    assert len(posts) == 2
+    assert sleeps == [8.25]
+
+
+def test_memory_bridge_live_smoke_does_not_retry_nontransient_503(monkeypatch):
+    smoke = load_smoke_module()
+    sleeps = []
+    posts = []
+
+    class Response:
+        status_code = 503
+        headers = {}
+
+        def json(self):
+            return {"detail": "Project L's Shine-AI memory bridge is misconfigured."}
+
+    class Client:
+        def post(self, path, headers, json):
+            posts.append(True)
+            return Response()
+
+    monkeypatch.setattr(smoke.time, "sleep", sleeps.append)
+
+    try:
+        smoke._retrieve(
+            Client(),
+            "x" * 32,
+            "11111111-1111-4111-8111-111111111111",
+        )
+        assert False, "expected SystemExit"
+    except SystemExit as exc:
+        assert "retrieval-unavailable" in str(exc)
+
+    assert len(posts) == 1
+    assert sleeps == []
+
+
+def test_memory_bridge_live_smoke_persistent_transient_fails_after_one_replay(monkeypatch):
+    smoke = load_smoke_module()
+    sleeps = []
+    posts = []
+
+    class Response:
+        status_code = 503
+        headers = {"Retry-After": "2"}
+
+        def json(self):
+            return {
+                "detail": (
+                    "Project L owner-scoped retrieval recovery probe is already in progress."
+                )
+            }
+
+    class Client:
+        def post(self, path, headers, json):
+            posts.append(True)
+            return Response()
+
+    monkeypatch.setattr(smoke.time, "sleep", sleeps.append)
+
+    try:
+        smoke._retrieve(
+            Client(),
+            "x" * 32,
+            "11111111-1111-4111-8111-111111111111",
+        )
+        assert False, "expected SystemExit"
+    except SystemExit as exc:
+        assert "retrieval-unavailable" in str(exc)
+
+    assert len(posts) == 2
+    assert sleeps == [2.25]
