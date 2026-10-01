@@ -110,6 +110,7 @@ jobs:
           tests/test_specialised_memory_activation.py
           tests/test_brain_pipeline_memory_gate.py
           tests/test_rhee_hybrid_recall.py
+          tests/test_rhee_stage_latency.py
           tests/test_memory_cache_invalidation.py
           tests/test_memory_provenance.py
           tests/test_cognitive_core.py
