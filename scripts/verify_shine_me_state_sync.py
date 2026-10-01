@@ -73,10 +73,44 @@ def main() -> None:
             _fail("state-oversize")
         status = "present"
 
+    try:
+        health_result = (
+            _client()
+            .rpc(
+                "shine_me_owner_state_conflict_health_service_v1",
+                {"p_owner_id": owner_id},
+            )
+            .execute()
+        )
+    except Exception as exc:
+        _fail("conflict-health-" + (type(exc).__name__.lower()[:60] or "query-failed"))
+
+    health_rows = getattr(health_result, "data", None)
+    if not isinstance(health_rows, list) or len(health_rows) != 1:
+        _fail("conflict-health-result-invalid")
+    health = health_rows[0]
+    if not isinstance(health, dict):
+        _fail("conflict-health-row-invalid")
+    health_status = str(health.get("health_status") or "")
+    if health_status not in {"stable", "isolated", "recurring", "persistent"}:
+        _fail("conflict-health-status-invalid")
+    detections_24h = health.get("detections_24h")
+    unresolved = health.get("unresolved_conflicts")
+    oldest_minutes = health.get("oldest_unresolved_minutes")
+    for name, value in (
+        ("detections", detections_24h),
+        ("unresolved", unresolved),
+        ("oldest", oldest_minutes),
+    ):
+        if not isinstance(value, int) or value < 0:
+            _fail("conflict-health-" + name + "-invalid")
+
     print(
         "Project L Shine-Me state sync smoke: PASS "
         f"binding=server-verified state={status} revision={revision} "
-        f"state_bytes={state_bytes} direct_browser_access=blocked-by-contract"
+        f"state_bytes={state_bytes} direct_browser_access=blocked-by-contract "
+        f"conflict_health={health_status} detections_24h={detections_24h} "
+        f"unresolved={unresolved} oldest_unresolved_minutes={oldest_minutes}"
     )
 
 
