@@ -53,6 +53,9 @@ class Client:
     def __init__(self, rows, health=None):
         self.rows = rows
         self.health = health or [{
+            "transition_recorded": True,
+            "transition_id": "20000000-0000-4000-8000-000000000001",
+            "direction": "baseline",
             "health_status": "stable",
             "reason_codes": [],
             "recovery_state": "clear",
@@ -61,6 +64,10 @@ class Client:
             "unresolved_conflicts": 0,
             "oldest_unresolved_minutes": 0,
             "last_conflict_at": None,
+            "state_age_seconds": 0,
+            "episode_age_seconds": 0,
+            "recovery_seconds": None,
+            "history_size": 1,
             "recurring": False,
             "persistent": False,
         }]
@@ -70,7 +77,7 @@ class Client:
         return Query(self.rows)
 
     def rpc(self, name, params):
-        assert name == "shine_me_owner_state_conflict_health_explain_service_v1"
+        assert name == "shine_me_owner_state_conflict_health_transition_service_v1"
         assert set(params) == {"p_owner_id"}
         return RpcQuery(self.health)
 
@@ -103,6 +110,9 @@ def test_smoke_prints_receipt_not_personal_state(monkeypatch, capsys):
     assert "conflict_health=stable" in output
     assert "recovery_state=clear" in output
     assert "reason_codes=none" in output
+    assert "transition_direction=baseline" in output
+    assert "transition_recorded=true" in output
+    assert "transition_history_size=1" in output
     assert "detections_24h=0" in output
     assert owner not in output
     assert secret not in output
@@ -146,6 +156,9 @@ def test_smoke_accepts_persistent_conflict_health_without_state_content(monkeypa
     monkeypatch.setenv("PROJECT_L_OWNER_ID", "owner-a")
     monkeypatch.setenv("L_MEMORY_OWNER_ID", "owner-a")
     client = Client([], health=[{
+        "transition_recorded": True,
+        "transition_id": "20000000-0000-4000-8000-000000000002",
+        "direction": "worsening",
         "health_status": "persistent",
         "reason_codes": ["volume", "unresolved_count", "unresolved_age"],
         "recovery_state": "stalled",
@@ -154,6 +167,10 @@ def test_smoke_accepts_persistent_conflict_health_without_state_content(monkeypa
         "unresolved_conflicts": 2,
         "oldest_unresolved_minutes": 31,
         "last_conflict_at": "2026-10-01T08:00:00+00:00",
+        "state_age_seconds": 0,
+        "episode_age_seconds": 31,
+        "recovery_seconds": None,
+        "history_size": 2,
         "recurring": True,
         "persistent": True,
     }])
@@ -164,6 +181,9 @@ def test_smoke_accepts_persistent_conflict_health_without_state_content(monkeypa
     assert "conflict_health=persistent" in output
     assert "recovery_state=stalled" in output
     assert "reason_codes=volume,unresolved_count,unresolved_age" in output
+    assert "transition_direction=worsening" in output
+    assert "transition_recorded=true" in output
+    assert "transition_history_size=2" in output
     assert "detections_24h=6" in output
     assert "unresolved=2" in output
     assert "oldest_unresolved_minutes=31" in output

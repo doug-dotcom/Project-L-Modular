@@ -1,13 +1,15 @@
-"""Read-only production smoke for Shine Me owner-account state continuity.
+"""Privacy-safe production smoke for Shine Me owner-account state continuity.
 
-This smoke validates the live Supabase table and owner-binding configuration.
-It never prints owner IDs, journal text, dashboard content, or row identifiers.
+This smoke validates live owner binding, state shape, bounded conflict health,
+and the Layer 72 transition observer. It may record one content-free transition
+receipt when health changes, but never prints owner IDs, personal state, or row IDs.
 """
 
 from __future__ import annotations
 
 import json
 import os
+from uuid import UUID
 
 from supabase import create_client
 
@@ -77,7 +79,7 @@ def main() -> None:
         health_result = (
             _client()
             .rpc(
-                "shine_me_owner_state_conflict_health_explain_service_v1",
+                "shine_me_owner_state_conflict_health_transition_service_v1",
                 {"p_owner_id": owner_id},
             )
             .execute()
@@ -105,6 +107,36 @@ def main() -> None:
     recovery_state = str(health.get("recovery_state") or "")
     if recovery_state not in {"clear", "observing", "resolving", "stalled"}:
         _fail("conflict-health-recovery-invalid")
+    transition_recorded = health.get("transition_recorded")
+    if not isinstance(transition_recorded, bool):
+        _fail("conflict-health-transition-recorded-invalid")
+    try:
+        UUID(str(health.get("transition_id") or ""))
+    except (ValueError, TypeError):
+        _fail("conflict-health-transition-id-invalid")
+    transition_direction = str(health.get("direction") or "")
+    if transition_direction not in {
+        "baseline", "steady", "improving", "worsening", "recovered", "mixed"
+    }:
+        _fail("conflict-health-transition-direction-invalid")
+    state_age_seconds = health.get("state_age_seconds")
+    episode_age_seconds = health.get("episode_age_seconds")
+    recovery_seconds = health.get("recovery_seconds")
+    history_size = health.get("history_size")
+    for name, value in (
+        ("state-age", state_age_seconds),
+        ("episode-age", episode_age_seconds),
+        ("history-size", history_size),
+    ):
+        if not isinstance(value, int) or value < 0:
+            _fail("conflict-health-transition-" + name + "-invalid")
+    if history_size < 1 or history_size > 32:
+        _fail("conflict-health-transition-history-size-invalid")
+    if recovery_seconds is not None and (
+        not isinstance(recovery_seconds, int) or recovery_seconds < 0
+    ):
+        _fail("conflict-health-transition-recovery-seconds-invalid")
+
     detections_24h = health.get("detections_24h")
     unresolved = health.get("unresolved_conflicts")
     oldest_minutes = health.get("oldest_unresolved_minutes")
@@ -122,6 +154,12 @@ def main() -> None:
         f"state_bytes={state_bytes} direct_browser_access=blocked-by-contract "
         f"conflict_health={health_status} recovery_state={recovery_state} "
         f"reason_codes={','.join(reason_codes) if reason_codes else 'none'} "
+        f"transition_direction={transition_direction} "
+        f"transition_recorded={str(transition_recorded).lower()} "
+        f"state_age_seconds={state_age_seconds} "
+        f"episode_age_seconds={episode_age_seconds} "
+        f"recovery_seconds={recovery_seconds if recovery_seconds is not None else 'none'} "
+        f"transition_history_size={history_size} "
         f"detections_24h={detections_24h} unresolved={unresolved} "
         f"oldest_unresolved_minutes={oldest_minutes}"
     )

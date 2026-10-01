@@ -466,6 +466,37 @@ def routes(
             if recovery_state not in {"clear", "observing", "resolving", "stalled"}:
                 raise RuntimeError("Invalid conflict recovery state")
 
+            transition_recorded = bool(row.get("transition_recorded", False))
+            transition_id_raw = str(row.get("transition_id") or "")
+            try:
+                transition_id = str(UUID(transition_id_raw))
+            except (ValueError, TypeError) as exc:
+                raise RuntimeError("Invalid conflict health transition ID") from exc
+
+            direction = str(row.get("direction") or "")
+            if direction not in {
+                "baseline", "steady", "improving", "worsening", "recovered", "mixed"
+            }:
+                raise RuntimeError("Invalid conflict health transition direction")
+
+            state_age_seconds = int(row.get("state_age_seconds") or 0)
+            episode_age_seconds = int(row.get("episode_age_seconds") or 0)
+            history_size = int(row.get("history_size") or 0)
+            recovery_seconds_raw = row.get("recovery_seconds")
+            recovery_seconds = (
+                int(recovery_seconds_raw)
+                if recovery_seconds_raw is not None
+                else None
+            )
+            if (
+                state_age_seconds < 0
+                or episode_age_seconds < 0
+                or history_size < 1
+                or history_size > 32
+                or (recovery_seconds is not None and recovery_seconds < 0)
+            ):
+                raise RuntimeError("Invalid conflict health transition timing")
+
             detections = int(row.get("detections_24h") or 0)
             unresolved = int(row.get("unresolved_conflicts") or 0)
             oldest = int(row.get("oldest_unresolved_minutes") or 0)
@@ -473,6 +504,13 @@ def routes(
                 "status": status,
                 "reason_codes": reasons,
                 "recovery_state": recovery_state,
+                "transition_recorded": transition_recorded,
+                "transition_id": transition_id,
+                "transition_direction": direction,
+                "state_age_seconds": state_age_seconds,
+                "episode_age_seconds": episode_age_seconds,
+                "recovery_seconds": recovery_seconds,
+                "transition_history_size": history_size,
                 "detections_24h": detections,
                 "resolutions_24h": int(row.get("resolutions_24h") or 0),
                 "unresolved_conflicts": unresolved,
