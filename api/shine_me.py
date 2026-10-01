@@ -4,6 +4,7 @@ import json
 import os
 import re
 from collections.abc import Callable
+from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
@@ -29,6 +30,17 @@ class CorrectionRequest(BaseModel):
 class OwnerStateRequest(BaseModel):
     state: dict
     expected_revision: int = Field(ge=0, le=2_147_483_647)
+    conflict_id: UUID | None = None
+
+
+class OwnerStateConflictDetectRequest(BaseModel):
+    local_revision: int = Field(ge=0, le=2_147_483_647)
+
+
+class OwnerStateConflictResolutionRequest(BaseModel):
+    conflict_id: UUID
+    resolution: str = Field(pattern="^(account_copy|device_copy)$")
+    resolved_revision: int = Field(ge=1, le=2_147_483_647)
 
 
 _DAY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -195,6 +207,8 @@ def routes(
     list_corrections: Callable[[str], object] | None = None,
     load_owner_state: Callable[[str], object] | None = None,
     apply_owner_state: Callable[[str, int, dict], object] | None = None,
+    record_owner_state_conflict: Callable[[str, int], object] | None = None,
+    resolve_owner_state_conflict: Callable[[str, str, str, int], object] | None = None,
 ) -> APIRouter:
     router = APIRouter(tags=["shine-me"])
 
@@ -291,19 +305,132 @@ def routes(
                 or int(stored.get("revision") or 0) != next_revision
             ):
                 raise RuntimeError("Invalid state receipt")
+
+            conflict_resolution_recorded = False
+            if payload.conflict_id and resolve_owner_state_conflict is not None:
+                try:
+                    resolution = resolve_owner_state_conflict(
+                        owner_id,
+                        str(payload.conflict_id),
+                        "device_copy",
+                        next_revision,
+                    )
+                    resolution_rows = getattr(resolution, "data", None)
+                    conflict_resolution_recorded = (
+                        isinstance(resolution_rows, list)
+                        and len(resolution_rows) == 1
+                        and resolution_rows[0].get("status") in {"resolved", "already_resolved"}
+                    )
+                except Exception:
+                    # The state write already succeeded. Operational receipt failure
+                    # must never cause the browser to replay a committed state write.
+                    conflict_resolution_recorded = False
+
             return {
                 "status": "synced",
                 "revision": next_revision,
                 "updated_at": stored.get("updated_at"),
+                "conflict_resolution_recorded": conflict_resolution_recorded,
             }
         except HTTPException:
             raise
         except Exception as exc:
             if "REVISION_CONFLICT" in str(exc):
-                raise HTTPException(
-                    409, "Shine-Me state changed on another device."
-                ) from exc
+                detail = {
+                    "message": "Shine-Me state changed on another device.",
+                    "conflict_observability": "unavailable",
+                }
+                if record_owner_state_conflict is not None:
+                    try:
+                        receipt = record_owner_state_conflict(
+                            owner_id,
+                            payload.expected_revision,
+                        )
+                        receipt_rows = getattr(receipt, "data", None)
+                        if isinstance(receipt_rows, list) and len(receipt_rows) == 1:
+                            row = receipt_rows[0]
+                            detail.update({
+                                "conflict_id": str(row.get("conflict_id") or ""),
+                                "remote_revision": int(row.get("remote_revision") or 0),
+                                "recent_conflicts_24h": int(row.get("recent_conflicts_24h") or 0),
+                                "recurring": bool(row.get("recurring", False)),
+                                "conflict_observability": "recorded",
+                            })
+                    except Exception:
+                        pass
+                raise HTTPException(409, detail=detail) from exc
             raise HTTPException(503, "Shine-Me account state could not be saved.") from exc
+
+    @router.post("/shine-me/state/conflicts/detect")
+    def detect_owner_state_conflict(
+        payload: OwnerStateConflictDetectRequest,
+        request: Request,
+    ) -> dict:
+        binding(request)
+        if (
+            not os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+            or record_owner_state_conflict is None
+        ):
+            raise HTTPException(503, "Shine-Me conflict receipts are temporarily unavailable.")
+        owner_id = str(os.getenv("PROJECT_L_OWNER_ID") or "").strip()
+        try:
+            receipt = record_owner_state_conflict(owner_id, payload.local_revision)
+            rows = getattr(receipt, "data", None)
+            if not isinstance(rows, list) or len(rows) != 1:
+                raise RuntimeError("Invalid conflict receipt")
+            row = rows[0]
+            return {
+                "status": "recorded",
+                "conflict_id": str(row.get("conflict_id") or ""),
+                "remote_revision": int(row.get("remote_revision") or 0),
+                "recent_conflicts_24h": int(row.get("recent_conflicts_24h") or 0),
+                "recurring": bool(row.get("recurring", False)),
+            }
+        except Exception as exc:
+            if "NO_ACTIVE_REVISION_CONFLICT" in str(exc):
+                raise HTTPException(409, "No active Shine-Me revision conflict exists.") from exc
+            raise HTTPException(503, "Shine-Me conflict receipt could not be recorded.") from exc
+
+    @router.post("/shine-me/state/conflicts/resolve")
+    def resolve_owner_state_conflict_receipt(
+        payload: OwnerStateConflictResolutionRequest,
+        request: Request,
+    ) -> dict:
+        binding(request)
+        if (
+            not os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+            or resolve_owner_state_conflict is None
+        ):
+            raise HTTPException(503, "Shine-Me conflict receipts are temporarily unavailable.")
+        owner_id = str(os.getenv("PROJECT_L_OWNER_ID") or "").strip()
+        try:
+            receipt = resolve_owner_state_conflict(
+                owner_id,
+                str(payload.conflict_id),
+                payload.resolution,
+                payload.resolved_revision,
+            )
+            rows = getattr(receipt, "data", None)
+            if not isinstance(rows, list) or len(rows) != 1:
+                raise RuntimeError("Invalid conflict resolution receipt")
+            row = rows[0]
+            if row.get("status") not in {"resolved", "already_resolved"}:
+                raise RuntimeError("Invalid conflict resolution status")
+            return {
+                "status": row.get("status"),
+                "resolution": row.get("resolution"),
+                "resolved_revision": int(row.get("resolved_revision") or 0),
+            }
+        except Exception as exc:
+            message = str(exc)
+            if any(code in message for code in (
+                "CONFLICT_NOT_FOUND",
+                "CONFLICT_ALREADY_RESOLVED",
+                "ACCOUNT_RESOLUTION_REVISION_MISMATCH",
+                "DEVICE_RESOLUTION_REVISION_MISMATCH",
+            )):
+                raise HTTPException(409, "Shine-Me conflict receipt no longer matches the current resolution.") from exc
+            raise HTTPException(503, "Shine-Me conflict resolution could not be recorded.") from exc
 
     @router.post("/shine-me/context")
     def context(payload: ContextRequest, request: Request) -> dict:
