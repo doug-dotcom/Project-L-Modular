@@ -766,6 +766,7 @@ class MemoryBridgeHealthResponse(BaseModel):
     read_only: Literal[True]
     fail_closed: Literal[True]
     metrics: dict[str, object]
+    attestation_key_generation: int | None = Field(default=None, ge=1)
     attestation: MemoryBridgeHealthAttestation | None = None
 
 
@@ -1105,7 +1106,7 @@ def _records(
     return records
 
 
-def _configured_health_attestation_key() -> tuple[str, str]:
+def _configured_health_attestation_key() -> tuple[str, str, int]:
     active_key_id = os.getenv(
         "SHINE_AI_MEMORY_HEALTH_ATTESTATION_ACTIVE_KEY_ID",
         "",
@@ -1155,7 +1156,23 @@ def _configured_health_attestation_key() -> tuple[str, str]:
                 status_code=503,
                 detail="Project L active health attestation key is unavailable.",
             )
-        return active_key_id, active_key
+        raw_generation = os.getenv(
+            "SHINE_AI_MEMORY_HEALTH_ATTESTATION_ACTIVE_GENERATION",
+            "",
+        ).strip()
+        try:
+            generation = int(raw_generation)
+        except (TypeError, ValueError) as exc:
+            raise HTTPException(
+                status_code=503,
+                detail="Project L health attestation generation is invalid.",
+            ) from exc
+        if generation < 1:
+            raise HTTPException(
+                status_code=503,
+                detail="Project L health attestation generation is invalid.",
+            )
+        return active_key_id, active_key, generation
 
     # Migration-only fallback. Layer 183 retires these variables after the
     # keyring-based rotation proves live in both services.
@@ -1177,7 +1194,23 @@ def _configured_health_attestation_key() -> tuple[str, str]:
             status_code=503,
             detail="Project L health attestation key is unavailable.",
         )
-    return key_id, key
+    raw_generation = os.getenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_GENERATION",
+        "",
+    ).strip()
+    try:
+        generation = int(raw_generation)
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Project L health attestation generation is invalid.",
+        ) from exc
+    if generation < 1:
+        raise HTTPException(
+            status_code=503,
+            detail="Project L health attestation generation is invalid.",
+        )
+    return key_id, key, generation
 
 
 def _health_response_attestation(
@@ -1252,7 +1285,10 @@ def memory_bridge_health(
         "metrics": _rpc_metrics_snapshot(),
     }
     if nonce:
-        key_id, attestation_key = _configured_health_attestation_key()
+        key_id, attestation_key, generation = (
+            _configured_health_attestation_key()
+        )
+        payload["attestation_key_generation"] = generation
         attestation = _health_response_attestation(
             payload,
             nonce=nonce,
