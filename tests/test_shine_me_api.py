@@ -151,10 +151,38 @@ def make_client(monkeypatch, owner="owner-a", *, approved=True, freshness="uncha
             "resolved_revision": resolved_revision,
         }]})()
 
+    def conflict_health(owner_id):
+        calls.append(("conflict_health", owner_id))
+        items = [
+            item for item in conflict_store.values()
+            if item["owner_id"] == owner_id
+        ]
+        detections = len(items)
+        resolutions = sum(1 for item in items if item.get("resolved"))
+        unresolved = detections - resolutions
+        recurring = detections >= 3
+        persistent = detections >= 6 or unresolved >= 2
+        status = (
+            "persistent" if persistent else
+            "recurring" if recurring else
+            "isolated" if detections or unresolved else
+            "stable"
+        )
+        return type("ConflictHealth", (), {"data": [{
+            "health_status": status,
+            "detections_24h": detections,
+            "resolutions_24h": resolutions,
+            "unresolved_conflicts": unresolved,
+            "oldest_unresolved_minutes": 0,
+            "last_conflict_at": None,
+            "recurring": recurring,
+            "persistent": persistent,
+        }]})()
+
     app.include_router(routes(
         retrieve, cognize, lambda receipt: {"status": freshness},
         save, list_reviews, load_state, apply_state,
-        record_conflict, resolve_conflict,
+        record_conflict, resolve_conflict, conflict_health,
     ))
     return TestClient(app), calls
 
@@ -512,6 +540,87 @@ def test_owner_state_conflict_detect_and_account_resolution_are_content_free(mon
     assert conflict_calls[0] == ("conflict_detect", "owner-a", 0)
     assert conflict_calls[1][0:2] == ("conflict_resolve", "owner-a")
     assert "private words" not in str(conflict_calls)
+
+
+
+def test_owner_state_conflict_health_moves_from_stable_to_recurring(monkeypatch):
+    client, calls = make_client(monkeypatch)
+    headers = {"x-test-verified-user": "owner-a"}
+    state = {
+        "mood": None, "moodNote": "", "goals": [], "routines": [],
+        "history": {}, "journal": [], "lastDay": "2026-10-01",
+    }
+
+    stable = client.get("/shine-me/state/conflicts/health", headers=headers)
+    assert stable.status_code == 200
+    assert stable.json() == {
+        "status": "stable",
+        "detections_24h": 0,
+        "resolutions_24h": 0,
+        "unresolved_conflicts": 0,
+        "oldest_unresolved_minutes": 0,
+        "last_conflict_at": None,
+        "recurring": False,
+        "persistent": False,
+    }
+
+    for expected_revision in range(3):
+        if expected_revision == 0:
+            assert client.put(
+                "/shine-me/state",
+                json={"state": state, "expected_revision": 0},
+                headers=headers,
+            ).status_code == 200
+        else:
+            assert client.put(
+                "/shine-me/state",
+                json={"state": state, "expected_revision": expected_revision},
+                headers=headers,
+            ).status_code == 200
+
+        detected = client.post(
+            "/shine-me/state/conflicts/detect",
+            json={"local_revision": expected_revision},
+            headers=headers,
+        )
+        assert detected.status_code == 200
+        receipt = detected.json()
+
+        resolved = client.post(
+            "/shine-me/state/conflicts/resolve",
+            json={
+                "conflict_id": receipt["conflict_id"],
+                "resolution": "account_copy",
+                "resolved_revision": expected_revision + 1,
+            },
+            headers=headers,
+        )
+        assert resolved.status_code == 200
+
+    recurring = client.get("/shine-me/state/conflicts/health", headers=headers)
+    assert recurring.status_code == 200
+    assert recurring.json()["status"] == "recurring"
+    assert recurring.json()["detections_24h"] == 3
+    assert recurring.json()["resolutions_24h"] == 3
+    assert recurring.json()["unresolved_conflicts"] == 0
+    assert recurring.json()["recurring"] is True
+    assert recurring.json()["persistent"] is False
+    assert "state" not in recurring.json()
+    assert "journal" not in recurring.json()
+    assert ("conflict_health", "owner-a") in calls
+
+
+def test_owner_state_conflict_health_is_owner_bound(monkeypatch):
+    client, calls = make_client(monkeypatch)
+    response = client.get(
+        "/shine-me/state/conflicts/health",
+        headers={"x-test-verified-user": "other"},
+    )
+    assert response.status_code == 403
+    assert not any(
+        isinstance(call, tuple) and call[0] == "conflict_health"
+        for call in calls
+    )
 
 
 def test_owner_state_sync_rejects_other_account_and_unknown_fields(monkeypatch):

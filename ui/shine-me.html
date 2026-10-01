@@ -1654,7 +1654,7 @@
       };
       let state=normaliseState({});
       try { state=normaliseState(JSON.parse(localStorage.getItem(storageKey)||'{}')); } catch (_) {}
-      let syncMeta={revision:0,dirty:false,lastSyncedAt:null,status:'local',conflict:false,conflictId:null,recentConflicts24h:0,recurringConflict:false};
+      let syncMeta={revision:0,dirty:false,lastSyncedAt:null,status:'local',conflict:false,conflictId:null,recentConflicts24h:0,recurringConflict:false,conflictHealthStatus:'unknown',conflictHealthDetections24h:0,conflictHealthResolutions24h:0,conflictHealthUnresolved:0,conflictHealthOldestMinutes:0,conflictHealthLastAt:null};
       try { syncMeta={...syncMeta,...JSON.parse(localStorage.getItem(syncKey)||'{}')}; } catch (_) {}
       let accountSyncReady=false;
       let syncTimer=null;
@@ -1697,6 +1697,44 @@
       const refreshSyncLabels=()=>{
         document.querySelectorAll('[data-sync-state]').forEach(node=>node.textContent=syncStateLabel());
       };
+      const conflictHealthLabel=()=>{
+        if(syncMeta.conflictHealthStatus==='stable')return 'Stable';
+        if(syncMeta.conflictHealthStatus==='isolated')return 'Isolated conflict';
+        if(syncMeta.conflictHealthStatus==='recurring')return 'Repeated conflicts';
+        if(syncMeta.conflictHealthStatus==='persistent')return 'Persistent sync issue';
+        if(syncMeta.conflictHealthStatus==='unavailable')return 'Health unavailable';
+        return 'Checking';
+      };
+      const conflictHealthDetail=()=>{
+        const detections=Number(syncMeta.conflictHealthDetections24h||0);
+        const unresolved=Number(syncMeta.conflictHealthUnresolved||0);
+        const oldest=Number(syncMeta.conflictHealthOldestMinutes||0);
+        if(syncMeta.conflictHealthStatus==='stable')return 'No cross-device sync conflicts in the last 24 hours.';
+        if(syncMeta.conflictHealthStatus==='isolated')return detections+' conflict'+(detections===1?'':'s')+' in the last 24 hours'+(unresolved?' · '+unresolved+' unresolved':'')+'.';
+        if(syncMeta.conflictHealthStatus==='recurring')return detections+' conflicts in the last 24 hours. Shine still requires you to choose which copy continues.';
+        if(syncMeta.conflictHealthStatus==='persistent')return detections+' conflicts in the last 24 hours · '+unresolved+' unresolved'+(oldest?' · oldest '+oldest+' min':'')+'. Shine will not choose a copy automatically.';
+        return 'Conflict health uses sync metadata only; no dashboard or journal content is inspected.';
+      };
+      async function refreshConflictHealth(render=true){
+        try{
+          const response=await fetch('/shine-me/state/conflicts/health',{
+            cache:'no-store',
+            signal:AbortSignal.timeout(12000)
+          });
+          if(!response.ok)throw new Error('conflict-health-'+response.status);
+          const result=await response.json();
+          syncMeta.conflictHealthStatus=result.status||'unknown';
+          syncMeta.conflictHealthDetections24h=Number(result.detections_24h||0);
+          syncMeta.conflictHealthResolutions24h=Number(result.resolutions_24h||0);
+          syncMeta.conflictHealthUnresolved=Number(result.unresolved_conflicts||0);
+          syncMeta.conflictHealthOldestMinutes=Number(result.oldest_unresolved_minutes||0);
+          syncMeta.conflictHealthLastAt=result.last_conflict_at||null;
+        }catch(_){
+          syncMeta.conflictHealthStatus='unavailable';
+        }
+        persistSync();
+        if(render && navSurface?.dataset.open==='true' && navSurfaceTitle?.textContent==='You')renderYouSurface();
+      }
       const recordToday=()=>{
         const key=todayKey();
         const goals=Array.isArray(state.goals)?state.goals:[];
@@ -1834,6 +1872,7 @@
           syncMeta.lastSyncedAt=result.updated_at||new Date().toISOString();
           persistSync();
           refreshSyncLabels();
+          await refreshConflictHealth(false);
           if(navSurface?.dataset.open==='true' && navSurfaceTitle?.textContent==='You')renderYouSurface();
         }catch(_){
           syncMeta.status='error';
@@ -1907,10 +1946,14 @@
         persistSync();
         refreshSyncLabels();
         await initialiseAccountSync();
+        await refreshConflictHealth(false);
         if(syncMeta.dirty&&!syncMeta.conflict) scheduleAccountSync(0);
         if(navSurface?.dataset.open==='true'&&navSurfaceTitle?.textContent==='You') renderYouSurface();
       }
-      window.addEventListener('shine-me-binding-ready',initialiseAccountSync);
+      window.addEventListener('shine-me-binding-ready',async()=>{
+        await initialiseAccountSync();
+        await refreshConflictHealth();
+      });
       window.addEventListener('online',()=>{
         if(syncMeta.status==='error'||syncMeta.dirty) retryAccountSync();
       });
@@ -2164,6 +2207,7 @@
             <h3>Account continuity</h3>
             <p>Shine Me saves locally first, then syncs through the verified owner boundary. The synced state is separate from Project L memory.</p>
             <div class="data-row"><span><strong>Sync status</strong><small>Revision ${Number(syncMeta.revision||0)}${syncMeta.lastSyncedAt?' · last synced '+new Date(syncMeta.lastSyncedAt).toLocaleString():''}</small></span><span class="data-state" data-sync-state>${syncStateLabel()}</span></div>
+            <div class="data-row"><span><strong>Sync health</strong><small>${escapeHtml(conflictHealthDetail())}</small></span><span class="data-state">${escapeHtml(conflictHealthLabel())}</span></div>
             ${syncMeta.conflict?`<div class="context-handoff"><div class="context-handoff-top"><div class="context-handoff-label"><span><strong>Another device changed first</strong></span></div></div><small>Your local copy is preserved. Choose which version should continue.${syncMeta.recurringConflict?' This has happened several times in the last 24 hours; Shine still will not choose a copy automatically.':''}</small><div class="context-action-row"><button class="surface-action secondary" id="useAccountCopy" type="button">Use account version</button><button class="surface-action" id="keepDeviceCopy" type="button">Keep this device version</button></div></div>`:'<button class="surface-action secondary" id="retryAccountSync" type="button">Retry sync now</button>'}
           </section>
           <section class="surface-card">
@@ -2209,6 +2253,7 @@
               revision:Number(conflict.remoteRevision||0),
               updated_at:new Date().toISOString()
             });
+            await refreshConflictHealth(false);
             renderYouSurface();
           }catch(_){
             const status=navSurfaceBody.querySelector('#clearLocalStatus');

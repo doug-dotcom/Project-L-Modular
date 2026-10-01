@@ -41,13 +41,36 @@ class Query:
         return Result(self.rows)
 
 
-class Client:
+class RpcQuery:
     def __init__(self, rows):
         self.rows = rows
+
+    def execute(self):
+        return Result(self.rows)
+
+
+class Client:
+    def __init__(self, rows, health=None):
+        self.rows = rows
+        self.health = health or [{
+            "health_status": "stable",
+            "detections_24h": 0,
+            "resolutions_24h": 0,
+            "unresolved_conflicts": 0,
+            "oldest_unresolved_minutes": 0,
+            "last_conflict_at": None,
+            "recurring": False,
+            "persistent": False,
+        }]
 
     def table(self, name):
         assert name == "shine_me_owner_state"
         return Query(self.rows)
+
+    def rpc(self, name, params):
+        assert name == "shine_me_owner_state_conflict_health_service_v1"
+        assert set(params) == {"p_owner_id"}
+        return RpcQuery(self.health)
 
 
 def test_smoke_prints_receipt_not_personal_state(monkeypatch, capsys):
@@ -75,6 +98,8 @@ def test_smoke_prints_receipt_not_personal_state(monkeypatch, capsys):
     assert "binding=server-verified" in output
     assert "state=present" in output
     assert "revision=4" in output
+    assert "conflict_health=stable" in output
+    assert "detections_24h=0" in output
     assert owner not in output
     assert secret not in output
     assert "service-secret" not in output
@@ -92,6 +117,7 @@ def test_smoke_accepts_empty_owner_state(monkeypatch, capsys):
     output = capsys.readouterr().out
     assert "state=empty" in output
     assert "revision=0" in output
+    assert "conflict_health=stable" in output
 
 
 def test_smoke_fails_closed_on_owner_binding_mismatch(monkeypatch):
@@ -107,3 +133,30 @@ def test_smoke_fails_closed_on_owner_binding_mismatch(monkeypatch):
         assert "owner-binding-mismatch" in str(exc)
     else:
         raise AssertionError("smoke should fail closed")
+
+
+def test_smoke_accepts_persistent_conflict_health_without_state_content(monkeypatch, capsys):
+    smoke = load_smoke()
+    monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "service-secret")
+    monkeypatch.setenv("PROJECT_L_OWNER_ID", "owner-a")
+    monkeypatch.setenv("L_MEMORY_OWNER_ID", "owner-a")
+    client = Client([], health=[{
+        "health_status": "persistent",
+        "detections_24h": 6,
+        "resolutions_24h": 4,
+        "unresolved_conflicts": 2,
+        "oldest_unresolved_minutes": 31,
+        "last_conflict_at": "2026-10-01T08:00:00+00:00",
+        "recurring": True,
+        "persistent": True,
+    }])
+    monkeypatch.setattr(smoke, "create_client", lambda *_: client)
+
+    smoke.main()
+    output = capsys.readouterr().out
+    assert "conflict_health=persistent" in output
+    assert "detections_24h=6" in output
+    assert "unresolved=2" in output
+    assert "oldest_unresolved_minutes=31" in output
+    assert "owner-a" not in output

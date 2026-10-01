@@ -18,6 +18,12 @@ MIGRATION_69 = (
     / "migrations"
     / "20261001083330_shine_me_layer69_conflict_receipts.sql"
 )
+MIGRATION_70 = (
+    ROOT
+    / "supabase"
+    / "migrations"
+    / "20261001084822_shine_me_layer70_conflict_health_summary.sql"
+)
 
 
 def test_server_uses_one_atomic_rpc_for_owner_state_writes():
@@ -148,3 +154,54 @@ def test_layer69_account_choice_records_resolution_without_state_write():
     assert "resolution:'account_copy'" in handler
     assert "applyRemoteState" in handler
     assert "scheduleAccountSync(0)" not in handler
+
+
+def test_layer70_conflict_health_is_bounded_content_free_and_service_only():
+    sql = MIGRATION_70.read_text().lower()
+    assert "security invoker" in sql
+    assert "security definer" not in sql
+    assert "from public, anon, authenticated" in sql
+    assert "to service_role" in sql
+    assert "interval '24 hours'" in sql
+    assert "v_detections >= 6" in sql
+    assert "v_unresolved >= 2" in sql
+    assert "v_oldest_minutes >= 30" in sql
+    assert "'stable'" in sql
+    assert "'isolated'" in sql
+    assert "'recurring'" in sql
+    assert "'persistent'" in sql
+
+    function_body = sql.split(
+        "create or replace function public.shine_me_owner_state_conflict_health_service_v1",
+        1,
+    )[1]
+    forbidden = (
+        "shine_me_owner_state s",
+        "state::",
+        "journal",
+        "mood",
+        "goals",
+        "routines",
+        "dailycheckins",
+    )
+    assert all(item not in function_body for item in forbidden)
+
+
+def test_layer70_browser_surfaces_health_without_changing_resolution_authority():
+    html = UI.read_text()
+    assert "/shine-me/state/conflicts/health" in html
+    assert "conflictHealthLabel" in html
+    assert "conflictHealthDetail" in html
+    assert "Persistent sync issue" in html
+    assert "Repeated conflicts" in html
+    assert "Shine will not choose a copy automatically." in html
+    assert "Use account version" in html
+    assert "Keep this device version" in html
+
+
+def test_layer70_health_summary_does_not_clear_or_mutate_owner_state():
+    sql = MIGRATION_70.read_text().lower()
+    assert "update public.shine_me_owner_state" not in sql
+    assert "insert into public.shine_me_owner_state" not in sql
+    assert "delete from public.shine_me_owner_state" not in sql
+    assert "delete from private.shine_me_owner_state_conflict_events" not in sql
