@@ -4,6 +4,7 @@ import hmac
 import json
 
 from fastapi import FastAPI
+import pytest
 from fastapi.testclient import TestClient
 
 import api.shine_ai_memory as bridge
