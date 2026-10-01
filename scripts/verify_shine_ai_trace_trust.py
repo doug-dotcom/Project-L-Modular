@@ -1,6 +1,7 @@
 """Deployment smoke for Project L's authenticated Shine-AI trust storage."""
 
 import os
+import time
 
 import httpx
 from supabase import create_client
@@ -9,6 +10,8 @@ from supabase.lib.client_options import SyncClientOptions
 from services import shine_runtime_service as runtime
 
 SMOKE_DB_TIMEOUT_SECONDS = 5.0
+TRACE_SNAPSHOT_TRANSIENT_REASON = "trace-trust-snapshot-unavailable"
+TRACE_SNAPSHOT_RETRY_DELAYS_SECONDS = (2.0, 5.0)
 
 
 def _database():
@@ -54,11 +57,49 @@ def _reset_cache() -> None:
     })
 
 
+def _seal_with_snapshot_recovery(db):
+    sealed, error = runtime._seal_existing_trace_trust_state(db)
+    replays = 0
+    for delay in TRACE_SNAPSHOT_RETRY_DELAYS_SECONDS:
+        if error != TRACE_SNAPSHOT_TRANSIENT_REASON:
+            break
+        replays += 1
+        print(
+            "Project L Shine-AI trace trust smoke: RETRY "
+            f"snapshot_unavailable attempt={replays} "
+            f"delay_seconds={delay:.1f}",
+            flush=True,
+        )
+        time.sleep(delay)
+        _reset_cache()
+        sealed, error = runtime._seal_existing_trace_trust_state(db)
+    return sealed, error, replays
+
+
+def _keyset_with_snapshot_recovery(db):
+    keyset, error, trust, keyset_replays = _keyset_with_snapshot_recovery(db)
+    replays = 0
+    for delay in TRACE_SNAPSHOT_RETRY_DELAYS_SECONDS:
+        if error != TRACE_SNAPSHOT_TRANSIENT_REASON:
+            break
+        replays += 1
+        print(
+            "Project L Shine-AI trace trust smoke: RETRY "
+            f"snapshot_unavailable attempt={replays} "
+            f"delay_seconds={delay:.1f}",
+            flush=True,
+        )
+        time.sleep(delay)
+        _reset_cache()
+        keyset, error, trust = runtime._shine_ai_verification_keyset(db)
+    return keyset, error, trust, replays
+
+
 def main() -> None:
     db = _database()
     _reset_cache()
 
-    sealed, seal_error = runtime._seal_existing_trace_trust_state(db)
+    sealed, seal_error, seal_replays = _seal_with_snapshot_recovery(db)
     if seal_error is not None or not isinstance(sealed, dict):
         raise SystemExit(
             "Project L Shine-AI trace trust smoke: FAIL "
@@ -299,7 +340,8 @@ def main() -> None:
         f"roster_head_witness_rotation={witness_rotation.get('mode')} "
         f"foundation_chain=verified "
         f"chain_checkpoint=verified "
-        f"chain_checkpoint_redundancy=2/2"
+        f"chain_checkpoint_redundancy=2/2 "
+        f"snapshot_replays={seal_replays + keyset_replays}"
     )
 
 
