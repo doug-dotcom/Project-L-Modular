@@ -135,6 +135,7 @@ from core.cognition.document_evidence import EvidenceStore, answer_from_document
 from api.account_documents import routes as account_document_routes
 from api.shine_ai_memory import (
     flush_memory_runtime_rollup_on_shutdown,
+    memory_bridge_process_snapshot,
     router as shine_ai_memory_router,
 )
 from api.wellness_context import router as wellness_context_router
@@ -1061,6 +1062,7 @@ def readiness():
     payload, status_code = build_operational_readiness(
         security_gate=production_security_gate(),
         memory_snapshot=memory_snapshot,
+        memory_process_snapshot=memory_bridge_process_snapshot(),
         foundation_snapshot=FOUNDATION_STARTUP_AUTHORITY.snapshot(),
     )
     payload["server"] = "vx"
