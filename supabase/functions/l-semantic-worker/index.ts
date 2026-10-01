@@ -19,7 +19,7 @@ const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{
   }
 });
 
-const TRANSIENT_CLAIM_CODES=new Set(["57014","PGRST002","PGRST003"]);
+const TRANSIENT_DATABASE_CODES=new Set(["57014","PGRST002","PGRST003"]);
 const CLAIM_RETRY_DELAY_MS=350;
 
 async function sha256Hex(value:string){
@@ -56,6 +56,35 @@ async function embed(text:string){
   return out as number[];
 }
 
+function rpcCode(error:unknown){
+  if(error&&typeof error==="object"&&"code" in error){
+    return String((error as {code?:unknown}).code??"");
+  }
+  if(error instanceof Error) return error.message;
+  return String(error??"");
+}
+
+function transientDatabaseCode(error:unknown){
+  const code=rpcCode(error);
+  return TRANSIENT_DATABASE_CODES.has(code)?code:null;
+}
+
+function deferredBody(
+  stage:string,
+  code:string,
+  state:Record<string,unknown>={}
+){
+  return {
+    status:"deferred",
+    reason:"transient_database_busy",
+    stage,
+    code,
+    retryAfterSeconds:1,
+    leaseRecovery:"expiry",
+    ...state
+  };
+}
+
 async function claimWithTransientRetry(
   rpcName:string,
   args:Record<string,unknown>,
@@ -67,7 +96,7 @@ async function claimWithTransientRetry(
   }
 
   const firstCode=String(first.error.code??"");
-  if(!TRANSIENT_CLAIM_CODES.has(firstCode)){
+  if(!TRANSIENT_DATABASE_CODES.has(firstCode)){
     return {data:first.data,error:first.error,deferred:false,code:firstCode||null};
   }
 
@@ -85,7 +114,7 @@ async function claimWithTransientRetry(
   }
 
   const secondCode=String(second.error.code??"");
-  if(TRANSIENT_CLAIM_CODES.has(secondCode)){
+  if(TRANSIENT_DATABASE_CODES.has(secondCode)){
     console.warn("semantic claim deferred",stage,secondCode);
     return {data:null,error:null,deferred:true,code:secondCode};
   }
@@ -151,18 +180,38 @@ Deno.serve(async(req:Request)=>{
           p_model:MODEL_NAME,
           p_worker_id:workerId
         });
-        if(done.error||done.data!==true){
-          throw new Error(done.error?.code??"eval_complete_rejected");
+        if(done.error){
+          const code=transientDatabaseCode(done.error);
+          if(code){
+            console.warn("semantic eval completion deferred",code);
+            return json(deferredBody("eval_complete",code,{
+              eval:{claimed:evalClaimed,completed:evalCompleted,failed:evalFailed}
+            }),202);
+          }
+          throw new Error(rpcCode(done.error)||"eval_complete_rejected");
+        }
+        if(done.data!==true){
+          throw new Error("eval_complete_rejected");
         }
         evalCompleted++;
       }catch(err){
         evalFailed++;
         const message=err instanceof Error?err.message:String(err);
-        await db.rpc("project_l_fail_eval_embedding_v1",{
+        const failed=await db.rpc("project_l_fail_eval_embedding_v1",{
           p_id:row.id,
           p_error:message,
           p_worker_id:workerId
         });
+        if(failed.error){
+          const code=transientDatabaseCode(failed.error);
+          if(code){
+            console.warn("semantic eval failure persistence deferred",code);
+            return json(deferredBody("eval_failure_persist",code,{
+              eval:{claimed:evalClaimed,completed:evalCompleted,failed:evalFailed}
+            }),202);
+          }
+          console.error("semantic eval failure persistence rejected",rpcCode(failed.error)||"unknown");
+        }
       }
     }
   }
@@ -206,18 +255,40 @@ Deno.serve(async(req:Request)=>{
           p_model:MODEL_NAME,
           p_worker_id:workerId
         });
-        if(done.error||done.data!==true){
-          throw new Error(done.error?.code??"unit_complete_rejected");
+        if(done.error){
+          const code=transientDatabaseCode(done.error);
+          if(code){
+            console.warn("semantic unit completion deferred",code);
+            return json(deferredBody("unit_complete",code,{
+              eval:{claimed:evalClaimed,completed:evalCompleted,failed:evalFailed},
+              units:{claimed:unitClaimed,completed:unitCompleted,failed:unitFailed}
+            }),202);
+          }
+          throw new Error(rpcCode(done.error)||"unit_complete_rejected");
+        }
+        if(done.data!==true){
+          throw new Error("unit_complete_rejected");
         }
         unitCompleted++;
       }catch(err){
         unitFailed++;
         const message=err instanceof Error?err.message:String(err);
-        await db.rpc("project_l_fail_semantic_unit_v1",{
+        const failed=await db.rpc("project_l_fail_semantic_unit_v1",{
           p_id:row.id,
           p_error:message,
           p_worker_id:workerId
         });
+        if(failed.error){
+          const code=transientDatabaseCode(failed.error);
+          if(code){
+            console.warn("semantic unit failure persistence deferred",code);
+            return json(deferredBody("unit_failure_persist",code,{
+              eval:{claimed:evalClaimed,completed:evalCompleted,failed:evalFailed},
+              units:{claimed:unitClaimed,completed:unitCompleted,failed:unitFailed}
+            }),202);
+          }
+          console.error("semantic unit failure persistence rejected",rpcCode(failed.error)||"unknown");
+        }
       }
     }
   }
