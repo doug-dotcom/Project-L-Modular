@@ -23,7 +23,7 @@ TRANSIENT_RETRIEVAL_CODES = frozenset({
 })
 MAX_TRANSIENT_REPLAYS = 1
 MAX_RETRY_DELAY_SECONDS = 10.0
-RHEE_STAGE_LATENCY_PROFILE_VERSION = "rhee-stage-latency-v1"
+RHEE_STAGE_LATENCY_PROFILE_VERSION = "rhee-stage-latency-v2"
 
 
 def _fail(reason: str) -> None:
