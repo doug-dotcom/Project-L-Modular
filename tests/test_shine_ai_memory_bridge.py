@@ -19,6 +19,14 @@ def client() -> TestClient:
 
 def configure(monkeypatch):
     monkeypatch.setenv("SHINE_AI_MEMORY_TOKEN", "x" * 32)
+    monkeypatch.setenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_KEY_ID",
+        "health-test-v1",
+    )
+    monkeypatch.setenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_KEY",
+        "h" * 48,
+    )
     monkeypatch.setenv("PROJECT_L_OWNER_ID", OWNER)
     bridge._db_client = None
     bridge._db_transport = None
@@ -1485,6 +1493,7 @@ def test_memory_bridge_health_attests_nonce_bound_content(monkeypatch):
     attestation = body.pop("attestation")
     assert attestation["version"] == 1
     assert attestation["algorithm"] == "HMAC-SHA-256"
+    assert attestation["key_id"] == "health-test-v1"
     assert attestation["domain"] == bridge._HEALTH_ATTESTATION_DOMAIN
     assert attestation["nonce"] == nonce
 
@@ -1504,7 +1513,7 @@ def test_memory_bridge_health_attests_nonce_bound_content(monkeypatch):
         + payload_sha256
     ).encode("utf-8")
     expected_signature = hmac.new(
-        ("x" * 32).encode("utf-8"),
+        ("h" * 48).encode("utf-8"),
         material,
         hashlib.sha256,
     ).hexdigest()
@@ -1527,3 +1536,71 @@ def test_memory_bridge_health_rejects_invalid_attestation_nonce(monkeypatch):
     )
 
     assert response.status_code == 422
+
+
+
+def test_health_attestation_uses_dedicated_key_not_service_token(monkeypatch):
+    configure(monkeypatch)
+    monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "service-role-key")
+    nonce = "shine-ai-health-key-separation-0001"
+
+    response = client().get(
+        "/internal/shine-ai/memory/health",
+        headers={
+            "X-Shine-Service-Token": "x" * 32,
+            "X-Shine-Health-Nonce": nonce,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    attestation = body.pop("attestation")
+    canonical = json.dumps(
+        body,
+        sort_keys=True,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    payload_sha256 = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    material = (
+        bridge._HEALTH_ATTESTATION_DOMAIN
+        + "\n"
+        + nonce
+        + "\n"
+        + payload_sha256
+    ).encode("utf-8")
+    request_token_signature = hmac.new(
+        ("x" * 32).encode("utf-8"),
+        material,
+        hashlib.sha256,
+    ).hexdigest()
+
+    assert attestation["key_id"] == "health-test-v1"
+    assert not hmac.compare_digest(
+        attestation["signature_sha256"],
+        request_token_signature,
+    )
+
+
+def test_health_attestation_requires_dedicated_key_when_nonce_present(
+    monkeypatch,
+):
+    configure(monkeypatch)
+    monkeypatch.delenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_KEY",
+        raising=False,
+    )
+
+    response = client().get(
+        "/internal/shine-ai/memory/health",
+        headers={
+            "X-Shine-Service-Token": "x" * 32,
+            "X-Shine-Health-Nonce": "shine-ai-health-missing-key-0001",
+        },
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == (
+        "Project L health attestation key is unavailable."
+    )
