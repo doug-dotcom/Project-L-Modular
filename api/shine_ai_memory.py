@@ -1,4 +1,5 @@
 import hashlib
+import json
 import math
 import os
 import re
@@ -65,6 +66,58 @@ _MEMORY_RPC_TIMEOUT_SECONDS = 6.0
 _MEMORY_RPC_CONNECT_SECONDS = 3.0
 _MEMORY_RPC_POOL_SECONDS = 1.0
 _QUERY_CONTRACT_VERSION = "2"
+_RETRIEVAL_CONTRACT_NAME = "project-l:shine-ai-memory-retrieval:v1"
+_RETRIEVAL_ENDPOINT = "/internal/shine-ai/memory/retrieve"
+_RETRIEVAL_ENGINE = "project-l-memory-context-v2"
+_RETRIEVAL_VERSION = "2.2"
+
+
+def memory_retrieval_contract_manifest() -> dict[str, object]:
+    return {
+        "contract": _RETRIEVAL_CONTRACT_NAME,
+        "query_contract_version": _QUERY_CONTRACT_VERSION,
+        "endpoint": _RETRIEVAL_ENDPOINT,
+        "auth": {
+            "header": "X-Shine-Service-Token",
+            "owner_bound": True,
+        },
+        "request": {
+            "fields": ["app", "user_id", "query", "scopes", "limit"],
+            "query_max_chars": 2_000,
+            "scope_count_min": 1,
+            "scope_count_max": 6,
+            "limit_min": 1,
+            "limit_max": 6,
+        },
+        "response": {
+            "source": "project-l",
+            "engine": _RETRIEVAL_ENGINE,
+            "version": _RETRIEVAL_VERSION,
+            "record_fields": ["id", "text", "tags", "priority"],
+            "priority_values": ["high", "normal", "low"],
+        },
+        "scope_policy": {
+            app: sorted(scopes)
+            for app, scopes in sorted(_APP_SCOPE_POLICY.items())
+        },
+        "semantics": {
+            "read_only": True,
+            "permission_scoped": True,
+            "broad_recall_rejected": True,
+            "legacy_global_search_used": False,
+            "legacy_rpc_fallback_used": False,
+        },
+    }
+
+
+def memory_retrieval_contract_sha256() -> str:
+    canonical = json.dumps(
+        memory_retrieval_contract_manifest(),
+        sort_keys=True,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 _SLO_MIN_SAMPLES = 20
 _SLO_AVAILABILITY_TARGET = 0.99
 _SLO_EWMA_LATENCY_TARGET_MS = 3000.0
@@ -683,6 +736,7 @@ class MemoryBridgeHealthResponse(BaseModel):
     component: Literal["memory-bridge"]
     version: str
     query_contract_version: str
+    retrieval_contract_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
     status: Literal["ready", "protected", "degraded"]
     circuit_state: Literal["closed", "open", "half-open"]
     retry_after: int
@@ -1047,8 +1101,9 @@ def memory_bridge_health(
     return MemoryBridgeHealthResponse(
         source="project-l",
         component="memory-bridge",
-        version="2.2",
+        version=_RETRIEVAL_VERSION,
         query_contract_version=_QUERY_CONTRACT_VERSION,
+        retrieval_contract_sha256=memory_retrieval_contract_sha256(),
         status=str(snapshot["status"]),
         circuit_state=str(snapshot["circuit_state"]),
         retry_after=int(snapshot["retry_after"]),
@@ -1131,8 +1186,8 @@ def retrieve_memory(
 
     return MemoryRetrieveResponse(
         source="project-l",
-        engine="project-l-memory-context-v2",
-        version="2.2",
+        engine=_RETRIEVAL_ENGINE,
+        version=_RETRIEVAL_VERSION,
         recall_active=bool(records),
         records=records,
         receipt={
