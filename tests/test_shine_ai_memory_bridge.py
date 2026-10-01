@@ -1,4 +1,7 @@
 from pathlib import Path
+import hashlib
+import hmac
+import json
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -811,6 +814,7 @@ def test_memory_bridge_health_is_authenticated_and_zero_database_touch(monkeypat
     assert body["rpc_pool_seconds"] == 1.0
     assert body["read_only"] is True
     assert body["fail_closed"] is True
+    assert body["attestation"] is None
     assert called["database"] == 0
 
     denied = client().get(
@@ -1459,3 +1463,67 @@ def test_memory_retrieval_contract_fingerprint_is_deterministic():
     assert first == (
         "caf74ae7d02551b093a11699493b4eaa9185e9c0f3b813644af260d9c0d674ae"
     )
+
+
+
+def test_memory_bridge_health_attests_nonce_bound_content(monkeypatch):
+    configure(monkeypatch)
+    monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "service-role-key")
+    nonce = "shine-ai-health-nonce-0001"
+
+    response = client().get(
+        "/internal/shine-ai/memory/health",
+        headers={
+            "X-Shine-Service-Token": "x" * 32,
+            "X-Shine-Health-Nonce": nonce,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    attestation = body.pop("attestation")
+    assert attestation["version"] == 1
+    assert attestation["algorithm"] == "HMAC-SHA-256"
+    assert attestation["domain"] == bridge._HEALTH_ATTESTATION_DOMAIN
+    assert attestation["nonce"] == nonce
+
+    canonical = json.dumps(
+        body,
+        sort_keys=True,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    payload_sha256 = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    assert attestation["payload_sha256"] == payload_sha256
+    material = (
+        bridge._HEALTH_ATTESTATION_DOMAIN
+        + "\\n"
+        + nonce
+        + "\\n"
+        + payload_sha256
+    ).encode("utf-8")
+    expected_signature = hmac.new(
+        ("x" * 32).encode("utf-8"),
+        material,
+        hashlib.sha256,
+    ).hexdigest()
+    assert hmac.compare_digest(
+        attestation["signature_sha256"],
+        expected_signature,
+    )
+    assert "x" * 32 not in response.text
+
+
+def test_memory_bridge_health_rejects_invalid_attestation_nonce(monkeypatch):
+    configure(monkeypatch)
+
+    response = client().get(
+        "/internal/shine-ai/memory/health",
+        headers={
+            "X-Shine-Service-Token": "x" * 32,
+            "X-Shine-Health-Nonce": "short",
+        },
+    )
+
+    assert response.status_code == 422
