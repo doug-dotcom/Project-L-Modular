@@ -1705,14 +1705,31 @@
         if(syncMeta.conflictHealthStatus==='unavailable')return 'Health unavailable';
         return 'Checking';
       };
+      const conflictRecoveryLabel=()=>{
+        if(syncMeta.conflictRecoveryState==='clear')return 'Clear';
+        if(syncMeta.conflictRecoveryState==='observing')return 'Recovered · observing';
+        if(syncMeta.conflictRecoveryState==='resolving')return 'Resolution in progress';
+        if(syncMeta.conflictRecoveryState==='stalled')return 'Unresolved';
+        return 'Unknown';
+      };
+      const conflictReasonText=()=>{
+        const reasons=Array.isArray(syncMeta.conflictHealthReasonCodes)?syncMeta.conflictHealthReasonCodes:[];
+        const labels=[];
+        if(reasons.includes('volume'))labels.push('multiple conflicts in 24h');
+        if(reasons.includes('unresolved_count'))labels.push('more than one conflict remains unresolved');
+        if(reasons.includes('unresolved_age'))labels.push('a conflict has remained unresolved for 30+ minutes');
+        return labels;
+      };
       const conflictHealthDetail=()=>{
         const detections=Number(syncMeta.conflictHealthDetections24h||0);
         const unresolved=Number(syncMeta.conflictHealthUnresolved||0);
-        const oldest=Number(syncMeta.conflictHealthOldestMinutes||0);
+        const reasons=conflictReasonText();
         if(syncMeta.conflictHealthStatus==='stable')return 'No cross-device sync conflicts in the last 24 hours.';
-        if(syncMeta.conflictHealthStatus==='isolated')return detections+' conflict'+(detections===1?'':'s')+' in the last 24 hours'+(unresolved?' · '+unresolved+' unresolved':'')+'.';
-        if(syncMeta.conflictHealthStatus==='recurring')return detections+' conflicts in the last 24 hours. Shine still requires you to choose which copy continues.';
-        if(syncMeta.conflictHealthStatus==='persistent')return detections+' conflicts in the last 24 hours · '+unresolved+' unresolved'+(oldest?' · oldest '+oldest+' min':'')+'. Shine will not choose a copy automatically.';
+        if(syncMeta.conflictHealthStatus==='isolated')return detections+' conflict'+(detections===1?'':'s')+' in the last 24 hours'+(unresolved?' · '+unresolved+' unresolved':'')+'. Recovery: '+conflictRecoveryLabel()+'.';
+        if(syncMeta.conflictHealthStatus==='recurring'||syncMeta.conflictHealthStatus==='persistent'){
+          const why=reasons.length?' Why: '+reasons.join('; ')+'.':'';
+          return detections+' conflicts in the last 24 hours · '+unresolved+' unresolved. Recovery: '+conflictRecoveryLabel()+'.'+why+' Shine will not choose a copy automatically.';
+        }
         return 'Conflict health uses sync metadata only; no dashboard or journal content is inspected.';
       };
       async function refreshConflictHealth(render=true){
