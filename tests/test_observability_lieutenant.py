@@ -301,7 +301,7 @@ def test_memory_bridge_recovery_certification_explains_remaining_evidence(tmp_pa
         "memory_bridge_runtime_rollup",
         {
             "rollup_kind": "periodic",
-            "successes": 10,
+            "successes": 19,
             "failures": 1,
             "mean_latency_ms": 900.0,
         },
@@ -333,6 +333,15 @@ def test_memory_bridge_recovery_certification_explains_remaining_evidence(tmp_pa
 def test_memory_bridge_recovery_certification_reports_latency_blocker(tmp_path):
     lieutenant = ObservabilityLieutenant(
         events_file=tmp_path / "events.json"
+    )
+    lieutenant.record_event(
+        "memory_bridge_runtime_rollup",
+        {
+            "rollup_kind": "periodic",
+            "successes": 19,
+            "failures": 1,
+            "mean_latency_ms": 900.0,
+        },
     )
     lieutenant.record_event(
         "memory_bridge_runtime_rollup",
@@ -376,3 +385,27 @@ def test_memory_bridge_recovery_certification_is_earned_at_three_clean_successes
     assert runtime["recovery_certified"] is True
     assert runtime["recovery_blocker"] == "none"
     assert runtime["recovery_state"] == "healthy_streak"
+
+
+
+def test_memory_bridge_warming_still_exposes_recovery_gap(tmp_path):
+    lieutenant = ObservabilityLieutenant(
+        events_file=tmp_path / "events.json"
+    )
+    lieutenant.record_event(
+        "memory_bridge_runtime_rollup",
+        {
+            "rollup_kind": "periodic",
+            "successes": 1,
+            "failures": 0,
+            "mean_latency_ms": 700.0,
+        },
+    )
+
+    runtime = lieutenant.memory_bridge_slo_snapshot()["runtime"]
+
+    assert runtime["status"] == "warming"
+    assert runtime["operational_state"] == "warming"
+    assert runtime["qualified_recovery_successes"] == 1
+    assert runtime["recovery_qualified_successes_remaining"] == 2
+    assert runtime["recovery_blocker"] == "needs-qualified-successes"
