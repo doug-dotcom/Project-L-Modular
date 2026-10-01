@@ -737,6 +737,7 @@ class MemoryRetrieveResponse(BaseModel):
 class MemoryBridgeHealthAttestation(BaseModel):
     version: Literal[1] = 1
     algorithm: Literal["HMAC-SHA-256"] = "HMAC-SHA-256"
+    key_id: str = Field(min_length=1, max_length=80)
     domain: Literal[
         "project-l:shine-ai-memory-health-attestation:v1"
     ] = "project-l:shine-ai-memory-health-attestation:v1"
@@ -1104,11 +1105,34 @@ def _records(
     return records
 
 
+def _configured_health_attestation_key() -> tuple[str, str]:
+    key_id = os.getenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_KEY_ID",
+        "",
+    ).strip()
+    key = os.getenv(
+        "SHINE_AI_MEMORY_HEALTH_ATTESTATION_KEY",
+        "",
+    ).strip()
+    if not key_id or len(key_id) > 80:
+        raise HTTPException(
+            status_code=503,
+            detail="Project L health attestation key ID is unavailable.",
+        )
+    if len(key) < 32:
+        raise HTTPException(
+            status_code=503,
+            detail="Project L health attestation key is unavailable.",
+        )
+    return key_id, key
+
+
 def _health_response_attestation(
     payload: dict[str, object],
     *,
     nonce: str,
-    service_token: str,
+    key_id: str,
+    attestation_key: str,
 ) -> MemoryBridgeHealthAttestation:
     canonical = json.dumps(
         payload,
@@ -1125,11 +1149,12 @@ def _health_response_attestation(
         + payload_sha256
     ).encode("utf-8")
     signature_sha256 = hmac.new(
-        service_token.encode("utf-8"),
+        attestation_key.encode("utf-8"),
         material,
         hashlib.sha256,
     ).hexdigest()
     return MemoryBridgeHealthAttestation(
+        key_id=key_id,
         nonce=nonce,
         payload_sha256=payload_sha256,
         signature_sha256=signature_sha256,
@@ -1173,15 +1198,16 @@ def memory_bridge_health(
         "fail_closed": True,
         "metrics": _rpc_metrics_snapshot(),
     }
-    attestation = (
-        _health_response_attestation(
+    if nonce:
+        key_id, attestation_key = _configured_health_attestation_key()
+        attestation = _health_response_attestation(
             payload,
             nonce=nonce,
-            service_token=x_shine_service_token,
+            key_id=key_id,
+            attestation_key=attestation_key,
         )
-        if nonce
-        else None
-    )
+    else:
+        attestation = None
     return MemoryBridgeHealthResponse(**payload, attestation=attestation)
 
 
