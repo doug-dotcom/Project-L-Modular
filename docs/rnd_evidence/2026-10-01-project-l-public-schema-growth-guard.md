@@ -72,7 +72,9 @@ A role-level recovery experiment separated application RPC timeout from PostgRES
 
 - Branch: `project-l/public-schema-growth-guard-20261001`
 - New guard test: `tests/test_public_schema_growth_guard.py`
-- CI result: pending at contemporaneous capture.
+- CI result: **PASS — 1,750 passed, 5 warnings, 13 subtests passed in 34.43s**.
+- PR #262 merged as commit `8d562846a0e4fbdf99132d755feccb1d6f48dbb7`.
+- The guard found no migration-created relation violations from the 1 October 2026 cutoff through the tested head.
 
 ## Failures / unexpected behaviour
 
@@ -86,7 +88,7 @@ Schema placement must therefore be treated as a reliability boundary as well as 
 
 ## Next step
 
-Run the full Project L regression suite. If green, merge the prevention layer. Then inventory legacy public relations in bounded batches once direct catalog access is stable, prioritising service-role-only tables for migration to `private`.
+Inventory legacy public relations in bounded batches once direct catalog access is stable, prioritising service-role-only tables for migration to `private`. Keep application role timeouts strict while treating PostgREST schema-cache recovery as a separate operational concern.
 
 ## Source artefacts
 
