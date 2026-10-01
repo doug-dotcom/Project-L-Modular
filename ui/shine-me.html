@@ -1654,7 +1654,7 @@
       };
       let state=normaliseState({});
       try { state=normaliseState(JSON.parse(localStorage.getItem(storageKey)||'{}')); } catch (_) {}
-      let syncMeta={revision:0,dirty:false,lastSyncedAt:null,status:'local',conflict:false};
+      let syncMeta={revision:0,dirty:false,lastSyncedAt:null,status:'local',conflict:false,conflictId:null,recentConflicts24h:0,recurringConflict:false};
       try { syncMeta={...syncMeta,...JSON.parse(localStorage.getItem(syncKey)||'{}')}; } catch (_) {}
       let accountSyncReady=false;
       let syncTimer=null;
@@ -1722,17 +1722,42 @@
         refreshSyncLabels();
         scheduleAccountSync();
       };
-      function saveConflict(remote){
+      async function recordConflictReceipt(localRevision){
+        try{
+          const response=await fetch('/shine-me/state/conflicts/detect',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({local_revision:Number(localRevision||0)}),
+            signal:AbortSignal.timeout(12000)
+          });
+          if(!response.ok)return {};
+          return await response.json();
+        }catch(_){
+          return {};
+        }
+      }
+
+      async function saveConflict(remote,receipt={}){
+        let meta=receipt&&typeof receipt==='object'?receipt:{};
+        if(!meta.conflict_id){
+          meta=await recordConflictReceipt(Number(syncMeta.revision||0));
+        }
         const record={
           detectedAt:new Date().toISOString(),
           localState:stateSnapshot(),
           remoteState:remote?.state||null,
-          remoteRevision:Number(remote?.revision||0)
+          remoteRevision:Number(remote?.revision||meta.remote_revision||0),
+          conflictId:meta.conflict_id||null,
+          recentConflicts24h:Number(meta.recent_conflicts_24h||0),
+          recurring:Boolean(meta.recurring)
         };
         try { localStorage.setItem(conflictKey,JSON.stringify(record)); } catch (_) {}
         syncMeta.conflict=true;
         syncMeta.status='conflict';
         syncMeta.dirty=true;
+        syncMeta.conflictId=record.conflictId;
+        syncMeta.recentConflicts24h=record.recentConflicts24h;
+        syncMeta.recurringConflict=record.recurring;
         persistSync();
         refreshSyncLabels();
       }
@@ -1742,6 +1767,9 @@
         syncMeta.revision=Number(remote?.revision||0);
         syncMeta.dirty=false;
         syncMeta.conflict=false;
+        syncMeta.conflictId=null;
+        syncMeta.recentConflicts24h=0;
+        syncMeta.recurringConflict=false;
         syncMeta.status='synced';
         syncMeta.lastSyncedAt=remote?.updated_at||new Date().toISOString();
         try { localStorage.removeItem(conflictKey); } catch (_) {}
@@ -1779,13 +1807,19 @@
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({
               state:stateSnapshot(),
-              expected_revision:Number(syncMeta.revision||0)
+              expected_revision:Number(syncMeta.revision||0),
+              conflict_id:syncMeta.conflictId||null
             }),
             signal:AbortSignal.timeout(25000)
           });
           if(response.status===409){
+            let receipt={};
+            try{
+              const body=await response.json();
+              receipt=body?.detail&&typeof body.detail==='object'?body.detail:{};
+            }catch(_){}
             const remote=await fetchAccountState();
-            saveConflict(remote);
+            await saveConflict(remote,receipt);
             return;
           }
           if(!response.ok)throw new Error('state-save-'+response.status);
@@ -1793,6 +1827,9 @@
           syncMeta.revision=Number(result.revision||0);
           syncMeta.dirty=false;
           syncMeta.conflict=false;
+          syncMeta.conflictId=null;
+          syncMeta.recentConflicts24h=0;
+          syncMeta.recurringConflict=false;
           syncMeta.status='synced';
           syncMeta.lastSyncedAt=result.updated_at||new Date().toISOString();
           persistSync();
@@ -1839,12 +1876,12 @@
             const localText=JSON.stringify(stateSnapshot());
             const remoteText=JSON.stringify(normaliseState(remote.state));
             if(localText!==remoteText){
-              saveConflict(remote);
+              await saveConflict(remote);
               return;
             }
           }
           if(syncMeta.dirty && remoteRevision!==localRevision){
-            saveConflict(remote);
+            await saveConflict(remote);
             return;
           }
           if(!syncMeta.dirty || remoteRevision>localRevision){
