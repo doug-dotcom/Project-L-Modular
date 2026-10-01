@@ -531,7 +531,7 @@ def execute_durable_request(request):
     return chat(ChatRequest(**request))
 
 
-task_runner = TaskRunner(task_store, execute_durable_request)
+task_runner = TaskRunner(task_store, execute_durable_request, slots=1)
 app.include_router(account_document_routes(supabase, task_store))
 app.include_router(shine_ai_memory_router)
 app.include_router(wellness_context_router)
