@@ -42,4 +42,4 @@ begin
 end
 $migration$;
 
-notify pgrst, 'reload schema';
+-- No PostgREST schema reload: this migration changes cron schedules only.

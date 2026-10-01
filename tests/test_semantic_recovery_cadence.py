@@ -34,6 +34,5 @@ def test_semantic_recovery_cadence_uses_supported_cron_surface_and_reload():
 
     assert "update cron.job" not in sql
     assert sql.count("select jobid") == 2
-    assert sql.rfind("notify pgrst, 'reload schema';") > sql.rfind(
-        "perform cron.alter_job("
-    )
+    assert "notify pgrst" not in sql.lower()
+    assert "reload schema" not in sql.lower()
