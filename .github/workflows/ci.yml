@@ -117,6 +117,7 @@ jobs:
           tests/test_evidence_evaluation.py
           tests/test_durable_tasks.py
           tests/test_durable_reaper_yield.py
+          tests/test_durable_dispatcher_backpressure.py
           tests/test_durable_ui.py
           tests/test_shine_ai_memory_bridge.py
           tests/test_memory_claim_hash_hotpath_contract.py
