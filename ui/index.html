@@ -305,6 +305,70 @@
             }
         }
 
+
+        /* Shine Standard UI — Project L implementation layer 1 */
+        :root {
+            --shine-bg:#07111f;
+            --shine-surface:#101d30;
+            --shine-surface-2:#172840;
+            --shine-line:rgba(255,255,255,.11);
+            --shine-text:#f5f7fa;
+            --shine-muted:#9eacbd;
+            --shine-accent:#f0cd7d;
+            --shine-radius-card:22px;
+            --shine-radius-control:14px;
+            --shine-touch:44px;
+            --shine-focus:0 0 0 3px rgba(240,205,125,.22);
+        }
+        html { -webkit-text-size-adjust:100%; }
+        html, body { background:radial-gradient(circle at 50% -10%,#1b3150 0,transparent 34rem),var(--shine-bg); color:var(--shine-text); }
+        header {
+            padding:max(16px,env(safe-area-inset-top)) 18px 14px;
+            font-size:clamp(24px,6vw,32px);
+            color:var(--shine-accent);
+            background:rgba(7,17,31,.88);
+            backdrop-filter:blur(16px);
+            -webkit-backdrop-filter:blur(16px);
+        }
+        #chat { padding:18px; gap:14px; }
+        .msg {
+            max-width:min(88%,760px);
+            padding:14px 16px;
+            border-radius:var(--shine-radius-card);
+            font-size:clamp(16px,2.2vw,18px);
+            line-height:1.55;
+        }
+        .assistant { background:var(--shine-surface); border-color:var(--shine-line); }
+        .user { background:#214d7a; }
+        #inputBar {
+            padding:10px 14px max(10px,env(safe-area-inset-bottom));
+            gap:8px;
+            background:rgba(7,17,31,.94);
+            backdrop-filter:blur(18px);
+            -webkit-backdrop-filter:blur(18px);
+        }
+        #message {
+            min-height:50px;
+            border:1px solid var(--shine-line);
+            background:var(--shine-surface);
+            font-size:16px;
+        }
+        button,[role="button"],a,input,textarea,select { touch-action:manipulation; }
+        button,[role="button"] { min-height:var(--shine-touch); }
+        button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[role="button"]:focus-visible {
+            outline:none;
+            box-shadow:var(--shine-focus);
+        }
+        @media (max-width:520px) {
+            #chat { padding:14px 12px; }
+            .msg { max-width:94%; }
+            #inputBar { padding-inline:10px; }
+            #inputBar button { min-width:50px; }
+        }
+        @media (prefers-reduced-motion:reduce) {
+            #chat { scroll-behavior:auto; }
+            *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; }
+        }
     </style>
 
 <style>
