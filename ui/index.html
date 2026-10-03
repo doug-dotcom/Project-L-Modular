@@ -383,6 +383,73 @@
 .saved-answer-entry { border-bottom: 1px solid #666; }
 .saved-answer-filters p { flex-basis: 100%; margin: 0; }
 </style>
+
+<style>
+/* Shine Standard UI — Project L implementation layer 2 */
+#chatTools {
+  background:rgba(12,27,45,.98);
+  border-top:1px solid var(--shine-line);
+}
+#chatToolsActions {
+  max-width:920px;
+  margin:0 auto;
+}
+#chatToolsActions button {
+  border-color:var(--shine-line);
+  background:var(--shine-surface-2);
+  color:var(--shine-text);
+}
+#chatToolsActions button[aria-expanded="true"] {
+  border-color:rgba(240,205,125,.55);
+  background:rgba(240,205,125,.10);
+  color:#f7e6b9;
+}
+#evidencePanel,#voicePanel,#specialistPanel {
+  max-width:920px;
+  margin:0 auto;
+  color:var(--shine-text);
+}
+#evidencePanel summary,#voicePanel summary,#specialistPanel summary {
+  color:#f2e0ae;
+  font-weight:700;
+}
+#evidencePanel p,#voicePanel p,#specialistPanel p,
+#evidenceStatus,#evidenceCopyStatus,#specialistFleetStatus {
+  color:var(--shine-muted);
+  line-height:1.5;
+}
+#evidencePreview,#evidenceAnswer {
+  max-width:100%;
+  overflow:auto;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  border:1px solid var(--shine-line);
+  border-radius:14px;
+  padding:12px;
+  background:rgba(255,255,255,.035);
+}
+#evidenceQuestion,#evidenceFiles,#evidencePage {
+  border:1px solid var(--shine-line);
+  border-radius:12px;
+  background:var(--shine-surface);
+  color:var(--shine-text);
+}
+.msg.assistant { position:relative; }
+.msg.assistant::before {
+  content:"L";
+  display:block;
+  margin-bottom:5px;
+  color:var(--shine-accent);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.msg.error::before { content:"System"; }
+@media (min-width:900px) {
+  #chat { width:min(100%,960px); margin:0 auto; }
+}
+</style>
 </head>
 
 <body>
