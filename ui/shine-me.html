@@ -1223,6 +1223,47 @@
     .shine-pathway-card small { display:block; margin-top:5px; color:#8fa0b4; font-size:9px; line-height:1.35; }
     .shine-pathway-card em { display:block; margin-top:8px; color:#e4ca8d; font-size:8px; font-style:normal; letter-spacing:.07em; text-transform:uppercase; }
     @media (max-width:380px){ .shine-pathway-grid{grid-template-columns:1fr;} }
+
+    /* Shine Standard UI — implementation layer 4: mobile + accessibility polish */
+    html { -webkit-text-size-adjust: 100%; }
+    body { min-height: 100dvh; }
+    main.app-shell {
+      min-height: 100dvh;
+      padding-top: max(18px, env(safe-area-inset-top));
+      padding-bottom: max(112px, calc(92px + env(safe-area-inset-bottom)));
+    }
+    .topbar { top: env(safe-area-inset-top); }
+    input, textarea, select { font-size: max(16px, 1em); }
+    .dash-card[role="button"]:focus-visible,
+    .progress-card[role="button"]:focus-visible,
+    .shine-pathway-card:focus-visible,
+    .timeline-item:focus-within { box-shadow: var(--shine-focus); }
+    .nav-surface {
+      width:min(100%,920px);
+      padding-bottom:max(104px, calc(84px + env(safe-area-inset-bottom)));
+    }
+    @media (max-width: 520px) {
+      main.app-shell { width:100%; box-shadow:none; }
+      .topbar { margin-inline:-2px; }
+      .hero-copy { width:82%; padding-inline:20px; }
+      .today-actions { grid-template-columns:1fr; }
+      .today-actions[data-count="3"] { grid-template-columns:1fr; }
+    }
+    @media (max-width: 340px) {
+      main.app-shell { padding-inline:12px; }
+      .dashboard-grid, .shine-pathway-grid, .today-grid { grid-template-columns:1fr; }
+      .today-wide { grid-column:auto; }
+      .account-mini #accountLabel { display:none; }
+    }
+    @media (pointer: coarse) {
+      button, [role="button"], a.hero-arrow { min-height:48px; }
+    }
+    @media (prefers-contrast: more) {
+      .dash-card, .today-snapshot, .timeline-item, .shine-pathway-card, .surface-card {
+        border-color:rgba(255,255,255,.28);
+      }
+      .muted, .today-empty, .timeline-item small, .shine-pathway-card small { color:#c3ceda; }
+    }
   </style>
 </head>
 <body>
