@@ -1,15 +1,19 @@
 {
-  "name": "Project L",
+  "name": "Shine L — Your Guide",
   "short_name": "L",
+  "description": "Shine L — your guide, there when you need it.",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#000814",
   "theme_color": "#000814",
   "icons": [
     {
-      "src": "/assets/icon-512.png",
+      "src": "/ui/shine-l-icon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
