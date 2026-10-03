@@ -1199,6 +1199,18 @@
         transition-duration: .01ms !important;
       }
     }
+
+    /* Shine Standard UI — implementation layer 2: factual personal timeline */
+    .personal-timeline { margin: 16px 0; }
+    .personal-timeline-head { display:flex; align-items:end; justify-content:space-between; gap:12px; margin-bottom:10px; }
+    .personal-timeline-head h2 { margin:0; font:500 22px/1 Georgia,"Times New Roman",serif; letter-spacing:-.02em; }
+    .personal-timeline-head span { color:#8fa0b4; font-size:9px; letter-spacing:.08em; text-transform:uppercase; }
+    .timeline-list { display:grid; gap:8px; }
+    .timeline-item { display:grid; grid-template-columns:68px 1fr; gap:12px; padding:12px 13px; border:1px solid rgba(255,255,255,.08); border-radius:16px; background:rgba(255,255,255,.035); }
+    .timeline-item time { color:#8fa0b4; font-size:9px; }
+    .timeline-item strong { display:block; color:#edf3f9; font-size:12px; }
+    .timeline-item small { display:block; margin-top:3px; color:#91a1b4; font-size:9px; line-height:1.35; }
+    .timeline-empty { padding:16px; border:1px dashed rgba(255,255,255,.12); border-radius:16px; color:#8fa0b4; font-size:11px; }
   </style>
 </head>
 <body>
@@ -1264,6 +1276,11 @@
       <div id="todaySnapshotBody">
         <p class="today-empty">Your Daily Check-in will appear here after you save it. Nothing is inferred before you do.</p>
       </div>
+    </section>
+
+    <section class="personal-timeline" aria-labelledby="personalTimelineTitle">
+      <div class="personal-timeline-head"><h2 id="personalTimelineTitle">Your timeline</h2><span>Last 7 days</span></div>
+      <div class="timeline-list" id="personalTimeline"><div class="timeline-empty">Your tracked Shine Me activity will appear here.</div></div>
     </section>
 
     <section class="dashboard-grid" aria-label="Your day">
@@ -2904,6 +2921,44 @@
         }));
       }
 
+
+      function renderPersonalTimeline(){
+        const root=document.getElementById('personalTimeline');
+        if(!root)return;
+        const days=lastDays(7).slice().reverse();
+        const rows=[];
+        days.forEach(day=>{
+          const checkin=state.dailyCheckins?.[day.key]||null;
+          const history=state.history?.[day.key]||null;
+          if(checkin){
+            const feelings=[checkin.feeling1,checkin.feeling2].filter(Boolean).join(' · ');
+            const score=Number.isFinite(Number(checkin.score))?Number(checkin.score).toFixed(1)+'/10':'';
+            rows.push({day:day.key,title:'Daily Check-in',detail:[feelings,score].filter(Boolean).join(' · ')||'Saved'});
+          }
+          const goalCount=Number(history?.goalCompleted||0);
+          const routineCount=Number(history?.routineCompleted||0);
+          if(goalCount||routineCount){
+            const parts=[];
+            if(goalCount)parts.push(goalCount+' goal'+(goalCount===1?'':'s'));
+            if(routineCount)parts.push(routineCount+' routine'+(routineCount===1?'':'s'));
+            rows.push({day:day.key,title:'Progress',detail:parts.join(' · ')+' completed'});
+          }
+        });
+        const journal=Array.isArray(state.journal)?state.journal:[];
+        journal.forEach(entry=>{
+          const stamp=new Date(entry?.createdAt||'');
+          if(Number.isNaN(stamp.getTime()))return;
+          const key=stamp.getFullYear()+'-'+String(stamp.getMonth()+1).padStart(2,'0')+'-'+String(stamp.getDate()).padStart(2,'0');
+          if(days.some(day=>day.key===key))rows.push({day:key,title:'Journal',detail:String(entry.reflection||'Reflection saved').slice(0,120)});
+        });
+        rows.sort((a,b)=>b.day.localeCompare(a.day));
+        root.innerHTML=rows.length?rows.slice(0,12).map(row=>{
+          const date=new Date(row.day+'T12:00:00');
+          const label=date.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});
+          return '<article class="timeline-item"><time datetime="'+row.day+'">'+escapeHtml(label)+'</time><div><strong>'+escapeHtml(row.title)+'</strong><small>'+escapeHtml(row.detail)+'</small></div></article>';
+        }).join(''):'<div class="timeline-empty">No tracked activity in the last 7 days yet. Nothing is inferred.</div>';
+      }
+
       function renderTodaySnapshot(){
         const root=document.getElementById('todaySnapshotBody');
         const status=document.getElementById('todaySnapshotState');
@@ -2981,6 +3036,7 @@
 
       function syncDashboard(){
         renderTodaySnapshot();
+        renderPersonalTimeline();
         const moodCard=document.querySelector('.mood-card');
         const goalsCard=document.querySelector('.goals-card');
         const routineCard=document.querySelector('.routine-card');
