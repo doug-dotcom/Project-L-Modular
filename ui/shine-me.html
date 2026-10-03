@@ -1211,6 +1211,18 @@
     .timeline-item strong { display:block; color:#edf3f9; font-size:12px; }
     .timeline-item small { display:block; margin-top:3px; color:#91a1b4; font-size:9px; line-height:1.35; }
     .timeline-empty { padding:16px; border:1px dashed rgba(255,255,255,.12); border-radius:16px; color:#8fa0b4; font-size:11px; }
+
+    /* Shine Standard UI — implementation layer 3: cross-Shine pathways */
+    .shine-pathways { margin:16px 0; }
+    .shine-pathways-head { display:flex; align-items:end; justify-content:space-between; gap:12px; margin-bottom:10px; }
+    .shine-pathways-head h2 { margin:0; font:500 22px/1 Georgia,"Times New Roman",serif; letter-spacing:-.02em; }
+    .shine-pathways-head span { color:#8fa0b4; font-size:9px; letter-spacing:.08em; text-transform:uppercase; }
+    .shine-pathway-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+    .shine-pathway-card { min-height:92px; margin:0; padding:13px; text-align:left; border:1px solid rgba(255,255,255,.08); border-radius:17px; color:#eaf0f6; background:rgba(255,255,255,.035); cursor:pointer; }
+    .shine-pathway-card strong { display:block; font-size:12px; }
+    .shine-pathway-card small { display:block; margin-top:5px; color:#8fa0b4; font-size:9px; line-height:1.35; }
+    .shine-pathway-card em { display:block; margin-top:8px; color:#e4ca8d; font-size:8px; font-style:normal; letter-spacing:.07em; text-transform:uppercase; }
+    @media (max-width:380px){ .shine-pathway-grid{grid-template-columns:1fr;} }
   </style>
 </head>
 <body>
@@ -1281,6 +1293,16 @@
     <section class="personal-timeline" aria-labelledby="personalTimelineTitle">
       <div class="personal-timeline-head"><h2 id="personalTimelineTitle">Your timeline</h2><span>Last 7 days</span></div>
       <div class="timeline-list" id="personalTimeline"><div class="timeline-empty">Your tracked Shine Me activity will appear here.</div></div>
+    </section>
+
+    <section class="shine-pathways" aria-labelledby="shinePathwaysTitle">
+      <div class="shine-pathways-head"><h2 id="shinePathwaysTitle">Across Shine</h2><span>Context hand-off</span></div>
+      <div class="shine-pathway-grid">
+        <button class="shine-pathway-card" type="button" data-shine-pathway="wellness"><strong>Wellness</strong><small>Health, recovery and wellbeing context.</small><em>Ask through Shine</em></button>
+        <button class="shine-pathway-card" type="button" data-shine-pathway="recovery"><strong>Recovery</strong><small>Check-ins, reflection and recovery context.</small><em>Ask through Shine</em></button>
+        <button class="shine-pathway-card" type="button" data-shine-pathway="finance"><strong>Finance</strong><small>Hand financial questions to Fiona.</small><em>Specialist pathway</em></button>
+        <button class="shine-pathway-card" type="button" data-shine-pathway="travel"><strong>Travel</strong><small>Bring your personal context into trip planning.</small><em>Specialist pathway</em></button>
+      </div>
     </section>
 
     <section class="dashboard-grid" aria-label="Your day">
@@ -2198,6 +2220,18 @@
           setTimeout(()=>askQuestion?.focus(),220);
         },80);
       }
+
+
+      document.querySelectorAll('[data-shine-pathway]').forEach(button=>button.addEventListener('click',()=>{
+        const kind=button.dataset.shinePathway;
+        const prompts={
+          wellness:'Help me with my health and wellbeing using only context you are allowed to access. If specialist Wellness capability is needed, use the appropriate Shine pathway.',
+          recovery:'Help me reflect on my recovery using verified context only. Keep facts, memory and inference clearly separated.',
+          finance:'I have a financial question. Route this to Fiona or the appropriate finance capability rather than answering from unverified personal context.',
+          travel:'Help me plan travel using my relevant verified personal context and the appropriate Shine Travel capability.'
+        };
+        handoffToShine(button.querySelector('strong')?.textContent||'Across Shine',prompts[kind]||'Help me with this through the appropriate Shine capability.');
+      }));
 
       document.getElementById('askForm')?.addEventListener('submit',()=>{
         if(contextHandoff){
