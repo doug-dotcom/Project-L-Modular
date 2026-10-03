@@ -450,6 +450,50 @@
   #chat { width:min(100%,960px); margin:0 auto; }
 }
 </style>
+
+<style>
+/* Shine Standard UI — Project L implementation layer 3 */
+#voicePanel button,
+#evidencePanel button,
+#specialistPanel button {
+  border:1px solid var(--shine-line);
+  background:var(--shine-surface-2);
+  color:var(--shine-text);
+  border-radius:12px;
+}
+#voicePanel button:disabled,
+#evidencePanel button:disabled,
+#specialistPanel button:disabled { opacity:.46; cursor:not-allowed; }
+#voiceStatus {
+  padding:10px 12px;
+  border:1px solid var(--shine-line);
+  border-radius:12px;
+  background:rgba(255,255,255,.035);
+}
+#recordVoice:not(:disabled) { border-color:rgba(240,205,125,.5); color:#f4d891; }
+#finishVoice:not(:disabled) { border-color:rgba(134,239,172,.45); color:#a7f3c0; }
+#discardVoice:not(:disabled) { border-color:rgba(252,165,165,.35); color:#fecaca; }
+#evidenceUpload { max-width:100%; margin:8px 0; }
+#evidenceFiles { width:min(100%,520px); min-height:44px; padding:8px 10px; }
+#evidencePage { width:86px; min-height:44px; padding:8px 10px; }
+#evidenceQuestion { width:100%; min-height:92px; padding:12px; resize:vertical; }
+#inputBar #uploadBtn,#inputBar #voiceToggle {
+  width:50px!important;
+  height:50px!important;
+  min-width:50px!important;
+  border:1px solid var(--shine-line)!important;
+  box-shadow:none;
+}
+#inputBar #uploadBtn[aria-expanded="true"] {
+  border-color:rgba(240,205,125,.65)!important;
+  background:#33445e!important;
+}
+@media (max-width:420px) {
+  #voicePanel > div { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+  #voicePanel > div button { margin:0; min-width:0; }
+  #evidencePanel button { max-width:100%; }
+}
+</style>
 </head>
 
 <body>
