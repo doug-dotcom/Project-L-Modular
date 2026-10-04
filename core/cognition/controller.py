@@ -77,7 +77,14 @@ def plan_cognition(message: str) -> dict:
     )
     cue_signal = bool(cue_assessment.get("should_retrieve"))
 
+    family_identity_question = bool(re.search(
+        r"\b(?:how many\s+(?:kids|children|sons|daughters)\s+do i have|"
+        r"(?:who|what)\s+(?:are|is)\s+(?:my\s+)?(?:kids|children|sons|daughters)(?:'s)?\b|"
+        r"(?:my\s+(?:kids|children|sons|daughters)|(?:kids|children)\s+.*\bi have)\b)",
+        text,
+    ))
     explicit_recall_signal = not current_update and (
+        family_identity_question or
         continuity_signal or life_pattern_signal or decision_signal or relationship_signal
         or timeline_signal or research_signal or what_matters_signal or _has(text, (
             "remember", "recall", "deep recall", "what do you know", "tell me about my",
