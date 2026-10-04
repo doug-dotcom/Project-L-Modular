@@ -139,6 +139,7 @@ from api.shine_ai_memory import (
     router as shine_ai_memory_router,
 )
 from api.wellness_context import router as wellness_context_router
+from api.wellness_chat import router as wellness_chat_router, register_wellness_chat_store
 from api.shine_me import routes as shine_me_routes
 from api.foundation_companion import routes as foundation_companion_routes
 from core.cognition.reflection import reflect_on_task
@@ -428,7 +429,7 @@ async def account_boundary(request: Request, call_next):
         '/internal/shine-ai/memory/observability',
     }
     path = request.url.path
-    if path not in public_paths and not path.startswith('/ui/') and request.method != 'OPTIONS':
+    if path not in public_paths and not path.startswith('/internal/wellness/chat/') and not path.startswith('/ui/') and request.method != 'OPTIONS':
         try:
             request.state.account = await run_in_threadpool(
                 require_account, supabase, request.headers.get('authorization', ''))
@@ -549,6 +550,8 @@ def execute_durable_request(request):
 task_runner = TaskRunner(task_store, execute_durable_request, slots=1)
 app.include_router(account_document_routes(supabase, task_store))
 app.include_router(shine_ai_memory_router)
+register_wellness_chat_store(task_store)
+app.include_router(wellness_chat_router)
 app.include_router(wellness_context_router)
 app.include_router(foundation_companion_routes(supabase))
 app.include_router(shine_me_routes(
