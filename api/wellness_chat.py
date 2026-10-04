@@ -11,6 +11,22 @@ from uuid import UUID
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, Field
 
+
+WELLNESS_CHAT_PREFIX = (
+    "[Shine Wellness: Talk it through. Respond conversationally and warmly in Australian English. "
+    "Help Doug reflect, ask a useful follow-up when appropriate, and keep health context provisional. "
+    "This is a conversation, not an instruction to operate other applications or update health records.]\n\n"
+)
+
+
+def wellness_user_message(message, conversation_id):
+    """Keep transport instructions out of user recall and memory classification."""
+    text = str(message or "")
+    if str(conversation_id or "").startswith("wellness_") and text.startswith(WELLNESS_CHAT_PREFIX):
+        return text[len(WELLNESS_CHAT_PREFIX):].strip()
+    return text.strip()
+
+
 router = APIRouter(prefix="/internal/wellness/chat")
 _store = None
 
