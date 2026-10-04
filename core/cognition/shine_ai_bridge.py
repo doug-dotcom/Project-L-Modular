@@ -248,10 +248,33 @@ class ShineAIModelAdapter:
             raise ShineAIBridgeError("shine_ai_unavailable") from exc
 
         if int(getattr(response, "status_code", 500)) != 200:
-            raise ShineAIBridgeError(
-                "shine_ai_request_rejected_"
-                + str(int(getattr(response, "status_code", 500)))
-            )
+            status = int(getattr(response, "status_code", 500))
+            reason = "request_rejected"
+            if status == 403:
+                try:
+                    detail = response.json().get("detail", "")
+                except Exception:
+                    detail = ""
+                if isinstance(detail, str):
+                    if detail.endswith("has no Shine-AI policy."):
+                        reason = "app_policy_missing"
+                    elif "trusted companion prompt envelope" in detail:
+                        reason = "trusted_prompt_not_permitted"
+                    elif "requires an approved prompt profile" in detail:
+                        reason = "prompt_profile_required"
+                    else:
+                        reason = "permission_denied"
+            error = ShineAIBridgeError("shine_ai_request_rejected_" + str(status))
+            # Only fixed reason codes and non-secret app identity enter receipts.
+            # Never persist upstream bodies, headers, credentials or prompt text.
+            error.receipt = {
+                "status": "failed",
+                "error_type": "ShineAIBridgeError",
+                "provider_status": status,
+                "app_id": self.app_id,
+                "reason": reason,
+            }
+            raise error
 
         try:
             payload = response.json()
