@@ -122,7 +122,7 @@ def test_retrieval_is_service_authenticated_owner_scoped_and_bounded(monkeypatch
     monkeypatch.setattr(
         bridge,
         "_owner_context",
-        lambda owner_id, query, limit: owner_context(),
+        lambda owner_id, query, limit, scopes=None: owner_context(),
     )
 
     response = client().post(
@@ -185,7 +185,7 @@ def test_owner_and_scope_boundaries_are_enforced(monkeypatch):
     monkeypatch.setattr(
         bridge,
         "_owner_context",
-        lambda owner_id, query, limit: owner_context(),
+        lambda owner_id, query, limit, scopes=None: owner_context(),
     )
 
     wrong_owner = client().post(
@@ -244,7 +244,7 @@ def test_wellness_bridge_is_limited_to_health_scope(monkeypatch):
     monkeypatch.setattr(
         bridge,
         "_owner_context",
-        lambda owner_id, query, limit: {
+        lambda owner_id, query, limit, scopes=None: {
             **owner_context(),
             "matches": [
                 {
@@ -312,7 +312,7 @@ def test_daash_bridge_is_limited_to_sport_scope(monkeypatch):
     monkeypatch.setattr(
         bridge,
         "_owner_context",
-        lambda owner_id, query, limit: owner_context(),
+        lambda owner_id, query, limit, scopes=None: owner_context(),
     )
 
     allowed = client().post(
@@ -1748,3 +1748,53 @@ def test_health_payload_generation_is_hmac_bound(monkeypatch):
     ).hexdigest()
 
     assert tampered_payload_sha256 != attestation["payload_sha256"]
+
+
+def test_scoped_retrieval_filters_before_rank_limit(monkeypatch):
+    configure(monkeypatch)
+    calls = []
+    class Database:
+        def rpc(self, name, payload):
+            calls.append((name, payload))
+            class Result:
+                def execute(self):
+                    context = owner_context()
+                    context["matches"] = context["matches"][:1]
+                    context["queryKey"] = payload["p_query_key"]
+                    return type("Response", (), {"data": context})()
+            return Result()
+    monkeypatch.setattr(bridge, "_database", lambda: Database())
+    response = client().post(
+        "/internal/shine-ai/memory/retrieve",
+        headers={"X-Shine-Service-Token": "x" * 32},
+        json={"app": "shine-dive", "user_id": OWNER, "query": "hockey",
+              "scopes": ["sport"], "limit": 1},
+    )
+    assert response.status_code == 200
+    assert len(response.json()["records"]) == 1
+    assert calls[0][0] == "project_l_memory_context_scoped_service_v2"
+    assert calls[0][1]["p_scopes"] == ["sport"]
+    assert calls[0][1]["p_limit"] == 1
+
+
+def test_no_match_and_unavailable_have_distinct_caller_results(monkeypatch):
+    configure(monkeypatch)
+    payload = {"app": "shine-dive", "user_id": OWNER, "query": "hockey",
+               "scopes": ["sport"], "limit": 1}
+    monkeypatch.setattr(
+        bridge, "_owner_context",
+        lambda *args: {**owner_context(), "matches": []},
+    )
+    empty = client().post("/internal/shine-ai/memory/retrieve",
+                          headers={"X-Shine-Service-Token": "x" * 32}, json=payload)
+    assert empty.status_code == 200
+    assert empty.json()["records"] == []
+    assert empty.json()["recall_active"] is False
+
+    def unavailable(*args):
+        raise bridge.HTTPException(status_code=503, detail="Retrieval unavailable.")
+    monkeypatch.setattr(bridge, "_owner_context", unavailable)
+    failed = client().post("/internal/shine-ai/memory/retrieve",
+                           headers={"X-Shine-Service-Token": "x" * 32}, json=payload)
+    assert failed.status_code == 503
+    assert "records" not in failed.json()
