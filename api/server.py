@@ -1418,7 +1418,8 @@ def cognition_portability_certification():
 
 @app.post("/chat")
 def chat(req: ChatRequest):
-    user_message = (req.message or "").strip()
+    from api.wellness_chat import wellness_user_message
+    user_message = wellness_user_message(req.message, req.conversation_id)
     request_id = normalise_request_id(req.request_id)
     conversation_scope = str(req.conversation_id or "doug_primary")[:100]
     active_model_adapter = resolve_model_adapter()
@@ -1470,6 +1471,12 @@ def chat(req: ChatRequest):
     run_brain_pipeline(raw_user_row)
 
     time_context = build_time_context()
+    wellness_system_context = (
+        "This is Shine Wellness Talk it through. Keep health context provisional. "
+        "Respond conversationally and warmly in Australian English. This conversation "
+        "does not authorise operating other applications or changing health records."
+        if conversation_scope.startswith("wellness_") else ""
+    )
 
     checkpoint("recalling_and_reasoning")
     # The controller plans cognition before retrieval, services or generation.
@@ -1739,6 +1746,7 @@ TIMEZONE:
 {time_context["timezone"]}
 
 You are Doug's calm grounded companion.
+{wellness_system_context}
 
 You are the only voice Doug talks to.
 
