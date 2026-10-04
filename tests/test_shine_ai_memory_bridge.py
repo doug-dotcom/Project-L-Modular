@@ -1761,6 +1761,8 @@ def test_scoped_retrieval_filters_before_rank_limit(monkeypatch):
                     context = owner_context()
                     context["matches"] = context["matches"][:1]
                     context["queryKey"] = payload["p_query_key"]
+                    context["requestedScopes"] = payload["p_scopes"]
+                    context["scopeFilterBeforeRanking"] = True
                     return type("Response", (), {"data": context})()
             return Result()
     monkeypatch.setattr(bridge, "_database", lambda: Database())
@@ -1798,3 +1800,22 @@ def test_no_match_and_unavailable_have_distinct_caller_results(monkeypatch):
                            headers={"X-Shine-Service-Token": "x" * 32}, json=payload)
     assert failed.status_code == 503
     assert "records" not in failed.json()
+
+
+def test_missing_scoped_rpc_never_falls_back_to_global_search(monkeypatch):
+    configure(monkeypatch)
+    calls = []
+    class MissingRPC(Exception):
+        code = "PGRST202"
+    class Database:
+        def rpc(self, name, payload):
+            calls.append(name)
+            class Result:
+                def execute(self):
+                    raise MissingRPC()
+            return Result()
+    monkeypatch.setattr(bridge, "_database", lambda: Database())
+    with pytest.raises(bridge.HTTPException) as exc:
+        bridge._owner_context(OWNER, "hockey", 1, frozenset({"sport"}))
+    assert exc.value.status_code == 503
+    assert calls == ["project_l_memory_context_scoped_service_v2"]
