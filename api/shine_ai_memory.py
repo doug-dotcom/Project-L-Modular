@@ -898,7 +898,7 @@ def _query_terms(query: str) -> list[str]:
     return terms
 
 
-def _owner_context_impl(owner_id: str, query: str, limit: int) -> dict:
+def _owner_context_impl(owner_id: str, query: str, limit: int, scopes: frozenset[str] | None = None) -> dict:
     terms = _query_terms(query)
     if not terms:
         return {
@@ -953,8 +953,10 @@ def _owner_context_impl(owner_id: str, query: str, limit: int) -> dict:
         while True:
             try:
                 result = _database().rpc(
-                    "project_l_memory_context_service_v2",
-                    {**common_payload, "p_query_key": query_key},
+                    ("project_l_memory_context_scoped_service_v2" if scopes is not None
+                     else "project_l_memory_context_service_v2"),
+                    {**common_payload, "p_query_key": query_key,
+                     **({"p_scopes": sorted(scopes)} if scopes is not None else {})},
                 ).execute()
                 break
             except Exception as exc:
@@ -1035,10 +1037,10 @@ def _owner_context_impl(owner_id: str, query: str, limit: int) -> dict:
     return data
 
 
-def _owner_context(owner_id: str, query: str, limit: int) -> dict:
+def _owner_context(owner_id: str, query: str, limit: int, scopes: frozenset[str] | None = None) -> dict:
     started_at = _metric_request_started()
     try:
-        data = _owner_context_impl(owner_id, query, limit)
+        data = _owner_context_impl(owner_id, query, limit, scopes)
     except Exception as exc:
         _metric_request_finished(
             started_at,
@@ -1341,7 +1343,7 @@ def retrieve_memory(
 ) -> MemoryRetrieveResponse:
     owner_id = _configured_owner(x_shine_service_token)
     requested_scopes = _validate_access(request, owner_id)
-    context = _owner_context(owner_id, request.query, request.limit)
+    context = _owner_context(owner_id, request.query, request.limit, requested_scopes)
     records = _records(context, requested_scopes, request.limit)
 
     unavailable_scopes = sorted(
