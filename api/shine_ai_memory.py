@@ -1027,6 +1027,14 @@ def _owner_context_impl(owner_id: str, query: str, limit: int, scopes: frozenset
             status_code=503,
             detail="Project L owner-scoped retrieval has no active permission scope.",
         )
+    if scopes is not None and (
+        data.get("requestedScopes") != sorted(scopes)
+        or data.get("scopeFilterBeforeRanking") is not True
+    ):
+        raise HTTPException(
+            status_code=503,
+            detail="Project L scoped retrieval failed its scope binding check.",
+        )
     _close_rpc_circuit()
     data = dict(data)
     data["_queryBinding"] = {
